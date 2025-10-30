@@ -13,7 +13,6 @@ spring:
   profiles:
     active: native
 
-
 eureka:
   instance:
     prefer-ip-address: true
