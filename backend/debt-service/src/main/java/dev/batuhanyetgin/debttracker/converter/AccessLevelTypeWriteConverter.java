@@ -1,0 +1,17 @@
+package dev.batuhanyetgin.debttracker.converter;
+
+import dev.batuhanyetgin.debttracker.enums.AccessLevelType;
+import jakarta.validation.constraints.NotNull;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.data.convert.WritingConverter;
+import org.springframework.stereotype.Component;
+
+@Component
+@WritingConverter
+public class AccessLevelTypeWriteConverter implements Converter<AccessLevelType, Character> {
+
+    @Override
+    public Character convert(@NotNull AccessLevelType source) {
+        return source.getValue();
+    }
+}

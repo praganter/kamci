@@ -1,0 +1,23 @@
+package dev.batuhanyetgin.debttracker.converter;
+
+import com.mongodb.lang.NonNull;
+import dev.batuhanyetgin.debttracker.enums.PaymentPeriodType;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.data.convert.ReadingConverter;
+import org.springframework.stereotype.Component;
+
+@Component
+@ReadingConverter
+public class PaymentPeriodTypeReadConverter implements Converter<Character, PaymentPeriodType> {
+
+    @Override
+    public PaymentPeriodType convert(@NonNull Character source) {
+        for (PaymentPeriodType type : PaymentPeriodType.values()) {
+            if (type.getValue().equals(source)) {
+                return type;
+            }
+        }
+        throw new IllegalArgumentException("Unknown PaymentPeriodType: " + source);
+    }
+
+}

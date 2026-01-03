@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - dt-network
+    environment:
+      - MONGO_INITDB_DATABASE=debt-tracker
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=1234
+
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: auth-service/Dockerfile
+    container_name: auth-service
+    ports:
+      - "8082:8082"
+    environment:
+      - SPRING_DATA_MONGODB_URI=${MONGO_DB_URI}
+      - SPRING_DATA_MONGODB_DATABASE=debt-tracker
+      - EUREKA_URI=http://eureka-server:8761/eureka
+      - SPRING_DATA_MONGODB_AUTO_INDEX_CREATION=true
+      - JWT_SECRET=${JWT_SECRET_KEY}
+    depends_on:
+      - mongodb
+    networks:
+      - dt-network
+
+  debt-service:
+    build:
+      context: .
+      dockerfile: debt-service/Dockerfile
+    container_name: debt-service
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_DATA_MONGODB_URI=${MONGO_DB_URI}
+      - SPRING_DATA_MONGODB_DATABASE=debt-tracker
+      - SPRING_DATA_MONGODB_AUTO_INDEX_CREATION=true
+      - EUREKA_URI=${EUREKA_URI}
+    depends_on:
+      - mongodb
+    networks:
+      - dt-network
+
+networks:
+  dt-network:
+    external: true
+
+volumes:
+  mongo-data:
+    driver: local

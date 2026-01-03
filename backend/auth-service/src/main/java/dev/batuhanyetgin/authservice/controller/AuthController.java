@@ -1,0 +1,36 @@
+package dev.batuhanyetgin.authservice.controller;
+
+
+import dev.batuhanyetgin.authservice.dto.request.LoginRequest;
+import dev.batuhanyetgin.authservice.dto.request.RegisterRequest;
+import dev.batuhanyetgin.authservice.dto.response.LoginResponse;
+import dev.batuhanyetgin.authservice.dto.response.RefreshTokenResponse;
+import dev.batuhanyetgin.authservice.dto.response.RegisterResponse;
+import dev.batuhanyetgin.authservice.service.AuthService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("auth/")
+@RequiredArgsConstructor
+public class AuthController {
+
+    private final AuthService authService;
+
+    @PostMapping("register")
+    ResponseEntity<RegisterResponse> save(@RequestBody @Valid final RegisterRequest request) {
+        return ResponseEntity.ok(authService.register(request));
+    }
+
+    @PostMapping("login")
+    ResponseEntity<LoginResponse> save(@RequestBody @Valid final LoginRequest request) {
+        return ResponseEntity.ok(authService.login(request));
+    }
+
+    @PostMapping("refresh-token")
+    ResponseEntity<RefreshTokenResponse> refreshToken(@RequestHeader("Authorization") String refreshToken) {
+        return ResponseEntity.ok(authService.refreshToken(refreshToken));
+    }
+}
