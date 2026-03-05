@@ -6,7 +6,7 @@ import dev.batuhanyetgin.debttracker.dto.request.CreateDebtRequest;
 import org.mapstruct.Mapper;
 
 @Mapper
-public interface DebtRequestToDebtDocumentMapper extends BaseMapper<CreateDebtRequest, DebtDocument> {
+public interface CreateDebtRequestToDebtDocumentMapper extends BaseMapper<CreateDebtRequest, DebtDocument> {
 
     DebtDocument map(CreateDebtRequest createDebtRequest);
 }

@@ -6,9 +6,11 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum PaymentPeriodType {
-    DAILY,
-    WEEKLY,
-    MONTHLY,
-    HALF_YEARLY,
-    YEARLY
+    DAILY('D'),
+    WEEKLY('W'),
+    MONTHLY('M'),
+    HALF_YEARLY('H'),
+    YEARLY('Y');
+
+    private final Character value;
 }

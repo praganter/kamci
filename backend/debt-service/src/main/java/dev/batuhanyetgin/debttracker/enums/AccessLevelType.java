@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public enum ShareType {
+public enum AccessLevelType {
     READ('R'),
     EDIT('E'),
     FULL('F');

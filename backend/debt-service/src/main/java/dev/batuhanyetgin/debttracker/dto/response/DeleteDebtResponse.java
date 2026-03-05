@@ -7,6 +7,6 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-public class DebtDeleteResponse {
+public class DeleteDebtResponse {
     private String message;
 }

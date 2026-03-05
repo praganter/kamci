@@ -3,10 +3,11 @@ package dev.batuhanyetgin.debttracker.mapper;
 import dev.batuhanyetgin.commonmodule.mapper.BaseMapper;
 import dev.batuhanyetgin.debttracker.document.DebtDocument;
 import dev.batuhanyetgin.debttracker.dto.request.CreateDebtRequest;
+import dev.batuhanyetgin.debttracker.dto.request.UpdateDebtRequest;
 import org.mapstruct.Mapper;
 
 @Mapper
-public interface DebtRequestToDebtDocumentMapper extends BaseMapper<CreateDebtRequest, DebtDocument> {
+public interface UpdateDebtRequestToDebtDocumentMapper extends BaseMapper<UpdateDebtRequest, DebtDocument> {
 
-    DebtDocument map(CreateDebtRequest createDebtRequest);
+    DebtDocument map(UpdateDebtRequest updateDebtRequest);
 }

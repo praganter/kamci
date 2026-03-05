@@ -8,6 +8,6 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-public class CreateDebtResponse {
+public class DebtResponse {
     private DebtDocument debt;
 }
