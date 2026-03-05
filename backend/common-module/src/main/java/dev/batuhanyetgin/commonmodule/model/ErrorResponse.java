@@ -1,17 +1,34 @@
 package dev.batuhanyetgin.commonmodule.model;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import dev.batuhanyetgin.commonmodule.model.response.BaseResponse;
+import lombok.*;
+
+import java.time.Instant;
+import java.util.List;
 
 @Getter
 @Setter
 @NoArgsConstructor
-public class ErrorResponse {
+@AllArgsConstructor
+@Builder
+public class ErrorResponse extends BaseResponse {
 
+    private Instant timestamp;
+    private int status;
+    private String code;
     private String message;
+    private String path;
+    private String traceId;
 
-    public ErrorResponse(String message) {
-        this.message = message;
+    private List<ValidationError> errors;
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class ValidationError {
+        private String field;
+        private String message;
     }
 }

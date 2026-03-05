@@ -5,7 +5,10 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public enum AccessLevelType {
-    READ,
-    WRITE
+public enum ShareType {
+    READ('R'),
+    EDIT('E'),
+    FULL('F');
+
+    private final Character value;
 }
