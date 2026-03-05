@@ -2,7 +2,9 @@ package dev.batuhanyetgin.authservice.repositoryservice;
 
 import dev.batuhanyetgin.authservice.document.AuthDocument;
 import dev.batuhanyetgin.authservice.repository.AuthRepository;
+import dev.batuhanyetgin.commonmodule.exception.BaseException;
 import dev.batuhanyetgin.commonmodule.repository.BaseRepositoryService;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -15,8 +17,12 @@ public class AuthRepositoryService extends BaseRepositoryService<AuthDocument> {
         this.authRepository = authRepository;
     }
 
-    public AuthDocument findByEMail(final String eMail) {
-        return authRepository.findByEMail(eMail)
-                .orElseThrow(() -> new IllegalArgumentException("Could not find user with eMail: " + eMail));
+    public AuthDocument findByEMail(final String email) {
+        return authRepository.findByEmail(email)
+                .orElseThrow(() -> new BaseException("error.auth.user_not_found", HttpStatus.NOT_FOUND));
+    }
+
+    public boolean existsByEmail(final String email) {
+        return authRepository.existsByEmail(email);
     }
 }

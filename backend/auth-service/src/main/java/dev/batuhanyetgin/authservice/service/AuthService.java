@@ -9,6 +9,7 @@ import dev.batuhanyetgin.authservice.dto.response.RegisterResponse;
 import dev.batuhanyetgin.authservice.repositoryservice.AuthRepositoryService;
 import dev.batuhanyetgin.commonmodule.exception.BaseException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,8 +24,13 @@ public class AuthService {
 
     @Transactional
     public RegisterResponse register(final RegisterRequest request) {
+
+        if (authRS.existsByEmail(request.getEmail())) {
+            throw new BaseException("auth.email.in.use", HttpStatus.CONFLICT);
+        }
+
         AuthDocument authDocument = AuthDocument.builder()
-                .eMail(request.getEmail())
+                .email(request.getEmail())
                 .password(encodePassword(request.getPassword()))
                 .build();
 
@@ -45,12 +51,27 @@ public class AuthService {
                     .token(jwtService.generateToken(userDocument.getId(), false))
                     .build();
         } else {
-            throw new BaseException("error.auth.not_valid");
+            throw new BaseException("error.auth.not_valid", HttpStatus.UNAUTHORIZED);
         }
     }
 
-    public RefreshTokenResponse refreshToken(final String refreshToken) {
-        String userId = jwtService.getUserIdFromToken(refreshToken.substring(7));
+    public RefreshTokenResponse refreshToken(final String authorizationHeader) {
+
+        if (authorizationHeader == null || authorizationHeader.isBlank()) {
+            throw new BaseException("error.request.invalid_header", HttpStatus.BAD_REQUEST);
+        }
+
+        final String prefix = "Bearer ";
+        if (!authorizationHeader.startsWith(prefix)) {
+            throw new BaseException("error.request.invalid_header", HttpStatus.BAD_REQUEST);
+        }
+
+        String token = authorizationHeader.substring(prefix.length()).trim();
+        if (token.isBlank()) {
+            throw new BaseException("error.request.invalid_header", HttpStatus.BAD_REQUEST);
+        }
+
+        String userId = jwtService.getUserIdFromToken(token);
 
         return RefreshTokenResponse.builder()
                 .refreshToken(jwtService.generateToken(userId, true))

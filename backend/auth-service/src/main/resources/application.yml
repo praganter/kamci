@@ -5,7 +5,7 @@ spring:
     name: auth-service
   data:
     mongodb:
-      uri: ${MONGO_DB_URI:mongodb://dev:dev@localhost:27017/debt-tracker?authSource=admin}
+      uri: ${MONGO_DB_URI:mongodb://dev:dev@localhost:27017/debt-tracker?authSource=admin&retryWrites=false}
       auto-index-creation: true
       authentication-database: admin
       database: debt-tracker

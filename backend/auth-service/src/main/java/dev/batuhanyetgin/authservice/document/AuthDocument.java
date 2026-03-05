@@ -18,8 +18,8 @@ import org.springframework.data.mongodb.core.mapping.Field;
 public class AuthDocument extends BaseDocument {
 
     @Indexed(unique = true)
-    @Field("e_mail")
-    private String eMail;
+    @Field("email")
+    private String email;
 
     @NotNull
     @Field("password")

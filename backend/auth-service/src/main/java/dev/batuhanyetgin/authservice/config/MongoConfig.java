@@ -61,8 +61,6 @@ public class MongoConfig extends AbstractMongoClientConfiguration {
                     .applyToSocketSettings(builder ->
                             builder.connectTimeout(10000, TimeUnit.MILLISECONDS)
                                     .readTimeout(15000, TimeUnit.MILLISECONDS))
-                    .retryWrites(true)
-                    .retryReads(true)
                     .build();
             return MongoClients.create(mongoClientSettings);
         } catch (Exception e) {
