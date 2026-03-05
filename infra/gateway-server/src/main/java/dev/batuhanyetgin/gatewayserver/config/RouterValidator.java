@@ -1,6 +1,5 @@
 package dev.batuhanyetgin.gatewayserver.config;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
@@ -8,7 +7,6 @@ import org.springframework.util.AntPathMatcher;
 import java.util.List;
 import java.util.function.Predicate;
 
-@Slf4j
 @Component
 public class RouterValidator {
 
@@ -25,7 +23,6 @@ public class RouterValidator {
             return openApiEndpoints.stream()
                     .noneMatch(uri -> {
                         String pattern = uri.trim().toLowerCase();
-                        log.info("Checking path istekten gelen {} against pattern {}", path, pattern);
                         return path.equals(pattern)
                                 || pathMatcher.match(pattern, path)
                                 || path.equals(pattern + "/");

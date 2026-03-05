@@ -42,9 +42,12 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
             }
 
             try {
-                populateRequestWithHeaders(exchange, token);
+                Claims claims = jwtUtil.getAllClaimsFromToken(token);
+                exchange = exchange.mutate()
+                        .request(r -> r.header("User-ID", claims.getSubject()))
+                        .build();
             } catch (Exception e) {
-                return this.onError(exchange, "Failed to extract user info from token", HttpStatus.UNAUTHORIZED);
+                return this.onError(exchange, "Failed to extract user info from token: " + e.getMessage(), HttpStatus.UNAUTHORIZED);
             }
         }
 
@@ -60,14 +63,6 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
         byte[] bytes = errorResponse.getBytes(StandardCharsets.UTF_8);
 
         return response.writeWith(Mono.just(response.bufferFactory().wrap(bytes)));
-    }
-
-    private void populateRequestWithHeaders(ServerWebExchange exchange, String token) {
-        Claims claims = jwtUtil.getAllClaimsFromToken(token);
-
-        exchange.getRequest().mutate()
-                .header("User-ID", String.valueOf(claims.get("userId")))
-                .build();
     }
 
     @Override
