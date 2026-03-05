@@ -1,0 +1,47 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: gateway-server
+  cloud:
+    gateway:
+      server:
+        webflux:
+          discovery:
+            locator:
+              enabled: true
+              lower-case-service-id: true
+          routes:
+            - id: user-service
+              uri: lb://USER-SERVICE
+              predicates:
+                - Path=/user/**
+            - id: debt-service
+              uri: lb://DEBT-SERVICE
+              predicates:
+                - Path=/debt/**
+            - id: auth-service
+              uri: lb://AUTH-SERVICE
+              predicates:
+                - Path=/auth/**
+
+eureka:
+  instance:
+    prefer-ip-address: true
+  client:
+    serviceUrl:
+      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka}
+
+jwt:
+  secret: ${JWT_SECRET:Rastgele__jwttoken12alya312qweasdz_*=0)merve9(7//&fala!!vural!!filan''^!%%%isBtaskinBBjwttokenBatuhanTibiaPaladinDruidSecret!Brno.lutfenCalmayinzaten2kisikullaniyor}
+
+# Custom property for your security filter
+endpoints:
+  publicEndpoints:
+    - /auth/register
+    - /auth/login
+    - /auth/refresh-token
+    - /auth/forget-password
+    - /eureka/**
+    - /actuator/health
