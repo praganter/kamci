@@ -26,6 +26,8 @@ public class DebtDocument extends BaseDocument {
     @NotNull
     private String name;
 
+    private String ownerId;
+
     private String description;
 
     @NotNull

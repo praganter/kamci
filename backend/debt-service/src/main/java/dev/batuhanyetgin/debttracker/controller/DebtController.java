@@ -1,12 +1,18 @@
 package dev.batuhanyetgin.debttracker.controller;
 
+import dev.batuhanyetgin.commonmodule.config.MessageConfig;
 import dev.batuhanyetgin.debttracker.dto.request.CreateDebtRequest;
-import dev.batuhanyetgin.debttracker.dto.response.CreateDebtResponse;
+import dev.batuhanyetgin.debttracker.dto.request.UpdateDebtRequest;
+import dev.batuhanyetgin.debttracker.dto.response.DebtResponse;
+import dev.batuhanyetgin.debttracker.dto.response.DeleteDebtResponse;
 import dev.batuhanyetgin.debttracker.service.DebtService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.MessageSource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Locale;
 
 @RestController
 @RequestMapping("debt/")
@@ -14,22 +20,28 @@ import org.springframework.web.bind.annotation.*;
 public class DebtController {
 
     private final DebtService debtService;
+    private final MessageSource messageSource;
 
     @PostMapping("save")
-    ResponseEntity<CreateDebtResponse> save(@RequestBody @Valid final CreateDebtRequest request) {
-        debtService.save(request);
-        return ResponseEntity.ok(CreateDebtResponse.builder().message("başarılı save.").build());
+    ResponseEntity<DebtResponse> save(@RequestBody @Valid final CreateDebtRequest request) {
+        return ResponseEntity.ok(debtService.create(request));
     }
 
     @PostMapping("update")
-    ResponseEntity<CreateDebtResponse> update(@RequestBody @Valid final CreateDebtRequest request) {
-        debtService.update(request);
-        return ResponseEntity.ok(CreateDebtResponse.builder().message("başarılı update.").build());
+    ResponseEntity<DebtResponse> update(@RequestBody @Valid final UpdateDebtRequest request) {
+        return ResponseEntity.ok(debtService.update(request));
     }
 
     @DeleteMapping("delete/{id}")
-    ResponseEntity<CreateDebtResponse> delete(@PathVariable final String id) {
+    ResponseEntity<DeleteDebtResponse> delete(@PathVariable final String id) {
         debtService.delete(id);
-        return ResponseEntity.ok(CreateDebtResponse.builder().message("başarılı delete.").build());
+
+        String msg = messageSource.getMessage(
+                "debt.delete.success",
+                null,
+                "Delete successful",
+                Locale.ENGLISH);
+
+        return ResponseEntity.ok(DeleteDebtResponse.builder().message(msg).build());
     }
 }

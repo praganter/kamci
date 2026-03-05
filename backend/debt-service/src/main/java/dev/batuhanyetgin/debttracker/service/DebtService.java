@@ -1,6 +1,8 @@
 package dev.batuhanyetgin.debttracker.service;
 
 import dev.batuhanyetgin.debttracker.dto.request.CreateDebtRequest;
+import dev.batuhanyetgin.debttracker.dto.request.UpdateDebtRequest;
+import dev.batuhanyetgin.debttracker.dto.response.DebtResponse;
 import dev.batuhanyetgin.debttracker.mapper.DebtMapper;
 import dev.batuhanyetgin.debttracker.repositoryservice.DebtRepositoryService;
 import lombok.RequiredArgsConstructor;
@@ -15,17 +17,17 @@ public class DebtService {
     private final DebtMapper debtMapper;
 
     @Transactional
-    public void save(final CreateDebtRequest request) {
-        debtRepositoryService.save(debtMapper.convert(request));
+    public DebtResponse create(final CreateDebtRequest request) {
+        return DebtResponse.builder()
+                .debt(debtRepositoryService.save(debtMapper.convert(request)))
+                .build();
     }
 
     @Transactional
-    public void update(final CreateDebtRequest request) {
-        if (request.getId() != null && !request.getId().isBlank()) {
-            debtRepositoryService.update(debtMapper.convert(request));
-        } else {
-            throw new IllegalArgumentException();
-        }
+    public DebtResponse update(final UpdateDebtRequest request) {
+        return DebtResponse.builder()
+                .debt(debtRepositoryService.update(debtMapper.convert(request)))
+                .build();
     }
 
     @Transactional

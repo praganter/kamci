@@ -5,7 +5,12 @@ import com.mongodb.MongoClientSettings;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.lang.NonNull;
-import dev.batuhanyetgin.debttracker.converter.*;
+import dev.batuhanyetgin.debttracker.converter.read.AccessLevelTypeReadConverter;
+import dev.batuhanyetgin.debttracker.converter.read.DebtStatusReadConverter;
+import dev.batuhanyetgin.debttracker.converter.read.PaymentPeriodTypeReadConverter;
+import dev.batuhanyetgin.debttracker.converter.write.AccessLevelTypeWriteConverter;
+import dev.batuhanyetgin.debttracker.converter.write.DebtStatusWriteConverter;
+import dev.batuhanyetgin.debttracker.converter.write.PaymentPeriodTypeWriteConverter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -40,8 +45,6 @@ public class MongoConfig extends AbstractMongoClientConfiguration {
         return new MongoCustomConversions(Arrays.asList(
                 new AccessLevelTypeReadConverter(),
                 new AccessLevelTypeWriteConverter(),
-                new DebtTypeReadConverter(),
-                new DebtTypeWriteConverter(),
                 new PaymentPeriodTypeReadConverter(),
                 new PaymentPeriodTypeWriteConverter(),
                 new DebtStatusReadConverter(),
@@ -68,16 +71,14 @@ public class MongoConfig extends AbstractMongoClientConfiguration {
         MongoClientSettings mongoClientSettings = MongoClientSettings.builder()
                 .applyConnectionString(connectionString)
                 .applyToConnectionPoolSettings(builder ->
-                        builder.maxSize(50) // Aynı anda max 50 bağlantı
-                                .minSize(5)   // Boşta en az 5 bağlantı tut
+                        builder.maxSize(50)
+                                .minSize(5)
                                 .maxWaitTime(120000, TimeUnit.MILLISECONDS))
                 .applyToServerSettings(builder ->
                         builder.heartbeatFrequency(10000, TimeUnit.MILLISECONDS))
                 .applyToSocketSettings(builder ->
                         builder.connectTimeout(10000, TimeUnit.MILLISECONDS)
                                 .readTimeout(15000, TimeUnit.MILLISECONDS))
-                .retryWrites(true) // Yazma hatalarında otomatik tekrar dene
-                .retryReads(true)  // Okuma hatalarında otomatik tekrar dene
                 .build();
         return MongoClients.create(mongoClientSettings);
     }

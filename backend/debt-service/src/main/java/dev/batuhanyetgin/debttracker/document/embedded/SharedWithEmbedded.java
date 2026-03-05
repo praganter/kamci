@@ -1,7 +1,7 @@
 package dev.batuhanyetgin.debttracker.document.embedded;
 
 import dev.batuhanyetgin.commonmodule.document.BaseMongoDocument;
-import dev.batuhanyetgin.debttracker.enums.ShareType;
+import dev.batuhanyetgin.debttracker.enums.AccessLevelType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,5 +15,5 @@ public class SharedWithEmbedded extends BaseMongoDocument {
 
     private String userId;
 
-    private ShareType shareType;
+    private AccessLevelType accessLevelType;
 }
