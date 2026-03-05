@@ -24,9 +24,9 @@ services:
     ports:
       - "8082:8082"
     environment:
-      - SPRING_DATA_MONGODB_URI=${MONGO_DB_URI}
+      - MONGO_DB_URI=${MONGO_DB_URI}
       - SPRING_DATA_MONGODB_DATABASE=debt-tracker
-      - EUREKA_URI=http://eureka-server:8761/eureka
+      - EUREKA_URI=${EUREKA_URI}
       - SPRING_DATA_MONGODB_AUTO_INDEX_CREATION=true
       - JWT_SECRET=${JWT_SECRET_KEY}
     depends_on:
@@ -42,7 +42,7 @@ services:
     ports:
       - "8081:8081"
     environment:
-      - SPRING_DATA_MONGODB_URI=${MONGO_DB_URI}
+      - MONGO_DB_URI=${MONGO_DB_URI}
       - SPRING_DATA_MONGODB_DATABASE=debt-tracker
       - SPRING_DATA_MONGODB_AUTO_INDEX_CREATION=true
       - EUREKA_URI=${EUREKA_URI}
