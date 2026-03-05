@@ -1,4 +1,4 @@
-package dev.batuhanyetgin.debttracker.converter;
+package dev.batuhanyetgin.debttracker.converter.write;
 
 import dev.batuhanyetgin.debttracker.enums.AccessLevelType;
 import jakarta.validation.constraints.NotNull;

@@ -1,4 +1,4 @@
-package dev.batuhanyetgin.debttracker.converter;
+package dev.batuhanyetgin.debttracker.converter.read;
 
 import com.mongodb.lang.NonNull;
 import dev.batuhanyetgin.debttracker.enums.AccessLevelType;
