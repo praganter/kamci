@@ -10,11 +10,11 @@ import lombok.Setter;
 @Setter
 public class RegisterRequest {
 
-    @Email
-    @NotBlank(message = "Email must not be blank")
+    @Email(message = "{error.validation.email}")
+    @NotBlank(message = "{error.validation.not_blank}")
     private String email;
 
-    @NotBlank(message = "Password must not be blank")
-    @Size(min = 8, message = "Password must be at least 8 characters long")
+    @NotBlank(message = "{error.validation.not_blank}")
+    @Size(min = 8, message = "{error.validation.password.size}")
     private String password;
 }
