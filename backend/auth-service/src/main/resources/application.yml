@@ -32,3 +32,15 @@ jwt:
   expirationRefresh:
     2678400000
   secret: ${JWT_SECRET:Rastgele__jwttoken12alya312qweasdz_*=0)merve9(7//&fala!!vural!!filan''^!%%%isBtaskinBBjwttokenBatuhanTibiaPaladinDruidSecret!Brno.lutfenCalmayinzaten2kisikullaniyor}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus, health, info, metrics
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    tags:
+      application: ${spring.application.name}
