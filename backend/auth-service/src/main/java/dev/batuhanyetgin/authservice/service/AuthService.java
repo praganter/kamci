@@ -22,7 +22,6 @@ public class AuthService {
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     private final AuthRepositoryService authRS;
 
-    @Transactional
     public RegisterResponse register(final RegisterRequest request) {
 
         if (authRS.existsByEmail(request.getEmail())) {
