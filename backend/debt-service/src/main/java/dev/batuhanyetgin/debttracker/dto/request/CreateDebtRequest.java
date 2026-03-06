@@ -23,6 +23,8 @@ public class CreateDebtRequest {
 
     private String description;
 
+    private String ownerId;
+
     @NotNull(message = "{error.validation.not_null}")
     private LocalDateTime startDate;
 
