@@ -44,6 +44,10 @@ public class AuthService {
     public LoginResponse login(final LoginRequest request) throws BaseException {
         AuthDocument userDocument = authRS.findByEMail(request.getEmail());
 
+        if (userDocument == null) {
+            throw new BaseException("error.auth.user_not_found", HttpStatus.NOT_FOUND);
+        }
+
         if (isPasswordValid(request.getPassword(), userDocument.getPassword())) {
             return LoginResponse.builder()
                     .refreshToken(jwtService.generateToken(userDocument.getId(), true))
