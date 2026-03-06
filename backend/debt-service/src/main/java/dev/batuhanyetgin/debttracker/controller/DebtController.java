@@ -1,6 +1,5 @@
 package dev.batuhanyetgin.debttracker.controller;
 
-import dev.batuhanyetgin.commonmodule.config.MessageConfig;
 import dev.batuhanyetgin.debttracker.dto.request.CreateDebtRequest;
 import dev.batuhanyetgin.debttracker.dto.request.UpdateDebtRequest;
 import dev.batuhanyetgin.debttracker.dto.response.DebtResponse;
