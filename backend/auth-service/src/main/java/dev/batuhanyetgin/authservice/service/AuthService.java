@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 public class AuthService {
 
     private final JwtService jwtService;
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final BCryptPasswordEncoder passwordEncoder;
     private final AuthRepositoryService authRS;
 
     public RegisterResponse register(final RegisterRequest request) {
@@ -41,7 +41,7 @@ public class AuthService {
     }
 
     public LoginResponse login(final LoginRequest request) throws BaseException {
-        AuthDocument userDocument = authRS.findByEMail(request.getEmail());
+        final AuthDocument userDocument = authRS.findByEMail(request.getEmail());
 
         if (userDocument == null) {
             throw new BaseException("error.auth.user_not_found", HttpStatus.NOT_FOUND);
@@ -68,16 +68,16 @@ public class AuthService {
             throw new BaseException("error.request.invalid_header", HttpStatus.BAD_REQUEST);
         }
 
-        String token = authorizationHeader.substring(prefix.length()).trim();
+        final String token = authorizationHeader.substring(prefix.length()).trim();
         if (token.isBlank()) {
             throw new BaseException("error.request.invalid_header", HttpStatus.BAD_REQUEST);
         }
 
-        String userId = jwtService.getUserIdFromToken(token);
+        final String userId = jwtService.getUserIdFromToken(token);
 
         return RefreshTokenResponse.builder()
                 .refreshToken(jwtService.generateToken(userId, true))
-                .token(jwtService.generateToken(userId, false))
+                .token(userId != null ? jwtService.generateToken(userId, false) : null)
                 .build();
     }
 
