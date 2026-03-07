@@ -9,9 +9,11 @@ import dev.batuhanyetgin.debttracker.enums.PaymentPeriodType;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -28,6 +30,7 @@ public class DebtDocument extends BaseDocument {
     @NotNull
     private String name;
 
+    @Indexed
     @Field("owner_id")
     private String ownerId;
 
@@ -47,20 +50,24 @@ public class DebtDocument extends BaseDocument {
 
     @NotNull
     @Field("amount")
-    private Double amount;
+    private BigDecimal amount;
 
     @NotNull
     @Builder.Default
     @Field("status")
     private DebtStatus status = DebtStatus.ACTIVE;
 
+    @Indexed
+    @Builder.Default
     @Field("shared_with")
-    private List<SharedWithEmbedded> sharedWith;
+    private List<SharedWithEmbedded> sharedWith = List.of();
 
+    @Indexed
     @NotNull
     @Field("category")
     private CategoryEmbedded category;
 
+    @Builder.Default
     @Field("payments")
-    private List<PaymentEmbedded> payments;
+    private List<PaymentEmbedded> payments = List.of();
 }

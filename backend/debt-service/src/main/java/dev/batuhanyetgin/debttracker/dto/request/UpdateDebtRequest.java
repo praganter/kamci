@@ -1,5 +1,6 @@
 package dev.batuhanyetgin.debttracker.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import dev.batuhanyetgin.debttracker.document.embedded.CategoryEmbedded;
 import dev.batuhanyetgin.debttracker.document.embedded.SharedWithEmbedded;
 import dev.batuhanyetgin.debttracker.enums.PaymentPeriodType;
@@ -9,6 +10,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -34,10 +36,13 @@ public class UpdateDebtRequest {
     private PaymentPeriodType paymentPeriodType;
 
     @NotNull(message = "{error.validation.not_null}")
-    private Double amount;
+    private BigDecimal amount;
 
     private List<SharedWithEmbedded> sharedWith;
 
     @NotNull(message = "{error.validation.not_null}")
     private CategoryEmbedded category;
+
+    @JsonIgnore
+    private String ownerId;
 }

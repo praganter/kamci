@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class DebtRepositoryService {
@@ -14,7 +16,7 @@ public class DebtRepositoryService {
 
     public DebtDocument findById(final String id) {
         return debtRepository.findById(id)
-                .orElseThrow(() ->  new BaseException("error.debt.not_found", HttpStatus.NOT_FOUND, id));
+                .orElseThrow(() -> new BaseException("error.debt.not_found", HttpStatus.NOT_FOUND, id));
     }
 
     public DebtDocument save(final DebtDocument debtDocument) {
@@ -27,5 +29,13 @@ public class DebtRepositoryService {
 
     public void delete(final String id) {
         debtRepository.deleteById(id);
+    }
+
+    public List<DebtDocument> findByOwnerId(final String ownerId) {
+        return debtRepository.findByOwnerId(ownerId);
+    }
+
+    public List<DebtDocument> findBySharedWithUserId(final String ownerId) {
+        return debtRepository.findBySharedWithUserId(ownerId);
     }
 }
