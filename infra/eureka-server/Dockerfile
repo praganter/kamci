@@ -1,15 +1,12 @@
 FROM maven:3.9-eclipse-temurin-17-alpine AS build
 WORKDIR /build
-COPY mvnw .
-COPY .mvn .mvn
 COPY pom.xml .
 COPY config-server/pom.xml config-server/pom.xml
 COPY eureka-server/pom.xml eureka-server/pom.xml
 COPY gateway-server/pom.xml gateway-server/pom.xml
-RUN chmod +x mvnw
-RUN ./mvnw dependency:go-offline -pl eureka-server -am
+RUN mvn dependency:go-offline -pl eureka-server -am
 COPY eureka-server/src eureka-server/src
-RUN ./mvnw clean package -pl eureka-server -am -DskipTests
+RUN mvn clean package -pl eureka-server -am -DskipTests
 
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app

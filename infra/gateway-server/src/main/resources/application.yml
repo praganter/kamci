@@ -5,6 +5,11 @@ spring:
   application:
     name: gateway-server
   cloud:
+    loadbalancer:
+      cache:
+        enabled: true
+        caffeine:
+          spec: initialCapacity=10,maximumSize=500,expireAfterWrite=5m
     gateway:
       server:
         webflux:
