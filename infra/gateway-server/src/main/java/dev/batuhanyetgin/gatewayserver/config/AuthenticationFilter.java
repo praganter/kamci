@@ -29,7 +29,6 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
         ServerHttpRequest request = exchange.getRequest();
 
         if (validator.isSecured().test(request)) {
-
             if (!request.getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
                 return this.onError(exchange, "Authorization header is missing", HttpStatus.UNAUTHORIZED);
             }
