@@ -1,9 +1,31 @@
 server:
   port: 8761
 
+spring:
+  application:
+    name: eureka-server
+
 eureka:
   client:
     register-with-eureka: false
     fetch-registry: false
   instance:
     hostname: localhost
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus, health, info, metrics
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    tags:
+      application: ${spring.application.name}
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: http://tempo:9411/api/v2/spans
