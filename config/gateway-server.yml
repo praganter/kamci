@@ -1,0 +1,53 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: gateway-server
+  cloud:
+    loadbalancer:
+      cache:
+        enabled: true
+        caffeine:
+          spec: initialCapacity=10,maximumSize=500,expireAfterWrite=5m
+    gateway:
+      server:
+        webflux:
+          discovery:
+            locator:
+              enabled: true
+              lower-case-service-id: true
+          routes:
+            - id: debt-service
+              uri: lb://DEBT-SERVICE
+              predicates:
+                - Path=/debt/**
+            - id: auth-service
+              uri: lb://AUTH-SERVICE
+              predicates:
+                - Path=/auth/**
+            - id: notification-service
+              uri: lb://NOTIFICATION-SERVICE
+              predicates:
+                - Path=/notification/**
+
+eureka:
+  instance:
+    prefer-ip-address: true
+  client:
+    serviceUrl:
+      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka}
+
+jwt:
+  secret: ${JWT_SECRET:Rastgele__jwttoken12alya312qweasdz_*=0)merve9(7//&fala!!vural!!filan''^!%%%isBtaskinBBjwttokenBatuhanTibiaPaladinDruidSecret!Brno.lutfenCalmayinzaten2kisikullaniyor}
+
+endpoints:
+  publicEndpoints:
+    - /auth/register
+    - /auth/login
+    - /auth/refresh-token
+    - /auth/forget-password
+    - /eureka/**
+    - /actuator/health
+    - /actuator/prometheus
+    - /actuator/info
