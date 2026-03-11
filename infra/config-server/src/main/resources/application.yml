@@ -4,33 +4,27 @@ server:
 spring:
   application:
     name: config-server
+  profiles:
+    active: native
   cloud:
     config:
       server:
         native:
-          search-locations: classpath:/config
-
-  profiles:
-    active: native
+          search-locations: file:/config
+        git:
+          uri: http://192.0.2.10:3000/kamci/dt-config.git
+          default-label: master
 
 eureka:
   client:
     register-with-eureka: false
     fetch-registry: false
-    serviceUrl:
-      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka}
 
 management:
   endpoints:
     web:
       exposure:
         include: prometheus, health, info, metrics
-  endpoint:
-    health:
-      show-details: always
-  metrics:
-    tags:
-      application: ${spring.application.name}
   tracing:
     sampling:
       probability: 1.0
