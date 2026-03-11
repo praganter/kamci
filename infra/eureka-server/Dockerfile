@@ -1,5 +1,4 @@
-#FROM maven:3.9-eclipse-temurin-17-alpine AS build
-FROM --platform=linux/amd64 maven:3.9-eclipse-temurin-17-alpine AS build
+FROM maven:3.9-eclipse-temurin-17-alpine AS build
 WORKDIR /build
 COPY pom.xml .
 COPY config-server/pom.xml config-server/pom.xml
@@ -9,8 +8,7 @@ RUN mvn dependency:go-offline -pl eureka-server -am
 COPY eureka-server/src eureka-server/src
 RUN mvn clean package -pl eureka-server -am -DskipTests
 
-#FROM eclipse-temurin:17-jre-alpine
-FROM --platform=linux/amd64 eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 RUN addgroup -S spring && adduser -S spring -G spring
 USER spring:spring
