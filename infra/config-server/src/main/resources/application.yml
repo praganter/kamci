@@ -5,7 +5,9 @@ spring:
   application:
     name: config-server
   profiles:
-    active: native
+    active: git
+    #local için
+    #active: native
   cloud:
     config:
       server:
