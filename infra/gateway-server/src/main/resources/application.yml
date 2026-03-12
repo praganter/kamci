@@ -1,5 +1,9 @@
 spring:
   application:
     name: gateway-server
+  cloud:
+    config:
+      uri: ${CONFIG_SERVER_URL:http://localhost:8888}
+      name: gateway-server,common-config
   config:
-    import: "optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888/}"
+    import: "optional:configserver:"

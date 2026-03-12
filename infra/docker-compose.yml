@@ -38,6 +38,7 @@ services:
     environment:
       - JAVA_OPTS=${JAVA_OPTS}
       - EUREKA_INSTANCE_HOSTNAME=eureka-server
+      - CONFIG_SERVER_URL=http://config-server:8888
     networks:
       - dt-network
     depends_on:
