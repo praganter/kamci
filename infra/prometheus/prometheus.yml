@@ -25,9 +25,9 @@ scrape_configs:
   - job_name: 'auth-service'
     metrics_path: '/actuator/prometheus'
     static_configs:
-      - targets: [ 'auth-service:8882' ]
+      - targets: [ 'auth-service:8082' ]
 
   - job_name: 'debt-service'
     metrics_path: '/actuator/prometheus'
     static_configs:
-      - targets: [ 'debt-service:8881' ]
+      - targets: [ 'debt-service:8081' ]
