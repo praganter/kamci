@@ -22,12 +22,12 @@ scrape_configs:
     static_configs:
       - targets: [ 'config-server:8888' ]
 
-  - job_name: 'auth-server'
+  - job_name: 'auth-service'
     metrics_path: '/actuator/prometheus'
     static_configs:
-      - targets: [ 'auth-server:8882' ]
+      - targets: [ 'auth-service:8882' ]
 
-  - job_name: 'debt-server'
+  - job_name: 'debt-service'
     metrics_path: '/actuator/prometheus'
     static_configs:
-      - targets: [ 'debt-server:8881' ]
+      - targets: [ 'debt-service:8881' ]
