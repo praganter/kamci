@@ -1,46 +1,9 @@
-server:
-  port: 8082
 spring:
   application:
     name: auth-service
-  data:
-    mongodb:
-      uri: ${MONGO_DB_URI:mongodb://dev:dev@localhost:27017/debt-tracker?authSource=admin&retryWrites=false}
-      auto-index-creation: true
-      authentication-database: admin
-      database: debt-tracker
-      field-naming-strategy: org.springframework.data.mapping.model.SnakeCaseFieldNamingStrategy
-
-springdoc:
-  api-docs:
-    path: /api-docs
-  swagger-ui:
-    path: /swagger-ui.html
-    tags-sorter: alpha
-    operationsSorter: method
-
-eureka:
-  instance:
-    prefer-ip-address: true
-  client:
-    serviceUrl:
-      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka}
-
-jwt:
-  expiration:
-    900000
-  expirationRefresh:
-    2678400000
-  secret: ${JWT_SECRET:Rastgele__jwttoken12alya312qweasdz_*=0)merve9(7//&fala!!vural!!filan''^!%%%isBtaskinBBjwttokenBatuhanTibiaPaladinDruidSecret!Brno.lutfenCalmayinzaten2kisikullaniyor}
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: prometheus, health, info, metrics
-  endpoint:
-    health:
-      show-details: always
-  metrics:
-    tags:
-      application: ${spring.application.name}
+  config:
+    import: "optional:configserver:"
+  cloud:
+    config:
+      uri: ${CONFIG_SERVER_URL:http://config-server:8888}
+      name: auth-service,common-config

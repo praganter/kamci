@@ -2,7 +2,7 @@ version: '3.9'
 
 services:
   mongodb:
-    image: mongo:latest
+    image: mongo:8.2.5
     container_name: mongo
     ports:
       - "27017:27017"
@@ -11,10 +11,15 @@ services:
     networks:
       - dt-network
     environment:
-      - MONGO_INITDB_DATABASE=debt-tracker
-      - MONGO_INITDB_ROOT_USERNAME=root
-      - MONGO_INITDB_ROOT_PASSWORD=1234
-
+      - MONGO_INITDB_DATABASE=${MONGO_DATABASE}
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_ROOT_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD}
+    healthcheck:
+      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
 
   auth-service:
     build:
@@ -27,12 +32,14 @@ services:
       - .env
     environment:
       - MONGO_DB_URI=${MONGO_DB_URI}
-      - SPRING_DATA_MONGODB_DATABASE=debt-tracker
-      - EUREKA_URI=${EUREKA_URI}
+      - SPRING_DATA_MONGODB_DATABASE=${MONGO_DATABASE}
       - SPRING_DATA_MONGODB_AUTO_INDEX_CREATION=true
       - JWT_SECRET=${JWT_SECRET_KEY}
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - CONFIG_SERVER_URL=http://config-server:8888
     depends_on:
-      - mongodb
+      mongodb:
+        condition: service_healthy
     networks:
       - dt-network
 
@@ -47,35 +54,12 @@ services:
       - .env
     environment:
       - MONGO_DB_URI=${MONGO_DB_URI}
-      - SPRING_DATA_MONGODB_DATABASE=debt-tracker
+      - SPRING_DATA_MONGODB_DATABASE=${MONGO_DATABASE}
       - SPRING_DATA_MONGODB_AUTO_INDEX_CREATION=true
-      - EUREKA_URI=${EUREKA_URI}
+      - CONFIG_SERVER_URL=http://config-server:8888
     depends_on:
-      - mongodb
-    networks:
-      - dt-network
-
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: prometheus
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-    networks:
-      - dt-network
-
-  grafana:
-    image: grafana/grafana:latest
-    container_name: grafana
-    ports:
-      - "3000:3000"
-    environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin
-    depends_on:
-      - prometheus
+      mongodb:
+        condition: service_healthy
     networks:
       - dt-network
 

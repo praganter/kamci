@@ -1,6 +1,5 @@
 package dev.batuhanyetgin.authservice.controller;
 
-
 import dev.batuhanyetgin.authservice.dto.request.LoginRequest;
 import dev.batuhanyetgin.authservice.dto.request.RegisterRequest;
 import dev.batuhanyetgin.authservice.dto.response.LoginResponse;
@@ -30,7 +29,7 @@ public class AuthController {
     }
 
     @PostMapping("refresh-token")
-    ResponseEntity<RefreshTokenResponse> refreshToken(@RequestHeader("Authorization") String refreshToken) {
+    ResponseEntity<RefreshTokenResponse> refreshToken(@RequestHeader("Authorization") final String refreshToken) {
         return ResponseEntity.ok(authService.refreshToken(refreshToken));
     }
 }
