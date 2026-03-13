@@ -41,7 +41,7 @@ eureka:
     fetch-registry: true
     register-with-eureka: true
     serviceUrl:
-      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka}
+      defaultZone: ${EUREKA_URI:http://eureka-server:8761/eureka}
 
 jwt:
   secret: ${JWT_SECRET:Rastgele__jwttoken12alya312qweasdz_*=0)merve9(7//&fala!!vural!!filan''^!%%%isBtaskinBBjwttokenBatuhanTibiaPaladinDruidSecret!Brno.lutfenCalmayinzaten2kisikullaniyor}
