@@ -9,3 +9,12 @@ management:
   zipkin:
     tracing:
       endpoint: http://tempo:9411/api/v2/spans
+
+logging:
+  level:
+    root: INFO
+    dev.batuhanyetgin: DEBUG
+    org.springframework.boot.actuate: WARN
+    org.springframework.boot.actuate.endpoint.web: WARN
+    io.micrometer: WARN
+    org.springframework.web.servlet.DispatcherServlet: DEBUG
