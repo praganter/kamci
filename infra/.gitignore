@@ -34,3 +34,4 @@ build/
 .env
 .vexp
 vexp.toml
+.claude
