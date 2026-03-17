@@ -2,7 +2,6 @@ package dev.batuhanyetgin.debttracker.mapper;
 
 import dev.batuhanyetgin.commonmodule.mapper.BaseMapper;
 import dev.batuhanyetgin.debttracker.document.DebtDocument;
-import dev.batuhanyetgin.debttracker.dto.request.CreateDebtRequest;
 import dev.batuhanyetgin.debttracker.dto.request.UpdateDebtRequest;
 import org.mapstruct.Mapper;
 

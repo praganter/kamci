@@ -47,8 +47,8 @@ public class MongoConfig extends AbstractMongoClientConfiguration {
     @Override
     public MongoClient mongoClient() {
         try {
-            ConnectionString connectionString = new ConnectionString(uri);
-            MongoClientSettings mongoClientSettings = MongoClientSettings.builder()
+            final ConnectionString connectionString = new ConnectionString(uri);
+            final MongoClientSettings mongoClientSettings = MongoClientSettings.builder()
                     .applyConnectionString(connectionString)
                     .applyToConnectionPoolSettings(builder ->
                             builder.maxSize(50)

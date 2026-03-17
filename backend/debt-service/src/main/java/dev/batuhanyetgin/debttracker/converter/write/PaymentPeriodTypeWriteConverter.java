@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 public class PaymentPeriodTypeWriteConverter implements Converter<PaymentPeriodType, Character> {
 
     @Override
-    public Character convert(@NotNull PaymentPeriodType source) {
+    public Character convert(final @NotNull PaymentPeriodType source) {
         return source.getValue();
     }
 }

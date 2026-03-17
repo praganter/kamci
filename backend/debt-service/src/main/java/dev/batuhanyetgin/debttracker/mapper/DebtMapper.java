@@ -9,11 +9,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class DebtMapper {
 
-    public DebtDocument convert(CreateDebtRequest createDebtRequest) {
+    public DebtDocument convert(final CreateDebtRequest createDebtRequest) {
         return Mappers.getMapper(CreateDebtRequestToDebtDocumentMapper.class).map(createDebtRequest);
     }
 
-    public DebtDocument convert(UpdateDebtRequest updateDebtRequest) {
+    public DebtDocument convert(final UpdateDebtRequest updateDebtRequest) {
         return Mappers.getMapper(UpdateDebtRequestToDebtDocumentMapper.class).map(updateDebtRequest);
     }
 }

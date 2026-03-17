@@ -13,6 +13,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class DebtRepositoryService {
+
     private final DebtRepository debtRepository;
 
     public DebtDocument findById(final String id) {
@@ -32,12 +33,16 @@ public class DebtRepositoryService {
         debtRepository.deleteById(id);
     }
 
-    public List<DebtDocument> findByOwnerId(final String ownerId) {
-        return debtRepository.findByOwnerId(ownerId);
+    public List<DebtDocument> findByCategoryId(final String categoryId) {
+        return debtRepository.findByCategoryId(categoryId);
     }
 
-    public List<DebtDocument> findBySharedWithUserId(final String ownerId) {
-        return debtRepository.findBySharedWithUserId(ownerId);
+    public List<DebtDocument> findByCategoryIdIn(final List<String> categoryIds) {
+        return debtRepository.findByCategoryIdIn(categoryIds);
+    }
+
+    public long countByOwnerId(final String ownerId) {
+        return debtRepository.countByOwnerId(ownerId);
     }
 
     public List<DebtDocument> findDueReminders(final LocalDateTime now) {

@@ -36,7 +36,7 @@ public class MongoConfig extends AbstractMongoClientConfiguration {
     private String uri;
 
     @Bean
-    public MongoTransactionManager transactionManager(MongoDatabaseFactory dbFactory) {
+    public MongoTransactionManager transactionManager(final MongoDatabaseFactory dbFactory) {
         return new MongoTransactionManager(dbFactory);
     }
 
@@ -54,7 +54,6 @@ public class MongoConfig extends AbstractMongoClientConfiguration {
 
     @NonNull
     @Override
-
     protected String getDatabaseName() {
         return databaseName;
     }
@@ -67,19 +66,25 @@ public class MongoConfig extends AbstractMongoClientConfiguration {
     @NonNull
     @Override
     public MongoClient mongoClient() {
-        ConnectionString connectionString = new ConnectionString(uri);
-        MongoClientSettings mongoClientSettings = MongoClientSettings.builder()
-                .applyConnectionString(connectionString)
-                .applyToConnectionPoolSettings(builder ->
-                        builder.maxSize(50)
-                                .minSize(5)
-                                .maxWaitTime(120000, TimeUnit.MILLISECONDS))
-                .applyToServerSettings(builder ->
-                        builder.heartbeatFrequency(10000, TimeUnit.MILLISECONDS))
-                .applyToSocketSettings(builder ->
-                        builder.connectTimeout(10000, TimeUnit.MILLISECONDS)
-                                .readTimeout(15000, TimeUnit.MILLISECONDS))
-                .build();
-        return MongoClients.create(mongoClientSettings);
+        try {
+            final ConnectionString connectionString = new ConnectionString(uri);
+            final MongoClientSettings mongoClientSettings = MongoClientSettings.builder()
+                    .applyConnectionString(connectionString)
+                    .applyToConnectionPoolSettings(builder ->
+                            builder.maxSize(50)
+                                    .minSize(5)
+                                    .maxWaitTime(120000, TimeUnit.MILLISECONDS)
+                                    .maxConnectionLifeTime(30, TimeUnit.MINUTES)
+                                    .maxConnectionIdleTime(10, TimeUnit.MINUTES))
+                    .applyToServerSettings(builder ->
+                            builder.heartbeatFrequency(10000, TimeUnit.MILLISECONDS))
+                    .applyToSocketSettings(builder ->
+                            builder.connectTimeout(10000, TimeUnit.MILLISECONDS)
+                                    .readTimeout(15000, TimeUnit.MILLISECONDS))
+                    .build();
+            return MongoClients.create(mongoClientSettings);
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to create MongoDB client with URI: " + uri, e);
+        }
     }
 }

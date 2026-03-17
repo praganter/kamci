@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 public class DebtStatusWriteConverter implements Converter<DebtStatus, Character> {
 
     @Override
-    public Character convert(@NotNull DebtStatus source) {
+    public Character convert(final @NotNull DebtStatus source) {
         return source.getValue();
     }
 }

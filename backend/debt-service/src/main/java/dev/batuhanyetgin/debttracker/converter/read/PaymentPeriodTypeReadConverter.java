@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 public class PaymentPeriodTypeReadConverter implements Converter<Character, PaymentPeriodType> {
 
     @Override
-    public PaymentPeriodType convert(@NonNull Character source) {
+    public PaymentPeriodType convert(final @NonNull Character source) {
         for (PaymentPeriodType type : PaymentPeriodType.values()) {
             if (type.getValue().equals(source)) {
                 return type;
@@ -19,5 +19,4 @@ public class PaymentPeriodTypeReadConverter implements Converter<Character, Paym
         }
         throw new IllegalArgumentException("Unknown PaymentPeriodType: " + source);
     }
-
 }

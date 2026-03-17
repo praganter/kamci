@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 public class DebtStatusReadConverter implements Converter<Character, DebtStatus> {
 
     @Override
-    public DebtStatus convert(@NonNull Character source) {
+    public DebtStatus convert(final @NonNull Character source) {
         for (DebtStatus status : DebtStatus.values()) {
             if (status.getValue().equals(source)) {
                 return status;

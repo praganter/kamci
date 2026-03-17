@@ -11,9 +11,11 @@ import java.util.List;
 @Repository
 public interface DebtRepository extends MongoRepository<DebtDocument, String> {
 
-    List<DebtDocument> findByOwnerId(final String ownerId);
+    List<DebtDocument> findByCategoryId(final String categoryId);
 
-    List<DebtDocument> findBySharedWithUserId(final String userId);
+    List<DebtDocument> findByCategoryIdIn(final List<String> categoryIds);
+
+    long countByOwnerId(final String ownerId);
 
     List<DebtDocument> findByStatusAndReminderEnabledTrueAndNextReminderDateBefore(
             final DebtStatus status, final LocalDateTime dateTime);
