@@ -1,18 +1,26 @@
 package dev.batuhanyetgin.authservice.service;
 
 import dev.batuhanyetgin.authservice.document.AuthDocument;
+import dev.batuhanyetgin.authservice.dto.request.ForgetPasswordRequest;
 import dev.batuhanyetgin.authservice.dto.request.LoginRequest;
 import dev.batuhanyetgin.authservice.dto.request.RegisterRequest;
+import dev.batuhanyetgin.authservice.dto.request.ResetPasswordRequest;
 import dev.batuhanyetgin.authservice.dto.response.LoginResponse;
 import dev.batuhanyetgin.authservice.dto.response.RefreshTokenResponse;
 import dev.batuhanyetgin.authservice.dto.response.RegisterResponse;
+import dev.batuhanyetgin.authservice.producer.AuthEventProducer;
 import dev.batuhanyetgin.authservice.repositoryservice.AuthRepositoryService;
+import dev.batuhanyetgin.commonmodule.event.PasswordResetEvent;
+import dev.batuhanyetgin.commonmodule.event.RabbitMQConstants;
+import dev.batuhanyetgin.commonmodule.event.UserRegisteredEvent;
 import dev.batuhanyetgin.commonmodule.exception.BaseException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -20,6 +28,7 @@ public class AuthService {
     private final JwtService jwtService;
     private final BCryptPasswordEncoder passwordEncoder;
     private final AuthRepositoryService authRS;
+    private final AuthEventProducer authEventProducer;
 
     public RegisterResponse register(final RegisterRequest request) {
 
@@ -34,10 +43,47 @@ public class AuthService {
 
         authDocument = authRS.save(authDocument);
 
+        authEventProducer.produce(
+                RabbitMQConstants.NOTIFICATION_EXCHANGE,
+                RabbitMQConstants.USER_REGISTERED_ROUTING_KEY,
+                UserRegisteredEvent.builder()
+                        .userId(authDocument.getId())
+                        .email(authDocument.getEmail())
+                        .build()
+        );
+
         return RegisterResponse.builder()
                 .refreshToken(jwtService.generateToken(authDocument.getId(), true))
                 .token(jwtService.generateToken(authDocument.getId(), false))
                 .build();
+    }
+
+    public void forgetPassword(final ForgetPasswordRequest request) {
+        final AuthDocument authDocument = authRS.findByEMail(request.getEmail());
+
+        final String resetToken = jwtService.generatePasswordResetToken(authDocument.getId());
+
+        authEventProducer.produce(
+                RabbitMQConstants.NOTIFICATION_EXCHANGE,
+                RabbitMQConstants.PASSWORD_RESET_ROUTING_KEY,
+                PasswordResetEvent.builder()
+                        .userId(authDocument.getId())
+                        .email(authDocument.getEmail())
+                        .resetToken(resetToken)
+                        .build()
+        );
+
+        log.info("Password reset event produced for userId: {}", authDocument.getId());
+    }
+
+    public void resetPassword(final ResetPasswordRequest request) {
+        final String userId = jwtService.validatePasswordResetToken(request.getToken());
+        final AuthDocument authDocument = authRS.findById(userId);
+
+        authDocument.setPassword(encodePassword(request.getNewPassword()));
+        authRS.save(authDocument);
+
+        log.info("Password reset successfully for userId: {}", userId);
     }
 
     public LoginResponse login(final LoginRequest request) throws BaseException {

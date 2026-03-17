@@ -26,7 +26,7 @@ public class JwtService {
     @Value("${jwt.expirationRefresh}")
     private long jwtExpirationRefreshMs;
 
-    public Claims validateToken(String token) {
+    public Claims validateToken(final String token) {
         if (!StringUtils.hasText(token)) {
             throw new IllegalArgumentException("Token cannot be null or empty");
         }
@@ -42,7 +42,7 @@ public class JwtService {
         }
     }
 
-    public String getUserIdFromToken(String token) {
+    public String getUserIdFromToken(final String token) {
         Objects.requireNonNull(token, "Token cannot be null");
         Claims claims = validateToken(token);
         return claims.getSubject();
@@ -52,7 +52,7 @@ public class JwtService {
         Objects.requireNonNull(userId, "User ID cannot be null");
 
         Map<String, Object> claims = new HashMap<>();
-        Date tokenLife = isRefreshToken
+        final Date tokenLife = isRefreshToken
                 ? new Date(System.currentTimeMillis() + jwtExpirationRefreshMs)
                 : new Date(System.currentTimeMillis() + jwtExpirationMs);
 
@@ -65,10 +65,30 @@ public class JwtService {
                 .compact();
     }
 
-    public <T> T getClaimFromToken(String token, String claimName, Class<T> requiredType) {
-        Objects.requireNonNull(token, "Token cannot be null");
-        Claims claims = validateToken(token);
-        return claims.get(claimName, requiredType);
+    public String generatePasswordResetToken(final String userId) {
+        Objects.requireNonNull(userId, "User ID cannot be null");
+
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("type", "PASSWORD_RESET");
+
+        return Jwts.builder()
+                .claims(claims)
+                .subject(userId)
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + 900_000L))
+                .signWith(getSigningKey())
+                .compact();
+    }
+
+    public String validatePasswordResetToken(final String token) {
+        final Claims claims = validateToken(token);
+        final String type = claims.get("type", String.class);
+
+        if (!"PASSWORD_RESET".equals(type)) {
+            throw new JwtException("Invalid token type");
+        }
+
+        return claims.getSubject();
     }
 
     private SecretKey getSigningKey() {
@@ -76,7 +96,7 @@ public class JwtService {
             throw new IllegalStateException("JWT secret is not configured");
         }
 
-        byte[] keyBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
+        final byte[] keyBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 }

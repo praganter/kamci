@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import dev.batuhanyetgin.debttracker.document.embedded.CategoryEmbedded;
 import dev.batuhanyetgin.debttracker.document.embedded.SharedWithEmbedded;
 import dev.batuhanyetgin.debttracker.enums.PaymentPeriodType;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
@@ -42,6 +43,9 @@ public class UpdateDebtRequest {
 
     @NotNull(message = "{error.validation.not_null}")
     private CategoryEmbedded category;
+
+    @Valid
+    private ReminderRequest reminder;
 
     @JsonIgnore
     private String ownerId;

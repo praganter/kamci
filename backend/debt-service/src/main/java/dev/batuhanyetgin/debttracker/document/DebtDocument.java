@@ -3,6 +3,7 @@ package dev.batuhanyetgin.debttracker.document;
 import dev.batuhanyetgin.commonmodule.document.BaseDocument;
 import dev.batuhanyetgin.debttracker.document.embedded.CategoryEmbedded;
 import dev.batuhanyetgin.debttracker.document.embedded.PaymentEmbedded;
+import dev.batuhanyetgin.debttracker.document.embedded.ReminderEmbedded;
 import dev.batuhanyetgin.debttracker.document.embedded.SharedWithEmbedded;
 import dev.batuhanyetgin.debttracker.enums.DebtStatus;
 import dev.batuhanyetgin.debttracker.enums.PaymentPeriodType;
@@ -70,4 +71,11 @@ public class DebtDocument extends BaseDocument {
     @Builder.Default
     @Field("payments")
     private List<PaymentEmbedded> payments = List.of();
+
+    @Field("reminder")
+    private ReminderEmbedded reminder;
+
+    @Indexed
+    @Field("next_reminder_date")
+    private LocalDateTime nextReminderDate;
 }

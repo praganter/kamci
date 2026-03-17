@@ -2,11 +2,13 @@ package dev.batuhanyetgin.debttracker.repositoryservice;
 
 import dev.batuhanyetgin.commonmodule.exception.BaseException;
 import dev.batuhanyetgin.debttracker.document.DebtDocument;
+import dev.batuhanyetgin.debttracker.enums.DebtStatus;
 import dev.batuhanyetgin.debttracker.repository.DebtRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -37,5 +39,10 @@ public class DebtRepositoryService {
 
     public List<DebtDocument> findBySharedWithUserId(final String ownerId) {
         return debtRepository.findBySharedWithUserId(ownerId);
+    }
+
+    public List<DebtDocument> findDueReminders(final LocalDateTime now) {
+        return debtRepository.findByStatusAndReminderEnabledTrueAndNextReminderDateBefore(
+                DebtStatus.ACTIVE, now);
     }
 }

@@ -1,7 +1,9 @@
 package dev.batuhanyetgin.authservice.controller;
 
+import dev.batuhanyetgin.authservice.dto.request.ForgetPasswordRequest;
 import dev.batuhanyetgin.authservice.dto.request.LoginRequest;
 import dev.batuhanyetgin.authservice.dto.request.RegisterRequest;
+import dev.batuhanyetgin.authservice.dto.request.ResetPasswordRequest;
 import dev.batuhanyetgin.authservice.dto.response.LoginResponse;
 import dev.batuhanyetgin.authservice.dto.response.RefreshTokenResponse;
 import dev.batuhanyetgin.authservice.dto.response.RegisterResponse;
@@ -31,5 +33,17 @@ public class AuthController {
     @PostMapping("refresh-token")
     ResponseEntity<RefreshTokenResponse> refreshToken(@RequestHeader("Authorization") final String refreshToken) {
         return ResponseEntity.ok(authService.refreshToken(refreshToken));
+    }
+
+    @PostMapping("forget-password")
+    ResponseEntity<Void> forgetPassword(@RequestBody @Valid final ForgetPasswordRequest request) {
+        authService.forgetPassword(request);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("reset-password")
+    ResponseEntity<Void> resetPassword(@RequestBody @Valid final ResetPasswordRequest request) {
+        authService.resetPassword(request);
+        return ResponseEntity.ok().build();
     }
 }

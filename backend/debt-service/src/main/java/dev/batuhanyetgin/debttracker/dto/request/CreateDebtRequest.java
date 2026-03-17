@@ -16,6 +16,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+
 @Getter
 @Setter
 @Builder
@@ -43,6 +44,9 @@ public class CreateDebtRequest {
     @Valid
     @NotNull(message = "{error.validation.not_null}")
     private CategoryEmbedded category;
+
+    @Valid
+    private ReminderRequest reminder;
 
     @JsonIgnore
     private String ownerId;
