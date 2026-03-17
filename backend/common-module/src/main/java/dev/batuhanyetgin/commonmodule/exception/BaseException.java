@@ -3,6 +3,9 @@ package dev.batuhanyetgin.commonmodule.exception;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 @Getter
 public class BaseException extends RuntimeException {
 
@@ -11,15 +14,17 @@ public class BaseException extends RuntimeException {
     private final Object[] args;
     private final HttpStatus status;
 
-    public BaseException(String code, HttpStatus status, Object... args) {
+    public BaseException(final String code, final HttpStatus status, final Object... args) {
         this(code, status, null, "", args);
     }
 
-    public BaseException(String code, HttpStatus status, String logMessage, Object... args) {
+    public BaseException(final String code, final HttpStatus status,
+                         final String logMessage, final Object... args) {
         this(code, status, null, logMessage, args);
     }
 
-    public BaseException(String code, HttpStatus status, Throwable cause, String logMessage, Object... args) {
+    public BaseException(final String code, final HttpStatus status,
+                         final Throwable cause, final String logMessage, final Object... args) {
         super(code, cause);
         this.code = code;
         this.status = status != null ? status : HttpStatus.BAD_REQUEST;
@@ -27,27 +32,27 @@ public class BaseException extends RuntimeException {
         this.args = args != null ? args : new Object[0];
     }
 
-    public static BaseException badRequest(String code, Object... args) {
+    public static BaseException badRequest(final String code, final Object... args) {
         return new BaseException(code, HttpStatus.BAD_REQUEST, args);
     }
 
-    public static BaseException notFound(String code, Object... args) {
+    public static BaseException notFound(final String code, final Object... args) {
         return new BaseException(code, HttpStatus.NOT_FOUND, args);
     }
 
-    public static BaseException conflict(String code, Object... args) {
+    public static BaseException conflict(final String code, final Object... args) {
         return new BaseException(code, HttpStatus.CONFLICT, args);
     }
 
-    public static BaseException unauthorized(String code, Object... args) {
+    public static BaseException unauthorized(final String code, final Object... args) {
         return new BaseException(code, HttpStatus.UNAUTHORIZED, args);
     }
 
-    public static BaseException forbidden(String code, Object... args) {
+    public static BaseException forbidden(final String code, final Object... args) {
         return new BaseException(code, HttpStatus.FORBIDDEN, args);
     }
 
-    public String getFormattedMessage(String pattern) {
+    public String getFormattedMessage(final String pattern) {
         if (args == null || args.length == 0) {
             return pattern;
         }
@@ -58,10 +63,8 @@ public class BaseException extends RuntimeException {
         if (args == null || args.length == 0) {
             return "";
         }
-        StringBuilder sb = new StringBuilder();
-        for (Object arg : args) {
-            sb.append(arg).append(" ");
-        }
-        return sb.toString().trim();
+        return Arrays.stream(args)
+                .map(Object::toString)
+                .collect(Collectors.joining(" "));
     }
 }

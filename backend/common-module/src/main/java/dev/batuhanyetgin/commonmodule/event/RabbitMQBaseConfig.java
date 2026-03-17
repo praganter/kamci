@@ -11,10 +11,6 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitMQBaseConfig {
 
-    // -------------------------
-    // Converter & Template
-    // -------------------------
-
     @Bean
     public MessageConverter jsonMessageConverter() {
         return new Jackson2JsonMessageConverter();
@@ -27,10 +23,6 @@ public class RabbitMQBaseConfig {
         return rabbitTemplate;
     }
 
-    // -------------------------
-    // Exchanges
-    // -------------------------
-
     @Bean
     public DirectExchange notificationExchange() {
         return new DirectExchange(RabbitMQConstants.NOTIFICATION_EXCHANGE, true, false);
@@ -40,10 +32,6 @@ public class RabbitMQBaseConfig {
     public DirectExchange notificationDlx() {
         return new DirectExchange(RabbitMQConstants.NOTIFICATION_DLX, true, false);
     }
-
-    // -------------------------
-    // Queues — Password Reset
-    // -------------------------
 
     @Bean
     public Queue passwordResetQueue() {
@@ -58,10 +46,6 @@ public class RabbitMQBaseConfig {
         return QueueBuilder.durable(RabbitMQConstants.PASSWORD_RESET_DLQ).build();
     }
 
-    // -------------------------
-    // Queues — User Registered
-    // -------------------------
-
     @Bean
     public Queue userRegisteredQueue() {
         return QueueBuilder.durable(RabbitMQConstants.USER_REGISTERED_QUEUE)
@@ -74,10 +58,6 @@ public class RabbitMQBaseConfig {
     public Queue userRegisteredDlq() {
         return QueueBuilder.durable(RabbitMQConstants.USER_REGISTERED_DLQ).build();
     }
-
-    // -------------------------
-    // Queues — Debt Added
-    // -------------------------
 
     @Bean
     public Queue debtAddedQueue() {
@@ -92,10 +72,6 @@ public class RabbitMQBaseConfig {
         return QueueBuilder.durable(RabbitMQConstants.DEBT_ADDED_DLQ).build();
     }
 
-    // -------------------------
-    // Queues — Debt Reminder
-    // -------------------------
-
     @Bean
     public Queue debtReminderQueue() {
         return QueueBuilder.durable(RabbitMQConstants.DEBT_REMINDER_QUEUE)
@@ -108,10 +84,6 @@ public class RabbitMQBaseConfig {
     public Queue debtReminderDlq() {
         return QueueBuilder.durable(RabbitMQConstants.DEBT_REMINDER_DLQ).build();
     }
-
-    // -------------------------
-    // Bindings — Main Exchange
-    // -------------------------
 
     @Bean
     public Binding passwordResetBinding() {
@@ -140,10 +112,6 @@ public class RabbitMQBaseConfig {
                 .to(notificationExchange())
                 .with(RabbitMQConstants.DEBT_REMINDER_ROUTING_KEY);
     }
-
-    // -------------------------
-    // Bindings — DLX
-    // -------------------------
 
     @Bean
     public Binding passwordResetDlqBinding() {

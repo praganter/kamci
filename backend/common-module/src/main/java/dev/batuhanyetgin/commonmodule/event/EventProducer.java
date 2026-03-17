@@ -1,5 +1,5 @@
 package dev.batuhanyetgin.commonmodule.event;
 
 public interface EventProducer<T extends BaseEvent> {
-    void produce(String exchange, String routingKey, T event);
+    void produce(final String exchange, final String routingKey, final T event);
 }
