@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 public class AccessLevelTypeWriteConverter implements Converter<AccessLevelType, Character> {
 
     @Override
-    public Character convert(@NotNull AccessLevelType source) {
+    public Character convert(final @NotNull AccessLevelType source) {
         return source.getValue();
     }
 }

@@ -16,5 +16,5 @@ public interface DebtRepository extends MongoRepository<DebtDocument, String> {
     List<DebtDocument> findBySharedWithUserId(final String userId);
 
     List<DebtDocument> findByStatusAndReminderEnabledTrueAndNextReminderDateBefore(
-            DebtStatus status, LocalDateTime dateTime);
+            final DebtStatus status, final LocalDateTime dateTime);
 }

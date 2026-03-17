@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 public class AccessLevelTypeReadConverter implements Converter<Character, AccessLevelType> {
 
     @Override
-    public AccessLevelType convert(@NonNull Character source) {
+    public AccessLevelType convert(final @NonNull Character source) {
         for (AccessLevelType type : AccessLevelType.values()) {
             if (type.getValue().equals(source)) {
                 return type;
@@ -19,5 +19,4 @@ public class AccessLevelTypeReadConverter implements Converter<Character, Access
         }
         throw new IllegalArgumentException("Unknown AccessLevelType: " + source);
     }
-
 }

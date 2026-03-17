@@ -44,14 +44,14 @@ public class JwtService {
 
     public String getUserIdFromToken(final String token) {
         Objects.requireNonNull(token, "Token cannot be null");
-        Claims claims = validateToken(token);
+        final Claims claims = validateToken(token);
         return claims.getSubject();
     }
 
     public String generateToken(final String userId, final boolean isRefreshToken) {
         Objects.requireNonNull(userId, "User ID cannot be null");
 
-        Map<String, Object> claims = new HashMap<>();
+        final Map<String, Object> claims = new HashMap<>();
         final Date tokenLife = isRefreshToken
                 ? new Date(System.currentTimeMillis() + jwtExpirationRefreshMs)
                 : new Date(System.currentTimeMillis() + jwtExpirationMs);
@@ -68,7 +68,7 @@ public class JwtService {
     public String generatePasswordResetToken(final String userId) {
         Objects.requireNonNull(userId, "User ID cannot be null");
 
-        Map<String, Object> claims = new HashMap<>();
+        final Map<String, Object> claims = new HashMap<>();
         claims.put("type", "PASSWORD_RESET");
 
         return Jwts.builder()

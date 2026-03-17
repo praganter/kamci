@@ -11,7 +11,7 @@ public abstract class AbstractEventProducer<T extends BaseEvent> implements Even
     protected final RabbitTemplate rabbitTemplate;
 
     @Override
-    public void produce(String exchange, String routingKey, T event) {
+    public void produce(final String exchange, final String routingKey, final T event) {
         log.info("Sending event to Exchange: {}, RoutingKey: {}, Event: {}", exchange, routingKey, event);
         try {
             rabbitTemplate.convertAndSend(exchange, routingKey, event);
