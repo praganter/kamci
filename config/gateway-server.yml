@@ -18,14 +18,26 @@ spring:
           uri: lb://DEBT-SERVICE
           predicates:
             - Path=/debt/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: debt-service
         - id: auth-service
           uri: lb://AUTH-SERVICE
           predicates:
             - Path=/auth/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: auth-service
         - id: notification-service
           uri: lb://NOTIFICATION-SERVICE
           predicates:
             - Path=/notification/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: notification-service
 
 eureka:
   instance:
@@ -38,7 +50,7 @@ eureka:
       defaultZone: ${EUREKA_URI:http://eureka-server:8761/eureka}
 
 jwt:
-  secret: ${JWT_SECRET:Rastgele__jwttoken12alya312qweasdz_*=0)merve9(7//&fala!!vural!!filan''^!%%%isBtaskinBBjwttokenBatuhanTibiaPaladinDruidSecret!Brno.lutfenCalmayinzaten2kisikullaniyor}
+  secret: ${JWT_SECRET}
 
 endpoints:
   publicEndpoints:
@@ -46,6 +58,7 @@ endpoints:
     - /auth/login
     - /auth/refresh-token
     - /auth/forget-password
+    - /auth/reset-password
     - /eureka/**
     - /actuator/health
     - /actuator/prometheus

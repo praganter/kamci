@@ -15,6 +15,34 @@ logging:
     root: INFO
     dev.batuhanyetgin: DEBUG
     org.springframework.boot.actuate: WARN
-    org.springframework.boot.actuate.endpoint.web: WARN
     io.micrometer: WARN
-    org.springframework.web.servlet.DispatcherServlet: DEBUG
+
+spring:
+  rabbitmq:
+    host: ${SPRING_RABBITMQ_HOST:localhost}
+    port: ${SPRING_RABBITMQ_PORT:5672}
+    username: ${SPRING_RABBITMQ_USERNAME}
+    password: ${SPRING_RABBITMQ_PASSWORD}
+  data:
+    mongodb:
+      uri: ${MONGO_DB_URI}
+      auto-index-creation: true
+      authentication-database: admin
+      database: debt-tracker
+      field-naming-strategy: org.springframework.data.mapping.model.SnakeCaseFieldNamingStrategy
+
+eureka:
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${server.port}
+  client:
+    serviceUrl:
+      defaultZone: ${EUREKA_URI:http://eureka-server:8761/eureka}
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operationsSorter: method

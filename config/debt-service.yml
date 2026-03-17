@@ -4,26 +4,3 @@ server:
 spring:
   application:
     name: debt-service
-  data:
-    mongodb:
-      uri: ${MONGO_DB_URI:mongodb://dev:dev@localhost:27017/debt-tracker?authSource=admin&retryWrites=false}
-      auto-index-creation: true
-      authentication-database: admin
-      database: debt-tracker
-      field-naming-strategy: org.springframework.data.mapping.model.SnakeCaseFieldNamingStrategy
-
-eureka:
-  instance:
-    prefer-ip-address: true
-    instance-id: ${spring.application.name}:${server.port}
-  client:
-    serviceUrl:
-      defaultZone: ${EUREKA_URI:http://eureka-server:8761/eureka}
-
-springdoc:
-  api-docs:
-    path: /api-docs
-  swagger-ui:
-    path: /swagger-ui.html
-    tags-sorter: alpha
-    operationsSorter: method
