@@ -16,7 +16,6 @@ import dev.batuhanyetgin.commonmodule.event.UserRegisteredEvent;
 import dev.batuhanyetgin.commonmodule.exception.BaseException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -33,7 +32,7 @@ public class AuthService {
     public RegisterResponse register(final RegisterRequest request) {
 
         if (authRS.existsByEmail(request.getEmail())) {
-            throw new BaseException("auth.email.in.use", HttpStatus.CONFLICT);
+            throw BaseException.conflict("auth.email.in.use");
         }
 
         AuthDocument authDocument = AuthDocument.builder()
@@ -86,37 +85,33 @@ public class AuthService {
         log.info("Password reset successfully for userId: {}", userId);
     }
 
-    public LoginResponse login(final LoginRequest request) throws BaseException {
+    public LoginResponse login(final LoginRequest request) {
         final AuthDocument userDocument = authRS.findByEMail(request.getEmail());
-
-        if (userDocument == null) {
-            throw new BaseException("error.auth.user_not_found", HttpStatus.NOT_FOUND);
-        }
 
         if (isPasswordValid(request.getPassword(), userDocument.getPassword())) {
             return LoginResponse.builder()
                     .refreshToken(jwtService.generateToken(userDocument.getId(), true))
                     .token(jwtService.generateToken(userDocument.getId(), false))
                     .build();
-        } else {
-            throw new BaseException("error.auth.not_valid", HttpStatus.UNAUTHORIZED);
         }
+
+        throw BaseException.unauthorized("error.auth.not_valid");
     }
 
     public RefreshTokenResponse refreshToken(final String authorizationHeader) {
 
         if (authorizationHeader == null || authorizationHeader.isBlank()) {
-            throw new BaseException("error.request.invalid_header", HttpStatus.BAD_REQUEST);
+            throw BaseException.badRequest("error.request.invalid_header");
         }
 
         final String prefix = "Bearer ";
         if (!authorizationHeader.startsWith(prefix)) {
-            throw new BaseException("error.request.invalid_header", HttpStatus.BAD_REQUEST);
+            throw BaseException.badRequest("error.request.invalid_header");
         }
 
         final String token = authorizationHeader.substring(prefix.length()).trim();
         if (token.isBlank()) {
-            throw new BaseException("error.request.invalid_header", HttpStatus.BAD_REQUEST);
+            throw BaseException.badRequest("error.request.invalid_header");
         }
 
         final String userId = jwtService.getUserIdFromToken(token);

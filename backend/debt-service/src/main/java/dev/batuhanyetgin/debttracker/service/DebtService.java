@@ -17,7 +17,6 @@ import dev.batuhanyetgin.debttracker.producer.DebtEventProducer;
 import dev.batuhanyetgin.debttracker.repositoryservice.DebtRepositoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -58,7 +57,7 @@ public class DebtService {
 
         if (checkForPermission(existing, currentUserId)) {
             log.error("Permission denied for user {} to update debt {}", currentUserId, request.getId());
-            throw new BaseException("error.debt.permission_denied", HttpStatus.FORBIDDEN);
+            throw BaseException.forbidden("error.debt.permission_denied");
         }
 
         request.setOwnerId(existing.getOwnerId());
@@ -82,7 +81,7 @@ public class DebtService {
 
         if (checkForPermission(debtDocument, currentUserId)) {
             log.error("Permission denied for user {} to delete debt {}", currentUserId, id);
-            throw new BaseException("error.debt.permission_denied", HttpStatus.FORBIDDEN);
+            throw BaseException.forbidden("error.debt.permission_denied");
         }
 
         debtRS.delete(id);

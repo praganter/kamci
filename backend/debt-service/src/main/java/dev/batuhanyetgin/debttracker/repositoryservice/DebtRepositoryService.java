@@ -5,7 +5,6 @@ import dev.batuhanyetgin.debttracker.document.DebtDocument;
 import dev.batuhanyetgin.debttracker.enums.DebtStatus;
 import dev.batuhanyetgin.debttracker.repository.DebtRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -18,7 +17,7 @@ public class DebtRepositoryService {
 
     public DebtDocument findById(final String id) {
         return debtRepository.findById(id)
-                .orElseThrow(() -> new BaseException("error.debt.not_found", HttpStatus.NOT_FOUND, id));
+                .orElseThrow(() -> BaseException.notFound("error.debt.not_found", id));
     }
 
     public DebtDocument save(final DebtDocument debtDocument) {
