@@ -37,6 +37,14 @@ public class DebtRepositoryService {
         return debtRepository.findByCategoryId(categoryId);
     }
 
+    public boolean existsByCategoryId(final String categoryId) {
+        return debtRepository.existsByCategoryId(categoryId);
+    }
+
+    public void deleteByCategoryId(final String categoryId) {
+        debtRepository.deleteByCategoryId(categoryId);
+    }
+
     public List<DebtDocument> findByCategoryIdIn(final List<String> categoryIds) {
         return debtRepository.findByCategoryIdIn(categoryIds);
     }

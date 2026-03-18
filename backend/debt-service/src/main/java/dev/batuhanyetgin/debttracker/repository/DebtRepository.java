@@ -13,6 +13,10 @@ public interface DebtRepository extends MongoRepository<DebtDocument, String> {
 
     List<DebtDocument> findByCategoryId(final String categoryId);
 
+    boolean existsByCategoryId(final String categoryId);
+
+    void deleteByCategoryId(final String categoryId);
+
     List<DebtDocument> findByCategoryIdIn(final List<String> categoryIds);
 
     long countByOwnerId(final String ownerId);

@@ -1,125 +1,175 @@
 package dev.batuhanyetgin.debttracker.service;
 
+import dev.batuhanyetgin.commonmodule.document.BaseDocument;
 import dev.batuhanyetgin.commonmodule.event.DebtAddedEvent;
 import dev.batuhanyetgin.commonmodule.event.RabbitMQConstants;
 import dev.batuhanyetgin.commonmodule.exception.BaseException;
 import dev.batuhanyetgin.commonmodule.util.RequestContextUtil;
+import dev.batuhanyetgin.debttracker.document.CategoryDocument;
 import dev.batuhanyetgin.debttracker.document.DebtDocument;
+import dev.batuhanyetgin.debttracker.document.embedded.MemberEmbedded;
 import dev.batuhanyetgin.debttracker.document.embedded.ReminderEmbedded;
-import dev.batuhanyetgin.debttracker.document.embedded.SharedWithEmbedded;
 import dev.batuhanyetgin.debttracker.dto.request.CreateDebtRequest;
 import dev.batuhanyetgin.debttracker.dto.request.UpdateDebtRequest;
+import dev.batuhanyetgin.debttracker.dto.response.CategoryDebtResponse;
 import dev.batuhanyetgin.debttracker.dto.response.DebtResponse;
 import dev.batuhanyetgin.debttracker.dto.response.GetDebtResponse;
 import dev.batuhanyetgin.debttracker.enums.AccessLevelType;
 import dev.batuhanyetgin.debttracker.mapper.DebtMapper;
 import dev.batuhanyetgin.debttracker.producer.DebtEventProducer;
+import dev.batuhanyetgin.debttracker.repositoryservice.CategoryRepositoryService;
 import dev.batuhanyetgin.debttracker.repositoryservice.DebtRepositoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class DebtService {
 
+    private static final int MAX_DEBTS = 150;
+
     private final DebtRepositoryService debtRS;
+    private final CategoryRepositoryService categoryRS;
     private final DebtMapper debtMapper;
     private final DebtEventProducer debtEventProducer;
 
     public DebtResponse create(final CreateDebtRequest request) {
         final String userId = RequestContextUtil.getUserId();
-        request.setOwnerId(userId);
 
+        if (debtRS.countByOwnerId(userId) >= MAX_DEBTS) {
+            throw BaseException.badRequest("error.debt.limit_exceeded");
+        }
+
+        final CategoryDocument category = categoryRS.findById(request.getCategoryId());
+        if (hasWriteAccess(category, userId)) {
+            throw BaseException.forbidden("error.debt.permission_denied");
+        }
+
+        request.setOwnerId(userId);
         log.info("Creating debt for user: {}", userId);
 
         DebtDocument debtDocument = debtMapper.convert(request);
         setNextReminderDate(debtDocument);
         debtDocument = debtRS.save(debtDocument);
 
-        produceSharedDebtEventIfNeeded(debtDocument);
+        produceAddedEventIfNeeded(debtDocument, category, userId);
 
-        return DebtResponse.builder()
-                .debt(debtDocument)
-                .build();
+        return DebtResponse.builder().debt(debtMapper.convert(debtDocument)).build();
     }
 
     public DebtResponse update(final UpdateDebtRequest request) {
-        log.info("Updating debt with id: {}", request.getId());
-
-        final String currentUserId = RequestContextUtil.getUserId();
+        final String userId = RequestContextUtil.getUserId();
         final DebtDocument existing = debtRS.findById(request.getId());
 
-        if (checkForPermission(existing, currentUserId)) {
-            log.error("Permission denied for user {} to update debt {}", currentUserId, request.getId());
+        final CategoryDocument currentCategory = categoryRS.findById(existing.getCategoryId());
+        if (hasWriteAccess(currentCategory, userId)) {
+            log.error("Permission denied for user {} to update debt {}", userId, request.getId());
             throw BaseException.forbidden("error.debt.permission_denied");
         }
 
+        if (!existing.getCategoryId().equals(request.getCategoryId())) {
+            final CategoryDocument newCategory = categoryRS.findById(request.getCategoryId());
+            if (hasWriteAccess(newCategory, userId)) {
+                throw BaseException.forbidden("error.debt.permission_denied");
+            }
+        }
+
         request.setOwnerId(existing.getOwnerId());
+        log.info("Updating debt: {}", request.getId());
 
         DebtDocument debtDocument = debtMapper.convert(request);
         setNextReminderDate(debtDocument);
         debtDocument = debtRS.update(debtDocument);
 
-        produceSharedDebtEventIfNeeded(debtDocument);
-
-        return DebtResponse.builder()
-                .debt(debtDocument)
-                .build();
+        return DebtResponse.builder().debt(debtMapper.convert(debtDocument)).build();
     }
 
     public void delete(final String id) {
-        log.warn("Deleting debt with id: {}", id);
-
-        final String currentUserId = RequestContextUtil.getUserId();
+        final String userId = RequestContextUtil.getUserId();
         final DebtDocument debtDocument = debtRS.findById(id);
 
-        if (checkForPermission(debtDocument, currentUserId)) {
-            log.error("Permission denied for user {} to delete debt {}", currentUserId, id);
+        final CategoryDocument category = categoryRS.findById(debtDocument.getCategoryId());
+        if (hasWriteAccess(category, userId)) {
+            log.error("Permission denied for user {} to delete debt {}", userId, id);
             throw BaseException.forbidden("error.debt.permission_denied");
         }
 
+        log.warn("Deleting debt: {}", id);
         debtRS.delete(id);
     }
 
     public GetDebtResponse get() {
         final String userId = RequestContextUtil.getUserId();
 
-        log.info("Getting debt with userId: {}", userId);
+        final List<CategoryDocument> owned = categoryRS.findByOwnerId(userId);
+        final List<CategoryDocument> shared = categoryRS.findByMemberUserId(userId);
 
-        return GetDebtResponse.builder()
-                .ownerDebts(debtRS.findByOwnerId(userId))
-                .sharedDebts(debtRS.findBySharedWithUserId(userId))
-                .build();
+        final List<CategoryDocument> all = new ArrayList<>();
+        all.addAll(owned);
+        all.addAll(shared);
+
+        final List<String> categoryIds = all.stream().map(BaseDocument::getId).toList();
+        final Map<String, List<DebtDocument>> byCategory = debtRS.findByCategoryIdIn(categoryIds)
+                .stream().collect(Collectors.groupingBy(DebtDocument::getCategoryId));
+
+        final Set<String> ownedIds = owned.stream()
+                .map(BaseDocument::getId).collect(Collectors.toSet());
+
+        final List<CategoryDebtResponse> categories = all.stream()
+                .map(cat -> CategoryDebtResponse.builder()
+                        .categoryId(cat.getId())
+                        .categoryName(cat.getName())
+                        .owned(ownedIds.contains(cat.getId()))
+                        .ownerUserId(ownedIds.contains(cat.getId()) ? null : cat.getOwnerId())
+                        .debts(byCategory.getOrDefault(cat.getId(), List.of())
+                                .stream().map(debtMapper::convert).toList())
+                        .build())
+                .toList();
+
+        return GetDebtResponse.builder().categories(categories).build();
     }
 
-    private void produceSharedDebtEventIfNeeded(final DebtDocument debtDocument) {
-        if (CollectionUtils.isEmpty(debtDocument.getSharedWith())) {
+    private boolean hasWriteAccess(final CategoryDocument category, final String userId) {
+        if (category.getOwnerId().equals(userId)) {
+            return false;
+        }
+        return category.getMembers().stream()
+                .noneMatch(m -> m.getUserId().equals(userId)
+                        && m.getAccessLevel() == AccessLevelType.WRITE);
+    }
+
+    private void produceAddedEventIfNeeded(
+            final DebtDocument debt, final CategoryDocument category, final String creatorId) {
+        final List<String> memberIds = category.getMembers().stream()
+                .map(MemberEmbedded::getUserId)
+                .filter(uid -> !uid.equals(creatorId))
+                .toList();
+
+        if (memberIds.isEmpty()) {
             return;
         }
-
-        final List<String> sharedUserIds = debtDocument.getSharedWith().stream()
-                .map(SharedWithEmbedded::getUserId)
-                .toList();
 
         debtEventProducer.produce(
                 RabbitMQConstants.NOTIFICATION_EXCHANGE,
                 RabbitMQConstants.DEBT_ADDED_ROUTING_KEY,
                 DebtAddedEvent.builder()
-                        .debtId(debtDocument.getId())
-                        .ownerId(debtDocument.getOwnerId())
-                        .debtName(debtDocument.getName())
-                        .amount(debtDocument.getAmount())
-                        .sharedWithUserIds(sharedUserIds)
+                        .debtId(debt.getId())
+                        .ownerId(debt.getOwnerId())
+                        .debtName(debt.getName())
+                        .amount(debt.getAmount())
+                        .memberUserIds(memberIds)
                         .build()
         );
-
-        log.info("Shared debt event produced for debt {} with {} user(s)", debtDocument.getId(), sharedUserIds.size());
+        log.info("Debt added event produced for {} member(s)", memberIds.size());
     }
 
     private void setNextReminderDate(final DebtDocument debtDocument) {
@@ -133,19 +183,5 @@ public class DebtService {
         debtDocument.setNextReminderDate(
                 LocalDateTime.of(reminder.getReminderDate(), reminder.getReminderTime())
         );
-    }
-
-    private boolean checkForPermission(final DebtDocument debtDocument, final String userId) {
-        if (debtDocument.getOwnerId().equals(userId)) {
-            return false;
-        }
-
-        if (debtDocument.getSharedWith() != null) {
-            return debtDocument.getSharedWith().stream()
-                    .noneMatch(sw -> sw.getUserId().equals(userId)
-                            && !sw.getAccessLevelType().equals(AccessLevelType.READ));
-        }
-
-        return true;
     }
 }
