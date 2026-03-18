@@ -35,3 +35,4 @@ build/
 .env.local
 .vexp
 vexp.toml
+.claude
