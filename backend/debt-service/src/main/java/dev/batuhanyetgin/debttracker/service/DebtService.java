@@ -55,12 +55,12 @@ public class DebtService {
         }
 
         request.setOwnerId(userId);
-        log.info("Creating debt for user: {}", userId);
 
         DebtDocument debtDocument = debtMapper.convert(request);
         setNextReminderDate(debtDocument);
         debtDocument = debtRS.save(debtDocument);
 
+        log.info("Debt created with id: {} for user: {}", debtDocument.getId(), userId);
         produceAddedEventIfNeeded(debtDocument, category, userId);
 
         return DebtResponse.builder().debt(debtMapper.convert(debtDocument)).build();
@@ -72,7 +72,6 @@ public class DebtService {
 
         final CategoryDocument currentCategory = categoryRS.findById(existing.getCategoryId());
         if (hasWriteAccess(currentCategory, userId)) {
-            log.error("Permission denied for user {} to update debt {}", userId, request.getId());
             throw BaseException.forbidden("error.debt.permission_denied");
         }
 
@@ -84,12 +83,12 @@ public class DebtService {
         }
 
         request.setOwnerId(existing.getOwnerId());
-        log.info("Updating debt: {}", request.getId());
 
         DebtDocument debtDocument = debtMapper.convert(request);
         setNextReminderDate(debtDocument);
         debtDocument = debtRS.update(debtDocument);
 
+        log.info("Debt updated with id: {}", debtDocument.getId());
         return DebtResponse.builder().debt(debtMapper.convert(debtDocument)).build();
     }
 
@@ -99,16 +98,17 @@ public class DebtService {
 
         final CategoryDocument category = categoryRS.findById(debtDocument.getCategoryId());
         if (hasWriteAccess(category, userId)) {
-            log.error("Permission denied for user {} to delete debt {}", userId, id);
             throw BaseException.forbidden("error.debt.permission_denied");
         }
 
-        log.warn("Deleting debt: {}", id);
         debtRS.delete(id);
+        log.warn("Deleted debt: {}", id);
     }
 
     public GetDebtResponse get() {
         final String userId = RequestContextUtil.getUserId();
+
+        log.info("Getting debts for user: {}", userId);
 
         final List<CategoryDocument> owned = categoryRS.findByOwnerId(userId);
         final List<CategoryDocument> shared = categoryRS.findByMemberUserId(userId);

@@ -44,7 +44,7 @@ public class CategoryService {
                 .name(request.getName())
                 .build());
 
-        log.info("Creating category '{}' for user: {}", request.getName(), userId);
+        log.info("Category created with id: {}", saved.getId());
         return SaveCategoryResponse.builder()
                 .id(saved.getId())
                 .name(saved.getName())
@@ -59,7 +59,7 @@ public class CategoryService {
         category.setName(request.getName());
 
         final CategoryDocument updated = categoryRS.save(category);
-        log.info("Updating category {} name to '{}'", request.getId(), request.getName());
+        log.info("Updated category {} name to '{}'", request.getId(), request.getName());
         return UpdateCategoryResponse.builder()
                 .id(updated.getId())
                 .name(updated.getName())
@@ -74,8 +74,8 @@ public class CategoryService {
         checkOwner(category, userId);
 
         debtRS.deleteByCategoryId(id);
-        log.warn("Deleting category {} and all its debts for user: {}", id, userId);
         categoryRS.delete(id);
+        log.warn("Deleted category {} and all its debts for user: {}", id, userId);
     }
 
     public void addMember(final String categoryId, final AddMemberRequest request) {
@@ -84,8 +84,7 @@ public class CategoryService {
 
         checkOwner(category, userId);
         addMemberToCategory(category, request.getUserId(), request.getAccessLevel());
-
-        log.info("Adding member {} to category {} with access {}", request.getUserId(), categoryId, request.getAccessLevel());
+        log.info("Added member {} to category {} with access {}", request.getUserId(), categoryId, request.getAccessLevel());
     }
 
     @Transactional
@@ -96,8 +95,7 @@ public class CategoryService {
             final CategoryDocument category = categoryRS.findById(categoryId);
             checkOwner(category, userId);
             addMemberToCategory(category, request.getUserId(), request.getAccessLevel());
-
-            log.info("Bulk adding member {} to category {} with access {}", request.getUserId(), categoryId, request.getAccessLevel());
+            log.info("Bulk added member {} to category {} with access {}", request.getUserId(), categoryId, request.getAccessLevel());
         }
     }
 
@@ -128,8 +126,8 @@ public class CategoryService {
                 .filter(m -> !m.getUserId().equals(memberUserId))
                 .toList());
 
-        log.info("Removing member {} from category {}", memberUserId, categoryId);
         categoryRS.save(category);
+        log.info("Removed member {} from category {}", memberUserId, categoryId);
     }
 
     public List<GetAllCategoryResponse> getAll() {
