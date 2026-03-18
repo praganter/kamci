@@ -19,5 +19,5 @@ public class DebtAddedEvent extends BaseEvent {
     private String ownerId;
     private String debtName;
     private BigDecimal amount;
-    private List<String> sharedWithUserIds;
+    private List<String> memberUserIds;
 }
