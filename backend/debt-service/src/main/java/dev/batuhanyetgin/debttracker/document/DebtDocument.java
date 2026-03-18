@@ -1,10 +1,8 @@
 package dev.batuhanyetgin.debttracker.document;
 
 import dev.batuhanyetgin.commonmodule.document.BaseDocument;
-import dev.batuhanyetgin.debttracker.document.embedded.CategoryEmbedded;
 import dev.batuhanyetgin.debttracker.document.embedded.PaymentEmbedded;
 import dev.batuhanyetgin.debttracker.document.embedded.ReminderEmbedded;
-import dev.batuhanyetgin.debttracker.document.embedded.SharedWithEmbedded;
 import dev.batuhanyetgin.debttracker.enums.DebtStatus;
 import dev.batuhanyetgin.debttracker.enums.PaymentPeriodType;
 import jakarta.validation.constraints.NotNull;
@@ -35,6 +33,10 @@ public class DebtDocument extends BaseDocument {
     @Field("owner_id")
     private String ownerId;
 
+    @Indexed
+    @Field("category_id")
+    private String categoryId;
+
     @Field("description")
     private String description;
 
@@ -57,16 +59,6 @@ public class DebtDocument extends BaseDocument {
     @Builder.Default
     @Field("status")
     private DebtStatus status = DebtStatus.ACTIVE;
-
-    @Indexed
-    @Builder.Default
-    @Field("shared_with")
-    private List<SharedWithEmbedded> sharedWith = List.of();
-
-    @Indexed
-    @NotNull
-    @Field("category")
-    private CategoryEmbedded category;
 
     @Builder.Default
     @Field("payments")

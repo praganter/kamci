@@ -7,8 +7,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum AccessLevelType {
     READ('R'),
-    EDIT('E'),
-    FULL('F');
+    WRITE('W');
 
     private final Character value;
 }
