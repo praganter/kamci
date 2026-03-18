@@ -42,8 +42,13 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
 
             try {
                 Claims claims = jwtUtil.getAllClaimsFromToken(token);
+                final String userId = claims.getSubject();
                 exchange = exchange.mutate()
-                        .request(r -> r.header("User-ID", claims.getSubject()))
+                        .request(r -> r.headers(headers -> {
+                            headers.remove("user-id");
+                            headers.remove("User-ID");
+                            headers.add("user-id", userId);
+                        }))
                         .build();
             } catch (Exception e) {
                 return this.onError(exchange, "Failed to extract user info from token: " + e.getMessage(), HttpStatus.UNAUTHORIZED);
