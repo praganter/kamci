@@ -32,7 +32,7 @@ public class AuthService {
     public RegisterResponse register(final RegisterRequest request) {
 
         if (authRS.existsByEmail(request.getEmail())) {
-            throw BaseException.conflict("auth.email.in.use");
+            throw BaseException.conflict("error.auth.email_in_use");
         }
 
         AuthDocument authDocument = AuthDocument.builder()
@@ -41,6 +41,8 @@ public class AuthService {
                 .build();
 
         authDocument = authRS.save(authDocument);
+
+        log.info("User registered successfully with id: {}", authDocument.getId());
 
         authEventProducer.produce(
                 RabbitMQConstants.NOTIFICATION_EXCHANGE,
@@ -88,14 +90,16 @@ public class AuthService {
     public LoginResponse login(final LoginRequest request) {
         final AuthDocument userDocument = authRS.findByEMail(request.getEmail());
 
-        if (isPasswordValid(request.getPassword(), userDocument.getPassword())) {
-            return LoginResponse.builder()
-                    .refreshToken(jwtService.generateToken(userDocument.getId(), true))
-                    .token(jwtService.generateToken(userDocument.getId(), false))
-                    .build();
+        if (!isPasswordValid(request.getPassword(), userDocument.getPassword())) {
+            throw BaseException.unauthorized("error.auth.not_valid");
         }
 
-        throw BaseException.unauthorized("error.auth.not_valid");
+        log.info("User logged in successfully with id: {}", userDocument.getId());
+
+        return LoginResponse.builder()
+                .refreshToken(jwtService.generateToken(userDocument.getId(), true))
+                .token(jwtService.generateToken(userDocument.getId(), false))
+                .build();
     }
 
     public RefreshTokenResponse refreshToken(final String authorizationHeader) {
@@ -116,9 +120,11 @@ public class AuthService {
 
         final String userId = jwtService.getUserIdFromToken(token);
 
+        log.info("Token refreshed for userId: {}", userId);
+
         return RefreshTokenResponse.builder()
                 .refreshToken(jwtService.generateToken(userId, true))
-                .token(userId != null ? jwtService.generateToken(userId, false) : null)
+                .token(jwtService.generateToken(userId, false))
                 .build();
     }
 
