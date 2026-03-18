@@ -1,6 +1,5 @@
 package dev.batuhanyetgin.debttracker.dto.response;
 
-import dev.batuhanyetgin.debttracker.document.DebtDocument;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,5 +8,5 @@ import lombok.Setter;
 @Setter
 @Builder
 public class DebtResponse {
-    private DebtDocument debt;
+    private DebtItemResponse debt;
 }
