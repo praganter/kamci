@@ -17,7 +17,7 @@ spring:
         - id: debt-service
           uri: lb://DEBT-SERVICE
           predicates:
-            - Path=/debt/**
+            - Path=/debt/**,/category/**
           filters:
             - name: CircuitBreaker
               args:
