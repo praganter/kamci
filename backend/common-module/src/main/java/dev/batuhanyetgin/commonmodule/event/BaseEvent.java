@@ -13,4 +13,5 @@ import java.io.Serializable;
 @AllArgsConstructor
 public abstract class BaseEvent implements Serializable {
     private long timestamp = System.currentTimeMillis();
+    private String locale = "tr";
 }
