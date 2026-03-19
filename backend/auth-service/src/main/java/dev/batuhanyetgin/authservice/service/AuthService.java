@@ -14,6 +14,7 @@ import dev.batuhanyetgin.commonmodule.event.PasswordResetEvent;
 import dev.batuhanyetgin.commonmodule.event.RabbitMQConstants;
 import dev.batuhanyetgin.commonmodule.event.UserRegisteredEvent;
 import dev.batuhanyetgin.commonmodule.exception.BaseException;
+import dev.batuhanyetgin.commonmodule.util.RequestContextUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -50,6 +51,7 @@ public class AuthService {
                 UserRegisteredEvent.builder()
                         .userId(authDocument.getId())
                         .email(authDocument.getEmail())
+                        .locale(RequestContextUtil.getLocale())
                         .build()
         );
 
@@ -71,6 +73,7 @@ public class AuthService {
                         .userId(authDocument.getId())
                         .email(authDocument.getEmail())
                         .resetToken(resetToken)
+                        .locale(RequestContextUtil.getLocale())
                         .build()
         );
 
