@@ -45,7 +45,7 @@ public class DebtService {
 
     public DebtResponse create(final CreateDebtRequest request) {
         final String userId = RequestContextUtil.getUserId();
-1        final String locale = RequestContextUtil.getLocale();
+        final String locale = RequestContextUtil.getLocale();
 
         final CompletableFuture<Long> countFuture =
                 CompletableFuture.supplyAsync(() -> debtRS.countByOwnerId(userId), taskExecutor);
