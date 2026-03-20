@@ -8,11 +8,15 @@ import dev.batuhanyetgin.debttracker.producer.DebtEventProducer;
 import dev.batuhanyetgin.debttracker.repositoryservice.DebtRepositoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 
 @Slf4j
 @Component
@@ -21,8 +25,11 @@ public class DebtReminderScheduler {
 
     private final DebtRepositoryService debtRS;
     private final DebtEventProducer debtEventProducer;
+    @Qualifier("taskExecutor")
+    private final Executor taskExecutor;
 
     @Scheduled(cron = "0 0 * * * *")
+    @SchedulerLock(name = "debtReminderScheduler", lockAtMostFor = "PT55M", lockAtLeastFor = "PT55M")
     public void processReminders() {
         final LocalDateTime now = LocalDateTime.now();
         log.info("Processing debt reminders at: {}", now);
@@ -30,11 +37,22 @@ public class DebtReminderScheduler {
         final List<DebtDocument> dueDebts = debtRS.findDueReminders(now);
         log.info("Found {} debt(s) with due reminders", dueDebts.size());
 
-        dueDebts.forEach(debt -> {
-            produceReminderEvent(debt);
-            advanceNextReminderDate(debt);
-            debtRS.update(debt);
-        });
+        final List<CompletableFuture<Void>> futures = dueDebts.stream()
+                .map(debt -> CompletableFuture.runAsync(() -> processDebt(debt), taskExecutor)
+                        .exceptionally(ex -> {
+                            log.error("Failed to process reminder for debt {}: {}", debt.getId(), ex.getMessage(), ex);
+                            return null;
+                        }))
+                .toList();
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+
+        log.info("Processed {} reminder(s) in parallel", dueDebts.size());
+    }
+
+    private void processDebt(final DebtDocument debt) {
+        produceReminderEvent(debt);
+        advanceNextReminderDate(debt);
+        debtRS.update(debt);
     }
 
     private void produceReminderEvent(final DebtDocument debt) {
