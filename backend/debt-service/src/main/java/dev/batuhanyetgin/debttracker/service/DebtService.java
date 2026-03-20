@@ -50,7 +50,7 @@ public class DebtService {
         }
 
         final CategoryDocument category = categoryRS.findById(request.getCategoryId());
-        if (hasWriteAccess(category, userId)) {
+        if (lacksWriteAccess(category, userId)) {
             throw BaseException.forbidden("error.debt.permission_denied");
         }
 
@@ -71,13 +71,13 @@ public class DebtService {
         final DebtDocument existing = debtRS.findById(request.getId());
 
         final CategoryDocument currentCategory = categoryRS.findById(existing.getCategoryId());
-        if (hasWriteAccess(currentCategory, userId)) {
+        if (lacksWriteAccess(currentCategory, userId)) {
             throw BaseException.forbidden("error.debt.permission_denied");
         }
 
         if (!existing.getCategoryId().equals(request.getCategoryId())) {
             final CategoryDocument newCategory = categoryRS.findById(request.getCategoryId());
-            if (hasWriteAccess(newCategory, userId)) {
+            if (lacksWriteAccess(newCategory, userId)) {
                 throw BaseException.forbidden("error.debt.permission_denied");
             }
         }
@@ -97,7 +97,7 @@ public class DebtService {
         final DebtDocument debtDocument = debtRS.findById(id);
 
         final CategoryDocument category = categoryRS.findById(debtDocument.getCategoryId());
-        if (hasWriteAccess(category, userId)) {
+        if (lacksWriteAccess(category, userId)) {
             throw BaseException.forbidden("error.debt.permission_denied");
         }
 
@@ -138,7 +138,7 @@ public class DebtService {
         return GetDebtResponse.builder().categories(categories).build();
     }
 
-    private boolean hasWriteAccess(final CategoryDocument category, final String userId) {
+    private boolean lacksWriteAccess(final CategoryDocument category, final String userId) {
         if (category.getOwnerId().equals(userId)) {
             return false;
         }
