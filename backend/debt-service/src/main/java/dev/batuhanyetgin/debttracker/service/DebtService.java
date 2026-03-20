@@ -45,6 +45,7 @@ public class DebtService {
 
     public DebtResponse create(final CreateDebtRequest request) {
         final String userId = RequestContextUtil.getUserId();
+1        final String locale = RequestContextUtil.getLocale();
 
         final CompletableFuture<Long> countFuture =
                 CompletableFuture.supplyAsync(() -> debtRS.countByOwnerId(userId), taskExecutor);
@@ -68,7 +69,7 @@ public class DebtService {
         debtDocument = debtRS.save(debtDocument);
 
         log.info("Debt created with id: {} for user: {}", debtDocument.getId(), userId);
-        debtEventAsyncPublisher.publishDebtAddedEvent(debtDocument, category, userId);
+        debtEventAsyncPublisher.publishDebtAddedEvent(debtDocument, category, userId, locale);
 
         return DebtResponse.builder().debt(debtMapper.convert(debtDocument)).build();
     }

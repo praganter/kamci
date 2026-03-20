@@ -22,7 +22,8 @@ public class DebtEventAsyncPublisher {
 
     @Async("taskExecutor")
     public void publishDebtAddedEvent(
-            final DebtDocument debt, final CategoryDocument category, final String creatorId) {
+            final DebtDocument debt, final CategoryDocument category, final String creatorId,
+            final String locale) {
         final List<String> memberIds = category.getMembers().stream()
                 .map(MemberEmbedded::getUserId)
                 .filter(uid -> !uid.equals(creatorId))
@@ -41,6 +42,7 @@ public class DebtEventAsyncPublisher {
                         .debtName(debt.getName())
                         .amount(debt.getAmount())
                         .memberUserIds(memberIds)
+                        .locale(locale)
                         .build()
         );
         log.info("Debt added event produced for {} member(s)", memberIds.size());
