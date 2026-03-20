@@ -1,13 +1,10 @@
 package dev.batuhanyetgin.debttracker.service;
 
 import dev.batuhanyetgin.commonmodule.document.BaseDocument;
-import dev.batuhanyetgin.commonmodule.event.DebtAddedEvent;
-import dev.batuhanyetgin.commonmodule.event.RabbitMQConstants;
 import dev.batuhanyetgin.commonmodule.exception.BaseException;
 import dev.batuhanyetgin.commonmodule.util.RequestContextUtil;
 import dev.batuhanyetgin.debttracker.document.CategoryDocument;
 import dev.batuhanyetgin.debttracker.document.DebtDocument;
-import dev.batuhanyetgin.debttracker.document.embedded.MemberEmbedded;
 import dev.batuhanyetgin.debttracker.document.embedded.ReminderEmbedded;
 import dev.batuhanyetgin.debttracker.dto.request.CreateDebtRequest;
 import dev.batuhanyetgin.debttracker.dto.request.UpdateDebtRequest;
@@ -16,11 +13,11 @@ import dev.batuhanyetgin.debttracker.dto.response.DebtResponse;
 import dev.batuhanyetgin.debttracker.dto.response.GetDebtResponse;
 import dev.batuhanyetgin.debttracker.enums.AccessLevelType;
 import dev.batuhanyetgin.debttracker.mapper.DebtMapper;
-import dev.batuhanyetgin.debttracker.producer.DebtEventProducer;
 import dev.batuhanyetgin.debttracker.repositoryservice.CategoryRepositoryService;
 import dev.batuhanyetgin.debttracker.repositoryservice.DebtRepositoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -28,6 +25,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -40,16 +39,24 @@ public class DebtService {
     private final DebtRepositoryService debtRS;
     private final CategoryRepositoryService categoryRS;
     private final DebtMapper debtMapper;
-    private final DebtEventProducer debtEventProducer;
+    private final DebtEventAsyncPublisher debtEventAsyncPublisher;
+    @Qualifier("taskExecutor")
+    private final Executor taskExecutor;
 
     public DebtResponse create(final CreateDebtRequest request) {
         final String userId = RequestContextUtil.getUserId();
 
-        if (debtRS.countByOwnerId(userId) >= MAX_DEBTS) {
+        final CompletableFuture<Long> countFuture =
+                CompletableFuture.supplyAsync(() -> debtRS.countByOwnerId(userId), taskExecutor);
+        final CompletableFuture<CategoryDocument> categoryFuture =
+                CompletableFuture.supplyAsync(() -> categoryRS.findById(request.getCategoryId()), taskExecutor);
+        CompletableFuture.allOf(countFuture, categoryFuture).join();
+
+        if (countFuture.join() >= MAX_DEBTS) {
             throw BaseException.badRequest("error.debt.limit_exceeded");
         }
 
-        final CategoryDocument category = categoryRS.findById(request.getCategoryId());
+        final CategoryDocument category = categoryFuture.join();
         if (lacksWriteAccess(category, userId)) {
             throw BaseException.forbidden("error.debt.permission_denied");
         }
@@ -61,7 +68,7 @@ public class DebtService {
         debtDocument = debtRS.save(debtDocument);
 
         log.info("Debt created with id: {} for user: {}", debtDocument.getId(), userId);
-        produceAddedEventIfNeeded(debtDocument, category, userId);
+        debtEventAsyncPublisher.publishDebtAddedEvent(debtDocument, category, userId);
 
         return DebtResponse.builder().debt(debtMapper.convert(debtDocument)).build();
     }
@@ -110,8 +117,14 @@ public class DebtService {
 
         log.info("Getting debts for user: {}", userId);
 
-        final List<CategoryDocument> owned = categoryRS.findByOwnerId(userId);
-        final List<CategoryDocument> shared = categoryRS.findByMemberUserId(userId);
+        final CompletableFuture<List<CategoryDocument>> ownedFuture =
+                CompletableFuture.supplyAsync(() -> categoryRS.findByOwnerId(userId), taskExecutor);
+        final CompletableFuture<List<CategoryDocument>> sharedFuture =
+                CompletableFuture.supplyAsync(() -> categoryRS.findByMemberUserId(userId), taskExecutor);
+        CompletableFuture.allOf(ownedFuture, sharedFuture).join();
+
+        final List<CategoryDocument> owned = ownedFuture.join();
+        final List<CategoryDocument> shared = sharedFuture.join();
 
         final List<CategoryDocument> all = new ArrayList<>();
         all.addAll(owned);
@@ -145,31 +158,6 @@ public class DebtService {
         return category.getMembers().stream()
                 .noneMatch(m -> m.getUserId().equals(userId)
                         && m.getAccessLevel() == AccessLevelType.WRITE);
-    }
-
-    private void produceAddedEventIfNeeded(
-            final DebtDocument debt, final CategoryDocument category, final String creatorId) {
-        final List<String> memberIds = category.getMembers().stream()
-                .map(MemberEmbedded::getUserId)
-                .filter(uid -> !uid.equals(creatorId))
-                .toList();
-
-        if (memberIds.isEmpty()) {
-            return;
-        }
-
-        debtEventProducer.produce(
-                RabbitMQConstants.NOTIFICATION_EXCHANGE,
-                RabbitMQConstants.DEBT_ADDED_ROUTING_KEY,
-                DebtAddedEvent.builder()
-                        .debtId(debt.getId())
-                        .ownerId(debt.getOwnerId())
-                        .debtName(debt.getName())
-                        .amount(debt.getAmount())
-                        .memberUserIds(memberIds)
-                        .build()
-        );
-        log.info("Debt added event produced for {} member(s)", memberIds.size());
     }
 
     private void setNextReminderDate(final DebtDocument debtDocument) {

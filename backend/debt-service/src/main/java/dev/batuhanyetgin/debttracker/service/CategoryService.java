@@ -16,11 +16,14 @@ import dev.batuhanyetgin.debttracker.repositoryservice.CategoryRepositoryService
 import dev.batuhanyetgin.debttracker.repositoryservice.DebtRepositoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 
 @Slf4j
 @Service
@@ -31,6 +34,8 @@ public class CategoryService {
 
     private final CategoryRepositoryService categoryRS;
     private final DebtRepositoryService debtRS;
+    @Qualifier("taskExecutor")
+    private final Executor taskExecutor;
 
     public SaveCategoryResponse save(final CreateCategoryRequest request) {
         final String userId = RequestContextUtil.getUserId();
@@ -133,11 +138,14 @@ public class CategoryService {
     public List<GetAllCategoryResponse> getAll() {
         final String userId = RequestContextUtil.getUserId();
 
-        final List<CategoryDocument> owned = categoryRS.findByOwnerId(userId);
-        final List<CategoryDocument> memberOf = categoryRS.findByMemberUserId(userId);
+        final CompletableFuture<List<CategoryDocument>> ownedFuture =
+                CompletableFuture.supplyAsync(() -> categoryRS.findByOwnerId(userId), taskExecutor);
+        final CompletableFuture<List<CategoryDocument>> memberOfFuture =
+                CompletableFuture.supplyAsync(() -> categoryRS.findByMemberUserId(userId), taskExecutor);
+        CompletableFuture.allOf(ownedFuture, memberOfFuture).join();
 
-        final List<CategoryDocument> all = new ArrayList<>(owned);
-        all.addAll(memberOf);
+        final List<CategoryDocument> all = new ArrayList<>(ownedFuture.join());
+        all.addAll(memberOfFuture.join());
 
         return all.stream()
                 .map(c -> GetAllCategoryResponse.builder()
