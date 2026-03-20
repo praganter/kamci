@@ -7,6 +7,7 @@ import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.retry.support.RetryTemplate;
 
 @Configuration
 public class RabbitMQBaseConfig {
@@ -20,6 +21,10 @@ public class RabbitMQBaseConfig {
     public RabbitTemplate rabbitTemplate(final ConnectionFactory connectionFactory) {
         final RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
         rabbitTemplate.setMessageConverter(jsonMessageConverter());
+        rabbitTemplate.setRetryTemplate(RetryTemplate.builder()
+                .maxAttempts(3)
+                .exponentialBackoff(1000, 2.0, 10000)
+                .build());
         return rabbitTemplate;
     }
 
