@@ -27,6 +27,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.CompletionException;
 
 @RestControllerAdvice
 @RequiredArgsConstructor
@@ -34,6 +35,25 @@ import java.util.Locale;
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     private final MessageSource messageSource;
+
+    @ExceptionHandler(CompletionException.class)
+    public ResponseEntity<?> handleCompletionException(
+            final CompletionException ex, final Locale locale, final HttpServletRequest request) {
+        final Throwable cause = ex.getCause();
+        if (cause instanceof BaseException baseEx) {
+            return handleBaseException(baseEx, locale, request);
+        }
+        if (cause instanceof DuplicateKeyException dke) {
+            return handleDuplicateKey(dke, request, locale);
+        }
+        if (cause instanceof DataAccessException dae) {
+            return handleDataAccess(dae, request, locale);
+        }
+        if (cause instanceof IllegalArgumentException iae) {
+            return handleIllegalArgument(iae, request, locale);
+        }
+        return handleAny(cause instanceof Exception e ? e : ex, request, locale);
+    }
 
     @ExceptionHandler(BaseException.class)
     public ResponseEntity<ErrorResponse> handleBaseException(
