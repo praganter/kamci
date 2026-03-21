@@ -34,7 +34,9 @@ public class JwtUtil {
 
     public boolean isInvalid(String token) {
         try {
-            return isTokenExpired(token);
+            if (isTokenExpired(token)) return true;
+            String type = getAllClaimsFromToken(token).get("type", String.class);
+            return !"ACCESS".equals(type);
         } catch (Exception e) {
             return true;
         }
