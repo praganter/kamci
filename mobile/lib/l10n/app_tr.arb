@@ -1,0 +1,160 @@
+{
+  "@@locale": "tr",
+
+  "appName": "DebtTracker",
+
+  "save": "Kaydet",
+  "cancel": "İptal",
+  "delete": "Sil",
+  "edit": "Düzenle",
+  "create": "Oluştur",
+  "update": "Güncelle",
+  "send": "Gönder",
+  "remove": "Kaldır",
+  "add": "Ekle",
+  "select": "Seçin",
+  "retry": "Tekrar Dene",
+
+  "welcome": "Hoş Geldiniz!",
+  "signIn": "Giriş Yap",
+  "signUp": "Kayıt Ol",
+  "signOut": "Çıkış Yap",
+  "email": "E-posta Adresi",
+  "password": "Şifre",
+  "confirmPassword": "Şifre Tekrar",
+  "newPassword": "Yeni Şifre",
+  "forgotPassword": "Şifremi Unuttum?",
+  "forgotPasswordTitle": "Şifremi Unuttum",
+  "resetPasswordTitle": "Şifre Sıfırla",
+  "updatePassword": "Şifreyi Güncelle",
+  "noAccount": "Hesabınız yok mu?",
+  "hasAccount": "Zaten hesabınız var mı?",
+  "forgotPasswordDesc": "Şifre sıfırlama bağlantısı e-posta adresinize gönderilecek.",
+  "resetPasswordDesc": "Yeni şifrenizi belirleyin.",
+  "checkEmail": "E-postanızı Kontrol Edin",
+  "checkEmailDesc": "{email} adresine şifre sıfırlama bağlantısı gönderildi.",
+  "@checkEmailDesc": {
+    "placeholders": {
+      "email": { "type": "String" }
+    }
+  },
+  "invalidResetLink": "Geçersiz şifre sıfırlama bağlantısı.",
+  "passwordUpdated": "Şifreniz başarıyla güncellendi.",
+  "premiumMembership": "Premium Üyelik",
+  "premiumMembershipDesc": "Daha fazla özelliğe erişin",
+
+  "debts": "Borçlar",
+  "categories": "Kategoriler",
+
+  "myDebts": "Kendi Borçlarım",
+  "sharedDebts": "Paylaşılan",
+  "noDebtsYet": "Henüz borç yok",
+  "noSharedDebts": "Paylaşılan borç yok",
+  "addDebtHint": "Yeni borç eklemek için + düğmesine bas",
+  "joinSharedHint": "Paylaşılan bir kategoriye üye ol",
+  "noCategoryDebts": "Bu kategoride henüz borç yok",
+  "noDebts": "Borç yok",
+  "deleteDebt": "Borcu Sil",
+  "deleteDebtConfirm": "\"{name}\" borcunu silmek istediğinize emin misiniz?",
+  "@deleteDebtConfirm": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+
+  "amount": "Tutar",
+  "status": "Durum",
+  "paymentPeriod": "Ödeme Periyodu",
+  "startDate": "Başlangıç",
+  "endDate": "Bitiş",
+  "description": "Açıklama",
+  "nextReminder": "Sonraki Hatırlatma",
+  "paymentHistory": "Ödeme Geçmişi ({count})",
+  "@paymentHistory": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "noPaymentsYet": "Henüz ödeme yapılmamış",
+  "paid": "Ödendi",
+  "pendingPayment": "Bekliyor",
+
+  "newDebt": "Yeni Borç",
+  "editDebt": "Borcu Düzenle",
+  "debtName": "Borç Adı",
+  "selectDate": "Seçin",
+  "selectStartDate": "Başlangıç tarihini seçin",
+  "noCategory": "Kategori Yok",
+  "categoryOptional": "Kategori (İsteğe Bağlı)",
+  "descriptionOptional": "Açıklama (İsteğe Bağlı)",
+
+  "myCategories": "Sahip Olduklarım",
+  "joinedCategories": "Üye Olduklarım",
+  "noCategoriesYet": "Henüz kategori yok",
+  "noJoinedCategories": "Üye olduğun kategori yok",
+  "addCategoryHint": "Yeni kategori oluşturmak için + düğmesine bas",
+  "waitingInvitation": "Bir kategoriye davet bekleniyor",
+  "memberCount": "{count} üye",
+  "@memberCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "deleteCategory": "Kategoriyi Sil",
+  "deleteCategoryConfirm": "\"{name}\" kategorisini silmek istediğinize emin misiniz?",
+  "@deleteCategoryConfirm": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+
+  "memberCountTitle": "{count} Üye",
+  "@memberCountTitle": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "noMembersYet": "Henüz üye yok",
+  "addMember": "Üye Ekle",
+  "removeMember": "Üyeyi Kaldır",
+  "removeMemberConfirm": "Bu üyeyi kategoriden kaldırmak istediğinize emin misiniz?",
+
+  "newCategory": "Yeni Kategori",
+  "editCategory": "Kategoriyi Düzenle",
+  "categoryName": "Kategori Adı",
+
+  "periodDaily": "Günlük",
+  "periodWeekly": "Haftalık",
+  "periodMonthly": "Aylık",
+  "periodQuarterly": "Üç Aylık",
+  "periodYearly": "Yıllık",
+
+  "statusActive": "Aktif",
+  "statusInactive": "Pasif",
+  "statusCompleted": "Tamamlandı",
+
+  "currentPassword": "Mevcut Şifre",
+
+  "settings": "Ayarlar",
+  "account": "Hesap",
+  "changePassword": "Şifre Değiştir",
+  "changePasswordDesc": "Şifre sıfırlama bağlantısı e-postanıza gönderilecek",
+  "feedback": "Geri Bildirim",
+  "sendFeedback": "Öneri / Şikayet Gönder",
+  "feedbackDesc": "Görüş ve önerilerinizi bizimle paylaşın",
+  "appearance": "Görünüm",
+  "language": "Dil",
+  "theme": "Tema",
+  "themeSystem": "Sistem",
+  "themeLight": "Açık",
+  "themeDark": "Koyu",
+  "langSystem": "Sistem",
+  "langTurkish": "Türkçe",
+  "langEnglish": "English",
+  "developerCredit": "Developed by {name}",
+  "@developerCredit": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  }
+}
