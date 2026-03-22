@@ -27,4 +27,7 @@ public class DeviceTokenDocument extends BaseDocument {
 
     @Field("locale")
     private String locale;
+
+    @Field("email")
+    private String email;
 }

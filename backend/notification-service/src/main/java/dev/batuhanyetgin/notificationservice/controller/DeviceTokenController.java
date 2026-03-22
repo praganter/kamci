@@ -38,6 +38,7 @@ public class DeviceTokenController {
                         doc -> {
                             doc.setFcmToken(request.getToken());
                             doc.setLocale(locale);
+                            if (request.getEmail() != null) doc.setEmail(request.getEmail());
                             deviceTokenRepository.save(doc);
                         },
                         () -> deviceTokenRepository.save(
@@ -45,6 +46,7 @@ public class DeviceTokenController {
                                         .userId(userId)
                                         .fcmToken(request.getToken())
                                         .locale(locale)
+                                        .email(request.getEmail())
                                         .build())
                 );
         return ResponseEntity.noContent().build();
