@@ -5,6 +5,7 @@ import dev.batuhanyetgin.commonmodule.util.RequestContextUtil;
 import dev.batuhanyetgin.debttracker.document.CategoryDocument;
 import dev.batuhanyetgin.debttracker.document.DebtDocument;
 import dev.batuhanyetgin.debttracker.document.embedded.MemberEmbedded;
+import dev.batuhanyetgin.debttracker.document.embedded.PaymentEmbedded;
 import dev.batuhanyetgin.debttracker.dto.request.CreateDebtRequest;
 import dev.batuhanyetgin.debttracker.dto.request.UpdateDebtRequest;
 import dev.batuhanyetgin.debttracker.dto.response.DebtItemResponse;
@@ -18,6 +19,7 @@ import dev.batuhanyetgin.debttracker.repositoryservice.DebtRepositoryService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
+import org.mockito.ArgumentCaptor;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -27,6 +29,7 @@ import org.springframework.http.HttpStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
 
@@ -318,6 +321,40 @@ class DebtServiceTest {
         }
 
         @Test
+        @DisplayName("existing payments are preserved after update")
+        void existingPayments_preserved() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+
+                final List<PaymentEmbedded> existingPayments = List.of(
+                        PaymentEmbedded.builder().paid(true).paidTime(LocalDateTime.now()).build());
+                final DebtDocument existing = DebtDocument.builder()
+                        .id(DEBT_ID).ownerId(OWNER_ID).categoryId(CAT_ID)
+                        .name("Test Debt").amount(BigDecimal.TEN)
+                        .paymentPeriodType(PaymentPeriodType.MONTHLY)
+                        .startDate(LocalDateTime.now())
+                        .payments(existingPayments)
+                        .build();
+                when(debtRS.findById(DEBT_ID)).thenReturn(existing);
+                when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
+
+                final DebtDocument converted = buildDebt(DEBT_ID, OWNER_ID, CAT_ID);
+                when(debtMapper.convert(any(UpdateDebtRequest.class))).thenReturn(converted);
+                when(debtRS.update(converted)).thenReturn(converted);
+                when(debtMapper.convert(converted)).thenReturn(buildDebtItemResponse());
+
+                final UpdateDebtRequest request = UpdateDebtRequest.builder()
+                        .id(DEBT_ID).name("Updated").categoryId(CAT_ID)
+                        .amount(BigDecimal.TEN).paymentPeriodType(PaymentPeriodType.MONTHLY)
+                        .startDate(LocalDateTime.now()).build();
+
+                debtService.update(request);
+
+                assertThat(converted.getPayments()).isEqualTo(existingPayments);
+            }
+        }
+
+        @Test
         @DisplayName("no write access to new category → throws FORBIDDEN")
         void noAccessToNewCategory_throwsForbidden() {
             try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
@@ -448,6 +485,98 @@ class DebtServiceTest {
 
                 final GetDebtResponse response = debtService.get();
                 assertThat(response.getCategories()).isEmpty();
+            }
+        }
+    }
+
+    // ─── pay ──────────────────────────────────────────────────────────────────
+
+    @Nested
+    @DisplayName("pay")
+    class Pay {
+
+        @Test
+        @DisplayName("owner pays debt → payment added to list, returns updated response")
+        void ownerPays_addsPaymentAndReturns() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+
+                final DebtDocument existing = buildDebt(DEBT_ID, OWNER_ID, CAT_ID);
+                when(debtRS.findById(DEBT_ID)).thenReturn(existing);
+                when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
+
+                final ArgumentCaptor<DebtDocument> captor = ArgumentCaptor.forClass(DebtDocument.class);
+                when(debtRS.update(captor.capture())).thenReturn(existing);
+                when(debtMapper.convert(existing)).thenReturn(buildDebtItemResponse());
+
+                final DebtResponse response = debtService.pay(DEBT_ID);
+
+                assertThat(response.getDebt()).isNotNull();
+                assertThat(captor.getValue().getPayments()).hasSize(1);
+                assertThat(captor.getValue().getPayments().get(0).isPaid()).isTrue();
+                assertThat(captor.getValue().getPayments().get(0).getPaidTime()).isNotNull();
+            }
+        }
+
+        @Test
+        @DisplayName("write-level member pays debt → succeeds")
+        void writeMemberPays_succeeds() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OTHER_ID);
+
+                final DebtDocument existing = buildDebt(DEBT_ID, OWNER_ID, CAT_ID);
+                when(debtRS.findById(DEBT_ID)).thenReturn(existing);
+                when(categoryRS.findById(CAT_ID))
+                        .thenReturn(buildCategoryWithWriteMember(CAT_ID, OWNER_ID, OTHER_ID));
+                when(debtRS.update(any())).thenReturn(existing);
+                when(debtMapper.convert(existing)).thenReturn(buildDebtItemResponse());
+
+                assertThatNoException().isThrownBy(() -> debtService.pay(DEBT_ID));
+            }
+        }
+
+        @Test
+        @DisplayName("payments accumulate — second pay appends to existing list")
+        void secondPay_appendsToExistingList() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+
+                final List<PaymentEmbedded> existingPayments = new ArrayList<>();
+                existingPayments.add(PaymentEmbedded.builder().paid(true).paidTime(LocalDateTime.now().minusDays(1)).build());
+                final DebtDocument existing = DebtDocument.builder()
+                        .id(DEBT_ID).ownerId(OWNER_ID).categoryId(CAT_ID)
+                        .name("Test Debt").amount(BigDecimal.TEN)
+                        .paymentPeriodType(PaymentPeriodType.MONTHLY)
+                        .startDate(LocalDateTime.now())
+                        .payments(existingPayments)
+                        .build();
+                when(debtRS.findById(DEBT_ID)).thenReturn(existing);
+                when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
+
+                final ArgumentCaptor<DebtDocument> captor = ArgumentCaptor.forClass(DebtDocument.class);
+                when(debtRS.update(captor.capture())).thenReturn(existing);
+                when(debtMapper.convert(existing)).thenReturn(buildDebtItemResponse());
+
+                debtService.pay(DEBT_ID);
+
+                assertThat(captor.getValue().getPayments()).hasSize(2);
+            }
+        }
+
+        @Test
+        @DisplayName("no write access → throws FORBIDDEN, debt not updated")
+        void noWriteAccess_throwsForbidden() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OTHER_ID);
+
+                when(debtRS.findById(DEBT_ID)).thenReturn(buildDebt(DEBT_ID, OWNER_ID, CAT_ID));
+                when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
+
+                assertThatExceptionOfType(BaseException.class)
+                        .isThrownBy(() -> debtService.pay(DEBT_ID))
+                        .matches(e -> e.getStatus() == HttpStatus.FORBIDDEN);
+
+                verify(debtRS, never()).update(any());
             }
         }
     }

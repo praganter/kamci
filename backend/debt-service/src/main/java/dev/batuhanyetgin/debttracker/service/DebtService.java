@@ -5,6 +5,7 @@ import dev.batuhanyetgin.commonmodule.exception.BaseException;
 import dev.batuhanyetgin.commonmodule.util.RequestContextUtil;
 import dev.batuhanyetgin.debttracker.document.CategoryDocument;
 import dev.batuhanyetgin.debttracker.document.DebtDocument;
+import dev.batuhanyetgin.debttracker.document.embedded.PaymentEmbedded;
 import dev.batuhanyetgin.debttracker.document.embedded.ReminderEmbedded;
 import dev.batuhanyetgin.debttracker.dto.request.CreateDebtRequest;
 import dev.batuhanyetgin.debttracker.dto.request.UpdateDebtRequest;
@@ -93,11 +94,33 @@ public class DebtService {
         request.setOwnerId(existing.getOwnerId());
 
         DebtDocument debtDocument = debtMapper.convert(request);
+        debtDocument.setPayments(existing.getPayments());
         setNextReminderDate(debtDocument);
         debtDocument = debtRS.update(debtDocument);
 
         log.info("Debt updated with id: {}", debtDocument.getId());
         return DebtResponse.builder().debt(debtMapper.convert(debtDocument)).build();
+    }
+
+    public DebtResponse pay(final String id) {
+        final String userId = RequestContextUtil.getUserId();
+        final DebtDocument existing = debtRS.findById(id);
+
+        final CategoryDocument category = categoryRS.findById(existing.getCategoryId());
+        if (lacksWriteAccess(category, userId)) {
+            throw BaseException.forbidden("error.debt.permission_denied");
+        }
+
+        final List<PaymentEmbedded> payments = new ArrayList<>(existing.getPayments());
+        payments.add(PaymentEmbedded.builder()
+                .paid(true)
+                .paidTime(LocalDateTime.now())
+                .build());
+        existing.setPayments(payments);
+
+        final DebtDocument updated = debtRS.update(existing);
+        log.info("Payment recorded for debt: {}", id);
+        return DebtResponse.builder().debt(debtMapper.convert(updated)).build();
     }
 
     public void delete(final String id) {

@@ -64,6 +64,17 @@ public class DebtController {
         return ResponseEntity.ok(DeleteDebtResponse.builder().message(msg).build());
     }
 
+    @Operation(summary = "Record a payment for a debt")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Payment recorded"),
+            @ApiResponse(responseCode = "403", description = "No write access"),
+            @ApiResponse(responseCode = "404", description = "Debt not found")
+    })
+    @PostMapping("pay/{id}")
+    ResponseEntity<DebtResponse> pay(@PathVariable final String id) {
+        return ResponseEntity.ok(debtService.pay(id));
+    }
+
     @Operation(summary = "Get all debts for the authenticated user, grouped by category")
     @ApiResponse(responseCode = "200", description = "Debts returned")
     @GetMapping("get")
