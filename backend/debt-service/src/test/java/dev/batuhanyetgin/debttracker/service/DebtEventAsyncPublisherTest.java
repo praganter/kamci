@@ -45,7 +45,7 @@ class DebtEventAsyncPublisherTest {
                 .name("Test Debt")
                 .amount(BigDecimal.TEN)
                 .paymentPeriodType(PaymentPeriodType.MONTHLY)
-                .startDate(LocalDateTime.now())
+                .firstPaymentDate(LocalDateTime.now())
                 .build();
     }
 

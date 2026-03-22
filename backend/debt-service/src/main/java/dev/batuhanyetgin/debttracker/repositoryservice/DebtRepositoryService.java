@@ -54,7 +54,11 @@ public class DebtRepositoryService {
     }
 
     public List<DebtDocument> findDueReminders(final LocalDateTime now) {
-        return debtRepository.findByStatusAndReminderEnabledTrueAndNextReminderDateBefore(
+        return debtRepository.findByStatusAndReminderEnabledTrueAndNextReminderDateLessThanEqual(
                 DebtStatus.ACTIVE, now);
+    }
+
+    public List<DebtDocument> findDueAutoPayments(final LocalDateTime now) {
+        return debtRepository.findByAutoPaymentTrueAndNextAutoPaymentDateLessThanEqual(now);
     }
 }

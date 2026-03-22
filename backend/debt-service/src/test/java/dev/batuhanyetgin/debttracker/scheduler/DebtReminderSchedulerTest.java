@@ -34,21 +34,26 @@ class DebtReminderSchedulerTest {
 
     private DebtReminderScheduler scheduler;
 
+    // April 1 2026 — day-of-month = 1, safe for all MONTHLY clamp tests
     private static final LocalDateTime BASE_TIME = LocalDateTime.of(2026, 4, 1, 10, 0);
+    // Jan 31 — used for day-drift tests
+    private static final LocalDateTime JAN_31 = LocalDateTime.of(2026, 1, 31, 10, 0);
 
     @BeforeEach
     void setUp() {
         scheduler = new DebtReminderScheduler(debtRS, debtEventProducer, taskExecutor);
     }
 
-    private DebtDocument buildDebt(final String id, final PaymentPeriodType periodType,
-                                   final LocalDateTime nextReminder) {
+    private DebtDocument buildReminderDebt(final String id, final PaymentPeriodType periodType,
+                                           final LocalDateTime firstPaymentDate,
+                                           final LocalDateTime nextReminder) {
         return DebtDocument.builder()
                 .id(id)
                 .ownerId("owner1")
                 .name("Test Debt")
                 .amount(BigDecimal.TEN)
                 .paymentPeriodType(periodType)
+                .firstPaymentDate(firstPaymentDate)
                 .nextReminderDate(nextReminder)
                 .reminder(ReminderEmbedded.builder()
                         .enabled(true)
@@ -57,15 +62,35 @@ class DebtReminderSchedulerTest {
                 .build();
     }
 
-    // ─── processReminders ─────────────────────────────────────────────────────
+    private DebtDocument buildAutoPaymentDebt(final String id, final PaymentPeriodType periodType,
+                                              final LocalDateTime firstPaymentDate,
+                                              final LocalDateTime nextAutoPayment) {
+        return DebtDocument.builder()
+                .id(id)
+                .ownerId("owner1")
+                .name("Auto Debt")
+                .amount(BigDecimal.TEN)
+                .paymentPeriodType(periodType)
+                .firstPaymentDate(firstPaymentDate)
+                .autoPayment(true)
+                .nextAutoPaymentDate(nextAutoPayment)
+                .build();
+    }
+
+    // ─── processReminders (reminder flow) ─────────────────────────────────────
 
     @Nested
-    @DisplayName("processReminders")
-    class ProcessReminders {
+    @DisplayName("processReminders — reminder flow")
+    class ProcessReminderFlow {
+
+        @BeforeEach
+        void stubAutoPaymentEmpty() {
+            when(debtRS.findDueAutoPayments(any())).thenReturn(List.of());
+        }
 
         @Test
-        @DisplayName("no due debts → early return, no events produced")
-        void noDueDebts_earlyReturn() {
+        @DisplayName("no due reminders → early return, no events produced")
+        void noDueReminders_earlyReturn() {
             when(debtRS.findDueReminders(any())).thenReturn(List.of());
 
             scheduler.processReminders();
@@ -75,9 +100,9 @@ class DebtReminderSchedulerTest {
         }
 
         @Test
-        @DisplayName("due debts → event produced and debt updated for each")
-        void dueDebts_producesEventAndUpdates() {
-            final DebtDocument debt = buildDebt("debt1", PaymentPeriodType.MONTHLY, BASE_TIME);
+        @DisplayName("due reminder debt → event produced and debt updated")
+        void dueReminder_producesEventAndUpdates() {
+            final DebtDocument debt = buildReminderDebt("debt1", PaymentPeriodType.MONTHLY, BASE_TIME, BASE_TIME);
             when(debtRS.findDueReminders(any())).thenReturn(List.of(debt));
             when(debtRS.update(any())).thenReturn(debt);
 
@@ -88,9 +113,9 @@ class DebtReminderSchedulerTest {
         }
 
         @Test
-        @DisplayName("publish fails → no DB update for that debt")
+        @DisplayName("publish fails → no DB update for that debt, no exception propagated")
         void publishFails_noDbUpdate() {
-            final DebtDocument debt = buildDebt("debt1", PaymentPeriodType.MONTHLY, BASE_TIME);
+            final DebtDocument debt = buildReminderDebt("debt1", PaymentPeriodType.MONTHLY, BASE_TIME, BASE_TIME);
             when(debtRS.findDueReminders(any())).thenReturn(List.of(debt));
             doThrow(new RuntimeException("RabbitMQ down"))
                     .when(debtEventProducer).produce(anyString(), anyString(), any());
@@ -103,7 +128,7 @@ class DebtReminderSchedulerTest {
         @Test
         @DisplayName("publish succeeds but DB update fails → no exception propagated")
         void dbUpdateFails_noExceptionPropagated() {
-            final DebtDocument debt = buildDebt("debt1", PaymentPeriodType.MONTHLY, BASE_TIME);
+            final DebtDocument debt = buildReminderDebt("debt1", PaymentPeriodType.MONTHLY, BASE_TIME, BASE_TIME);
             when(debtRS.findDueReminders(any())).thenReturn(List.of(debt));
             when(debtRS.update(any())).thenThrow(new RuntimeException("DB error"));
 
@@ -111,10 +136,10 @@ class DebtReminderSchedulerTest {
         }
 
         @Test
-        @DisplayName("multiple debts — one fails publish, one succeeds → only successful debt updated")
+        @DisplayName("multiple debts — one fails publish, other succeeds → only successful debt updated")
         void multipleDebts_partialFailure() {
-            final DebtDocument debt1 = buildDebt("debt1", PaymentPeriodType.MONTHLY, BASE_TIME);
-            final DebtDocument debt2 = buildDebt("debt2", PaymentPeriodType.MONTHLY, BASE_TIME);
+            final DebtDocument debt1 = buildReminderDebt("debt1", PaymentPeriodType.MONTHLY, BASE_TIME, BASE_TIME);
+            final DebtDocument debt2 = buildReminderDebt("debt2", PaymentPeriodType.MONTHLY, BASE_TIME, BASE_TIME);
             when(debtRS.findDueReminders(any())).thenReturn(List.of(debt1, debt2));
             when(debtRS.update(any())).thenReturn(debt1);
 
@@ -133,14 +158,85 @@ class DebtReminderSchedulerTest {
         }
     }
 
-    // ─── advanceNextReminderDate (tested via processReminders) ────────────────
+    // ─── processReminders (auto-payment flow) ────────────────────────────────
+
+    @Nested
+    @DisplayName("processReminders — auto-payment flow")
+    class ProcessAutoPaymentFlow {
+
+        @BeforeEach
+        void stubReminderEmpty() {
+            when(debtRS.findDueReminders(any())).thenReturn(List.of());
+        }
+
+        @Test
+        @DisplayName("no due auto-payments → early return, no events, no updates")
+        void noDueAutoPayments_earlyReturn() {
+            when(debtRS.findDueAutoPayments(any())).thenReturn(List.of());
+
+            scheduler.processReminders();
+
+            verifyNoInteractions(debtEventProducer);
+            verify(debtRS, never()).update(any());
+        }
+
+        @Test
+        @DisplayName("due auto-payment debt → payment recorded, no reminder event produced")
+        void dueAutoPayment_recordsPaymentNoEvent() {
+            final DebtDocument debt = buildAutoPaymentDebt("debt1", PaymentPeriodType.MONTHLY, BASE_TIME, BASE_TIME);
+            when(debtRS.findDueAutoPayments(any())).thenReturn(List.of(debt));
+
+            final ArgumentCaptor<DebtDocument> captor = ArgumentCaptor.forClass(DebtDocument.class);
+            when(debtRS.update(captor.capture())).thenReturn(debt);
+
+            scheduler.processReminders();
+
+            verifyNoInteractions(debtEventProducer);
+            assertThat(captor.getValue().getPayments()).hasSize(1);
+            assertThat(captor.getValue().getPayments().get(0).isPaid()).isTrue();
+        }
+
+        @Test
+        @DisplayName("due auto-payment debt → next auto-payment date advanced")
+        void dueAutoPayment_dateAdvanced() {
+            final DebtDocument debt = buildAutoPaymentDebt("debt1", PaymentPeriodType.MONTHLY, BASE_TIME, BASE_TIME);
+            when(debtRS.findDueAutoPayments(any())).thenReturn(List.of(debt));
+
+            final ArgumentCaptor<DebtDocument> captor = ArgumentCaptor.forClass(DebtDocument.class);
+            when(debtRS.update(captor.capture())).thenReturn(debt);
+
+            scheduler.processReminders();
+
+            assertThat(captor.getValue().getNextAutoPaymentDate())
+                    .isEqualTo(BASE_TIME.plusMonths(1));
+        }
+
+        @Test
+        @DisplayName("DB update fails → no exception propagated")
+        void dbUpdateFails_noExceptionPropagated() {
+            final DebtDocument debt = buildAutoPaymentDebt("debt1", PaymentPeriodType.MONTHLY, BASE_TIME, BASE_TIME);
+            when(debtRS.findDueAutoPayments(any())).thenReturn(List.of(debt));
+            when(debtRS.update(any())).thenThrow(new RuntimeException("DB error"));
+
+            assertThatNoException().isThrownBy(() -> scheduler.processReminders());
+        }
+    }
+
+    // ─── advanceNextReminderDate ──────────────────────────────────────────────
 
     @Nested
     @DisplayName("advanceNextReminderDate")
     class AdvanceNextReminderDate {
 
-        private LocalDateTime captureNextReminderDate(final PaymentPeriodType periodType) {
-            final DebtDocument debt = buildDebt("debt1", periodType, BASE_TIME);
+        @BeforeEach
+        void stubAutoPaymentEmpty() {
+            when(debtRS.findDueAutoPayments(any())).thenReturn(List.of());
+        }
+
+        private LocalDateTime captureNextReminderDate(final PaymentPeriodType periodType,
+                                                      final LocalDateTime firstPaymentDate,
+                                                      final LocalDateTime nextReminder) {
+            final DebtDocument debt = buildReminderDebt("debt1", periodType, firstPaymentDate, nextReminder);
             when(debtRS.findDueReminders(any())).thenReturn(List.of(debt));
 
             final ArgumentCaptor<DebtDocument> captor = ArgumentCaptor.forClass(DebtDocument.class);
@@ -154,36 +250,127 @@ class DebtReminderSchedulerTest {
         @Test
         @DisplayName("DAILY → advances by 1 day")
         void daily_advancesOneDay() {
-            assertThat(captureNextReminderDate(PaymentPeriodType.DAILY))
+            assertThat(captureNextReminderDate(PaymentPeriodType.DAILY, BASE_TIME, BASE_TIME))
                     .isEqualTo(BASE_TIME.plusDays(1));
         }
 
         @Test
         @DisplayName("WEEKLY → advances by 1 week")
         void weekly_advancesOneWeek() {
-            assertThat(captureNextReminderDate(PaymentPeriodType.WEEKLY))
+            assertThat(captureNextReminderDate(PaymentPeriodType.WEEKLY, BASE_TIME, BASE_TIME))
                     .isEqualTo(BASE_TIME.plusWeeks(1));
         }
 
         @Test
-        @DisplayName("MONTHLY → advances by 1 month")
+        @DisplayName("MONTHLY from day-1 date → advances by 1 month")
         void monthly_advancesOneMonth() {
-            assertThat(captureNextReminderDate(PaymentPeriodType.MONTHLY))
+            assertThat(captureNextReminderDate(PaymentPeriodType.MONTHLY, BASE_TIME, BASE_TIME))
                     .isEqualTo(BASE_TIME.plusMonths(1));
         }
 
         @Test
         @DisplayName("HALF_YEARLY → advances by 6 months")
         void halfYearly_advancesSixMonths() {
-            assertThat(captureNextReminderDate(PaymentPeriodType.HALF_YEARLY))
+            assertThat(captureNextReminderDate(PaymentPeriodType.HALF_YEARLY, BASE_TIME, BASE_TIME))
                     .isEqualTo(BASE_TIME.plusMonths(6));
         }
 
         @Test
         @DisplayName("YEARLY → advances by 1 year")
         void yearly_advancesOneYear() {
-            assertThat(captureNextReminderDate(PaymentPeriodType.YEARLY))
+            assertThat(captureNextReminderDate(PaymentPeriodType.YEARLY, BASE_TIME, BASE_TIME))
                     .isEqualTo(BASE_TIME.plusYears(1));
+        }
+
+        @Test
+        @DisplayName("MONTHLY from Jan-31 → clamps to Feb-28 (short month)")
+        void monthly_jan31_clampsToFeb28() {
+            final LocalDateTime result = captureNextReminderDate(PaymentPeriodType.MONTHLY, JAN_31, JAN_31);
+            assertThat(result).isEqualTo(LocalDateTime.of(2026, 2, 28, 10, 0));
+        }
+
+        @Test
+        @DisplayName("MONTHLY from Feb-28 (originalDay=31) → recovers to Mar-31")
+        void monthly_feb28_originalDay31_recoversMar31() {
+            final LocalDateTime feb28 = LocalDateTime.of(2026, 2, 28, 10, 0);
+            final LocalDateTime result = captureNextReminderDate(PaymentPeriodType.MONTHLY, JAN_31, feb28);
+            assertThat(result).isEqualTo(LocalDateTime.of(2026, 3, 31, 10, 0));
+        }
+    }
+
+    // ─── advanceNextAutoPaymentDate ───────────────────────────────────────────
+
+    @Nested
+    @DisplayName("advanceNextAutoPaymentDate")
+    class AdvanceNextAutoPaymentDate {
+
+        @BeforeEach
+        void stubReminderEmpty() {
+            when(debtRS.findDueReminders(any())).thenReturn(List.of());
+        }
+
+        private LocalDateTime captureNextAutoPaymentDate(final PaymentPeriodType periodType,
+                                                         final LocalDateTime firstPaymentDate,
+                                                         final LocalDateTime nextAutoPayment) {
+            final DebtDocument debt = buildAutoPaymentDebt("debt1", periodType, firstPaymentDate, nextAutoPayment);
+            when(debtRS.findDueAutoPayments(any())).thenReturn(List.of(debt));
+
+            final ArgumentCaptor<DebtDocument> captor = ArgumentCaptor.forClass(DebtDocument.class);
+            when(debtRS.update(captor.capture())).thenReturn(debt);
+
+            scheduler.processReminders();
+
+            return captor.getValue().getNextAutoPaymentDate();
+        }
+
+        @Test
+        @DisplayName("DAILY → advances by 1 day")
+        void daily_advancesOneDay() {
+            assertThat(captureNextAutoPaymentDate(PaymentPeriodType.DAILY, BASE_TIME, BASE_TIME))
+                    .isEqualTo(BASE_TIME.plusDays(1));
+        }
+
+        @Test
+        @DisplayName("WEEKLY → advances by 1 week")
+        void weekly_advancesOneWeek() {
+            assertThat(captureNextAutoPaymentDate(PaymentPeriodType.WEEKLY, BASE_TIME, BASE_TIME))
+                    .isEqualTo(BASE_TIME.plusWeeks(1));
+        }
+
+        @Test
+        @DisplayName("MONTHLY from day-1 date → advances by 1 month")
+        void monthly_advancesOneMonth() {
+            assertThat(captureNextAutoPaymentDate(PaymentPeriodType.MONTHLY, BASE_TIME, BASE_TIME))
+                    .isEqualTo(BASE_TIME.plusMonths(1));
+        }
+
+        @Test
+        @DisplayName("HALF_YEARLY → advances by 6 months")
+        void halfYearly_advancesSixMonths() {
+            assertThat(captureNextAutoPaymentDate(PaymentPeriodType.HALF_YEARLY, BASE_TIME, BASE_TIME))
+                    .isEqualTo(BASE_TIME.plusMonths(6));
+        }
+
+        @Test
+        @DisplayName("YEARLY → advances by 1 year")
+        void yearly_advancesOneYear() {
+            assertThat(captureNextAutoPaymentDate(PaymentPeriodType.YEARLY, BASE_TIME, BASE_TIME))
+                    .isEqualTo(BASE_TIME.plusYears(1));
+        }
+
+        @Test
+        @DisplayName("MONTHLY from Jan-31 → clamps to Feb-28 (short month)")
+        void monthly_jan31_clampsToFeb28() {
+            final LocalDateTime result = captureNextAutoPaymentDate(PaymentPeriodType.MONTHLY, JAN_31, JAN_31);
+            assertThat(result).isEqualTo(LocalDateTime.of(2026, 2, 28, 10, 0));
+        }
+
+        @Test
+        @DisplayName("MONTHLY from Feb-28 (originalDay=31) → recovers to Mar-31")
+        void monthly_feb28_originalDay31_recoversMar31() {
+            final LocalDateTime feb28 = LocalDateTime.of(2026, 2, 28, 10, 0);
+            final LocalDateTime result = captureNextAutoPaymentDate(PaymentPeriodType.MONTHLY, JAN_31, feb28);
+            assertThat(result).isEqualTo(LocalDateTime.of(2026, 3, 31, 10, 0));
         }
     }
 }

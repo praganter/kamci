@@ -40,12 +40,12 @@ public class DebtDocument extends BaseDocument {
     @Field("description")
     private String description;
 
-    @Field("start_date")
+    @Field("first_payment_date")
     @NotNull
-    private LocalDateTime startDate;
+    private LocalDateTime firstPaymentDate;
 
-    @Field("end_date")
-    private LocalDateTime endDate;
+    @Field("last_payment_date")
+    private LocalDateTime lastPaymentDate;
 
     @NotNull
     @Field("payment_period_type")
@@ -61,6 +61,10 @@ public class DebtDocument extends BaseDocument {
     private DebtStatus status = DebtStatus.ACTIVE;
 
     @Builder.Default
+    @Field("auto_payment")
+    private boolean autoPayment = false;
+
+    @Builder.Default
     @Field("payments")
     private List<PaymentEmbedded> payments = List.of();
 
@@ -70,4 +74,8 @@ public class DebtDocument extends BaseDocument {
     @Indexed
     @Field("next_reminder_date")
     private LocalDateTime nextReminderDate;
+
+    @Indexed
+    @Field("next_auto_payment_date")
+    private LocalDateTime nextAutoPaymentDate;
 }

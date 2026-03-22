@@ -46,7 +46,7 @@ class DebtRepositoryServiceTest {
                 .categoryId(CAT_ID)
                 .amount(BigDecimal.TEN)
                 .paymentPeriodType(PaymentPeriodType.MONTHLY)
-                .startDate(LocalDateTime.now())
+                .firstPaymentDate(LocalDateTime.now())
                 .build();
     }
 
@@ -153,9 +153,19 @@ class DebtRepositoryServiceTest {
         void findDueReminders_returnsDebts() {
             final LocalDateTime now = LocalDateTime.now();
             final List<DebtDocument> debts = List.of(buildDebt());
-            when(debtRepository.findByStatusAndReminderEnabledTrueAndNextReminderDateBefore(
+            when(debtRepository.findByStatusAndReminderEnabledTrueAndNextReminderDateLessThanEqual(
                     DebtStatus.ACTIVE, now)).thenReturn(debts);
             assertThat(debtRepositoryService.findDueReminders(now)).isEqualTo(debts);
+        }
+
+        @Test
+        @DisplayName("findDueAutoPayments returns auto-payment debts with past next-auto-payment date")
+        void findDueAutoPayments_returnsDebts() {
+            final LocalDateTime now = LocalDateTime.now();
+            final List<DebtDocument> debts = List.of(buildDebt());
+            when(debtRepository.findByAutoPaymentTrueAndNextAutoPaymentDateLessThanEqual(now))
+                    .thenReturn(debts);
+            assertThat(debtRepositoryService.findDueAutoPayments(now)).isEqualTo(debts);
         }
     }
 }

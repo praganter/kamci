@@ -67,6 +67,7 @@ public class DebtService {
 
         DebtDocument debtDocument = debtMapper.convert(request);
         setNextReminderDate(debtDocument);
+        setNextAutoPaymentDate(debtDocument);
         debtDocument = debtRS.save(debtDocument);
 
         log.info("Debt created with id: {} for user: {}", debtDocument.getId(), userId);
@@ -95,7 +96,9 @@ public class DebtService {
 
         DebtDocument debtDocument = debtMapper.convert(request);
         debtDocument.setPayments(existing.getPayments());
+        debtDocument.setNextAutoPaymentDate(existing.getNextAutoPaymentDate());
         setNextReminderDate(debtDocument);
+        setNextAutoPaymentDate(debtDocument);
         debtDocument = debtRS.update(debtDocument);
 
         log.info("Debt updated with id: {}", debtDocument.getId());
@@ -105,6 +108,10 @@ public class DebtService {
     public DebtResponse pay(final String id) {
         final String userId = RequestContextUtil.getUserId();
         final DebtDocument existing = debtRS.findById(id);
+
+        if (existing.isAutoPayment()) {
+            throw BaseException.conflict("error.debt.auto_payment_enabled");
+        }
 
         final CategoryDocument category = categoryRS.findById(existing.getCategoryId());
         if (lacksWriteAccess(category, userId)) {
@@ -195,5 +202,14 @@ public class DebtService {
         debtDocument.setNextReminderDate(
                 LocalDateTime.of(reminder.getReminderDate(), reminder.getReminderTime())
         );
+    }
+
+    private void setNextAutoPaymentDate(final DebtDocument debtDocument) {
+        if (!debtDocument.isAutoPayment() || debtDocument.getFirstPaymentDate() == null) {
+            return;
+        }
+        if (debtDocument.getNextAutoPaymentDate() == null) {
+            debtDocument.setNextAutoPaymentDate(debtDocument.getFirstPaymentDate());
+        }
     }
 }

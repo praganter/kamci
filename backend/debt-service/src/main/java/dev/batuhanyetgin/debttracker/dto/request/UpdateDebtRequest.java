@@ -31,9 +31,9 @@ public class UpdateDebtRequest {
     private String description;
 
     @NotNull(message = "{error.validation.not_null}")
-    private LocalDateTime startDate;
+    private LocalDateTime firstPaymentDate;
 
-    private LocalDateTime endDate;
+    private LocalDateTime lastPaymentDate;
 
     @NotNull(message = "{error.validation.not_null}")
     private PaymentPeriodType paymentPeriodType;
@@ -45,6 +45,8 @@ public class UpdateDebtRequest {
     @NotBlank(message = "{error.validation.not_blank}")
     @Size(max = 24, message = "{error.validation.size}")
     private String categoryId;
+
+    private boolean autoPayment;
 
     @Valid
     private ReminderRequest reminder;

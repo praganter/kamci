@@ -27,9 +27,9 @@ public class DebtItemResponse {
 
     private String description;
 
-    private LocalDateTime startDate;
+    private LocalDateTime firstPaymentDate;
 
-    private LocalDateTime endDate;
+    private LocalDateTime lastPaymentDate;
 
     private PaymentPeriodType paymentPeriodType;
 
@@ -37,11 +37,15 @@ public class DebtItemResponse {
 
     private DebtStatus status;
 
+    private boolean autoPayment;
+
     private List<PaymentEmbedded> payments;
 
     private ReminderEmbedded reminder;
 
     private LocalDateTime nextReminderDate;
+
+    private LocalDateTime nextAutoPaymentDate;
 
     private LocalDateTime createdDate;
 

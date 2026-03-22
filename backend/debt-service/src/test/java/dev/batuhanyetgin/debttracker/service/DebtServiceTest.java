@@ -69,7 +69,7 @@ class DebtServiceTest {
                 .categoryId(catId)
                 .amount(BigDecimal.TEN)
                 .paymentPeriodType(PaymentPeriodType.MONTHLY)
-                .startDate(LocalDateTime.now())
+                .firstPaymentDate(LocalDateTime.now())
                 .build();
     }
 
@@ -139,7 +139,7 @@ class DebtServiceTest {
                 final CreateDebtRequest request = CreateDebtRequest.builder()
                         .name("Test Debt").categoryId(CAT_ID)
                         .amount(BigDecimal.TEN).paymentPeriodType(PaymentPeriodType.MONTHLY)
-                        .startDate(LocalDateTime.now()).build();
+                        .firstPaymentDate(LocalDateTime.now()).build();
 
                 final DebtResponse response = debtService.create(request);
 
@@ -168,7 +168,7 @@ class DebtServiceTest {
                 final CreateDebtRequest request = CreateDebtRequest.builder()
                         .name("Test Debt").categoryId(CAT_ID)
                         .amount(BigDecimal.TEN).paymentPeriodType(PaymentPeriodType.MONTHLY)
-                        .startDate(LocalDateTime.now()).build();
+                        .firstPaymentDate(LocalDateTime.now()).build();
 
                 assertThatNoException().isThrownBy(() -> debtService.create(request));
             }
@@ -187,7 +187,7 @@ class DebtServiceTest {
                 final CreateDebtRequest request = CreateDebtRequest.builder()
                         .name("Test Debt").categoryId(CAT_ID)
                         .amount(BigDecimal.TEN).paymentPeriodType(PaymentPeriodType.MONTHLY)
-                        .startDate(LocalDateTime.now()).build();
+                        .firstPaymentDate(LocalDateTime.now()).build();
 
                 assertThatExceptionOfType(BaseException.class)
                         .isThrownBy(() -> debtService.create(request))
@@ -211,7 +211,7 @@ class DebtServiceTest {
                 final CreateDebtRequest request = CreateDebtRequest.builder()
                         .name("Test Debt").categoryId(CAT_ID)
                         .amount(BigDecimal.TEN).paymentPeriodType(PaymentPeriodType.MONTHLY)
-                        .startDate(LocalDateTime.now()).build();
+                        .firstPaymentDate(LocalDateTime.now()).build();
 
                 assertThatExceptionOfType(BaseException.class)
                         .isThrownBy(() -> debtService.create(request))
@@ -233,7 +233,7 @@ class DebtServiceTest {
                 final CreateDebtRequest request = CreateDebtRequest.builder()
                         .name("Test Debt").categoryId(CAT_ID)
                         .amount(BigDecimal.TEN).paymentPeriodType(PaymentPeriodType.MONTHLY)
-                        .startDate(LocalDateTime.now()).build();
+                        .firstPaymentDate(LocalDateTime.now()).build();
 
                 assertThatExceptionOfType(BaseException.class)
                         .isThrownBy(() -> debtService.create(request))
@@ -266,7 +266,7 @@ class DebtServiceTest {
                 final UpdateDebtRequest request = UpdateDebtRequest.builder()
                         .id(DEBT_ID).name("Updated").categoryId(CAT_ID)
                         .amount(BigDecimal.TEN).paymentPeriodType(PaymentPeriodType.MONTHLY)
-                        .startDate(LocalDateTime.now()).build();
+                        .firstPaymentDate(LocalDateTime.now()).build();
 
                 final DebtResponse response = debtService.update(request);
                 assertThat(response.getDebt()).isNotNull();
@@ -293,7 +293,7 @@ class DebtServiceTest {
                 final UpdateDebtRequest request = UpdateDebtRequest.builder()
                         .id(DEBT_ID).name("Updated").categoryId(NEW_CAT_ID)
                         .amount(BigDecimal.TEN).paymentPeriodType(PaymentPeriodType.MONTHLY)
-                        .startDate(LocalDateTime.now()).build();
+                        .firstPaymentDate(LocalDateTime.now()).build();
 
                 assertThatNoException().isThrownBy(() -> debtService.update(request));
             }
@@ -312,7 +312,7 @@ class DebtServiceTest {
                 final UpdateDebtRequest request = UpdateDebtRequest.builder()
                         .id(DEBT_ID).name("Updated").categoryId(CAT_ID)
                         .amount(BigDecimal.TEN).paymentPeriodType(PaymentPeriodType.MONTHLY)
-                        .startDate(LocalDateTime.now()).build();
+                        .firstPaymentDate(LocalDateTime.now()).build();
 
                 assertThatExceptionOfType(BaseException.class)
                         .isThrownBy(() -> debtService.update(request))
@@ -332,7 +332,7 @@ class DebtServiceTest {
                         .id(DEBT_ID).ownerId(OWNER_ID).categoryId(CAT_ID)
                         .name("Test Debt").amount(BigDecimal.TEN)
                         .paymentPeriodType(PaymentPeriodType.MONTHLY)
-                        .startDate(LocalDateTime.now())
+                        .firstPaymentDate(LocalDateTime.now())
                         .payments(existingPayments)
                         .build();
                 when(debtRS.findById(DEBT_ID)).thenReturn(existing);
@@ -346,7 +346,7 @@ class DebtServiceTest {
                 final UpdateDebtRequest request = UpdateDebtRequest.builder()
                         .id(DEBT_ID).name("Updated").categoryId(CAT_ID)
                         .amount(BigDecimal.TEN).paymentPeriodType(PaymentPeriodType.MONTHLY)
-                        .startDate(LocalDateTime.now()).build();
+                        .firstPaymentDate(LocalDateTime.now()).build();
 
                 debtService.update(request);
 
@@ -369,7 +369,7 @@ class DebtServiceTest {
                 final UpdateDebtRequest request = UpdateDebtRequest.builder()
                         .id(DEBT_ID).name("Updated").categoryId(NEW_CAT_ID)
                         .amount(BigDecimal.TEN).paymentPeriodType(PaymentPeriodType.MONTHLY)
-                        .startDate(LocalDateTime.now()).build();
+                        .firstPaymentDate(LocalDateTime.now()).build();
 
                 assertThatExceptionOfType(BaseException.class)
                         .isThrownBy(() -> debtService.update(request))
@@ -547,7 +547,7 @@ class DebtServiceTest {
                         .id(DEBT_ID).ownerId(OWNER_ID).categoryId(CAT_ID)
                         .name("Test Debt").amount(BigDecimal.TEN)
                         .paymentPeriodType(PaymentPeriodType.MONTHLY)
-                        .startDate(LocalDateTime.now())
+                        .firstPaymentDate(LocalDateTime.now())
                         .payments(existingPayments)
                         .build();
                 when(debtRS.findById(DEBT_ID)).thenReturn(existing);
@@ -577,6 +577,30 @@ class DebtServiceTest {
                         .matches(e -> e.getStatus() == HttpStatus.FORBIDDEN);
 
                 verify(debtRS, never()).update(any());
+            }
+        }
+
+        @Test
+        @DisplayName("auto-payment enabled → throws CONFLICT, no DB call")
+        void autoPaymentEnabled_throwsConflict() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+
+                final DebtDocument autoDebt = DebtDocument.builder()
+                        .id(DEBT_ID).ownerId(OWNER_ID).categoryId(CAT_ID)
+                        .name("Test").amount(BigDecimal.TEN)
+                        .paymentPeriodType(PaymentPeriodType.MONTHLY)
+                        .firstPaymentDate(LocalDateTime.now())
+                        .autoPayment(true)
+                        .build();
+                when(debtRS.findById(DEBT_ID)).thenReturn(autoDebt);
+
+                assertThatExceptionOfType(BaseException.class)
+                        .isThrownBy(() -> debtService.pay(DEBT_ID))
+                        .matches(e -> e.getStatus() == HttpStatus.CONFLICT);
+
+                verify(debtRS, never()).update(any());
+                verify(categoryRS, never()).findById(any());
             }
         }
     }
