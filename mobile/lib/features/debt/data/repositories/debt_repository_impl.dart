@@ -38,6 +38,12 @@ class DebtRepositoryImpl implements DebtRepository {
   }
 
   @override
+  Future<Debt> pay(String id) async {
+    final model = await _datasource.pay(id);
+    return model.toDomain();
+  }
+
+  @override
   Future<void> delete(String id) => _datasource.delete(id);
 
   CreateDebtRequest _paramsToRequest(CreateDebtParams params, {String? id}) {
@@ -46,11 +52,13 @@ class DebtRepositoryImpl implements DebtRepository {
       name: params.name,
       categoryId: params.categoryId,
       description: params.description,
-      startDate: DateFormatter.toApiFormat(params.startDate),
-      endDate: params.endDate != null ? DateFormatter.toApiFormat(params.endDate!) : null,
+      firstPaymentDate: DateFormatter.toApiDateTimeFormat(params.firstPaymentDate),
+      lastPaymentDate: params.lastPaymentDate != null
+          ? DateFormatter.toApiDateTimeFormat(params.lastPaymentDate!)
+          : null,
       paymentPeriodType: PaymentPeriodTypeJson.fromDomain(params.paymentPeriodType),
       amount: params.amount,
-      status: DebtStatusJson.fromDomain(params.status),
+      autoPayment: params.autoPayment,
     );
   }
 }

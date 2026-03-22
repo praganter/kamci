@@ -1,11 +1,11 @@
 import '../entities/debt.dart';
-import '../entities/payment_embedded.dart';
 import '../entities/reminder_embedded.dart';
 
 abstract interface class DebtRepository {
   Future<List<Debt>> getAll();
   Future<Debt> create(CreateDebtParams params);
   Future<Debt> update(String id, CreateDebtParams params);
+  Future<Debt> pay(String id);
   Future<void> delete(String id);
 }
 
@@ -15,12 +15,11 @@ class CreateDebtParams {
     required this.name,
     this.categoryId,
     this.description,
-    required this.startDate,
-    this.endDate,
+    required this.firstPaymentDate,
+    this.lastPaymentDate,
     required this.paymentPeriodType,
     required this.amount,
-    this.status = DebtStatus.active,
-    this.payments = const [],
+    this.autoPayment = false,
     this.reminder,
   });
 
@@ -28,11 +27,10 @@ class CreateDebtParams {
   final String name;
   final String? categoryId;
   final String? description;
-  final DateTime startDate;
-  final DateTime? endDate;
+  final DateTime firstPaymentDate;
+  final DateTime? lastPaymentDate;
   final PaymentPeriodType paymentPeriodType;
   final double amount;
-  final DebtStatus status;
-  final List<PaymentEmbedded> payments;
+  final bool autoPayment;
   final ReminderEmbedded? reminder;
 }

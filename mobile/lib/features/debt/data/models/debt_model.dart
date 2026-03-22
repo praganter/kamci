@@ -34,19 +34,16 @@ enum PaymentPeriodTypeJson {
 @JsonEnum(alwaysCreate: true)
 enum DebtStatusJson {
   @JsonValue('ACTIVE') active,
-  @JsonValue('INACTIVE') inactive,
-  @JsonValue('COMPLETED') completed;
+  @JsonValue('PASSIVE') passive;
 
   DebtStatus toDomain() => switch (this) {
     DebtStatusJson.active => DebtStatus.active,
-    DebtStatusJson.inactive => DebtStatus.inactive,
-    DebtStatusJson.completed => DebtStatus.completed,
+    DebtStatusJson.passive => DebtStatus.passive,
   };
 
   static DebtStatusJson fromDomain(DebtStatus s) => switch (s) {
     DebtStatus.active => DebtStatusJson.active,
-    DebtStatus.inactive => DebtStatusJson.inactive,
-    DebtStatus.completed => DebtStatusJson.completed,
+    DebtStatus.passive => DebtStatusJson.passive,
   };
 }
 
@@ -58,14 +55,16 @@ abstract class DebtModel with _$DebtModel {
     required String ownerId,
     String? categoryId,
     String? description,
-    required String startDate,
-    String? endDate,
+    String? firstPaymentDate,
+    String? lastPaymentDate,
     required PaymentPeriodTypeJson paymentPeriodType,
     @JsonKey(fromJson: _amountFromJson) required double amount,
     @Default(DebtStatusJson.active) DebtStatusJson status,
+    @Default(false) bool autoPayment,
     @Default([]) List<PaymentEmbeddedModel> payments,
     ReminderEmbeddedModel? reminder,
     String? nextReminderDate,
+    String? nextAutoPaymentDate,
     @JsonKey(name: 'createdDate') String? createdAt,
     @JsonKey(name: 'updatedDate') String? updatedAt,
   }) = _DebtModel;
@@ -87,11 +86,14 @@ extension DebtModelMapper on DebtModel {
     ownerId: ownerId,
     categoryId: categoryId,
     description: description,
-    startDate: DateTime.parse(startDate),
-    endDate: endDate != null ? DateTime.parse(endDate!) : null,
+    firstPaymentDate: firstPaymentDate != null
+        ? DateTime.parse(firstPaymentDate!)
+        : DateTime(2000),
+    lastPaymentDate: lastPaymentDate != null ? DateTime.tryParse(lastPaymentDate!) : null,
     paymentPeriodType: paymentPeriodType.toDomain(),
     amount: amount,
     status: status.toDomain(),
+    autoPayment: autoPayment,
     payments: payments.map((p) => p.toDomain()).toList(),
     reminder: reminder?.toDomain(),
     nextReminderDate:

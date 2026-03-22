@@ -345,6 +345,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get langEnglish => 'English';
 
   @override
+  String get visibility => 'Visibility';
+
+  @override
+  String get filterAll => 'All';
+
+  @override
+  String get filterActive => 'Active';
+
+  @override
+  String get filterInactive => 'Inactive';
+
+  @override
   String developerCredit(String name) {
     return 'Developed by $name';
   }

@@ -24,10 +24,9 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
   final _nameCtrl = TextEditingController();
   final _amountCtrl = TextEditingController();
   final _descCtrl = TextEditingController();
-  DateTime? _startDate;
-  DateTime? _endDate;
+  DateTime? _firstPaymentDate;
+  DateTime? _lastPaymentDate;
   PaymentPeriodType _periodType = PaymentPeriodType.monthly;
-  DebtStatus _status = DebtStatus.active;
   String? _selectedCategoryId;
   bool _initialized = false;
 
@@ -54,10 +53,9 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
       _nameCtrl.text = debt.name;
       _amountCtrl.text = debt.amount.toString();
       _descCtrl.text = debt.description ?? '';
-      _startDate = debt.startDate;
-      _endDate = debt.endDate;
+      _firstPaymentDate = debt.firstPaymentDate;
+      _lastPaymentDate = debt.lastPaymentDate;
       _periodType = debt.paymentPeriodType;
-      _status = debt.status;
       _selectedCategoryId = debt.categoryId;
       _initialized = true;
     });
@@ -74,16 +72,16 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
   Future<void> _pickDate(bool isStart) async {
     final picked = await showDatePicker(
       context: context,
-      initialDate: (isStart ? _startDate : _endDate) ?? DateTime.now(),
+      initialDate: (isStart ? _firstPaymentDate : _lastPaymentDate) ?? DateTime.now(),
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
     );
     if (picked != null) {
       setState(() {
         if (isStart) {
-          _startDate = picked;
+          _firstPaymentDate = picked;
         } else {
-          _endDate = picked;
+          _lastPaymentDate = picked;
         }
       });
     }
@@ -92,7 +90,7 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     final l10n = context.l10n;
-    if (_startDate == null) {
+    if (_firstPaymentDate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l10n.selectStartDate)),
       );
@@ -104,11 +102,10 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
       categoryId: _selectedCategoryId,
       description:
           _descCtrl.text.trim().isEmpty ? null : _descCtrl.text.trim(),
-      startDate: _startDate!,
-      endDate: _endDate,
+      firstPaymentDate: _firstPaymentDate!,
+      lastPaymentDate: _lastPaymentDate,
       paymentPeriodType: _periodType,
       amount: double.parse(_amountCtrl.text.replaceAll(',', '.')),
-      status: _status,
     );
 
     final repo = ref.read(debtRepositoryProvider);
@@ -194,8 +191,8 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                           prefixIcon: const Icon(Icons.calendar_today),
                         ),
                         child: Text(
-                          _startDate != null
-                              ? DateFormatter.formatDate(_startDate!)
+                          _firstPaymentDate != null
+                              ? DateFormatter.formatDate(_firstPaymentDate!)
                               : l10n.select,
                         ),
                       ),
@@ -211,8 +208,8 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                           prefixIcon: const Icon(Icons.event),
                         ),
                         child: Text(
-                          _endDate != null
-                              ? DateFormatter.formatDate(_endDate!)
+                          _lastPaymentDate != null
+                              ? DateFormatter.formatDate(_lastPaymentDate!)
                               : l10n.select,
                         ),
                       ),
@@ -243,21 +240,6 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                   ],
                   onChanged: (v) => setState(() => _selectedCategoryId = v),
                 ),
-              ),
-              const SizedBox(height: 16),
-              // ignore: deprecated_member_use
-              DropdownButtonFormField<DebtStatus>(
-                // ignore: deprecated_member_use
-                value: _status,
-                decoration: InputDecoration(
-                  labelText: l10n.status,
-                  prefixIcon: const Icon(Icons.info_outline),
-                ),
-                items: DebtStatus.values
-                    .map((s) => DropdownMenuItem(
-                        value: s, child: Text(s.l10nLabel(l10n))))
-                    .toList(),
-                onChanged: (v) => setState(() => _status = v!),
               ),
               const SizedBox(height: 16),
               TextFormField(

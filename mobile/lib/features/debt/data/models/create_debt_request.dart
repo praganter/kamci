@@ -11,11 +11,11 @@ abstract class CreateDebtRequest with _$CreateDebtRequest {
     required String name,
     String? categoryId,
     String? description,
-    required String startDate,
-    String? endDate,
+    required String firstPaymentDate,
+    String? lastPaymentDate,
     required PaymentPeriodTypeJson paymentPeriodType,
     required double amount,
-    @Default(DebtStatusJson.active) DebtStatusJson status,
+    @Default(false) bool autoPayment,
   }) = _CreateDebtRequest;
 
   factory CreateDebtRequest.fromJson(Map<String, dynamic> json) =>

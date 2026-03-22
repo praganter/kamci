@@ -345,6 +345,18 @@ class AppLocalizationsTr extends AppLocalizations {
   String get langEnglish => 'English';
 
   @override
+  String get visibility => 'Görünürlük';
+
+  @override
+  String get filterAll => 'Hepsi';
+
+  @override
+  String get filterActive => 'Aktif';
+
+  @override
+  String get filterInactive => 'Pasif';
+
+  @override
   String developerCredit(String name) {
     return 'Developed by $name';
   }

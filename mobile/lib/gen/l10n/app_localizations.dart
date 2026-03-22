@@ -740,6 +740,30 @@ abstract class AppLocalizations {
   /// **'English'**
   String get langEnglish;
 
+  /// No description provided for @visibility.
+  ///
+  /// In tr, this message translates to:
+  /// **'Görünürlük'**
+  String get visibility;
+
+  /// No description provided for @filterAll.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hepsi'**
+  String get filterAll;
+
+  /// No description provided for @filterActive.
+  ///
+  /// In tr, this message translates to:
+  /// **'Aktif'**
+  String get filterActive;
+
+  /// No description provided for @filterInactive.
+  ///
+  /// In tr, this message translates to:
+  /// **'Pasif'**
+  String get filterInactive;
+
   /// No description provided for @developerCredit.
   ///
   /// In tr, this message translates to:

@@ -14,7 +14,6 @@ extension PaymentPeriodTypeL10n on PaymentPeriodType {
 extension DebtStatusL10n on DebtStatus {
   String l10nLabel(AppLocalizations l10n) => switch (this) {
         DebtStatus.active => l10n.statusActive,
-        DebtStatus.inactive => l10n.statusInactive,
-        DebtStatus.completed => l10n.statusCompleted,
+        DebtStatus.passive => l10n.statusInactive,
       };
 }

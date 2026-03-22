@@ -12,8 +12,8 @@ _DebtModel _$DebtModelFromJson(Map<String, dynamic> json) => _DebtModel(
   ownerId: json['ownerId'] as String,
   categoryId: json['categoryId'] as String?,
   description: json['description'] as String?,
-  startDate: json['startDate'] as String,
-  endDate: json['endDate'] as String?,
+  firstPaymentDate: json['firstPaymentDate'] as String?,
+  lastPaymentDate: json['lastPaymentDate'] as String?,
   paymentPeriodType: $enumDecode(
     _$PaymentPeriodTypeJsonEnumMap,
     json['paymentPeriodType'],
@@ -22,6 +22,7 @@ _DebtModel _$DebtModelFromJson(Map<String, dynamic> json) => _DebtModel(
   status:
       $enumDecodeNullable(_$DebtStatusJsonEnumMap, json['status']) ??
       DebtStatusJson.active,
+  autoPayment: json['autoPayment'] as bool? ?? false,
   payments:
       (json['payments'] as List<dynamic>?)
           ?.map((e) => PaymentEmbeddedModel.fromJson(e as Map<String, dynamic>))
@@ -33,6 +34,7 @@ _DebtModel _$DebtModelFromJson(Map<String, dynamic> json) => _DebtModel(
           json['reminder'] as Map<String, dynamic>,
         ),
   nextReminderDate: json['nextReminderDate'] as String?,
+  nextAutoPaymentDate: json['nextAutoPaymentDate'] as String?,
   createdAt: json['createdDate'] as String?,
   updatedAt: json['updatedDate'] as String?,
 );
@@ -45,15 +47,18 @@ Map<String, dynamic> _$DebtModelToJson(
   'ownerId': instance.ownerId,
   if (instance.categoryId case final value?) 'categoryId': value,
   if (instance.description case final value?) 'description': value,
-  'startDate': instance.startDate,
-  if (instance.endDate case final value?) 'endDate': value,
+  if (instance.firstPaymentDate case final value?) 'firstPaymentDate': value,
+  if (instance.lastPaymentDate case final value?) 'lastPaymentDate': value,
   'paymentPeriodType':
       _$PaymentPeriodTypeJsonEnumMap[instance.paymentPeriodType]!,
   'amount': instance.amount,
   'status': _$DebtStatusJsonEnumMap[instance.status]!,
+  'autoPayment': instance.autoPayment,
   'payments': instance.payments.map((e) => e.toJson()).toList(),
   if (instance.reminder?.toJson() case final value?) 'reminder': value,
   if (instance.nextReminderDate case final value?) 'nextReminderDate': value,
+  if (instance.nextAutoPaymentDate case final value?)
+    'nextAutoPaymentDate': value,
   if (instance.createdAt case final value?) 'createdDate': value,
   if (instance.updatedAt case final value?) 'updatedDate': value,
 };
@@ -68,6 +73,5 @@ const _$PaymentPeriodTypeJsonEnumMap = {
 
 const _$DebtStatusJsonEnumMap = {
   DebtStatusJson.active: 'ACTIVE',
-  DebtStatusJson.inactive: 'INACTIVE',
-  DebtStatusJson.completed: 'COMPLETED',
+  DebtStatusJson.passive: 'PASSIVE',
 };

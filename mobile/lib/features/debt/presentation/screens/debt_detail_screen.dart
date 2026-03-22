@@ -83,10 +83,10 @@ class DebtDetailScreen extends ConsumerWidget {
                     _InfoRow(l10n.paymentPeriod,
                         debt.paymentPeriodType.l10nLabel(l10n)),
                     _InfoRow(l10n.startDate,
-                        DateFormatter.formatDate(debt.startDate)),
-                    if (debt.endDate != null)
+                        DateFormatter.formatDate(debt.firstPaymentDate)),
+                    if (debt.lastPaymentDate != null)
                       _InfoRow(l10n.endDate,
-                          DateFormatter.formatDate(debt.endDate!)),
+                          DateFormatter.formatDate(debt.lastPaymentDate!)),
                     if (debt.description != null)
                       _InfoRow(l10n.description, debt.description!),
                     if (debt.nextReminderDate != null)

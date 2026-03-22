@@ -121,6 +121,11 @@
   "langSystem": "System",
   "langTurkish": "Türkçe",
   "langEnglish": "English",
+  "visibility": "Visibility",
+  "filterAll": "All",
+  "filterActive": "Active",
+  "filterInactive": "Inactive",
+
   "developerCredit": "Developed by {name}",
   "@developerCredit": {
     "placeholders": {

@@ -12,16 +12,14 @@ _CreateDebtRequest _$CreateDebtRequestFromJson(Map<String, dynamic> json) =>
       name: json['name'] as String,
       categoryId: json['categoryId'] as String?,
       description: json['description'] as String?,
-      startDate: json['startDate'] as String,
-      endDate: json['endDate'] as String?,
+      firstPaymentDate: json['firstPaymentDate'] as String,
+      lastPaymentDate: json['lastPaymentDate'] as String?,
       paymentPeriodType: $enumDecode(
         _$PaymentPeriodTypeJsonEnumMap,
         json['paymentPeriodType'],
       ),
       amount: (json['amount'] as num).toDouble(),
-      status:
-          $enumDecodeNullable(_$DebtStatusJsonEnumMap, json['status']) ??
-          DebtStatusJson.active,
+      autoPayment: json['autoPayment'] as bool? ?? false,
     );
 
 Map<String, dynamic> _$CreateDebtRequestToJson(_CreateDebtRequest instance) =>
@@ -30,12 +28,12 @@ Map<String, dynamic> _$CreateDebtRequestToJson(_CreateDebtRequest instance) =>
       'name': instance.name,
       if (instance.categoryId case final value?) 'categoryId': value,
       if (instance.description case final value?) 'description': value,
-      'startDate': instance.startDate,
-      if (instance.endDate case final value?) 'endDate': value,
+      'firstPaymentDate': instance.firstPaymentDate,
+      if (instance.lastPaymentDate case final value?) 'lastPaymentDate': value,
       'paymentPeriodType':
           _$PaymentPeriodTypeJsonEnumMap[instance.paymentPeriodType]!,
       'amount': instance.amount,
-      'status': _$DebtStatusJsonEnumMap[instance.status]!,
+      'autoPayment': instance.autoPayment,
     };
 
 const _$PaymentPeriodTypeJsonEnumMap = {
@@ -44,10 +42,4 @@ const _$PaymentPeriodTypeJsonEnumMap = {
   PaymentPeriodTypeJson.monthly: 'MONTHLY',
   PaymentPeriodTypeJson.quarterly: 'QUARTERLY',
   PaymentPeriodTypeJson.yearly: 'YEARLY',
-};
-
-const _$DebtStatusJsonEnumMap = {
-  DebtStatusJson.active: 'ACTIVE',
-  DebtStatusJson.inactive: 'INACTIVE',
-  DebtStatusJson.completed: 'COMPLETED',
 };

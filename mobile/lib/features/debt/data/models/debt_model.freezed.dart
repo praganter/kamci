@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$DebtModel {
 
- String get id; String get name; String get ownerId; String? get categoryId; String? get description; String get startDate; String? get endDate; PaymentPeriodTypeJson get paymentPeriodType;@JsonKey(fromJson: _amountFromJson) double get amount; DebtStatusJson get status; List<PaymentEmbeddedModel> get payments; ReminderEmbeddedModel? get reminder; String? get nextReminderDate;@JsonKey(name: 'createdDate') String? get createdAt;@JsonKey(name: 'updatedDate') String? get updatedAt;
+ String get id; String get name; String get ownerId; String? get categoryId; String? get description; String? get firstPaymentDate; String? get lastPaymentDate; PaymentPeriodTypeJson get paymentPeriodType;@JsonKey(fromJson: _amountFromJson) double get amount; DebtStatusJson get status; bool get autoPayment; List<PaymentEmbeddedModel> get payments; ReminderEmbeddedModel? get reminder; String? get nextReminderDate; String? get nextAutoPaymentDate;@JsonKey(name: 'createdDate') String? get createdAt;@JsonKey(name: 'updatedDate') String? get updatedAt;
 /// Create a copy of DebtModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $DebtModelCopyWith<DebtModel> get copyWith => _$DebtModelCopyWithImpl<DebtModel>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is DebtModel&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.ownerId, ownerId) || other.ownerId == ownerId)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.description, description) || other.description == description)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.endDate, endDate) || other.endDate == endDate)&&(identical(other.paymentPeriodType, paymentPeriodType) || other.paymentPeriodType == paymentPeriodType)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.status, status) || other.status == status)&&const DeepCollectionEquality().equals(other.payments, payments)&&(identical(other.reminder, reminder) || other.reminder == reminder)&&(identical(other.nextReminderDate, nextReminderDate) || other.nextReminderDate == nextReminderDate)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is DebtModel&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.ownerId, ownerId) || other.ownerId == ownerId)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.description, description) || other.description == description)&&(identical(other.firstPaymentDate, firstPaymentDate) || other.firstPaymentDate == firstPaymentDate)&&(identical(other.lastPaymentDate, lastPaymentDate) || other.lastPaymentDate == lastPaymentDate)&&(identical(other.paymentPeriodType, paymentPeriodType) || other.paymentPeriodType == paymentPeriodType)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.status, status) || other.status == status)&&(identical(other.autoPayment, autoPayment) || other.autoPayment == autoPayment)&&const DeepCollectionEquality().equals(other.payments, payments)&&(identical(other.reminder, reminder) || other.reminder == reminder)&&(identical(other.nextReminderDate, nextReminderDate) || other.nextReminderDate == nextReminderDate)&&(identical(other.nextAutoPaymentDate, nextAutoPaymentDate) || other.nextAutoPaymentDate == nextAutoPaymentDate)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,ownerId,categoryId,description,startDate,endDate,paymentPeriodType,amount,status,const DeepCollectionEquality().hash(payments),reminder,nextReminderDate,createdAt,updatedAt);
+int get hashCode => Object.hash(runtimeType,id,name,ownerId,categoryId,description,firstPaymentDate,lastPaymentDate,paymentPeriodType,amount,status,autoPayment,const DeepCollectionEquality().hash(payments),reminder,nextReminderDate,nextAutoPaymentDate,createdAt,updatedAt);
 
 @override
 String toString() {
-  return 'DebtModel(id: $id, name: $name, ownerId: $ownerId, categoryId: $categoryId, description: $description, startDate: $startDate, endDate: $endDate, paymentPeriodType: $paymentPeriodType, amount: $amount, status: $status, payments: $payments, reminder: $reminder, nextReminderDate: $nextReminderDate, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'DebtModel(id: $id, name: $name, ownerId: $ownerId, categoryId: $categoryId, description: $description, firstPaymentDate: $firstPaymentDate, lastPaymentDate: $lastPaymentDate, paymentPeriodType: $paymentPeriodType, amount: $amount, status: $status, autoPayment: $autoPayment, payments: $payments, reminder: $reminder, nextReminderDate: $nextReminderDate, nextAutoPaymentDate: $nextAutoPaymentDate, createdAt: $createdAt, updatedAt: $updatedAt)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $DebtModelCopyWith<$Res>  {
   factory $DebtModelCopyWith(DebtModel value, $Res Function(DebtModel) _then) = _$DebtModelCopyWithImpl;
 @useResult
 $Res call({
- String id, String name, String ownerId, String? categoryId, String? description, String startDate, String? endDate, PaymentPeriodTypeJson paymentPeriodType,@JsonKey(fromJson: _amountFromJson) double amount, DebtStatusJson status, List<PaymentEmbeddedModel> payments, ReminderEmbeddedModel? reminder, String? nextReminderDate,@JsonKey(name: 'createdDate') String? createdAt,@JsonKey(name: 'updatedDate') String? updatedAt
+ String id, String name, String ownerId, String? categoryId, String? description, String? firstPaymentDate, String? lastPaymentDate, PaymentPeriodTypeJson paymentPeriodType,@JsonKey(fromJson: _amountFromJson) double amount, DebtStatusJson status, bool autoPayment, List<PaymentEmbeddedModel> payments, ReminderEmbeddedModel? reminder, String? nextReminderDate, String? nextAutoPaymentDate,@JsonKey(name: 'createdDate') String? createdAt,@JsonKey(name: 'updatedDate') String? updatedAt
 });
 
 
@@ -65,21 +65,23 @@ class _$DebtModelCopyWithImpl<$Res>
 
 /// Create a copy of DebtModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? ownerId = null,Object? categoryId = freezed,Object? description = freezed,Object? startDate = null,Object? endDate = freezed,Object? paymentPeriodType = null,Object? amount = null,Object? status = null,Object? payments = null,Object? reminder = freezed,Object? nextReminderDate = freezed,Object? createdAt = freezed,Object? updatedAt = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? ownerId = null,Object? categoryId = freezed,Object? description = freezed,Object? firstPaymentDate = freezed,Object? lastPaymentDate = freezed,Object? paymentPeriodType = null,Object? amount = null,Object? status = null,Object? autoPayment = null,Object? payments = null,Object? reminder = freezed,Object? nextReminderDate = freezed,Object? nextAutoPaymentDate = freezed,Object? createdAt = freezed,Object? updatedAt = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,ownerId: null == ownerId ? _self.ownerId : ownerId // ignore: cast_nullable_to_non_nullable
 as String,categoryId: freezed == categoryId ? _self.categoryId : categoryId // ignore: cast_nullable_to_non_nullable
 as String?,description: freezed == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
-as String?,startDate: null == startDate ? _self.startDate : startDate // ignore: cast_nullable_to_non_nullable
-as String,endDate: freezed == endDate ? _self.endDate : endDate // ignore: cast_nullable_to_non_nullable
+as String?,firstPaymentDate: freezed == firstPaymentDate ? _self.firstPaymentDate : firstPaymentDate // ignore: cast_nullable_to_non_nullable
+as String?,lastPaymentDate: freezed == lastPaymentDate ? _self.lastPaymentDate : lastPaymentDate // ignore: cast_nullable_to_non_nullable
 as String?,paymentPeriodType: null == paymentPeriodType ? _self.paymentPeriodType : paymentPeriodType // ignore: cast_nullable_to_non_nullable
 as PaymentPeriodTypeJson,amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
 as double,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
-as DebtStatusJson,payments: null == payments ? _self.payments : payments // ignore: cast_nullable_to_non_nullable
+as DebtStatusJson,autoPayment: null == autoPayment ? _self.autoPayment : autoPayment // ignore: cast_nullable_to_non_nullable
+as bool,payments: null == payments ? _self.payments : payments // ignore: cast_nullable_to_non_nullable
 as List<PaymentEmbeddedModel>,reminder: freezed == reminder ? _self.reminder : reminder // ignore: cast_nullable_to_non_nullable
 as ReminderEmbeddedModel?,nextReminderDate: freezed == nextReminderDate ? _self.nextReminderDate : nextReminderDate // ignore: cast_nullable_to_non_nullable
+as String?,nextAutoPaymentDate: freezed == nextAutoPaymentDate ? _self.nextAutoPaymentDate : nextAutoPaymentDate // ignore: cast_nullable_to_non_nullable
 as String?,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as String?,updatedAt: freezed == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as String?,
@@ -179,10 +181,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String ownerId,  String? categoryId,  String? description,  String startDate,  String? endDate,  PaymentPeriodTypeJson paymentPeriodType, @JsonKey(fromJson: _amountFromJson)  double amount,  DebtStatusJson status,  List<PaymentEmbeddedModel> payments,  ReminderEmbeddedModel? reminder,  String? nextReminderDate, @JsonKey(name: 'createdDate')  String? createdAt, @JsonKey(name: 'updatedDate')  String? updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String ownerId,  String? categoryId,  String? description,  String? firstPaymentDate,  String? lastPaymentDate,  PaymentPeriodTypeJson paymentPeriodType, @JsonKey(fromJson: _amountFromJson)  double amount,  DebtStatusJson status,  bool autoPayment,  List<PaymentEmbeddedModel> payments,  ReminderEmbeddedModel? reminder,  String? nextReminderDate,  String? nextAutoPaymentDate, @JsonKey(name: 'createdDate')  String? createdAt, @JsonKey(name: 'updatedDate')  String? updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _DebtModel() when $default != null:
-return $default(_that.id,_that.name,_that.ownerId,_that.categoryId,_that.description,_that.startDate,_that.endDate,_that.paymentPeriodType,_that.amount,_that.status,_that.payments,_that.reminder,_that.nextReminderDate,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.name,_that.ownerId,_that.categoryId,_that.description,_that.firstPaymentDate,_that.lastPaymentDate,_that.paymentPeriodType,_that.amount,_that.status,_that.autoPayment,_that.payments,_that.reminder,_that.nextReminderDate,_that.nextAutoPaymentDate,_that.createdAt,_that.updatedAt);case _:
   return orElse();
 
 }
@@ -200,10 +202,10 @@ return $default(_that.id,_that.name,_that.ownerId,_that.categoryId,_that.descrip
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String ownerId,  String? categoryId,  String? description,  String startDate,  String? endDate,  PaymentPeriodTypeJson paymentPeriodType, @JsonKey(fromJson: _amountFromJson)  double amount,  DebtStatusJson status,  List<PaymentEmbeddedModel> payments,  ReminderEmbeddedModel? reminder,  String? nextReminderDate, @JsonKey(name: 'createdDate')  String? createdAt, @JsonKey(name: 'updatedDate')  String? updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String ownerId,  String? categoryId,  String? description,  String? firstPaymentDate,  String? lastPaymentDate,  PaymentPeriodTypeJson paymentPeriodType, @JsonKey(fromJson: _amountFromJson)  double amount,  DebtStatusJson status,  bool autoPayment,  List<PaymentEmbeddedModel> payments,  ReminderEmbeddedModel? reminder,  String? nextReminderDate,  String? nextAutoPaymentDate, @JsonKey(name: 'createdDate')  String? createdAt, @JsonKey(name: 'updatedDate')  String? updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _DebtModel():
-return $default(_that.id,_that.name,_that.ownerId,_that.categoryId,_that.description,_that.startDate,_that.endDate,_that.paymentPeriodType,_that.amount,_that.status,_that.payments,_that.reminder,_that.nextReminderDate,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.name,_that.ownerId,_that.categoryId,_that.description,_that.firstPaymentDate,_that.lastPaymentDate,_that.paymentPeriodType,_that.amount,_that.status,_that.autoPayment,_that.payments,_that.reminder,_that.nextReminderDate,_that.nextAutoPaymentDate,_that.createdAt,_that.updatedAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -220,10 +222,10 @@ return $default(_that.id,_that.name,_that.ownerId,_that.categoryId,_that.descrip
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String ownerId,  String? categoryId,  String? description,  String startDate,  String? endDate,  PaymentPeriodTypeJson paymentPeriodType, @JsonKey(fromJson: _amountFromJson)  double amount,  DebtStatusJson status,  List<PaymentEmbeddedModel> payments,  ReminderEmbeddedModel? reminder,  String? nextReminderDate, @JsonKey(name: 'createdDate')  String? createdAt, @JsonKey(name: 'updatedDate')  String? updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String ownerId,  String? categoryId,  String? description,  String? firstPaymentDate,  String? lastPaymentDate,  PaymentPeriodTypeJson paymentPeriodType, @JsonKey(fromJson: _amountFromJson)  double amount,  DebtStatusJson status,  bool autoPayment,  List<PaymentEmbeddedModel> payments,  ReminderEmbeddedModel? reminder,  String? nextReminderDate,  String? nextAutoPaymentDate, @JsonKey(name: 'createdDate')  String? createdAt, @JsonKey(name: 'updatedDate')  String? updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _DebtModel() when $default != null:
-return $default(_that.id,_that.name,_that.ownerId,_that.categoryId,_that.description,_that.startDate,_that.endDate,_that.paymentPeriodType,_that.amount,_that.status,_that.payments,_that.reminder,_that.nextReminderDate,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.name,_that.ownerId,_that.categoryId,_that.description,_that.firstPaymentDate,_that.lastPaymentDate,_that.paymentPeriodType,_that.amount,_that.status,_that.autoPayment,_that.payments,_that.reminder,_that.nextReminderDate,_that.nextAutoPaymentDate,_that.createdAt,_that.updatedAt);case _:
   return null;
 
 }
@@ -235,7 +237,7 @@ return $default(_that.id,_that.name,_that.ownerId,_that.categoryId,_that.descrip
 @JsonSerializable()
 
 class _DebtModel implements DebtModel {
-  const _DebtModel({required this.id, required this.name, required this.ownerId, this.categoryId, this.description, required this.startDate, this.endDate, required this.paymentPeriodType, @JsonKey(fromJson: _amountFromJson) required this.amount, this.status = DebtStatusJson.active, final  List<PaymentEmbeddedModel> payments = const [], this.reminder, this.nextReminderDate, @JsonKey(name: 'createdDate') this.createdAt, @JsonKey(name: 'updatedDate') this.updatedAt}): _payments = payments;
+  const _DebtModel({required this.id, required this.name, required this.ownerId, this.categoryId, this.description, this.firstPaymentDate, this.lastPaymentDate, required this.paymentPeriodType, @JsonKey(fromJson: _amountFromJson) required this.amount, this.status = DebtStatusJson.active, this.autoPayment = false, final  List<PaymentEmbeddedModel> payments = const [], this.reminder, this.nextReminderDate, this.nextAutoPaymentDate, @JsonKey(name: 'createdDate') this.createdAt, @JsonKey(name: 'updatedDate') this.updatedAt}): _payments = payments;
   factory _DebtModel.fromJson(Map<String, dynamic> json) => _$DebtModelFromJson(json);
 
 @override final  String id;
@@ -243,11 +245,12 @@ class _DebtModel implements DebtModel {
 @override final  String ownerId;
 @override final  String? categoryId;
 @override final  String? description;
-@override final  String startDate;
-@override final  String? endDate;
+@override final  String? firstPaymentDate;
+@override final  String? lastPaymentDate;
 @override final  PaymentPeriodTypeJson paymentPeriodType;
 @override@JsonKey(fromJson: _amountFromJson) final  double amount;
 @override@JsonKey() final  DebtStatusJson status;
+@override@JsonKey() final  bool autoPayment;
  final  List<PaymentEmbeddedModel> _payments;
 @override@JsonKey() List<PaymentEmbeddedModel> get payments {
   if (_payments is EqualUnmodifiableListView) return _payments;
@@ -257,6 +260,7 @@ class _DebtModel implements DebtModel {
 
 @override final  ReminderEmbeddedModel? reminder;
 @override final  String? nextReminderDate;
+@override final  String? nextAutoPaymentDate;
 @override@JsonKey(name: 'createdDate') final  String? createdAt;
 @override@JsonKey(name: 'updatedDate') final  String? updatedAt;
 
@@ -273,16 +277,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DebtModel&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.ownerId, ownerId) || other.ownerId == ownerId)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.description, description) || other.description == description)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.endDate, endDate) || other.endDate == endDate)&&(identical(other.paymentPeriodType, paymentPeriodType) || other.paymentPeriodType == paymentPeriodType)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.status, status) || other.status == status)&&const DeepCollectionEquality().equals(other._payments, _payments)&&(identical(other.reminder, reminder) || other.reminder == reminder)&&(identical(other.nextReminderDate, nextReminderDate) || other.nextReminderDate == nextReminderDate)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DebtModel&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.ownerId, ownerId) || other.ownerId == ownerId)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.description, description) || other.description == description)&&(identical(other.firstPaymentDate, firstPaymentDate) || other.firstPaymentDate == firstPaymentDate)&&(identical(other.lastPaymentDate, lastPaymentDate) || other.lastPaymentDate == lastPaymentDate)&&(identical(other.paymentPeriodType, paymentPeriodType) || other.paymentPeriodType == paymentPeriodType)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.status, status) || other.status == status)&&(identical(other.autoPayment, autoPayment) || other.autoPayment == autoPayment)&&const DeepCollectionEquality().equals(other._payments, _payments)&&(identical(other.reminder, reminder) || other.reminder == reminder)&&(identical(other.nextReminderDate, nextReminderDate) || other.nextReminderDate == nextReminderDate)&&(identical(other.nextAutoPaymentDate, nextAutoPaymentDate) || other.nextAutoPaymentDate == nextAutoPaymentDate)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,ownerId,categoryId,description,startDate,endDate,paymentPeriodType,amount,status,const DeepCollectionEquality().hash(_payments),reminder,nextReminderDate,createdAt,updatedAt);
+int get hashCode => Object.hash(runtimeType,id,name,ownerId,categoryId,description,firstPaymentDate,lastPaymentDate,paymentPeriodType,amount,status,autoPayment,const DeepCollectionEquality().hash(_payments),reminder,nextReminderDate,nextAutoPaymentDate,createdAt,updatedAt);
 
 @override
 String toString() {
-  return 'DebtModel(id: $id, name: $name, ownerId: $ownerId, categoryId: $categoryId, description: $description, startDate: $startDate, endDate: $endDate, paymentPeriodType: $paymentPeriodType, amount: $amount, status: $status, payments: $payments, reminder: $reminder, nextReminderDate: $nextReminderDate, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'DebtModel(id: $id, name: $name, ownerId: $ownerId, categoryId: $categoryId, description: $description, firstPaymentDate: $firstPaymentDate, lastPaymentDate: $lastPaymentDate, paymentPeriodType: $paymentPeriodType, amount: $amount, status: $status, autoPayment: $autoPayment, payments: $payments, reminder: $reminder, nextReminderDate: $nextReminderDate, nextAutoPaymentDate: $nextAutoPaymentDate, createdAt: $createdAt, updatedAt: $updatedAt)';
 }
 
 
@@ -293,7 +297,7 @@ abstract mixin class _$DebtModelCopyWith<$Res> implements $DebtModelCopyWith<$Re
   factory _$DebtModelCopyWith(_DebtModel value, $Res Function(_DebtModel) _then) = __$DebtModelCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String name, String ownerId, String? categoryId, String? description, String startDate, String? endDate, PaymentPeriodTypeJson paymentPeriodType,@JsonKey(fromJson: _amountFromJson) double amount, DebtStatusJson status, List<PaymentEmbeddedModel> payments, ReminderEmbeddedModel? reminder, String? nextReminderDate,@JsonKey(name: 'createdDate') String? createdAt,@JsonKey(name: 'updatedDate') String? updatedAt
+ String id, String name, String ownerId, String? categoryId, String? description, String? firstPaymentDate, String? lastPaymentDate, PaymentPeriodTypeJson paymentPeriodType,@JsonKey(fromJson: _amountFromJson) double amount, DebtStatusJson status, bool autoPayment, List<PaymentEmbeddedModel> payments, ReminderEmbeddedModel? reminder, String? nextReminderDate, String? nextAutoPaymentDate,@JsonKey(name: 'createdDate') String? createdAt,@JsonKey(name: 'updatedDate') String? updatedAt
 });
 
 
@@ -310,21 +314,23 @@ class __$DebtModelCopyWithImpl<$Res>
 
 /// Create a copy of DebtModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? ownerId = null,Object? categoryId = freezed,Object? description = freezed,Object? startDate = null,Object? endDate = freezed,Object? paymentPeriodType = null,Object? amount = null,Object? status = null,Object? payments = null,Object? reminder = freezed,Object? nextReminderDate = freezed,Object? createdAt = freezed,Object? updatedAt = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? ownerId = null,Object? categoryId = freezed,Object? description = freezed,Object? firstPaymentDate = freezed,Object? lastPaymentDate = freezed,Object? paymentPeriodType = null,Object? amount = null,Object? status = null,Object? autoPayment = null,Object? payments = null,Object? reminder = freezed,Object? nextReminderDate = freezed,Object? nextAutoPaymentDate = freezed,Object? createdAt = freezed,Object? updatedAt = freezed,}) {
   return _then(_DebtModel(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,ownerId: null == ownerId ? _self.ownerId : ownerId // ignore: cast_nullable_to_non_nullable
 as String,categoryId: freezed == categoryId ? _self.categoryId : categoryId // ignore: cast_nullable_to_non_nullable
 as String?,description: freezed == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
-as String?,startDate: null == startDate ? _self.startDate : startDate // ignore: cast_nullable_to_non_nullable
-as String,endDate: freezed == endDate ? _self.endDate : endDate // ignore: cast_nullable_to_non_nullable
+as String?,firstPaymentDate: freezed == firstPaymentDate ? _self.firstPaymentDate : firstPaymentDate // ignore: cast_nullable_to_non_nullable
+as String?,lastPaymentDate: freezed == lastPaymentDate ? _self.lastPaymentDate : lastPaymentDate // ignore: cast_nullable_to_non_nullable
 as String?,paymentPeriodType: null == paymentPeriodType ? _self.paymentPeriodType : paymentPeriodType // ignore: cast_nullable_to_non_nullable
 as PaymentPeriodTypeJson,amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
 as double,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
-as DebtStatusJson,payments: null == payments ? _self._payments : payments // ignore: cast_nullable_to_non_nullable
+as DebtStatusJson,autoPayment: null == autoPayment ? _self.autoPayment : autoPayment // ignore: cast_nullable_to_non_nullable
+as bool,payments: null == payments ? _self._payments : payments // ignore: cast_nullable_to_non_nullable
 as List<PaymentEmbeddedModel>,reminder: freezed == reminder ? _self.reminder : reminder // ignore: cast_nullable_to_non_nullable
 as ReminderEmbeddedModel?,nextReminderDate: freezed == nextReminderDate ? _self.nextReminderDate : nextReminderDate // ignore: cast_nullable_to_non_nullable
+as String?,nextAutoPaymentDate: freezed == nextAutoPaymentDate ? _self.nextAutoPaymentDate : nextAutoPaymentDate // ignore: cast_nullable_to_non_nullable
 as String?,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as String?,updatedAt: freezed == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as String?,

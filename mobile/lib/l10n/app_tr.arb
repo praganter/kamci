@@ -151,6 +151,11 @@
   "langSystem": "Sistem",
   "langTurkish": "Türkçe",
   "langEnglish": "English",
+  "visibility": "Görünürlük",
+  "filterAll": "Hepsi",
+  "filterActive": "Aktif",
+  "filterInactive": "Pasif",
+
   "developerCredit": "Developed by {name}",
   "@developerCredit": {
     "placeholders": {

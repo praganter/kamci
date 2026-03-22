@@ -17,15 +17,15 @@ enum PaymentPeriodType {
   };
 }
 
+enum DebtStatusFilter { all, active, passive }
+
 enum DebtStatus {
   active,
-  inactive,
-  completed;
+  passive;
 
   String get label => switch (this) {
     DebtStatus.active => 'Aktif',
-    DebtStatus.inactive => 'Pasif',
-    DebtStatus.completed => 'Tamamlandı',
+    DebtStatus.passive => 'Pasif',
   };
 }
 
@@ -36,11 +36,12 @@ class Debt {
     required this.ownerId,
     this.categoryId,
     this.description,
-    required this.startDate,
-    this.endDate,
+    required this.firstPaymentDate,
+    this.lastPaymentDate,
     required this.paymentPeriodType,
     required this.amount,
     required this.status,
+    required this.autoPayment,
     required this.payments,
     this.reminder,
     this.nextReminderDate,
@@ -53,11 +54,12 @@ class Debt {
   final String ownerId;
   final String? categoryId;
   final String? description;
-  final DateTime startDate;
-  final DateTime? endDate;
+  final DateTime firstPaymentDate;
+  final DateTime? lastPaymentDate;
   final PaymentPeriodType paymentPeriodType;
   final double amount;
   final DebtStatus status;
+  final bool autoPayment;
   final List<PaymentEmbedded> payments;
   final ReminderEmbedded? reminder;
   final DateTime? nextReminderDate;
