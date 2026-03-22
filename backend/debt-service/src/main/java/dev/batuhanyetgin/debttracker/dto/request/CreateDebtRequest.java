@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,8 +20,10 @@ import java.time.LocalDateTime;
 public class CreateDebtRequest {
 
     @NotBlank(message = "{error.validation.not_blank}")
+    @Size(max = 150, message = "{error.validation.size}")
     private String name;
 
+    @Size(max = 250, message = "{error.validation.size}")
     private String description;
 
     @NotNull(message = "{error.validation.not_null}")
@@ -36,6 +39,7 @@ public class CreateDebtRequest {
     private BigDecimal amount;
 
     @NotBlank(message = "{error.validation.not_blank}")
+    @Size(max = 24, message = "{error.validation.size}")
     private String categoryId;
 
     @Valid
