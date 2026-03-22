@@ -20,11 +20,29 @@ class CategoryListScreen extends ConsumerWidget {
       child: Scaffold(
         appBar: AppBar(
           title: Text(l10n.categories),
-          bottom: TabBar(
-            tabs: [
-              Tab(text: l10n.myCategories),
-              Tab(text: l10n.joinedCategories),
-            ],
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(48),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              child: Builder(builder: (context) {
+                final cs = Theme.of(context).colorScheme;
+                return TabBar(
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  indicator: BoxDecoration(
+                    color: cs.primaryContainer,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  dividerColor: Colors.transparent,
+                  labelColor: cs.primary,
+                  unselectedLabelColor: cs.onSurfaceVariant,
+                  labelStyle: const TextStyle(fontWeight: FontWeight.w600),
+                  tabs: [
+                    Tab(text: l10n.myCategories),
+                    Tab(text: l10n.joinedCategories),
+                  ],
+                );
+              }),
+            ),
           ),
         ),
         floatingActionButton: FloatingActionButton(
@@ -178,16 +196,16 @@ class _CategoryCard extends StatelessWidget {
           child: Row(
             children: [
               Container(
-                width: 40,
-                height: 40,
+                width: 42,
+                height: 42,
                 decoration: BoxDecoration(
-                  color: cs.primaryContainer,
+                  color: cs.primary,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
                   isOwner ? Icons.folder_rounded : Icons.group_rounded,
                   size: 20,
-                  color: cs.primary,
+                  color: cs.onPrimary,
                 ),
               ),
               const SizedBox(width: 14),

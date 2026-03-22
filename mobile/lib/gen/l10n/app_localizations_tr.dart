@@ -293,6 +293,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get statusCompleted => 'Tamamlandı';
 
   @override
+  String get currentPassword => 'Mevcut Şifre';
+
+  @override
   String get settings => 'Ayarlar';
 
   @override

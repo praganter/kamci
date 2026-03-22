@@ -35,7 +35,9 @@ class _DebtTabView extends ConsumerWidget {
     final groupedAsync = ref.watch(debtGroupedProvider);
 
     return Scaffold(
-      body: groupedAsync.when(
+      body: SafeArea(
+        bottom: false,
+        child: groupedAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => AppErrorWidget(
           message: e.toString(),
@@ -90,6 +92,7 @@ class _DebtTabView extends ConsumerWidget {
             ),
           );
         },
+        ),
       ),
       floatingActionButton: owned
           ? FloatingActionButton(
@@ -179,6 +182,8 @@ class _CategorySection extends ConsumerWidget {
               const SizedBox(width: 2),
             ],
           ),
+          collapsedIconColor: cs.onSurfaceVariant,
+          iconColor: cs.primary,
           initiallyExpanded: false,
           children: [
             if (group.debts.isEmpty)
@@ -230,11 +235,20 @@ class _CompactDebtTile extends ConsumerWidget {
         child: Row(
           children: [
             Container(
-              width: 8,
-              height: 8,
+              width: 10,
+              height: 10,
               decoration: BoxDecoration(
                 color: statusColor,
                 shape: BoxShape.circle,
+                boxShadow: debt.status == DebtStatus.active
+                    ? [
+                        BoxShadow(
+                          color: statusColor.withValues(alpha: 0.5),
+                          blurRadius: 6,
+                          spreadRadius: 1,
+                        )
+                      ]
+                    : null,
               ),
             ),
             const SizedBox(width: 12),

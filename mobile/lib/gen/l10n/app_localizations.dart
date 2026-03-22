@@ -638,6 +638,12 @@ abstract class AppLocalizations {
   /// **'Tamamlandı'**
   String get statusCompleted;
 
+  /// No description provided for @currentPassword.
+  ///
+  /// In tr, this message translates to:
+  /// **'Mevcut Şifre'**
+  String get currentPassword;
+
   /// No description provided for @settings.
   ///
   /// In tr, this message translates to:

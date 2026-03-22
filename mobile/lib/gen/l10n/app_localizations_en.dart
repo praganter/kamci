@@ -293,6 +293,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get statusCompleted => 'Completed';
 
   @override
+  String get currentPassword => 'Current Password';
+
+  @override
   String get settings => 'Settings';
 
   @override

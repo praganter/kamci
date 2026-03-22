@@ -23,9 +23,20 @@ class AuthInterceptor extends QueuedInterceptorsWrapper {
     handler.next(options);
   }
 
+  bool _isTokenError(DioException err) {
+    final status = err.response?.statusCode;
+    if (status == 401) return true;
+    if (status == 403) {
+      final error = err.response?.data;
+      final message = error is Map ? (error['error'] as String?) : null;
+      return message != null && message.contains('JWT');
+    }
+    return false;
+  }
+
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
-    if (err.response?.statusCode != 401) {
+    if (!_isTokenError(err)) {
       handler.next(err);
       return;
     }
