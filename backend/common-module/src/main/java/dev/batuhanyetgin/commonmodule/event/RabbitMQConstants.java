@@ -24,7 +24,6 @@ public final class RabbitMQConstants {
     public static final String USER_REGISTERED_DLQ_ROUTING_KEY = "notification.routing.user_registered.dlq";
     public static final String DEBT_ADDED_DLQ_ROUTING_KEY = "notification.routing.debt_added.dlq";
     public static final String DEBT_REMINDER_DLQ_ROUTING_KEY = "notification.routing.debt_reminder.dlq";
-
     private RabbitMQConstants() {
     }
 }
