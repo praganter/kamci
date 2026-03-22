@@ -106,7 +106,12 @@ services:
       - SPRING_RABBITMQ_PORT=5672
       - SPRING_RABBITMQ_USERNAME=${RABBITMQ_DEFAULT_USER}
       - SPRING_RABBITMQ_PASSWORD=${RABBITMQ_DEFAULT_PASS}
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/firebase-adminsdk.json
+    volumes:
+      - ./firebase-adminsdk.json:/app/firebase-adminsdk.json:ro
     depends_on:
+      mongodb:
+        condition: service_healthy
       rabbitmq:
         condition: service_healthy
     networks:

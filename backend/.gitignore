@@ -36,3 +36,4 @@ build/
 .vexp
 vexp.toml
 .claude
+firebase-adminsdk.json
