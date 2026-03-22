@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @Component
@@ -37,22 +38,43 @@ public class DebtReminderScheduler {
         final List<DebtDocument> dueDebts = debtRS.findDueReminders(now);
         log.info("Found {} debt(s) with due reminders", dueDebts.size());
 
+        if (dueDebts.isEmpty()) return;
+
+        final AtomicInteger successCount = new AtomicInteger(0);
+        final AtomicInteger failureCount = new AtomicInteger(0);
+
         final List<CompletableFuture<Void>> futures = dueDebts.stream()
-                .map(debt -> CompletableFuture.runAsync(() -> processDebt(debt), taskExecutor)
-                        .exceptionally(ex -> {
-                            log.error("Failed to process reminder for debt {}: {}", debt.getId(), ex.getMessage(), ex);
-                            return null;
-                        }))
+                .map(debt -> CompletableFuture.runAsync(
+                        () -> processDebt(debt, successCount, failureCount), taskExecutor))
                 .toList();
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
 
-        log.info("Processed {} reminder(s) in parallel", dueDebts.size());
+        log.info("Reminder batch complete — success: {}, failed: {}", successCount.get(), failureCount.get());
+        if (failureCount.get() > 0) {
+            log.warn("{} reminder(s) failed and will be retried on the next run", failureCount.get());
+        }
     }
 
-    private void processDebt(final DebtDocument debt) {
-        produceReminderEvent(debt);
+    private void processDebt(final DebtDocument debt, final AtomicInteger successCount, final AtomicInteger failureCount) {
+        try {
+            produceReminderEvent(debt);
+        } catch (Exception e) {
+            log.error("Failed to publish reminder for debt {} — date not advanced, will retry next run: {}",
+                    debt.getId(), e.getMessage(), e);
+            failureCount.incrementAndGet();
+            return;
+        }
+
         advanceNextReminderDate(debt);
-        debtRS.update(debt);
+
+        try {
+            debtRS.update(debt);
+            successCount.incrementAndGet();
+        } catch (Exception e) {
+            log.error("Reminder sent but DB update failed for debt {} — next run may send duplicate reminder: {}",
+                    debt.getId(), e.getMessage(), e);
+            failureCount.incrementAndGet();
+        }
     }
 
     private void produceReminderEvent(final DebtDocument debt) {
