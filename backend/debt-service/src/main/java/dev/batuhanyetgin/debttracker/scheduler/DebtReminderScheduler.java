@@ -4,6 +4,7 @@ import dev.batuhanyetgin.commonmodule.event.DebtReminderEvent;
 import dev.batuhanyetgin.commonmodule.event.RabbitMQConstants;
 import dev.batuhanyetgin.debttracker.document.DebtDocument;
 import dev.batuhanyetgin.debttracker.document.embedded.PaymentEmbedded;
+import dev.batuhanyetgin.debttracker.enums.DebtStatus;
 import dev.batuhanyetgin.debttracker.enums.PaymentPeriodType;
 import dev.batuhanyetgin.debttracker.producer.DebtEventProducer;
 import dev.batuhanyetgin.debttracker.repositoryservice.DebtRepositoryService;
@@ -126,7 +127,13 @@ public class DebtReminderScheduler {
     private void processAutoPaymentDebt(final DebtDocument debt, final LocalDateTime now,
                                         final AtomicInteger success, final AtomicInteger failure) {
         recordAutoPayment(debt, now);
-        advanceNextAutoPaymentDate(debt);
+
+        if (debt.getLastPaymentDate() != null && !now.isBefore(debt.getLastPaymentDate())) {
+            debt.setStatus(DebtStatus.PASSIVE);
+            log.info("Debt {} marked as PASSIVE after auto-payment — lastPaymentDate reached", debt.getId());
+        } else {
+            advanceNextAutoPaymentDate(debt);
+        }
 
         try {
             debtRS.update(debt);

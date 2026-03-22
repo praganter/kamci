@@ -3,6 +3,7 @@ package dev.batuhanyetgin.debttracker.scheduler;
 import dev.batuhanyetgin.commonmodule.event.ReminderChannelType;
 import dev.batuhanyetgin.debttracker.document.DebtDocument;
 import dev.batuhanyetgin.debttracker.document.embedded.ReminderEmbedded;
+import dev.batuhanyetgin.debttracker.enums.DebtStatus;
 import dev.batuhanyetgin.debttracker.enums.PaymentPeriodType;
 import dev.batuhanyetgin.debttracker.producer.DebtEventProducer;
 import dev.batuhanyetgin.debttracker.repositoryservice.DebtRepositoryService;
@@ -219,6 +220,53 @@ class DebtReminderSchedulerTest {
             when(debtRS.update(any())).thenThrow(new RuntimeException("DB error"));
 
             assertThatNoException().isThrownBy(() -> scheduler.processReminders());
+        }
+
+        @Test
+        @DisplayName("lastPaymentDate reached → debt marked PASSIVE, nextAutoPaymentDate not advanced")
+        void lastPaymentDateReached_markedPassiveNoAdvance() {
+            final LocalDateTime lastPayment = LocalDateTime.now().minusDays(1); // real past
+            final DebtDocument debt = DebtDocument.builder()
+                    .id("debt1").ownerId("owner1").name("Auto Debt")
+                    .amount(java.math.BigDecimal.TEN)
+                    .paymentPeriodType(PaymentPeriodType.MONTHLY)
+                    .firstPaymentDate(LocalDateTime.now().minusMonths(2))
+                    .lastPaymentDate(lastPayment)
+                    .autoPayment(true)
+                    .nextAutoPaymentDate(BASE_TIME)
+                    .build();
+            when(debtRS.findDueAutoPayments(any())).thenReturn(List.of(debt));
+
+            final ArgumentCaptor<DebtDocument> captor = ArgumentCaptor.forClass(DebtDocument.class);
+            when(debtRS.update(captor.capture())).thenReturn(debt);
+
+            scheduler.processReminders();
+
+            assertThat(captor.getValue().getStatus()).isEqualTo(DebtStatus.PASSIVE);
+            assertThat(captor.getValue().getNextAutoPaymentDate()).isEqualTo(BASE_TIME); // not advanced
+        }
+
+        @Test
+        @DisplayName("lastPaymentDate not yet reached → nextAutoPaymentDate advanced, status remains ACTIVE")
+        void lastPaymentDateNotReached_advancedAndActive() {
+            final DebtDocument debt = DebtDocument.builder()
+                    .id("debt1").ownerId("owner1").name("Auto Debt")
+                    .amount(java.math.BigDecimal.TEN)
+                    .paymentPeriodType(PaymentPeriodType.MONTHLY)
+                    .firstPaymentDate(BASE_TIME)
+                    .lastPaymentDate(BASE_TIME.plusMonths(6))
+                    .autoPayment(true)
+                    .nextAutoPaymentDate(BASE_TIME)
+                    .build();
+            when(debtRS.findDueAutoPayments(any())).thenReturn(List.of(debt));
+
+            final ArgumentCaptor<DebtDocument> captor = ArgumentCaptor.forClass(DebtDocument.class);
+            when(debtRS.update(captor.capture())).thenReturn(debt);
+
+            scheduler.processReminders();
+
+            assertThat(captor.getValue().getStatus()).isEqualTo(DebtStatus.ACTIVE);
+            assertThat(captor.getValue().getNextAutoPaymentDate()).isEqualTo(BASE_TIME.plusMonths(1));
         }
     }
 

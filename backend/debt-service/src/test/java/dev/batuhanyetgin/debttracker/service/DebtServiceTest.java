@@ -12,6 +12,7 @@ import dev.batuhanyetgin.debttracker.dto.response.DebtItemResponse;
 import dev.batuhanyetgin.debttracker.dto.response.DebtResponse;
 import dev.batuhanyetgin.debttracker.dto.response.GetDebtResponse;
 import dev.batuhanyetgin.debttracker.enums.AccessLevelType;
+import dev.batuhanyetgin.debttracker.enums.DebtStatus;
 import dev.batuhanyetgin.debttracker.enums.PaymentPeriodType;
 import dev.batuhanyetgin.debttracker.mapper.DebtMapper;
 import dev.batuhanyetgin.debttracker.repositoryservice.CategoryRepositoryService;
@@ -601,6 +602,58 @@ class DebtServiceTest {
 
                 verify(debtRS, never()).update(any());
                 verify(categoryRS, never()).findById(any());
+            }
+        }
+
+        @Test
+        @DisplayName("lastPaymentDate reached → status set to PASSIVE after payment")
+        void lastPaymentDateReached_statusPassive() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+
+                final DebtDocument existing = DebtDocument.builder()
+                        .id(DEBT_ID).ownerId(OWNER_ID).categoryId(CAT_ID)
+                        .name("Test Debt").amount(BigDecimal.TEN)
+                        .paymentPeriodType(PaymentPeriodType.MONTHLY)
+                        .firstPaymentDate(LocalDateTime.now().minusMonths(1))
+                        .lastPaymentDate(LocalDateTime.now().minusDays(1))
+                        .build();
+                when(debtRS.findById(DEBT_ID)).thenReturn(existing);
+                when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
+
+                final ArgumentCaptor<DebtDocument> captor = ArgumentCaptor.forClass(DebtDocument.class);
+                when(debtRS.update(captor.capture())).thenReturn(existing);
+                when(debtMapper.convert(existing)).thenReturn(buildDebtItemResponse());
+
+                debtService.pay(DEBT_ID);
+
+                assertThat(captor.getValue().getStatus()).isEqualTo(DebtStatus.PASSIVE);
+            }
+        }
+
+        @Test
+        @DisplayName("lastPaymentDate not yet reached → status remains ACTIVE after payment")
+        void lastPaymentDateNotReached_statusRemainsActive() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+
+                final DebtDocument existing = DebtDocument.builder()
+                        .id(DEBT_ID).ownerId(OWNER_ID).categoryId(CAT_ID)
+                        .name("Test Debt").amount(BigDecimal.TEN)
+                        .paymentPeriodType(PaymentPeriodType.MONTHLY)
+                        .firstPaymentDate(LocalDateTime.now())
+                        .lastPaymentDate(LocalDateTime.now().plusMonths(6))
+                        .build();
+                when(debtRS.findById(DEBT_ID)).thenReturn(existing);
+                when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
+
+                final ArgumentCaptor<DebtDocument> captor = ArgumentCaptor.forClass(DebtDocument.class);
+                when(debtRS.update(captor.capture())).thenReturn(existing);
+                when(debtMapper.convert(existing)).thenReturn(buildDebtItemResponse());
+
+                debtService.pay(DEBT_ID);
+
+                assertThat(captor.getValue().getStatus()).isEqualTo(DebtStatus.ACTIVE);
             }
         }
     }

@@ -13,6 +13,7 @@ import dev.batuhanyetgin.debttracker.dto.response.CategoryDebtResponse;
 import dev.batuhanyetgin.debttracker.dto.response.DebtResponse;
 import dev.batuhanyetgin.debttracker.dto.response.GetDebtResponse;
 import dev.batuhanyetgin.debttracker.enums.AccessLevelType;
+import dev.batuhanyetgin.debttracker.enums.DebtStatus;
 import dev.batuhanyetgin.debttracker.mapper.DebtMapper;
 import dev.batuhanyetgin.debttracker.repositoryservice.CategoryRepositoryService;
 import dev.batuhanyetgin.debttracker.repositoryservice.DebtRepositoryService;
@@ -118,12 +119,18 @@ public class DebtService {
             throw BaseException.forbidden("error.debt.permission_denied");
         }
 
+        final LocalDateTime now = LocalDateTime.now();
         final List<PaymentEmbedded> payments = new ArrayList<>(existing.getPayments());
         payments.add(PaymentEmbedded.builder()
                 .paid(true)
-                .paidTime(LocalDateTime.now())
+                .paidTime(now)
                 .build());
         existing.setPayments(payments);
+
+        if (existing.getLastPaymentDate() != null && !now.isBefore(existing.getLastPaymentDate())) {
+            existing.setStatus(DebtStatus.PASSIVE);
+            log.info("Debt {} marked as PASSIVE — lastPaymentDate reached", id);
+        }
 
         final DebtDocument updated = debtRS.update(existing);
         log.info("Payment recorded for debt: {}", id);
