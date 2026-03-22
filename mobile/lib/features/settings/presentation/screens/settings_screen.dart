@@ -6,6 +6,7 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/providers/app_settings_provider.dart';
 import '../../../../core/router/route_names.dart';
+import '../../../debt/domain/entities/debt.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -52,6 +53,14 @@ class SettingsScreen extends ConsumerWidget {
                       await launchUrl(uri);
                     }
                   },
+                ),
+                const SizedBox(height: 20),
+
+                // ── Visibility ─────────────────────────────────────────────
+                _SectionHeader(label: l10n.visibility),
+                _SegmentCard(
+                  label: l10n.status,
+                  child: _StatusFilterSegmented(),
                 ),
                 const SizedBox(height: 20),
 
@@ -248,6 +257,37 @@ class _ThemeSegmented extends ConsumerWidget {
         ButtonSegment(
           value: ThemeMode.dark,
           label: Text(l10n.themeDark),
+        ),
+      ],
+    );
+  }
+}
+
+// ── Status filter segmented ──────────────────────────────────────────────────
+
+class _StatusFilterSegmented extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final current = ref.watch(debtStatusFilterProvider);
+
+    return SegmentedButton<DebtStatusFilter>(
+      showSelectedIcon: false,
+      selected: {current},
+      onSelectionChanged: (v) =>
+          ref.read(debtStatusFilterProvider.notifier).set(v.first),
+      segments: [
+        ButtonSegment(
+          value: DebtStatusFilter.all,
+          label: Text(l10n.filterAll),
+        ),
+        ButtonSegment(
+          value: DebtStatusFilter.active,
+          label: Text(l10n.filterActive),
+        ),
+        ButtonSegment(
+          value: DebtStatusFilter.passive,
+          label: Text(l10n.filterInactive),
         ),
       ],
     );

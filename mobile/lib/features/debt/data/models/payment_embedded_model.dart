@@ -21,3 +21,10 @@ extension PaymentEmbeddedModelMapper on PaymentEmbeddedModel {
     paidTime: paidTime != null ? DateTime.tryParse(paidTime!) : null,
   );
 }
+
+extension PaymentEmbeddedDomainMapper on PaymentEmbedded {
+  PaymentEmbeddedModel toModel() => PaymentEmbeddedModel(
+    paid: paid,
+    paidTime: paidTime?.toIso8601String().replaceAll(RegExp(r'(\.\d{3})\d+'), r'$1'),
+  );
+}

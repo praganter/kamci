@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../features/debt/domain/entities/debt.dart';
 
 class SettingsService {
   const SettingsService(this._prefs);
@@ -7,6 +8,7 @@ class SettingsService {
 
   static const _keyTheme = 'theme_mode';
   static const _keyLocale = 'locale';
+  static const _keyDebtStatusFilter = 'debt_status_filter';
 
   ThemeMode get themeMode {
     return switch (_prefs.getString(_keyTheme)) {
@@ -36,4 +38,22 @@ class SettingsService {
     }
     return _prefs.setString(_keyLocale, locale.languageCode);
   }
+
+  DebtStatusFilter get debtStatusFilter {
+    return switch (_prefs.getString(_keyDebtStatusFilter)) {
+      'active' => DebtStatusFilter.active,
+      'passive' => DebtStatusFilter.passive,
+      _ => DebtStatusFilter.all,
+    };
+  }
+
+  Future<void> setDebtStatusFilter(DebtStatusFilter filter) =>
+      _prefs.setString(
+        _keyDebtStatusFilter,
+        switch (filter) {
+          DebtStatusFilter.active => 'active',
+          DebtStatusFilter.passive => 'passive',
+          DebtStatusFilter.all => 'all',
+        },
+      );
 }

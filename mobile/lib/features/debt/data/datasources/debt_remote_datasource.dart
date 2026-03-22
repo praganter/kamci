@@ -63,7 +63,8 @@ class DebtRemoteDatasource {
         ApiConstants.debtSave,
         data: request.toJson(),
       );
-      return DebtModel.fromJson(response.data as Map<String, dynamic>);
+      final debt = (response.data as Map<String, dynamic>)['debt'] as Map<String, dynamic>;
+      return DebtModel.fromJson(debt);
     } on DioException catch (e) {
       throw _mapException(e);
     }
@@ -75,7 +76,18 @@ class DebtRemoteDatasource {
         ApiConstants.debtUpdate,
         data: request.toJson(),
       );
-      return DebtModel.fromJson(response.data as Map<String, dynamic>);
+      final debt = (response.data as Map<String, dynamic>)['debt'] as Map<String, dynamic>;
+      return DebtModel.fromJson(debt);
+    } on DioException catch (e) {
+      throw _mapException(e);
+    }
+  }
+
+  Future<DebtModel> pay(String id) async {
+    try {
+      final response = await _dio.post('${ApiConstants.debtPay}/$id');
+      final debt = (response.data as Map<String, dynamic>)['debt'] as Map<String, dynamic>;
+      return DebtModel.fromJson(debt);
     } on DioException catch (e) {
       throw _mapException(e);
     }

@@ -6,7 +6,7 @@ part of 'debt_providers.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$debtListHash() => r'3045145011b204d5f8a0413faa391b322e17c731';
+String _$debtListHash() => r'1264b802d74cf29a5ee2c14df71e0751bb04eea6';
 
 /// See also [DebtList].
 @ProviderFor(DebtList)
@@ -191,7 +191,7 @@ final debtGroupedProvider =
     );
 
 typedef _$DebtGrouped = AutoDisposeAsyncNotifier<List<CategoryWithDebts>>;
-String _$debtFormHash() => r'c9d12f244ec16850bbc5ce8e2bd021f3dbcdf797';
+String _$debtFormHash() => r'02e4075ad466ed398eeb7fbcb8a7246edb7ec176';
 
 /// See also [DebtForm].
 @ProviderFor(DebtForm)
