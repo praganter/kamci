@@ -8,6 +8,7 @@ import dev.batuhanyetgin.debttracker.document.embedded.MemberEmbedded;
 import dev.batuhanyetgin.debttracker.document.embedded.PaymentEmbedded;
 import dev.batuhanyetgin.debttracker.dto.request.CreateDebtRequest;
 import dev.batuhanyetgin.debttracker.dto.request.UpdateDebtRequest;
+import dev.batuhanyetgin.debttracker.dto.response.DebtDetailResponse;
 import dev.batuhanyetgin.debttracker.dto.response.DebtItemResponse;
 import dev.batuhanyetgin.debttracker.dto.response.DebtResponse;
 import dev.batuhanyetgin.debttracker.dto.response.GetDebtResponse;
@@ -413,6 +414,63 @@ class DebtServiceTest {
                         .matches(e -> e.getStatus() == HttpStatus.FORBIDDEN);
 
                 verify(debtRS, never()).delete(any());
+            }
+        }
+    }
+
+    // ─── getById ──────────────────────────────────────────────────────────────
+
+    @Nested
+    @DisplayName("getById")
+    class GetById {
+
+        @Test
+        @DisplayName("owner requests debt → returns full detail response with payments")
+        void owner_returnsDebtWithPayments() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+
+                final DebtDocument debt = buildDebt(DEBT_ID, OWNER_ID, CAT_ID);
+                when(debtRS.findById(DEBT_ID)).thenReturn(debt);
+                when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
+                when(debtMapper.convertToDetail(debt)).thenReturn(DebtDetailResponse.builder().id(DEBT_ID).build());
+
+                final DebtDetailResponse response = debtService.getById(DEBT_ID);
+
+                assertThat(response).isNotNull();
+                assertThat(response.getId()).isEqualTo(DEBT_ID);
+                verify(debtMapper).convertToDetail(debt);
+            }
+        }
+
+        @Test
+        @DisplayName("read-level member requests debt → succeeds")
+        void readMember_succeeds() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OTHER_ID);
+
+                final DebtDocument debt = buildDebt(DEBT_ID, OWNER_ID, CAT_ID);
+                when(debtRS.findById(DEBT_ID)).thenReturn(debt);
+                when(categoryRS.findById(CAT_ID))
+                        .thenReturn(buildCategoryWithReadMember(CAT_ID, OWNER_ID, OTHER_ID));
+                when(debtMapper.convertToDetail(debt)).thenReturn(DebtDetailResponse.builder().id(DEBT_ID).build());
+
+                assertThatNoException().isThrownBy(() -> debtService.getById(DEBT_ID));
+            }
+        }
+
+        @Test
+        @DisplayName("non-member requests debt → throws FORBIDDEN")
+        void nonMember_throwsForbidden() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OTHER_ID);
+
+                when(debtRS.findById(DEBT_ID)).thenReturn(buildDebt(DEBT_ID, OWNER_ID, CAT_ID));
+                when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
+
+                assertThatExceptionOfType(BaseException.class)
+                        .isThrownBy(() -> debtService.getById(DEBT_ID))
+                        .matches(e -> e.getStatus() == HttpStatus.FORBIDDEN);
             }
         }
     }

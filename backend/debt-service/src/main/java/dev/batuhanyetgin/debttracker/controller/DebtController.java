@@ -2,6 +2,7 @@ package dev.batuhanyetgin.debttracker.controller;
 
 import dev.batuhanyetgin.debttracker.dto.request.CreateDebtRequest;
 import dev.batuhanyetgin.debttracker.dto.request.UpdateDebtRequest;
+import dev.batuhanyetgin.debttracker.dto.response.DebtDetailResponse;
 import dev.batuhanyetgin.debttracker.dto.response.DebtResponse;
 import dev.batuhanyetgin.debttracker.dto.response.DeleteDebtResponse;
 import dev.batuhanyetgin.debttracker.dto.response.GetDebtResponse;
@@ -73,6 +74,17 @@ public class DebtController {
     @PostMapping("pay/{id}")
     ResponseEntity<DebtResponse> pay(@PathVariable final String id) {
         return ResponseEntity.ok(debtService.pay(id));
+    }
+
+    @Operation(summary = "Get a single debt by ID with full payment history")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Debt returned"),
+            @ApiResponse(responseCode = "403", description = "No read access"),
+            @ApiResponse(responseCode = "404", description = "Debt not found")
+    })
+    @GetMapping("{id}")
+    ResponseEntity<DebtDetailResponse> getById(@PathVariable final String id) {
+        return ResponseEntity.ok(debtService.getById(id));
     }
 
     @Operation(summary = "Get all debts for the authenticated user, grouped by category")

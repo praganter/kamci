@@ -10,6 +10,7 @@ import dev.batuhanyetgin.debttracker.document.embedded.ReminderEmbedded;
 import dev.batuhanyetgin.debttracker.dto.request.CreateDebtRequest;
 import dev.batuhanyetgin.debttracker.dto.request.UpdateDebtRequest;
 import dev.batuhanyetgin.debttracker.dto.response.CategoryDebtResponse;
+import dev.batuhanyetgin.debttracker.dto.response.DebtDetailResponse;
 import dev.batuhanyetgin.debttracker.dto.response.DebtResponse;
 import dev.batuhanyetgin.debttracker.dto.response.GetDebtResponse;
 import dev.batuhanyetgin.debttracker.enums.AccessLevelType;
@@ -137,6 +138,18 @@ public class DebtService {
         return DebtResponse.builder().debt(debtMapper.convert(updated)).build();
     }
 
+    public DebtDetailResponse getById(final String id) {
+        final String userId = RequestContextUtil.getUserId();
+        final DebtDocument debt = debtRS.findById(id);
+
+        final CategoryDocument category = categoryRS.findById(debt.getCategoryId());
+        if (lacksReadAccess(category, userId)) {
+            throw BaseException.forbidden("error.debt.permission_denied");
+        }
+
+        return debtMapper.convertToDetail(debt);
+    }
+
     public void delete(final String id) {
         final String userId = RequestContextUtil.getUserId();
         final DebtDocument debtDocument = debtRS.findById(id);
@@ -187,6 +200,14 @@ public class DebtService {
                 .toList();
 
         return GetDebtResponse.builder().categories(categories).build();
+    }
+
+    private boolean lacksReadAccess(final CategoryDocument category, final String userId) {
+        if (category.getOwnerId().equals(userId)) {
+            return false;
+        }
+        return category.getMembers().stream()
+                .noneMatch(m -> m.getUserId().equals(userId));
     }
 
     private boolean lacksWriteAccess(final CategoryDocument category, final String userId) {

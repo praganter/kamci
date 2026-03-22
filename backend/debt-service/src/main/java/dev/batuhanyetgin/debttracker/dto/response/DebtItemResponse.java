@@ -1,6 +1,5 @@
 package dev.batuhanyetgin.debttracker.dto.response;
 
-import dev.batuhanyetgin.debttracker.document.embedded.PaymentEmbedded;
 import dev.batuhanyetgin.debttracker.document.embedded.ReminderEmbedded;
 import dev.batuhanyetgin.debttracker.enums.DebtStatus;
 import dev.batuhanyetgin.debttracker.enums.PaymentPeriodType;
@@ -10,7 +9,6 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Getter
 @Setter
@@ -38,8 +36,6 @@ public class DebtItemResponse {
     private DebtStatus status;
 
     private boolean autoPayment;
-
-    private List<PaymentEmbedded> payments;
 
     private ReminderEmbedded reminder;
 
