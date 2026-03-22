@@ -13,6 +13,6 @@ public class ResetPasswordRequest {
     private String token;
 
     @NotBlank(message = "{error.validation.not_blank}")
-    @Size(min = 8, message = "{error.validation.password.size}")
+    @Size(min = 8, max = 72, message = "{error.validation.password.size}")
     private String newPassword;
 }

@@ -12,10 +12,11 @@ import lombok.Setter;
 @Setter
 public class LoginRequest {
     @NotBlank(message = "{error.validation.not_blank}")
-    @Size(min = 8, message = "{error.validation.password.size}")
+    @Size(min = 8, max = 72, message = "{error.validation.password.size}")
     private String password;
 
     @NotBlank(message = "{error.validation.not_blank}")
     @Email(message = "{error.validation.email}")
+    @Size(max = 100, message = "{error.validation.size}")
     private String email;
 }

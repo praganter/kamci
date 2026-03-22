@@ -14,9 +14,10 @@ public class RegisterRequest {
 
     @Email(message = "{error.validation.email}")
     @NotBlank(message = "{error.validation.not_blank}")
+    @Size(max = 100, message = "{error.validation.size}")
     private String email;
 
     @NotBlank(message = "{error.validation.not_blank}")
-    @Size(min = 8, message = "{error.validation.password.size}")
+    @Size(min = 8, max = 72, message = "{error.validation.password.size}")
     private String password;
 }
