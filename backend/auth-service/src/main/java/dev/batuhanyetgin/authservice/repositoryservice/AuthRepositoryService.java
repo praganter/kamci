@@ -6,6 +6,8 @@ import dev.batuhanyetgin.commonmodule.exception.BaseException;
 import dev.batuhanyetgin.commonmodule.repository.BaseRepositoryService;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class AuthRepositoryService extends BaseRepositoryService<AuthDocument> {
 
@@ -19,6 +21,10 @@ public class AuthRepositoryService extends BaseRepositoryService<AuthDocument> {
     public AuthDocument findByEMail(final String email) {
         return authRepository.findByEmail(email)
                 .orElseThrow(() -> BaseException.notFound("error.auth.user_not_found"));
+    }
+
+    public Optional<AuthDocument> findByEmailOptional(final String email) {
+        return authRepository.findByEmail(email);
     }
 
     public boolean existsByEmail(final String email) {

@@ -1,13 +1,12 @@
 package dev.batuhanyetgin.authservice.service;
 
 import dev.batuhanyetgin.authservice.document.AuthDocument;
+import dev.batuhanyetgin.authservice.dto.request.ChangePasswordRequest;
 import dev.batuhanyetgin.authservice.dto.request.ForgetPasswordRequest;
 import dev.batuhanyetgin.authservice.dto.request.LoginRequest;
 import dev.batuhanyetgin.authservice.dto.request.RegisterRequest;
 import dev.batuhanyetgin.authservice.dto.request.ResetPasswordRequest;
-import dev.batuhanyetgin.authservice.dto.response.LoginResponse;
-import dev.batuhanyetgin.authservice.dto.response.RefreshTokenResponse;
-import dev.batuhanyetgin.authservice.dto.response.RegisterResponse;
+import dev.batuhanyetgin.authservice.dto.response.TokenResponse;
 import dev.batuhanyetgin.authservice.producer.AuthEventProducer;
 import dev.batuhanyetgin.authservice.repositoryservice.AuthRepositoryService;
 import dev.batuhanyetgin.commonmodule.event.PasswordResetEvent;
@@ -30,7 +29,7 @@ public class AuthService {
     private final AuthRepositoryService authRS;
     private final AuthEventProducer authEventProducer;
 
-    public RegisterResponse register(final RegisterRequest request) {
+    public TokenResponse register(final RegisterRequest request) {
 
         if (authRS.existsByEmail(request.getEmail())) {
             throw BaseException.conflict("error.auth.email_in_use");
@@ -55,29 +54,43 @@ public class AuthService {
                         .build()
         );
 
-        return RegisterResponse.builder()
+        return TokenResponse.builder()
                 .refreshToken(jwtService.generateToken(authDocument.getId(), true))
                 .token(jwtService.generateToken(authDocument.getId(), false))
                 .build();
     }
 
     public void forgetPassword(final ForgetPasswordRequest request) {
-        final AuthDocument authDocument = authRS.findByEMail(request.getEmail());
+        authRS.findByEmailOptional(request.getEmail()).ifPresent(authDocument -> {
+            final String resetToken = jwtService.generatePasswordResetToken(authDocument.getId());
 
-        final String resetToken = jwtService.generatePasswordResetToken(authDocument.getId());
+            authEventProducer.produce(
+                    RabbitMQConstants.NOTIFICATION_EXCHANGE,
+                    RabbitMQConstants.PASSWORD_RESET_ROUTING_KEY,
+                    PasswordResetEvent.builder()
+                            .userId(authDocument.getId())
+                            .email(authDocument.getEmail())
+                            .resetToken(resetToken)
+                            .locale(RequestContextUtil.getLocale())
+                            .build()
+            );
 
-        authEventProducer.produce(
-                RabbitMQConstants.NOTIFICATION_EXCHANGE,
-                RabbitMQConstants.PASSWORD_RESET_ROUTING_KEY,
-                PasswordResetEvent.builder()
-                        .userId(authDocument.getId())
-                        .email(authDocument.getEmail())
-                        .resetToken(resetToken)
-                        .locale(RequestContextUtil.getLocale())
-                        .build()
-        );
+            log.info("Password reset event produced for userId: {}", authDocument.getId());
+        });
+    }
 
-        log.info("Password reset event produced for userId: {}", authDocument.getId());
+    public void changePassword(final ChangePasswordRequest request) {
+        final String userId = RequestContextUtil.getUserId();
+        final AuthDocument authDocument = authRS.findById(userId);
+
+        if (!isPasswordValid(request.getCurrentPassword(), authDocument.getPassword())) {
+            throw BaseException.unauthorized("error.auth.current_password_invalid");
+        }
+
+        authDocument.setPassword(encodePassword(request.getNewPassword()));
+        authRS.save(authDocument);
+
+        log.info("Password changed successfully for userId: {}", userId);
     }
 
     public void resetPassword(final ResetPasswordRequest request) {
@@ -90,7 +103,7 @@ public class AuthService {
         log.info("Password reset successfully for userId: {}", userId);
     }
 
-    public LoginResponse login(final LoginRequest request) {
+    public TokenResponse login(final LoginRequest request) {
         final AuthDocument userDocument = authRS.findByEMail(request.getEmail());
 
         if (!isPasswordValid(request.getPassword(), userDocument.getPassword())) {
@@ -99,13 +112,13 @@ public class AuthService {
 
         log.info("User logged in successfully with id: {}", userDocument.getId());
 
-        return LoginResponse.builder()
+        return TokenResponse.builder()
                 .refreshToken(jwtService.generateToken(userDocument.getId(), true))
                 .token(jwtService.generateToken(userDocument.getId(), false))
                 .build();
     }
 
-    public RefreshTokenResponse refreshToken(final String authorizationHeader) {
+    public TokenResponse refreshToken(final String authorizationHeader) {
 
         if (authorizationHeader == null || authorizationHeader.isBlank()) {
             throw BaseException.badRequest("error.request.invalid_header");
@@ -121,11 +134,11 @@ public class AuthService {
             throw BaseException.badRequest("error.request.invalid_header");
         }
 
-        final String userId = jwtService.getUserIdFromToken(token);
+        final String userId = jwtService.validateRefreshToken(token);
 
         log.info("Token refreshed for userId: {}", userId);
 
-        return RefreshTokenResponse.builder()
+        return TokenResponse.builder()
                 .refreshToken(jwtService.generateToken(userId, true))
                 .token(jwtService.generateToken(userId, false))
                 .build();

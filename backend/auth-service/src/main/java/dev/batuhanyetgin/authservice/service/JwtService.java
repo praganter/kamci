@@ -52,6 +52,7 @@ public class JwtService {
         Objects.requireNonNull(userId, "User ID cannot be null");
 
         final Map<String, Object> claims = new HashMap<>();
+        claims.put("type", isRefreshToken ? "REFRESH" : "ACCESS");
         final Date tokenLife = isRefreshToken
                 ? new Date(System.currentTimeMillis() + jwtExpirationRefreshMs)
                 : new Date(System.currentTimeMillis() + jwtExpirationMs);
@@ -63,6 +64,17 @@ public class JwtService {
                 .expiration(tokenLife)
                 .signWith(getSigningKey())
                 .compact();
+    }
+
+    public String validateRefreshToken(final String token) {
+        final Claims claims = validateToken(token);
+        final String type = claims.get("type", String.class);
+
+        if (!"REFRESH".equals(type)) {
+            throw new JwtException("Invalid token type");
+        }
+
+        return claims.getSubject();
     }
 
     public String generatePasswordResetToken(final String userId) {
