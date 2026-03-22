@@ -63,8 +63,9 @@ class AuthInterceptor extends QueuedInterceptorsWrapper {
         options: Options(headers: {'Authorization': 'Bearer $refreshToken'}),
       );
 
-      final newAccessToken = response.data['token'] as String;
-      final newRefreshToken = response.data['refreshToken'] as String;
+      final data = response.data as Map<String, dynamic>;
+      final newAccessToken = data['token'] as String;
+      final newRefreshToken = (data['refreshToken'] as String?) ?? refreshToken;
 
       await storage.saveTokens(
         accessToken: newAccessToken,
