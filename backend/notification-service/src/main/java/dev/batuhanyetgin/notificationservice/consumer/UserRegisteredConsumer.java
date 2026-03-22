@@ -3,6 +3,8 @@ package dev.batuhanyetgin.notificationservice.consumer;
 import dev.batuhanyetgin.commonmodule.event.EventConsumer;
 import dev.batuhanyetgin.commonmodule.event.RabbitMQConstants;
 import dev.batuhanyetgin.commonmodule.event.UserRegisteredEvent;
+import dev.batuhanyetgin.notificationservice.document.DeviceTokenDocument;
+import dev.batuhanyetgin.notificationservice.repository.DeviceTokenRepository;
 import dev.batuhanyetgin.notificationservice.service.MailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,11 +21,25 @@ public class UserRegisteredConsumer implements EventConsumer<UserRegisteredEvent
 
     private final MailService mailService;
     private final MessageSource messageSource;
+    private final DeviceTokenRepository deviceTokenRepository;
 
     @Override
     @RabbitListener(queues = RabbitMQConstants.USER_REGISTERED_QUEUE)
     public void consume(final UserRegisteredEvent event) {
         log.info("UserRegisteredEvent received for userId: {}", event.getUserId());
+
+        deviceTokenRepository.findByUserId(event.getUserId())
+                .ifPresentOrElse(
+                        doc -> {
+                            doc.setLocale(event.getLocale());
+                            deviceTokenRepository.save(doc);
+                        },
+                        () -> deviceTokenRepository.save(
+                                DeviceTokenDocument.builder()
+                                        .userId(event.getUserId())
+                                        .locale(event.getLocale())
+                                        .build())
+                );
 
         final Locale locale = Locale.forLanguageTag(event.getLocale());
         final String subject = messageSource.getMessage("mail.welcome.subject", null, locale);
