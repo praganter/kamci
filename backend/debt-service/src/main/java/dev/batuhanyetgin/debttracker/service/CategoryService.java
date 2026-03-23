@@ -1,8 +1,11 @@
 package dev.batuhanyetgin.debttracker.service;
 
+import dev.batuhanyetgin.commonmodule.event.CategoryMemberAddedEvent;
+import dev.batuhanyetgin.commonmodule.event.RabbitMQConstants;
 import dev.batuhanyetgin.commonmodule.exception.BaseException;
 import dev.batuhanyetgin.commonmodule.util.RequestContextUtil;
 import dev.batuhanyetgin.debttracker.client.AuthClient;
+import dev.batuhanyetgin.debttracker.producer.DebtEventProducer;
 import dev.batuhanyetgin.debttracker.document.CategoryDocument;
 import dev.batuhanyetgin.debttracker.document.embedded.MemberEmbedded;
 import dev.batuhanyetgin.debttracker.dto.request.AddMemberRequest;
@@ -36,6 +39,7 @@ public class CategoryService {
     private final CategoryRepositoryService categoryRS;
     private final DebtRepositoryService debtRS;
     private final AuthClient authClient;
+    private final DebtEventProducer eventProducer;
     @Qualifier("taskExecutor")
     private final Executor taskExecutor;
 
@@ -125,6 +129,18 @@ public class CategoryService {
                 .build());
         category.setMembers(updated);
         categoryRS.save(category);
+
+        eventProducer.produce(
+                RabbitMQConstants.NOTIFICATION_EXCHANGE,
+                RabbitMQConstants.CATEGORY_MEMBER_ADDED_ROUTING_KEY,
+                CategoryMemberAddedEvent.builder()
+                        .categoryId(category.getId())
+                        .categoryName(category.getName())
+                        .addedByUserId(category.getOwnerId())
+                        .memberUserId(memberUserId)
+                        .locale(RequestContextUtil.getLocale())
+                        .build()
+        );
     }
 
     public void removeMember(final String categoryId, final String memberUserId) {

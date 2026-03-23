@@ -13,6 +13,7 @@ import dev.batuhanyetgin.debttracker.dto.response.SaveCategoryResponse;
 import dev.batuhanyetgin.debttracker.dto.response.UpdateCategoryResponse;
 import dev.batuhanyetgin.debttracker.enums.AccessLevelType;
 import dev.batuhanyetgin.debttracker.client.AuthClient;
+import dev.batuhanyetgin.debttracker.producer.DebtEventProducer;
 import dev.batuhanyetgin.debttracker.repositoryservice.CategoryRepositoryService;
 import dev.batuhanyetgin.debttracker.repositoryservice.DebtRepositoryService;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,6 +40,7 @@ class CategoryServiceTest {
     @Mock private CategoryRepositoryService categoryRS;
     @Mock private DebtRepositoryService debtRS;
     @Mock private AuthClient authClient;
+    @Mock private DebtEventProducer eventProducer;
 
     private final Executor taskExecutor = Runnable::run;
 
@@ -52,7 +54,7 @@ class CategoryServiceTest {
 
     @BeforeEach
     void setUp() {
-        categoryService = new CategoryService(categoryRS, debtRS, authClient, taskExecutor);
+        categoryService = new CategoryService(categoryRS, debtRS, authClient, eventProducer, taskExecutor);
     }
 
     private CategoryDocument buildCategory(final String id, final String ownerId) {

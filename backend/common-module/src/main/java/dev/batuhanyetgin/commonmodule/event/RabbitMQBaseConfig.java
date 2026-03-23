@@ -119,6 +119,26 @@ public class RabbitMQBaseConfig {
     }
 
     @Bean
+    public Queue categoryMemberAddedQueue() {
+        return QueueBuilder.durable(RabbitMQConstants.CATEGORY_MEMBER_ADDED_QUEUE)
+                .withArgument("x-dead-letter-exchange", RabbitMQConstants.NOTIFICATION_DLX)
+                .withArgument("x-dead-letter-routing-key", RabbitMQConstants.CATEGORY_MEMBER_ADDED_DLQ_ROUTING_KEY)
+                .build();
+    }
+
+    @Bean
+    public Queue categoryMemberAddedDlq() {
+        return QueueBuilder.durable(RabbitMQConstants.CATEGORY_MEMBER_ADDED_DLQ).build();
+    }
+
+    @Bean
+    public Binding categoryMemberAddedBinding() {
+        return BindingBuilder.bind(categoryMemberAddedQueue())
+                .to(notificationExchange())
+                .with(RabbitMQConstants.CATEGORY_MEMBER_ADDED_ROUTING_KEY);
+    }
+
+    @Bean
     public Binding passwordResetDlqBinding() {
         return BindingBuilder.bind(passwordResetDlq())
                 .to(notificationDlx())
@@ -144,5 +164,12 @@ public class RabbitMQBaseConfig {
         return BindingBuilder.bind(debtReminderDlq())
                 .to(notificationDlx())
                 .with(RabbitMQConstants.DEBT_REMINDER_DLQ_ROUTING_KEY);
+    }
+
+    @Bean
+    public Binding categoryMemberAddedDlqBinding() {
+        return BindingBuilder.bind(categoryMemberAddedDlq())
+                .to(notificationDlx())
+                .with(RabbitMQConstants.CATEGORY_MEMBER_ADDED_DLQ_ROUTING_KEY);
     }
 }
