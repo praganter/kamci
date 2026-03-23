@@ -12,6 +12,7 @@ import dev.batuhanyetgin.debttracker.dto.response.GetAllCategoryResponse;
 import dev.batuhanyetgin.debttracker.dto.response.SaveCategoryResponse;
 import dev.batuhanyetgin.debttracker.dto.response.UpdateCategoryResponse;
 import dev.batuhanyetgin.debttracker.enums.AccessLevelType;
+import dev.batuhanyetgin.debttracker.client.AuthClient;
 import dev.batuhanyetgin.debttracker.repositoryservice.CategoryRepositoryService;
 import dev.batuhanyetgin.debttracker.repositoryservice.DebtRepositoryService;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,6 +38,7 @@ class CategoryServiceTest {
 
     @Mock private CategoryRepositoryService categoryRS;
     @Mock private DebtRepositoryService debtRS;
+    @Mock private AuthClient authClient;
 
     private final Executor taskExecutor = Runnable::run;
 
@@ -50,7 +52,7 @@ class CategoryServiceTest {
 
     @BeforeEach
     void setUp() {
-        categoryService = new CategoryService(categoryRS, debtRS, taskExecutor);
+        categoryService = new CategoryService(categoryRS, debtRS, authClient, taskExecutor);
     }
 
     private CategoryDocument buildCategory(final String id, final String ownerId) {
@@ -217,6 +219,7 @@ class CategoryServiceTest {
 
                 final CategoryDocument cat = buildCategory(CAT_ID, OWNER_ID);
                 when(categoryRS.findById(CAT_ID)).thenReturn(cat);
+                when(authClient.userExists(MEMBER_ID)).thenReturn(true);
                 when(categoryRS.save(cat)).thenReturn(cat);
 
                 final AddMemberRequest request = new AddMemberRequest();
@@ -248,6 +251,27 @@ class CategoryServiceTest {
         }
 
         @Test
+        @DisplayName("user does not exist in auth-service → throws NOT_FOUND")
+        void userNotFound_throwsNotFound() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+
+                when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
+                when(authClient.userExists(MEMBER_ID)).thenReturn(false);
+
+                final AddMemberRequest request = new AddMemberRequest();
+                request.setUserId(MEMBER_ID);
+                request.setAccessLevel(AccessLevelType.READ);
+
+                assertThatExceptionOfType(BaseException.class)
+                        .isThrownBy(() -> categoryService.addMember(CAT_ID, request))
+                        .matches(e -> e.getStatus() == HttpStatus.NOT_FOUND);
+
+                verify(categoryRS, never()).save(any());
+            }
+        }
+
+        @Test
         @DisplayName("member already exists → throws CONFLICT")
         void alreadyMember_throwsConflict() {
             try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
@@ -255,6 +279,7 @@ class CategoryServiceTest {
 
                 final CategoryDocument cat = buildCategoryWithMember(CAT_ID, OWNER_ID, MEMBER_ID, AccessLevelType.READ);
                 when(categoryRS.findById(CAT_ID)).thenReturn(cat);
+                when(authClient.userExists(MEMBER_ID)).thenReturn(true);
 
                 final AddMemberRequest request = new AddMemberRequest();
                 request.setUserId(MEMBER_ID);
@@ -283,6 +308,7 @@ class CategoryServiceTest {
 
                 when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
                 when(categoryRS.findById(CAT_ID_2)).thenReturn(buildCategory(CAT_ID_2, OWNER_ID));
+                when(authClient.userExists(MEMBER_ID)).thenReturn(true);
                 when(categoryRS.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
                 final BulkAddMemberRequest request = new BulkAddMemberRequest();
@@ -303,6 +329,8 @@ class CategoryServiceTest {
 
                 when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
                 when(categoryRS.findById(CAT_ID_2)).thenReturn(buildCategory(CAT_ID_2, OTHER_ID));
+                when(authClient.userExists(MEMBER_ID)).thenReturn(true);
+                when(categoryRS.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
                 final BulkAddMemberRequest request = new BulkAddMemberRequest();
                 request.setCategoryIds(List.of(CAT_ID, CAT_ID_2));

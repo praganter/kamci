@@ -2,6 +2,7 @@ package dev.batuhanyetgin.debttracker.service;
 
 import dev.batuhanyetgin.commonmodule.exception.BaseException;
 import dev.batuhanyetgin.commonmodule.util.RequestContextUtil;
+import dev.batuhanyetgin.debttracker.client.AuthClient;
 import dev.batuhanyetgin.debttracker.document.CategoryDocument;
 import dev.batuhanyetgin.debttracker.document.embedded.MemberEmbedded;
 import dev.batuhanyetgin.debttracker.dto.request.AddMemberRequest;
@@ -34,6 +35,7 @@ public class CategoryService {
 
     private final CategoryRepositoryService categoryRS;
     private final DebtRepositoryService debtRS;
+    private final AuthClient authClient;
     @Qualifier("taskExecutor")
     private final Executor taskExecutor;
 
@@ -105,6 +107,10 @@ public class CategoryService {
     }
 
     private void addMemberToCategory(final CategoryDocument category, final String memberUserId, final AccessLevelType accessLevel) {
+        if (!authClient.userExists(memberUserId)) {
+            throw BaseException.notFound("error.category.member_user_not_found", memberUserId);
+        }
+
         final boolean alreadyMember = category.getMembers().stream()
                 .anyMatch(m -> m.getUserId().equals(memberUserId));
 

@@ -30,4 +30,8 @@ public class AuthRepositoryService extends BaseRepositoryService<AuthDocument> {
     public boolean existsByEmail(final String email) {
         return authRepository.existsByEmail(email);
     }
+
+    public boolean existsById(final String id) {
+        return authRepository.existsById(id);
+    }
 }

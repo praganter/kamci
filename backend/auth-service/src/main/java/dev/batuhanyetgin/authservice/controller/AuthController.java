@@ -6,6 +6,7 @@ import dev.batuhanyetgin.authservice.dto.request.LoginRequest;
 import dev.batuhanyetgin.authservice.dto.request.RegisterRequest;
 import dev.batuhanyetgin.authservice.dto.request.ResetPasswordRequest;
 import dev.batuhanyetgin.authservice.dto.response.TokenResponse;
+import dev.batuhanyetgin.authservice.repositoryservice.AuthRepositoryService;
 import dev.batuhanyetgin.authservice.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+    private final AuthRepositoryService authRS;
 
     @Operation(summary = "Register a new user")
     @ApiResponses({
@@ -90,5 +92,14 @@ public class AuthController {
     ResponseEntity<Void> resetPassword(@RequestBody @Valid final ResetPasswordRequest request) {
         authService.resetPassword(request);
         return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "Check if a user exists by ID (internal inter-service use)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Returns true if user exists, false otherwise")
+    })
+    @GetMapping("user/exists/{userId}")
+    ResponseEntity<Boolean> userExists(@PathVariable final String userId) {
+        return ResponseEntity.ok(authRS.existsById(userId));
     }
 }
