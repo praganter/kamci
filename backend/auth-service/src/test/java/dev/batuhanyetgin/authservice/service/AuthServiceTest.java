@@ -7,6 +7,7 @@ import dev.batuhanyetgin.authservice.dto.request.LoginRequest;
 import dev.batuhanyetgin.authservice.dto.request.RegisterRequest;
 import dev.batuhanyetgin.authservice.dto.request.ResetPasswordRequest;
 import dev.batuhanyetgin.authservice.dto.response.TokenResponse;
+import dev.batuhanyetgin.authservice.dto.response.UserDetailResponse;
 import dev.batuhanyetgin.authservice.producer.AuthEventProducer;
 import dev.batuhanyetgin.authservice.repositoryservice.AuthRepositoryService;
 import dev.batuhanyetgin.commonmodule.exception.BaseException;
@@ -314,6 +315,32 @@ class AuthServiceTest {
             assertThatNoException().isThrownBy(() -> authService.resetPassword(request));
             verify(authRS).save(doc);
             assertThat(doc.getPassword()).isEqualTo("$2a$newHash");
+        }
+    }
+
+    // ─── userDetail ───────────────────────────────────────────────────────────
+
+    @Nested
+    @DisplayName("userDetail")
+    class UserDetail {
+
+        @Test
+        @DisplayName("authenticated user → returns UserDetailResponse with email, premium, createdAt")
+        void authenticatedUser_returnsUserDetail() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(USER_ID);
+
+                final AuthDocument doc = buildAuthDocWithId();
+                org.springframework.test.util.ReflectionTestUtils.setField(doc, "createdDate",
+                        java.time.LocalDateTime.of(2026, 1, 1, 0, 0));
+                when(authRS.findById(USER_ID)).thenReturn(doc);
+
+                final UserDetailResponse response = authService.userDetail();
+
+                assertThat(response.getEmail()).isEqualTo(EMAIL);
+                assertThat(response.isPremium()).isFalse();
+                assertThat(response.getCreatedAt()).isEqualTo(java.time.LocalDateTime.of(2026, 1, 1, 0, 0));
+            }
         }
     }
 }

@@ -6,6 +6,7 @@ import dev.batuhanyetgin.authservice.dto.request.ForgetPasswordRequest;
 import dev.batuhanyetgin.authservice.dto.request.LoginRequest;
 import dev.batuhanyetgin.authservice.dto.request.RegisterRequest;
 import dev.batuhanyetgin.authservice.dto.request.ResetPasswordRequest;
+import dev.batuhanyetgin.authservice.dto.response.UserDetailResponse;
 import dev.batuhanyetgin.authservice.dto.response.TokenResponse;
 import dev.batuhanyetgin.authservice.producer.AuthEventProducer;
 import dev.batuhanyetgin.authservice.repositoryservice.AuthRepositoryService;
@@ -141,6 +142,16 @@ public class AuthService {
         return TokenResponse.builder()
                 .refreshToken(jwtService.generateToken(userId, true))
                 .token(jwtService.generateToken(userId, false))
+                .build();
+    }
+
+    public UserDetailResponse userDetail() {
+        final String userId = RequestContextUtil.getUserId();
+        final AuthDocument auth = authRS.findById(userId);
+        return UserDetailResponse.builder()
+                .email(auth.getEmail())
+                .premium(auth.isPremium())
+                .createdAt(auth.getCreatedDate())
                 .build();
     }
 

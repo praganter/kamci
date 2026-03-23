@@ -5,6 +5,7 @@ import dev.batuhanyetgin.authservice.dto.request.ForgetPasswordRequest;
 import dev.batuhanyetgin.authservice.dto.request.LoginRequest;
 import dev.batuhanyetgin.authservice.dto.request.RegisterRequest;
 import dev.batuhanyetgin.authservice.dto.request.ResetPasswordRequest;
+import dev.batuhanyetgin.authservice.dto.response.UserDetailResponse;
 import dev.batuhanyetgin.authservice.dto.response.TokenResponse;
 import dev.batuhanyetgin.authservice.repositoryservice.AuthRepositoryService;
 import dev.batuhanyetgin.authservice.service.AuthService;
@@ -92,6 +93,16 @@ public class AuthController {
     ResponseEntity<Void> resetPassword(@RequestBody @Valid final ResetPasswordRequest request) {
         authService.resetPassword(request);
         return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "Get the authenticated user's profile")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "User profile returned"),
+            @ApiResponse(responseCode = "401", description = "Not authenticated")
+    })
+    @GetMapping("user-detail")
+    ResponseEntity<UserDetailResponse> userDetail() {
+        return ResponseEntity.ok(authService.userDetail());
     }
 
     @Operation(summary = "Check if a user exists by ID (internal inter-service use)")
