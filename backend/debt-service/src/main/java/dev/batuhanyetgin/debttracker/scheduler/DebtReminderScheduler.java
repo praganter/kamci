@@ -42,8 +42,6 @@ public class DebtReminderScheduler {
         processAutoPaymentBatch(debtRS.findDueAutoPayments(now), now);
     }
 
-    // ─── Reminder flow ────────────────────────────────────────────────────────
-
     private void processReminderBatch(final List<DebtDocument> debts, final LocalDateTime now) {
         if (debts.isEmpty()) return;
 
@@ -105,8 +103,6 @@ public class DebtReminderScheduler {
         log.info("Advanced next reminder for debt {} to {}", debt.getId(), next);
     }
 
-    // ─── Auto-payment flow ────────────────────────────────────────────────────
-
     private void processAutoPaymentBatch(final List<DebtDocument> debts, final LocalDateTime now) {
         if (debts.isEmpty()) return;
 
@@ -160,8 +156,6 @@ public class DebtReminderScheduler {
         debt.setNextAutoPaymentDate(next);
         log.info("Advanced next auto-payment for debt {} to {}", debt.getId(), next);
     }
-
-    // ─── Shared date utilities ────────────────────────────────────────────────
 
     private LocalDateTime advanceDate(final LocalDateTime current, final PaymentPeriodType type,
                                       final int originalDay) {

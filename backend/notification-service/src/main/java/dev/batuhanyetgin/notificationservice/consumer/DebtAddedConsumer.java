@@ -1,5 +1,6 @@
 package dev.batuhanyetgin.notificationservice.consumer;
 
+import dev.batuhanyetgin.commonmodule.constant.CommonConstants;
 import dev.batuhanyetgin.commonmodule.event.DebtAddedEvent;
 import dev.batuhanyetgin.commonmodule.event.EventConsumer;
 import dev.batuhanyetgin.commonmodule.event.RabbitMQConstants;
@@ -68,7 +69,7 @@ public class DebtAddedConsumer implements EventConsumer<DebtAddedEvent> {
                 .filter(doc -> StringUtils.hasText(doc.getEmail()))
                 .forEach(doc -> {
                     final Locale memberLocale = Locale.forLanguageTag(
-                            StringUtils.hasText(doc.getLocale()) ? doc.getLocale() : "tr");
+                            StringUtils.hasText(doc.getLocale()) ? doc.getLocale() : CommonConstants.DEFAULT_LOCALE);
                     final String subject = messageSource.getMessage(
                             "mail.debt_added.subject", new Object[]{event.getDebtName()}, memberLocale);
                     final String emailBody = messageSource.getMessage(

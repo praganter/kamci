@@ -147,6 +147,7 @@ public class DebtService {
             throw BaseException.forbidden("error.debt.permission_denied");
         }
 
+        log.info("Debt detail fetched for id: {} by user: {}", id, userId);
         return debtMapper.convertToDetail(debt);
     }
 

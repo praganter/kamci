@@ -14,6 +14,7 @@ import dev.batuhanyetgin.debttracker.dto.response.UpdateCategoryResponse;
 import dev.batuhanyetgin.debttracker.enums.AccessLevelType;
 import dev.batuhanyetgin.debttracker.client.AuthClient;
 import dev.batuhanyetgin.debttracker.producer.DebtEventProducer;
+import dev.batuhanyetgin.debttracker.mapper.DebtMapper;
 import dev.batuhanyetgin.debttracker.repositoryservice.CategoryRepositoryService;
 import dev.batuhanyetgin.debttracker.repositoryservice.DebtRepositoryService;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,6 +42,7 @@ class CategoryServiceTest {
     @Mock private DebtRepositoryService debtRS;
     @Mock private AuthClient authClient;
     @Mock private DebtEventProducer eventProducer;
+    @Mock private DebtMapper debtMapper;
 
     private final Executor taskExecutor = Runnable::run;
 
@@ -54,7 +56,7 @@ class CategoryServiceTest {
 
     @BeforeEach
     void setUp() {
-        categoryService = new CategoryService(categoryRS, debtRS, authClient, eventProducer, taskExecutor);
+        categoryService = new CategoryService(categoryRS, debtRS, authClient, eventProducer, debtMapper, taskExecutor);
     }
 
     private CategoryDocument buildCategory(final String id, final String ownerId) {
@@ -399,6 +401,10 @@ class CategoryServiceTest {
 
                 when(categoryRS.findByOwnerId(OWNER_ID)).thenReturn(List.of(buildCategory(CAT_ID, OWNER_ID)));
                 when(categoryRS.findByMemberUserId(OWNER_ID)).thenReturn(List.of(buildCategory(CAT_ID_2, OTHER_ID)));
+                when(debtMapper.convert(any(CategoryDocument.class))).thenAnswer(inv -> {
+                    final CategoryDocument doc = inv.getArgument(0);
+                    return GetAllCategoryResponse.builder().id(doc.getId()).name(doc.getName()).ownerId(doc.getOwnerId()).members(List.of()).build();
+                });
 
                 final List<GetAllCategoryResponse> result = categoryService.getAll();
 

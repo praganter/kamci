@@ -148,6 +148,7 @@ public class AuthService {
     public UserDetailResponse userDetail() {
         final String userId = RequestContextUtil.getUserId();
         final AuthDocument auth = authRS.findById(userId);
+        log.info("User detail fetched for userId: {}", userId);
         return UserDetailResponse.builder()
                 .email(auth.getEmail())
                 .premium(auth.isPremium())

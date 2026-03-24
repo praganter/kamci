@@ -1,5 +1,6 @@
 package dev.batuhanyetgin.notificationservice.consumer;
 
+import dev.batuhanyetgin.commonmodule.constant.CommonConstants;
 import dev.batuhanyetgin.commonmodule.event.DebtReminderEvent;
 import dev.batuhanyetgin.commonmodule.event.EventConsumer;
 import dev.batuhanyetgin.commonmodule.event.RabbitMQConstants;
@@ -50,7 +51,7 @@ public class DebtReminderConsumer implements EventConsumer<DebtReminderEvent> {
         }
 
         final Locale locale = Locale.forLanguageTag(
-                StringUtils.hasText(tokenDoc.getLocale()) ? tokenDoc.getLocale() : "tr"
+                StringUtils.hasText(tokenDoc.getLocale()) ? tokenDoc.getLocale() : CommonConstants.DEFAULT_LOCALE
         );
         final String formattedDate = DateTimeUtil.format(event.getNextReminderDate());
 

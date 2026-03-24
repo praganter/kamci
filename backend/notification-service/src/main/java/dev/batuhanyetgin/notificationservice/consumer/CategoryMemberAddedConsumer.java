@@ -1,9 +1,9 @@
 package dev.batuhanyetgin.notificationservice.consumer;
 
+import dev.batuhanyetgin.commonmodule.constant.CommonConstants;
 import dev.batuhanyetgin.commonmodule.event.CategoryMemberAddedEvent;
 import dev.batuhanyetgin.commonmodule.event.EventConsumer;
 import dev.batuhanyetgin.commonmodule.event.RabbitMQConstants;
-import dev.batuhanyetgin.notificationservice.document.DeviceTokenDocument;
 import dev.batuhanyetgin.notificationservice.repository.DeviceTokenRepository;
 import dev.batuhanyetgin.notificationservice.service.FcmService;
 import dev.batuhanyetgin.notificationservice.service.MailService;
@@ -36,7 +36,7 @@ public class CategoryMemberAddedConsumer implements EventConsumer<CategoryMember
         deviceTokenRepository.findByUserId(event.getMemberUserId()).ifPresentOrElse(
                 tokenDoc -> {
                     final Locale locale = Locale.forLanguageTag(
-                            StringUtils.hasText(tokenDoc.getLocale()) ? tokenDoc.getLocale() : "tr"
+                            StringUtils.hasText(tokenDoc.getLocale()) ? tokenDoc.getLocale() : CommonConstants.DEFAULT_LOCALE
                     );
 
                     if (StringUtils.hasText(tokenDoc.getFcmToken())) {

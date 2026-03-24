@@ -16,6 +16,7 @@ import dev.batuhanyetgin.debttracker.dto.response.GetAllCategoryResponse;
 import dev.batuhanyetgin.debttracker.dto.response.SaveCategoryResponse;
 import dev.batuhanyetgin.debttracker.dto.response.UpdateCategoryResponse;
 import dev.batuhanyetgin.debttracker.enums.AccessLevelType;
+import dev.batuhanyetgin.debttracker.mapper.DebtMapper;
 import dev.batuhanyetgin.debttracker.repositoryservice.CategoryRepositoryService;
 import dev.batuhanyetgin.debttracker.repositoryservice.DebtRepositoryService;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +41,7 @@ public class CategoryService {
     private final DebtRepositoryService debtRS;
     private final AuthClient authClient;
     private final DebtEventProducer eventProducer;
+    private final DebtMapper debtMapper;
     @Qualifier("taskExecutor")
     private final Executor taskExecutor;
 
@@ -159,6 +161,7 @@ public class CategoryService {
 
     public List<GetAllCategoryResponse> getAll() {
         final String userId = RequestContextUtil.getUserId();
+        log.info("Getting all categories for user: {}", userId);
 
         final CompletableFuture<List<CategoryDocument>> ownedFuture =
                 CompletableFuture.supplyAsync(() -> categoryRS.findByOwnerId(userId), taskExecutor);
@@ -170,17 +173,7 @@ public class CategoryService {
         all.addAll(memberOfFuture.join());
 
         return all.stream()
-                .map(c -> GetAllCategoryResponse.builder()
-                        .id(c.getId())
-                        .name(c.getName())
-                        .ownerId(c.getOwnerId())
-                        .members(c.getMembers().stream()
-                                .map(m -> GetAllCategoryResponse.MemberItem.builder()
-                                        .userId(m.getUserId())
-                                        .accessLevel(m.getAccessLevel())
-                                        .build())
-                                .toList())
-                        .build())
+                .map(debtMapper::convert)
                 .toList();
     }
 
