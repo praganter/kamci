@@ -114,16 +114,17 @@ class DebtReminderSchedulerTest {
         }
 
         @Test
-        @DisplayName("publish fails → no DB update for that debt, no exception propagated")
-        void publishFails_noDbUpdate() {
+        @DisplayName("publish fails → DB is still updated, no exception propagated")
+        void publishFails_dbStillUpdated() {
             final DebtDocument debt = buildReminderDebt("debt1", PaymentPeriodType.MONTHLY, BASE_TIME, BASE_TIME);
             when(debtRS.findDueReminders(any())).thenReturn(List.of(debt));
+            when(debtRS.update(any())).thenReturn(debt);
             doThrow(new RuntimeException("RabbitMQ down"))
                     .when(debtEventProducer).produce(anyString(), anyString(), any());
 
             assertThatNoException().isThrownBy(() -> scheduler.processReminders());
 
-            verify(debtRS, never()).update(any());
+            verify(debtRS).update(debt);
         }
 
         @Test
@@ -137,7 +138,7 @@ class DebtReminderSchedulerTest {
         }
 
         @Test
-        @DisplayName("multiple debts — one fails publish, other succeeds → only successful debt updated")
+        @DisplayName("multiple debts — one fails publish, other succeeds → both debts updated in DB")
         void multipleDebts_partialFailure() {
             final DebtDocument debt1 = buildReminderDebt("debt1", PaymentPeriodType.MONTHLY, BASE_TIME, BASE_TIME);
             final DebtDocument debt2 = buildReminderDebt("debt2", PaymentPeriodType.MONTHLY, BASE_TIME, BASE_TIME);
@@ -155,7 +156,7 @@ class DebtReminderSchedulerTest {
 
             assertThatNoException().isThrownBy(() -> scheduler.processReminders());
 
-            verify(debtRS, times(1)).update(any());
+            verify(debtRS, times(2)).update(any());
         }
     }
 

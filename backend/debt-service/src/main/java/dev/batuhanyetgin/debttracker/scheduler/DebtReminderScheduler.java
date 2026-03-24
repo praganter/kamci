@@ -61,27 +61,28 @@ public class DebtReminderScheduler {
 
     private void processReminderDebt(final DebtDocument debt,
                                      final AtomicInteger success, final AtomicInteger failure) {
+        final LocalDateTime reminderDate = debt.getNextReminderDate();
+        advanceNextReminderDate(debt);
+
         try {
-            produceReminderEvent(debt);
+            debtRS.update(debt);
         } catch (Exception e) {
-            log.error("Failed to publish reminder for debt {} — will retry next run: {}",
+            log.error("DB update failed for debt {}, skipping reminder event — will retry next run: {}",
                     debt.getId(), e.getMessage(), e);
             failure.incrementAndGet();
             return;
         }
 
-        advanceNextReminderDate(debt);
-
         try {
-            debtRS.update(debt);
+            produceReminderEvent(debt, reminderDate);
             success.incrementAndGet();
         } catch (Exception e) {
-            log.error("Reminder sent but DB update failed for debt {}: {}", debt.getId(), e.getMessage(), e);
+            log.error("Reminder event failed after DB update for debt {}: {}", debt.getId(), e.getMessage(), e);
             failure.incrementAndGet();
         }
     }
 
-    private void produceReminderEvent(final DebtDocument debt) {
+    private void produceReminderEvent(final DebtDocument debt, final LocalDateTime reminderDate) {
         debtEventProducer.produce(
                 RabbitMQConstants.NOTIFICATION_EXCHANGE,
                 RabbitMQConstants.DEBT_REMINDER_ROUTING_KEY,
@@ -90,7 +91,7 @@ public class DebtReminderScheduler {
                         .ownerId(debt.getOwnerId())
                         .debtName(debt.getName())
                         .amount(debt.getAmount())
-                        .nextReminderDate(debt.getNextReminderDate())
+                        .nextReminderDate(reminderDate)
                         .channels(debt.getReminder().getChannels())
                         .build()
         );
