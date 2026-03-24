@@ -3,6 +3,7 @@ import '../entities/reminder_embedded.dart';
 
 abstract interface class DebtRepository {
   Future<List<Debt>> getAll();
+  Future<Debt> getById(String id);
   Future<Debt> create(CreateDebtParams params);
   Future<Debt> update(String id, CreateDebtParams params);
   Future<Debt> pay(String id);

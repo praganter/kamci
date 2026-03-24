@@ -24,6 +24,12 @@ class DebtRepositoryImpl implements DebtRepository {
   }
 
   @override
+  Future<Debt> getById(String id) async {
+    final model = await _datasource.getById(id);
+    return model.toDomain();
+  }
+
+  @override
   Future<Debt> create(CreateDebtParams params) async {
     final request = _paramsToRequest(params);
     final model = await _datasource.create(request);

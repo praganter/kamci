@@ -93,6 +93,15 @@ class DebtRemoteDatasource {
     }
   }
 
+  Future<DebtModel> getById(String id) async {
+    try {
+      final response = await _dio.get('${ApiConstants.debtGetById}/$id');
+      return DebtModel.fromJson(response.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      throw _mapException(e);
+    }
+  }
+
   Future<void> delete(String id) async {
     try {
       await _dio.delete('${ApiConstants.debtDelete}/$id');

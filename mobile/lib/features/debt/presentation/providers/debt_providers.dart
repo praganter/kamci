@@ -24,19 +24,15 @@ class DebtList extends _$DebtList {
     await ref.read(debtRepositoryProvider).pay(debtId);
     ref.invalidateSelf();
     ref.invalidate(debtGroupedProvider);
+    ref.invalidate(debtDetailProvider(debtId));
   }
 }
 
 @riverpod
 class DebtDetail extends _$DebtDetail {
   @override
-  Future<Debt> build(String id) async {
-    final debts = await ref.watch(debtListProvider.future);
-    return debts.firstWhere(
-      (d) => d.id == id,
-      orElse: () => throw Exception('Borç bulunamadı'),
-    );
-  }
+  Future<Debt> build(String id) =>
+      ref.read(debtRepositoryProvider).getById(id);
 }
 
 @riverpod
