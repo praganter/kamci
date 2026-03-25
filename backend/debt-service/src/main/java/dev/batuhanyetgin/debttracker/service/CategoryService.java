@@ -16,7 +16,7 @@ import dev.batuhanyetgin.debttracker.dto.response.GetAllCategoryResponse;
 import dev.batuhanyetgin.debttracker.dto.response.SaveCategoryResponse;
 import dev.batuhanyetgin.debttracker.dto.response.UpdateCategoryResponse;
 import dev.batuhanyetgin.debttracker.enums.AccessLevelType;
-import dev.batuhanyetgin.debttracker.mapper.DebtMapper;
+import dev.batuhanyetgin.debttracker.mapper.CategoryMapper;
 import dev.batuhanyetgin.debttracker.repositoryservice.CategoryRepositoryService;
 import dev.batuhanyetgin.debttracker.repositoryservice.DebtRepositoryService;
 import lombok.RequiredArgsConstructor;
@@ -41,7 +41,7 @@ public class CategoryService {
     private final DebtRepositoryService debtRS;
     private final AuthClient authClient;
     private final DebtEventProducer eventProducer;
-    private final DebtMapper debtMapper;
+    private final CategoryMapper categoryMapper;
     @Qualifier("taskExecutor")
     private final Executor taskExecutor;
 
@@ -173,7 +173,7 @@ public class CategoryService {
         all.addAll(memberOfFuture.join());
 
         return all.stream()
-                .map(debtMapper::convert)
+                .map(categoryMapper::convert)
                 .toList();
     }
 
