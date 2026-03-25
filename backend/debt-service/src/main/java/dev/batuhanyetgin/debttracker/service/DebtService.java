@@ -15,6 +15,7 @@ import dev.batuhanyetgin.debttracker.dto.response.DebtResponse;
 import dev.batuhanyetgin.debttracker.dto.response.GetDebtResponse;
 import dev.batuhanyetgin.debttracker.enums.AccessLevelType;
 import dev.batuhanyetgin.debttracker.enums.DebtStatus;
+import dev.batuhanyetgin.debttracker.enums.PaymentPeriodType;
 import dev.batuhanyetgin.debttracker.mapper.DebtMapper;
 import dev.batuhanyetgin.debttracker.repositoryservice.CategoryRepositoryService;
 import dev.batuhanyetgin.debttracker.repositoryservice.DebtRepositoryService;
@@ -24,6 +25,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -121,6 +123,14 @@ public class DebtService {
         }
 
         final LocalDateTime now = LocalDateTime.now();
+        final LocalDateTime periodStart = getCurrentPeriodStart(
+                existing.getFirstPaymentDate(), existing.getPaymentPeriodType(), now);
+        final boolean alreadyPaidThisPeriod = existing.getPayments().stream()
+                .anyMatch(p -> !p.getPaidTime().isBefore(periodStart));
+        if (alreadyPaidThisPeriod) {
+            throw BaseException.conflict("error.debt.already_paid_this_period");
+        }
+
         final List<PaymentEmbedded> payments = new ArrayList<>(existing.getPayments());
         payments.add(PaymentEmbedded.builder()
                 .paid(true)
@@ -231,6 +241,36 @@ public class DebtService {
         debtDocument.setNextReminderDate(
                 LocalDateTime.of(reminder.getReminderDate(), reminder.getReminderTime())
         );
+    }
+
+    private LocalDateTime getCurrentPeriodStart(final LocalDateTime firstPaymentDate,
+                                                final PaymentPeriodType periodType,
+                                                final LocalDateTime now) {
+        if (firstPaymentDate == null || firstPaymentDate.isAfter(now)) {
+            return now;
+        }
+        return switch (periodType) {
+            case DAILY -> {
+                final long days = ChronoUnit.DAYS.between(firstPaymentDate, now);
+                yield firstPaymentDate.plusDays(days);
+            }
+            case WEEKLY -> {
+                final long weeks = ChronoUnit.WEEKS.between(firstPaymentDate, now);
+                yield firstPaymentDate.plusWeeks(weeks);
+            }
+            case MONTHLY -> {
+                final long months = ChronoUnit.MONTHS.between(firstPaymentDate, now);
+                yield firstPaymentDate.plusMonths(months);
+            }
+            case HALF_YEARLY -> {
+                final long halfYears = ChronoUnit.MONTHS.between(firstPaymentDate, now) / 6;
+                yield firstPaymentDate.plusMonths(halfYears * 6);
+            }
+            case YEARLY -> {
+                final long years = ChronoUnit.YEARS.between(firstPaymentDate, now);
+                yield firstPaymentDate.plusYears(years);
+            }
+        };
     }
 
     private void setNextAutoPaymentDate(final DebtDocument debtDocument) {

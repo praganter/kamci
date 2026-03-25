@@ -595,11 +595,13 @@ class DebtServiceTest {
         }
 
         @Test
-        @DisplayName("payments accumulate — second pay appends to existing list")
-        void secondPay_appendsToExistingList() {
+        @DisplayName("payment from a previous period does not block new payment")
+        void paymentFromPreviousPeriod_allowsNewPayment() {
             try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
                 ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
 
+                // firstPaymentDate = now → current period starts now
+                // existing payment was yesterday → belongs to previous period
                 final List<PaymentEmbedded> existingPayments = new ArrayList<>();
                 existingPayments.add(PaymentEmbedded.builder().paid(true).paidTime(LocalDateTime.now().minusDays(1)).build());
                 final DebtDocument existing = DebtDocument.builder()
@@ -607,6 +609,68 @@ class DebtServiceTest {
                         .name("Test Debt").amount(BigDecimal.TEN)
                         .paymentPeriodType(PaymentPeriodType.MONTHLY)
                         .firstPaymentDate(LocalDateTime.now())
+                        .payments(existingPayments)
+                        .build();
+                when(debtRS.findById(DEBT_ID)).thenReturn(existing);
+                when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
+
+                final ArgumentCaptor<DebtDocument> captor = ArgumentCaptor.forClass(DebtDocument.class);
+                when(debtRS.update(captor.capture())).thenReturn(existing);
+                when(debtMapper.convert(existing)).thenReturn(buildDebtItemResponse());
+
+                debtService.pay(DEBT_ID);
+
+                assertThat(captor.getValue().getPayments()).hasSize(2);
+            }
+        }
+
+        @Test
+        @DisplayName("duplicate pay in same period → throws CONFLICT, no DB update")
+        void duplicatePayInSamePeriod_throwsConflict() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+
+                // firstPaymentDate = 5 days ago → current period started 5 days ago
+                // existing payment = 2 days ago → within current period
+                final LocalDateTime firstPaymentDate = LocalDateTime.now().minusDays(5);
+                final List<PaymentEmbedded> existingPayments = new ArrayList<>();
+                existingPayments.add(PaymentEmbedded.builder().paid(true)
+                        .paidTime(LocalDateTime.now().minusDays(2)).build());
+                final DebtDocument existing = DebtDocument.builder()
+                        .id(DEBT_ID).ownerId(OWNER_ID).categoryId(CAT_ID)
+                        .name("Test Debt").amount(BigDecimal.TEN)
+                        .paymentPeriodType(PaymentPeriodType.MONTHLY)
+                        .firstPaymentDate(firstPaymentDate)
+                        .payments(existingPayments)
+                        .build();
+                when(debtRS.findById(DEBT_ID)).thenReturn(existing);
+                when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
+
+                assertThatExceptionOfType(BaseException.class)
+                        .isThrownBy(() -> debtService.pay(DEBT_ID))
+                        .matches(e -> e.getStatus() == HttpStatus.CONFLICT);
+
+                verify(debtRS, never()).update(any());
+            }
+        }
+
+        @Test
+        @DisplayName("pay after full period has elapsed → allowed, not treated as duplicate")
+        void payAfterNewPeriodStarted_allowsPayment() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+
+                // firstPaymentDate = 35 days ago → current MONTHLY period started 5 days ago
+                // existing payment = 30 days ago → in the previous period
+                final LocalDateTime firstPaymentDate = LocalDateTime.now().minusDays(35);
+                final List<PaymentEmbedded> existingPayments = new ArrayList<>();
+                existingPayments.add(PaymentEmbedded.builder().paid(true)
+                        .paidTime(LocalDateTime.now().minusDays(30)).build());
+                final DebtDocument existing = DebtDocument.builder()
+                        .id(DEBT_ID).ownerId(OWNER_ID).categoryId(CAT_ID)
+                        .name("Test Debt").amount(BigDecimal.TEN)
+                        .paymentPeriodType(PaymentPeriodType.MONTHLY)
+                        .firstPaymentDate(firstPaymentDate)
                         .payments(existingPayments)
                         .build();
                 when(debtRS.findById(DEBT_ID)).thenReturn(existing);
