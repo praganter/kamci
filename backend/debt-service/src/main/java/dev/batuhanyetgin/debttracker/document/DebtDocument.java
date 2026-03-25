@@ -5,7 +5,6 @@ import dev.batuhanyetgin.debttracker.document.embedded.PaymentEmbedded;
 import dev.batuhanyetgin.debttracker.document.embedded.ReminderEmbedded;
 import dev.batuhanyetgin.debttracker.enums.DebtStatus;
 import dev.batuhanyetgin.debttracker.enums.PaymentPeriodType;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -26,7 +25,6 @@ import java.util.List;
 public class DebtDocument extends BaseDocument {
 
     @Field("name")
-    @NotNull
     private String name;
 
     @Indexed
@@ -41,21 +39,17 @@ public class DebtDocument extends BaseDocument {
     private String description;
 
     @Field("first_payment_date")
-    @NotNull
     private LocalDateTime firstPaymentDate;
 
     @Field("last_payment_date")
     private LocalDateTime lastPaymentDate;
 
-    @NotNull
     @Field("payment_period_type")
     private PaymentPeriodType paymentPeriodType;
 
-    @NotNull
     @Field("amount")
     private BigDecimal amount;
 
-    @NotNull
     @Builder.Default
     @Field("status")
     private DebtStatus status = DebtStatus.ACTIVE;
