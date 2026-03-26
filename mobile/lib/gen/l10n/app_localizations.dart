@@ -362,6 +362,24 @@ abstract class AppLocalizations {
   /// **'Borç yok'**
   String get noDebts;
 
+  /// No description provided for @summaryTotal.
+  ///
+  /// In tr, this message translates to:
+  /// **'Toplam'**
+  String get summaryTotal;
+
+  /// No description provided for @deleteDebtPermanentWarning.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu borç kalıcı olarak silinecek, geri alınamaz. Emin misiniz?'**
+  String get deleteDebtPermanentWarning;
+
+  /// No description provided for @paymentRecorded.
+  ///
+  /// In tr, this message translates to:
+  /// **'{name} ödemeniz kayıt edildi.'**
+  String paymentRecorded(String name);
+
   /// No description provided for @deleteDebt.
   ///
   /// In tr, this message translates to:

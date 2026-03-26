@@ -49,6 +49,15 @@
   "joinSharedHint": "Join a shared category",
   "noCategoryDebts": "No debts in this category yet",
   "noDebts": "No debts",
+  "summaryTotal": "Total",
+  "deleteDebtPermanentWarning": "This debt will be permanently deleted and cannot be undone. Are you sure?",
+  "paymentRecorded": "Payment for {name} has been recorded.",
+  "@paymentRecorded": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+
   "deleteDebt": "Delete Debt",
   "deleteDebtConfirm": "Are you sure you want to delete \"{name}\"?",
 

@@ -144,6 +144,18 @@ class AppLocalizationsTr extends AppLocalizations {
   String get noDebts => 'Borç yok';
 
   @override
+  String get summaryTotal => 'Toplam';
+
+  @override
+  String get deleteDebtPermanentWarning =>
+      'Bu borç kalıcı olarak silinecek, geri alınamaz. Emin misiniz?';
+
+  @override
+  String paymentRecorded(String name) {
+    return '$name ödemeniz kayıt edildi.';
+  }
+
+  @override
   String get deleteDebt => 'Borcu Sil';
 
   @override

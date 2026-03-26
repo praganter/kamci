@@ -42,6 +42,7 @@ class Debt {
     required this.amount,
     required this.status,
     required this.autoPayment,
+    required this.paidCurrentPeriod,
     required this.payments,
     this.reminder,
     this.nextReminderDate,
@@ -60,6 +61,7 @@ class Debt {
   final double amount;
   final DebtStatus status;
   final bool autoPayment;
+  final bool paidCurrentPeriod;
   final List<PaymentEmbedded> payments;
   final ReminderEmbedded? reminder;
   final DateTime? nextReminderDate;

@@ -144,6 +144,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noDebts => 'No debts';
 
   @override
+  String get summaryTotal => 'Total';
+
+  @override
+  String get deleteDebtPermanentWarning =>
+      'This debt will be permanently deleted and cannot be undone. Are you sure?';
+
+  @override
+  String paymentRecorded(String name) {
+    return 'Payment for $name has been recorded.';
+  }
+
+  @override
   String get deleteDebt => 'Delete Debt';
 
   @override

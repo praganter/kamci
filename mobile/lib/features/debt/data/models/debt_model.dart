@@ -61,6 +61,7 @@ abstract class DebtModel with _$DebtModel {
     @JsonKey(fromJson: _amountFromJson) required double amount,
     @Default(DebtStatusJson.active) DebtStatusJson status,
     @Default(false) bool autoPayment,
+    @Default(false) bool paidCurrentPeriod,
     @Default([]) List<PaymentEmbeddedModel> payments,
     ReminderEmbeddedModel? reminder,
     String? nextReminderDate,
@@ -94,6 +95,7 @@ extension DebtModelMapper on DebtModel {
     amount: amount,
     status: status.toDomain(),
     autoPayment: autoPayment,
+    paidCurrentPeriod: paidCurrentPeriod,
     payments: payments.map((p) => p.toDomain()).toList(),
     reminder: reminder?.toDomain(),
     nextReminderDate:

@@ -54,6 +54,15 @@
   "joinSharedHint": "Paylaşılan bir kategoriye üye ol",
   "noCategoryDebts": "Bu kategoride henüz borç yok",
   "noDebts": "Borç yok",
+  "summaryTotal": "Toplam",
+  "deleteDebtPermanentWarning": "Bu borç kalıcı olarak silinecek, geri alınamaz. Emin misiniz?",
+  "paymentRecorded": "{name} ödemeniz kayıt edildi.",
+  "@paymentRecorded": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+
   "deleteDebt": "Borcu Sil",
   "deleteDebtConfirm": "\"{name}\" borcunu silmek istediğinize emin misiniz?",
   "@deleteDebtConfirm": {

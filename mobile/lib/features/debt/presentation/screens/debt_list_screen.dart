@@ -105,6 +105,7 @@ class _DebtSummaryHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final cs = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final currencyFormat = NumberFormat.currency(
@@ -145,7 +146,7 @@ class _DebtSummaryHeader extends StatelessWidget {
         children: [
           Expanded(
             child: _AmountColumn(
-              label: 'Aktif',
+              label: l10n.statusActive,
               amount: currencyFormat.format(activeAmount),
               color: AppColors.statusActive,
             ),
@@ -158,7 +159,7 @@ class _DebtSummaryHeader extends StatelessWidget {
           ),
           Expanded(
             child: _AmountColumn(
-              label: 'Pasif',
+              label: l10n.statusInactive,
               amount: currencyFormat.format(inactiveAmount),
               color: AppColors.statusInactive,
             ),
@@ -171,7 +172,7 @@ class _DebtSummaryHeader extends StatelessWidget {
           ),
           Expanded(
             child: _AmountColumn(
-              label: 'Toplam',
+              label: l10n.summaryTotal,
               amount: currencyFormat.format(totalAmount),
               color: cs.primary,
             ),
@@ -424,13 +425,13 @@ class _CategorySection extends ConsumerWidget {
                   if (activeCount > 0)
                     _StatusCountRow(
                       count: activeCount,
-                      label: 'aktif',
+                      label: l10n.statusActive,
                       color: AppColors.statusActive,
                     ),
                   if (inactiveCount > 0)
                     _StatusCountRow(
                       count: inactiveCount,
-                      label: 'pasif',
+                      label: l10n.statusInactive,
                       color: AppColors.statusInactive,
                     ),
                 ],
@@ -527,7 +528,7 @@ class _SwipeableTileState extends ConsumerState<_SwipeableTile>
     final confirmed = await showConfirmDialog(
       context,
       title: context.l10n.deleteDebt,
-      content: 'Bu borç kalıcı olarak silinecek, geri alınamaz. Emin misiniz?',
+      content: context.l10n.deleteDebtPermanentWarning,
     );
     if (!mounted) return;
     if (confirmed) {
@@ -552,7 +553,7 @@ class _SwipeableTileState extends ConsumerState<_SwipeableTile>
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    '${widget.debt.name} ödemeniz kayıt edildi.',
+                    context.l10n.paymentRecorded(widget.debt.name),
                     style: const TextStyle(fontWeight: FontWeight.w500),
                   ),
                 ),
@@ -667,8 +668,8 @@ class _CompactDebtTile extends StatelessWidget {
       DebtStatus.passive => AppColors.statusInactive,
     };
     final statusLabel = switch (debt.status) {
-      DebtStatus.active => 'Aktif',
-      DebtStatus.passive => 'Pasif',
+      DebtStatus.active => l10n.statusActive,
+      DebtStatus.passive => l10n.statusInactive,
     };
     final statusIcon = switch (debt.status) {
       DebtStatus.active => Icons.radio_button_checked_rounded,
@@ -677,10 +678,9 @@ class _CompactDebtTile extends StatelessWidget {
 
     final paymentDotColor = switch (debt.status) {
       DebtStatus.passive => AppColors.statusInactive,
-      DebtStatus.active =>
-        (debt.payments.isNotEmpty && debt.payments.last.paid)
-            ? AppColors.statusActive
-            : const Color(0xFFEF4444),
+      DebtStatus.active => debt.paidCurrentPeriod
+          ? AppColors.statusActive
+          : const Color(0xFFEF4444),
     };
 
     return InkWell(

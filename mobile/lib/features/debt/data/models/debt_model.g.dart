@@ -23,6 +23,7 @@ _DebtModel _$DebtModelFromJson(Map<String, dynamic> json) => _DebtModel(
       $enumDecodeNullable(_$DebtStatusJsonEnumMap, json['status']) ??
       DebtStatusJson.active,
   autoPayment: json['autoPayment'] as bool? ?? false,
+  paidCurrentPeriod: json['paidCurrentPeriod'] as bool? ?? false,
   payments:
       (json['payments'] as List<dynamic>?)
           ?.map((e) => PaymentEmbeddedModel.fromJson(e as Map<String, dynamic>))
@@ -54,6 +55,7 @@ Map<String, dynamic> _$DebtModelToJson(
   'amount': instance.amount,
   'status': _$DebtStatusJsonEnumMap[instance.status]!,
   'autoPayment': instance.autoPayment,
+  'paidCurrentPeriod': instance.paidCurrentPeriod,
   'payments': instance.payments.map((e) => e.toJson()).toList(),
   if (instance.reminder?.toJson() case final value?) 'reminder': value,
   if (instance.nextReminderDate case final value?) 'nextReminderDate': value,
