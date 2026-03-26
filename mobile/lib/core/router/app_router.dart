@@ -2,20 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+
 import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../features/auth/presentation/providers/auth_state.dart';
-import '../../features/auth/presentation/screens/splash_screen.dart';
+import '../../features/auth/presentation/screens/change_password_screen.dart';
+import '../../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
-import '../../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../../features/auth/presentation/screens/reset_password_screen.dart';
-import '../../features/debt/presentation/screens/debt_list_screen.dart';
-import '../../features/debt/presentation/screens/debt_detail_screen.dart';
-import '../../features/debt/presentation/screens/debt_form_screen.dart';
-import '../../features/category/presentation/screens/category_list_screen.dart';
+import '../../features/auth/presentation/screens/splash_screen.dart';
 import '../../features/category/presentation/screens/category_detail_screen.dart';
 import '../../features/category/presentation/screens/category_form_screen.dart';
-import '../../features/auth/presentation/screens/change_password_screen.dart';
+import '../../features/category/presentation/screens/category_list_screen.dart';
+import '../../features/debt/presentation/screens/debt_detail_screen.dart';
+import '../../features/debt/presentation/screens/debt_form_screen.dart';
+import '../../features/debt/presentation/screens/debt_list_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../../shared/widgets/bottom_nav_bar.dart';
 import 'route_names.dart';
@@ -27,7 +28,7 @@ final _shellNavigatorKey = GlobalKey<NavigatorState>();
 
 class _RouterNotifier extends ChangeNotifier {
   _RouterNotifier(Ref ref) {
-    ref.listen<AuthState>(authNotifierProvider, (_, __) => notifyListeners());
+    ref.listen<AuthState>(authNotifierProvider, (_, _) => notifyListeners());
   }
 }
 
@@ -53,16 +54,13 @@ GoRouter appRouter(Ref ref) {
       ].any((path) => state.matchedLocation.startsWith(path));
 
       return switch (authState) {
-        AuthStateInitial() || AuthStateLoading() =>
-          isAuthRoute ? null : RoutePaths.splash,
+        AuthStateInitial() || AuthStateLoading() => isAuthRoute ? null : RoutePaths.splash,
         AuthStateAuthenticated() =>
           isAuthRoute && state.matchedLocation != RoutePaths.resetPassword
               ? RoutePaths.debts
               : null,
         AuthStateUnauthenticated() || AuthStateError() =>
-          (!isAuthRoute || state.matchedLocation == RoutePaths.splash)
-              ? RoutePaths.login
-              : null,
+          (!isAuthRoute || state.matchedLocation == RoutePaths.splash) ? RoutePaths.login : null,
       };
     },
     routes: [
@@ -101,9 +99,7 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: RoutePaths.resetPassword,
         name: RouteNames.resetPassword,
-        builder: (_, state) => ResetPasswordScreen(
-          token: state.uri.queryParameters['token'],
-        ),
+        builder: (_, state) => ResetPasswordScreen(token: state.uri.queryParameters['token']),
       ),
       ShellRoute(
         navigatorKey: _shellNavigatorKey,
@@ -122,15 +118,12 @@ GoRouter appRouter(Ref ref) {
               GoRoute(
                 path: ':id',
                 name: RouteNames.debtDetail,
-                builder: (_, state) =>
-                    DebtDetailScreen(id: state.pathParameters['id']!),
+                builder: (_, state) => DebtDetailScreen(id: state.pathParameters['id']!),
                 routes: [
                   GoRoute(
                     path: 'edit',
                     name: RouteNames.debtEdit,
-                    builder: (_, state) => DebtFormScreen(
-                      debtId: state.pathParameters['id'],
-                    ),
+                    builder: (_, state) => DebtFormScreen(debtId: state.pathParameters['id']),
                   ),
                 ],
               ),
@@ -149,15 +142,13 @@ GoRouter appRouter(Ref ref) {
               GoRoute(
                 path: ':id',
                 name: RouteNames.categoryDetail,
-                builder: (_, state) =>
-                    CategoryDetailScreen(id: state.pathParameters['id']!),
+                builder: (_, state) => CategoryDetailScreen(id: state.pathParameters['id']!),
                 routes: [
                   GoRoute(
                     path: 'edit',
                     name: RouteNames.categoryEdit,
-                    builder: (_, state) => CategoryFormScreen(
-                      categoryId: state.pathParameters['id'],
-                    ),
+                    builder: (_, state) =>
+                        CategoryFormScreen(categoryId: state.pathParameters['id']),
                   ),
                 ],
               ),

@@ -31,8 +31,10 @@ class DebtList extends _$DebtList {
 @riverpod
 class DebtDetail extends _$DebtDetail {
   @override
-  Future<Debt> build(String id) =>
-      ref.read(debtRepositoryProvider).getById(id);
+  Future<Debt> build(String id) {
+    ref.keepAlive();
+    return ref.read(debtRepositoryProvider).getById(id);
+  }
 }
 
 @riverpod

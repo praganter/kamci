@@ -6,7 +6,7 @@ part of 'debt_providers.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$debtListHash() => r'1264b802d74cf29a5ee2c14df71e0751bb04eea6';
+String _$debtListHash() => r'4d14051afbd2c64962ee59f7484d2e80f83a3e0d';
 
 /// See also [DebtList].
 @ProviderFor(DebtList)
@@ -22,7 +22,7 @@ final debtListProvider =
     );
 
 typedef _$DebtList = AutoDisposeAsyncNotifier<List<Debt>>;
-String _$debtDetailHash() => r'dde096a3dcfd64d1630e4b21ea6fe8f8aef1a7d7';
+String _$debtDetailHash() => r'2b3933efd17a64fa8ba2711f3673bb4f391c1221';
 
 /// Copied from Dart SDK
 class _SystemHash {
