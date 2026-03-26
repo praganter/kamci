@@ -1,4 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import '../../../../core/storage/secure_storage_service.dart';
+import '../../../category/presentation/providers/category_providers.dart';
 import '../../data/datasources/debt_remote_datasource.dart';
 import '../../data/models/debt_model.dart';
 import '../../data/repositories/debt_repository_impl.dart';
@@ -42,12 +44,28 @@ class DebtGrouped extends _$DebtGrouped {
   @override
   Future<List<CategoryWithDebts>> build() async {
     final raw = await ref.watch(debtRemoteDatasourceProvider).getGrouped();
-    return raw.map((r) => CategoryWithDebts(
+    final grouped = raw.map((r) => CategoryWithDebts(
       categoryId: r.categoryId,
       categoryName: r.categoryName,
       owned: r.owned,
       debts: r.debts.map((d) => d.toDomain()).toList(),
     )).toList();
+
+    final allCategories = await ref.watch(categoryListProvider.future);
+    final groupedIds = grouped.map((g) => g.categoryId).toSet();
+    final currentUserId = await ref.read(secureStorageServiceProvider).getUserId();
+
+    final emptyGroups = allCategories
+        .where((c) => !groupedIds.contains(c.id))
+        .map((c) => CategoryWithDebts(
+              categoryId: c.id,
+              categoryName: c.name,
+              owned: c.ownerId == currentUserId,
+              debts: const [],
+            ))
+        .toList();
+
+    return [...grouped, ...emptyGroups];
   }
 
   Future<void> refresh() async {

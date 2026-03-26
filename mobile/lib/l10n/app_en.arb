@@ -79,6 +79,8 @@
   "selectDate": "Select",
   "selectStartDate": "Please select a start date",
   "noCategory": "No Category",
+  "category": "Category",
+  "autoPayment": "Auto Payment",
   "categoryOptional": "Category (Optional)",
   "descriptionOptional": "Description (Optional)",
 

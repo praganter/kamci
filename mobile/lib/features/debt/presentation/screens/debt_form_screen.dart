@@ -5,11 +5,12 @@ import '../../../../core/l10n/l10n.dart';
 import '../../../../core/l10n/enum_l10n.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/utils/validators.dart';
+import '../../../../features/category/presentation/providers/category_providers.dart';
+import '../../../../features/category/presentation/widgets/add_category_sheet.dart';
 import '../../data/repositories/debt_repository_impl.dart';
 import '../../domain/entities/debt.dart';
 import '../../domain/repositories/debt_repository.dart';
 import '../providers/debt_providers.dart';
-import '../../../../features/category/presentation/providers/category_providers.dart';
 
 class DebtFormScreen extends ConsumerStatefulWidget {
   const DebtFormScreen({super.key, this.debtId});
@@ -28,6 +29,7 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
   DateTime? _lastPaymentDate;
   PaymentPeriodType _periodType = PaymentPeriodType.monthly;
   String? _selectedCategoryId;
+  bool _autoPayment = false;
   bool _initialized = false;
 
   @override
@@ -57,6 +59,7 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
       _lastPaymentDate = debt.lastPaymentDate;
       _periodType = debt.paymentPeriodType;
       _selectedCategoryId = debt.categoryId;
+      _autoPayment = debt.autoPayment;
       _initialized = true;
     });
   }
@@ -72,7 +75,8 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
   Future<void> _pickDate(bool isStart) async {
     final picked = await showDatePicker(
       context: context,
-      initialDate: (isStart ? _firstPaymentDate : _lastPaymentDate) ?? DateTime.now(),
+      initialDate:
+          (isStart ? _firstPaymentDate : _lastPaymentDate) ?? DateTime.now(),
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
     );
@@ -90,6 +94,12 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     final l10n = context.l10n;
+    if (_selectedCategoryId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.category)),
+      );
+      return;
+    }
     if (_firstPaymentDate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l10n.selectStartDate)),
@@ -106,6 +116,7 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
       lastPaymentDate: _lastPaymentDate,
       paymentPeriodType: _periodType,
       amount: double.parse(_amountCtrl.text.replaceAll(',', '.')),
+      autoPayment: _autoPayment,
     );
 
     final repo = ref.read(debtRepositoryProvider);
@@ -126,6 +137,22 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
     }
   }
 
+  Future<void> _openAddCategorySheet() async {
+    final createdId = await showModalBottomSheet<String?>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) => const AddCategorySheet(),
+    );
+    if (createdId != null && mounted) {
+      await ref.read(categoryListProvider.future);
+      if (mounted) setState(() => _selectedCategoryId = createdId);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -133,8 +160,7 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title:
-            Text(widget.debtId == null ? l10n.newDebt : l10n.editDebt),
+        title: Text(widget.debtId == null ? l10n.newDebt : l10n.editDebt),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -143,6 +169,59 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              // ── Kategori (zorunlu) ──────────────────────────────────
+              categoriesAsync.when(
+                loading: () => const LinearProgressIndicator(),
+                error: (e, _) => const SizedBox.shrink(),
+                data: (categories) => Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      // ignore: deprecated_member_use
+                      child: DropdownButtonFormField<String>(
+                        // ignore: deprecated_member_use
+                        value: _selectedCategoryId,
+                        decoration: InputDecoration(
+                          labelText: l10n.category,
+                          prefixIcon: const Icon(Icons.folder_outlined),
+                        ),
+                        hint: Text(l10n.select),
+                        items: categories
+                            .map((c) => DropdownMenuItem(
+                                value: c.id, child: Text(c.name)))
+                            .toList(),
+                        onChanged: (v) =>
+                            setState(() => _selectedCategoryId = v),
+                        validator: (v) => v == null
+                            ? Validators.required(null,
+                                fieldName: l10n.category)
+                            : null,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Material(
+                      color: Theme.of(context).colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(16),
+                      child: InkWell(
+                        onTap: _openAddCategorySheet,
+                        borderRadius: BorderRadius.circular(16),
+                        child: SizedBox(
+                          width: 56,
+                          height: 56,
+                          child: Icon(
+                            Icons.add,
+                            color:
+                                Theme.of(context).colorScheme.onPrimaryContainer,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // ── Borç Adı ────────────────────────────────────────────
               TextFormField(
                 controller: _nameCtrl,
                 decoration: InputDecoration(
@@ -153,6 +232,8 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                     Validators.required(v, fieldName: l10n.debtName),
               ),
               const SizedBox(height: 16),
+
+              // ── Tutar ───────────────────────────────────────────────
               TextFormField(
                 controller: _amountCtrl,
                 decoration: InputDecoration(
@@ -165,6 +246,8 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                 validator: Validators.amount,
               ),
               const SizedBox(height: 16),
+
+              // ── Ödeme Periyodu ──────────────────────────────────────
               // ignore: deprecated_member_use
               DropdownButtonFormField<PaymentPeriodType>(
                 // ignore: deprecated_member_use
@@ -180,6 +263,8 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                 onChanged: (v) => setState(() => _periodType = v!),
               ),
               const SizedBox(height: 16),
+
+              // ── Tarihler ────────────────────────────────────────────
               Row(
                 children: [
                   Expanded(
@@ -218,30 +303,8 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                 ],
               ),
               const SizedBox(height: 16),
-              categoriesAsync.when(
-                loading: () => const LinearProgressIndicator(),
-                error: (e, _) => const SizedBox.shrink(),
-                data: (categories) =>
-                    // ignore: deprecated_member_use
-                    DropdownButtonFormField<String?>(
-                  // ignore: deprecated_member_use
-                  value: _selectedCategoryId,
-                  decoration: InputDecoration(
-                    labelText: l10n.categoryOptional,
-                    prefixIcon: const Icon(Icons.folder_outlined),
-                  ),
-                  items: [
-                    DropdownMenuItem(
-                        value: null, child: Text(l10n.noCategory)),
-                    ...categories.map(
-                      (c) =>
-                          DropdownMenuItem(value: c.id, child: Text(c.name)),
-                    ),
-                  ],
-                  onChanged: (v) => setState(() => _selectedCategoryId = v),
-                ),
-              ),
-              const SizedBox(height: 16),
+
+              // ── Açıklama ────────────────────────────────────────────
               TextFormField(
                 controller: _descCtrl,
                 decoration: InputDecoration(
@@ -250,7 +313,17 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                 ),
                 maxLines: 3,
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 8),
+
+              // ── Otomatik Ödeme ──────────────────────────────────────
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text(l10n.autoPayment),
+                value: _autoPayment,
+                onChanged: (v) => setState(() => _autoPayment = v),
+              ),
+              const SizedBox(height: 24),
+
               ElevatedButton(
                 onPressed: _submit,
                 child: Text(

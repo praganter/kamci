@@ -94,6 +94,8 @@
   "selectDate": "Seçin",
   "selectStartDate": "Başlangıç tarihini seçin",
   "noCategory": "Kategori Yok",
+  "category": "Kategori",
+  "autoPayment": "Otomatik Ödeme",
   "categoryOptional": "Kategori (İsteğe Bağlı)",
   "descriptionOptional": "Açıklama (İsteğe Bağlı)",
 

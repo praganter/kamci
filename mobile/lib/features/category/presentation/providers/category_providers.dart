@@ -54,22 +54,24 @@ class CategoryDetail extends _$CategoryDetail {
 @riverpod
 class CategoryForm extends _$CategoryForm {
   @override
-  ({bool isLoading, String? error, bool isSuccess}) build() =>
-      (isLoading: false, error: null, isSuccess: false);
+  ({bool isLoading, String? error, bool isSuccess, String? createdId}) build() =>
+      (isLoading: false, error: null, isSuccess: false, createdId: null);
 
   Future<void> submit(String name, {String? categoryId}) async {
-    state = (isLoading: true, error: null, isSuccess: false);
+    state = (isLoading: true, error: null, isSuccess: false, createdId: null);
     try {
       final repo = ref.read(categoryRepositoryProvider);
+      String? createdId;
       if (categoryId != null) {
         await repo.update(categoryId, name);
       } else {
-        await repo.create(name);
+        final created = await repo.create(name);
+        createdId = created.id;
       }
       ref.invalidate(categoryListProvider);
-      state = (isLoading: false, error: null, isSuccess: true);
+      state = (isLoading: false, error: null, isSuccess: true, createdId: createdId);
     } catch (e) {
-      state = (isLoading: false, error: e.toString(), isSuccess: false);
+      state = (isLoading: false, error: e.toString(), isSuccess: false, createdId: null);
     }
   }
 }

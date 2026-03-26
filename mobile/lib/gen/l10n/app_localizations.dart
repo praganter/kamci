@@ -494,6 +494,18 @@ abstract class AppLocalizations {
   /// **'Kategori Yok'**
   String get noCategory;
 
+  /// No description provided for @category.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kategori'**
+  String get category;
+
+  /// No description provided for @autoPayment.
+  ///
+  /// In tr, this message translates to:
+  /// **'Otomatik Ödeme'**
+  String get autoPayment;
+
   /// No description provided for @categoryOptional.
   ///
   /// In tr, this message translates to:

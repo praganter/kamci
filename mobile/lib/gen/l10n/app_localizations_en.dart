@@ -217,6 +217,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noCategory => 'No Category';
 
   @override
+  String get category => 'Category';
+
+  @override
+  String get autoPayment => 'Auto Payment';
+
+  @override
   String get categoryOptional => 'Category (Optional)';
 
   @override

@@ -123,7 +123,7 @@ ThemeData buildDarkTheme() {
       backgroundColor: Color(0xFFA78BFA),
       foregroundColor: Color(0xFF2E1065),
       elevation: 2,
-      shape: CircleBorder(),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(16))),
     ),
     snackBarTheme: SnackBarThemeData(
       backgroundColor: const Color(0xFF2E2050),

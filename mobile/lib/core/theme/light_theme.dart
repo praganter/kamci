@@ -123,7 +123,7 @@ ThemeData buildLightTheme() {
       backgroundColor: AppColors.primary,
       foregroundColor: Colors.white,
       elevation: 2,
-      shape: CircleBorder(),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(16))),
     ),
     snackBarTheme: SnackBarThemeData(
       backgroundColor: const Color(0xFF1A1025),

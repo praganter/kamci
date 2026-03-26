@@ -217,6 +217,12 @@ class AppLocalizationsTr extends AppLocalizations {
   String get noCategory => 'Kategori Yok';
 
   @override
+  String get category => 'Kategori';
+
+  @override
+  String get autoPayment => 'Otomatik Ödeme';
+
+  @override
   String get categoryOptional => 'Kategori (İsteğe Bağlı)';
 
   @override

@@ -175,14 +175,14 @@ class _CategoryDetailProviderElement
   String get id => (origin as CategoryDetailProvider).id;
 }
 
-String _$categoryFormHash() => r'aa2dfd681050af06a80e0f80d9afa1a7514645c6';
+String _$categoryFormHash() => r'7bf55d88175fe7a26209a91055e6e55bf7befd40';
 
 /// See also [CategoryForm].
 @ProviderFor(CategoryForm)
 final categoryFormProvider =
     AutoDisposeNotifierProvider<
       CategoryForm,
-      ({bool isLoading, String? error, bool isSuccess})
+      ({bool isLoading, String? error, bool isSuccess, String? createdId})
     >.internal(
       CategoryForm.new,
       name: r'categoryFormProvider',
@@ -194,6 +194,8 @@ final categoryFormProvider =
     );
 
 typedef _$CategoryForm =
-    AutoDisposeNotifier<({bool isLoading, String? error, bool isSuccess})>;
+    AutoDisposeNotifier<
+      ({bool isLoading, String? error, bool isSuccess, String? createdId})
+    >;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
