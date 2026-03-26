@@ -9,10 +9,7 @@ import dev.batuhanyetgin.debttracker.document.embedded.PaymentEmbedded;
 import dev.batuhanyetgin.debttracker.document.embedded.ReminderEmbedded;
 import dev.batuhanyetgin.debttracker.dto.request.CreateDebtRequest;
 import dev.batuhanyetgin.debttracker.dto.request.UpdateDebtRequest;
-import dev.batuhanyetgin.debttracker.dto.response.CategoryDebtResponse;
-import dev.batuhanyetgin.debttracker.dto.response.DebtDetailResponse;
-import dev.batuhanyetgin.debttracker.dto.response.DebtResponse;
-import dev.batuhanyetgin.debttracker.dto.response.GetDebtResponse;
+import dev.batuhanyetgin.debttracker.dto.response.*;
 import dev.batuhanyetgin.debttracker.enums.AccessLevelType;
 import dev.batuhanyetgin.debttracker.enums.DebtStatus;
 import dev.batuhanyetgin.debttracker.enums.PaymentPeriodType;
@@ -206,7 +203,11 @@ public class DebtService {
                         .owned(ownedIds.contains(cat.getId()))
                         .ownerUserId(ownedIds.contains(cat.getId()) ? null : cat.getOwnerId())
                         .debts(byCategory.getOrDefault(cat.getId(), List.of())
-                                .stream().map(debtMapper::convert).toList())
+                                .stream().map(debt -> {
+                                    final DebtItemResponse item = debtMapper.convert(debt);
+                                    item.setPaidCurrentPeriod(isPaidCurrentPeriod(debt));
+                                    return item;
+                                }).toList())
                         .build())
                 .toList();
 
@@ -271,6 +272,19 @@ public class DebtService {
                 yield firstPaymentDate.plusYears(years);
             }
         };
+    }
+
+    private boolean isPaidCurrentPeriod(final DebtDocument debt) {
+        if (debt.getPayments() == null || debt.getPayments().isEmpty()
+                || debt.getPaymentPeriodType() == null) {
+            return false;
+        }
+        final LocalDateTime now = LocalDateTime.now();
+        final LocalDateTime periodStart = getCurrentPeriodStart(
+                debt.getFirstPaymentDate(), debt.getPaymentPeriodType(), now);
+        return debt.getPayments().stream()
+                .anyMatch(p -> p.isPaid() && p.getPaidTime() != null
+                        && !p.getPaidTime().isBefore(periodStart));
     }
 
     private void setNextAutoPaymentDate(final DebtDocument debtDocument) {

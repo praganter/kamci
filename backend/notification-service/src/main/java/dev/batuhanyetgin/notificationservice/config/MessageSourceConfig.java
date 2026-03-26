@@ -1,23 +1,3 @@
 package dev.batuhanyetgin.notificationservice.config;
 
-import dev.batuhanyetgin.commonmodule.constant.CommonConstants;
-import org.springframework.context.MessageSource;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.support.ReloadableResourceBundleMessageSource;
-
-import java.nio.charset.StandardCharsets;
-import java.util.Locale;
-
-@Configuration
-public class MessageSourceConfig {
-
-    @Bean
-    public MessageSource messageSource() {
-        final ReloadableResourceBundleMessageSource source = new ReloadableResourceBundleMessageSource();
-        source.setBasename("classpath:messages");
-        source.setDefaultEncoding(StandardCharsets.UTF_8.name());
-        source.setDefaultLocale(Locale.forLanguageTag(CommonConstants.DEFAULT_LOCALE));
-        return source;
-    }
-}
+// Removed: messageSource bean is now provided by common-module's MessageConfig

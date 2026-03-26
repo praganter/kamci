@@ -46,4 +46,6 @@ public class DebtItemResponse {
     private LocalDateTime createdDate;
 
     private LocalDateTime updatedDate;
+
+    private boolean paidCurrentPeriod;
 }

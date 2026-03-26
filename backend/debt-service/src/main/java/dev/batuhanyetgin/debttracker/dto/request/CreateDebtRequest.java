@@ -42,6 +42,7 @@ public class CreateDebtRequest {
     @Size(max = 24, message = "{error.validation.size}")
     private String categoryId;
 
+    @NotNull(message = "{error.validation.not_null}")
     private boolean autoPayment;
 
     @Valid
