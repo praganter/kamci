@@ -113,4 +113,14 @@ public class AuthController {
     ResponseEntity<Boolean> userExists(@PathVariable final String userId) {
         return ResponseEntity.ok(authRS.existsById(userId));
     }
+
+    @Operation(summary = "Get user ID by email (internal inter-service use)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Returns userId for the given email"),
+            @ApiResponse(responseCode = "404", description = "User not found")
+    })
+    @GetMapping("user/id-by-email/{email}")
+    ResponseEntity<String> getUserIdByEmail(@PathVariable final String email) {
+        return ResponseEntity.ok(authRS.findByEMail(email).getId());
+    }
 }
