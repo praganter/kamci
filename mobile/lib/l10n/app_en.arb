@@ -142,5 +142,7 @@
     "placeholders": {
       "name": { "type": "String" }
     }
-  }
+  },
+
+  "currency": "Currency"
 }

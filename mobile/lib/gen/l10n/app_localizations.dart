@@ -799,6 +799,12 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Developed by {name}'**
   String developerCredit(String name);
+
+  /// No description provided for @currency.
+  ///
+  /// In tr, this message translates to:
+  /// **'Para Birimi'**
+  String get currency;
 }
 
 class _AppLocalizationsDelegate

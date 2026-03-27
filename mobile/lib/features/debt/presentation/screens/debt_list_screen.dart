@@ -90,9 +90,12 @@ class _DebtTabView extends ConsumerWidget {
       ),
       floatingActionButton: owned
           ? FloatingActionButton(
-              onPressed: () {
+              onPressed: () async {
                 ref.invalidate(categoryListProvider);
-                context.pushNamed(RouteNames.debtNew);
+                ref.invalidate(currencyListProvider);
+                ref.read(currencyListProvider.future).ignore();
+                await context.pushNamed(RouteNames.debtNew);
+                ref.invalidate(debtGroupedProvider);
               },
               child: const Icon(Icons.add),
             )

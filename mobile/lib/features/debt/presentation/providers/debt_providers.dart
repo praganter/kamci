@@ -1,7 +1,9 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../core/storage/secure_storage_service.dart';
 import '../../../category/presentation/providers/category_providers.dart';
 import '../../data/datasources/debt_remote_datasource.dart';
+import '../../data/models/currency_model.dart';
 import '../../data/models/debt_model.dart';
 import '../../data/repositories/debt_repository_impl.dart';
 import '../../domain/entities/category_with_debts.dart';
@@ -73,6 +75,10 @@ class DebtGrouped extends _$DebtGrouped {
     await future;
   }
 }
+
+@riverpod
+Future<List<CurrencyModel>> currencyList(Ref ref) =>
+    ref.watch(debtRemoteDatasourceProvider).getCurrencies();
 
 typedef DebtFormState = ({
   String name,

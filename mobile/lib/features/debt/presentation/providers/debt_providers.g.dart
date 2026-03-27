@@ -6,6 +6,24 @@ part of 'debt_providers.dart';
 // RiverpodGenerator
 // **************************************************************************
 
+String _$currencyListHash() => r'9fe30be4257f064bfd5f8153325b5353bc28ab89';
+
+/// See also [currencyList].
+@ProviderFor(currencyList)
+final currencyListProvider =
+    AutoDisposeFutureProvider<List<CurrencyModel>>.internal(
+      currencyList,
+      name: r'currencyListProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$currencyListHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef CurrencyListRef = AutoDisposeFutureProviderRef<List<CurrencyModel>>;
 String _$debtListHash() => r'4d14051afbd2c64962ee59f7484d2e80f83a3e0d';
 
 /// See also [DebtList].
@@ -172,7 +190,7 @@ class _DebtDetailProviderElement
   String get id => (origin as DebtDetailProvider).id;
 }
 
-String _$debtGroupedHash() => r'03dc3460810345528cdc538a0d4731be1c3773c9';
+String _$debtGroupedHash() => r'b50172a1849f288cdb3bf82293a265f502a893dd';
 
 /// See also [DebtGrouped].
 @ProviderFor(DebtGrouped)

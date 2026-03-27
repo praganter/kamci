@@ -20,6 +20,7 @@ _CreateDebtRequest _$CreateDebtRequestFromJson(Map<String, dynamic> json) =>
       ),
       amount: (json['amount'] as num).toDouble(),
       autoPayment: json['autoPayment'] as bool? ?? false,
+      currency: json['currency'] as String?,
     );
 
 Map<String, dynamic> _$CreateDebtRequestToJson(_CreateDebtRequest instance) =>
@@ -34,6 +35,7 @@ Map<String, dynamic> _$CreateDebtRequestToJson(_CreateDebtRequest instance) =>
           _$PaymentPeriodTypeJsonEnumMap[instance.paymentPeriodType]!,
       'amount': instance.amount,
       'autoPayment': instance.autoPayment,
+      if (instance.currency case final value?) 'currency': value,
     };
 
 const _$PaymentPeriodTypeJsonEnumMap = {

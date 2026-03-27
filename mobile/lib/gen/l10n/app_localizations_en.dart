@@ -378,4 +378,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String developerCredit(String name) {
     return 'Developed by $name';
   }
+
+  @override
+  String get currency => 'Currency';
 }

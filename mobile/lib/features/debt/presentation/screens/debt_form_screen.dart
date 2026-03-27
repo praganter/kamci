@@ -27,10 +27,12 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
   final _descCtrl = TextEditingController();
   DateTime? _firstPaymentDate;
   DateTime? _lastPaymentDate;
-  PaymentPeriodType _periodType = PaymentPeriodType.monthly;
+  PaymentPeriodType? _periodType;
   String? _selectedCategoryId;
+  String? _selectedCurrency;
   bool _autoPayment = false;
   bool _initialized = false;
+  final _startDateKey = GlobalKey<FormFieldState<DateTime?>>();
 
   @override
   void initState() {
@@ -59,6 +61,7 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
       _lastPaymentDate = debt.lastPaymentDate;
       _periodType = debt.paymentPeriodType;
       _selectedCategoryId = debt.categoryId;
+      _selectedCurrency = debt.currency;
       _autoPayment = debt.autoPayment;
       _initialized = true;
     });
@@ -84,6 +87,7 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
       setState(() {
         if (isStart) {
           _firstPaymentDate = picked;
+          _startDateKey.currentState?.didChange(picked);
         } else {
           _lastPaymentDate = picked;
         }
@@ -93,19 +97,6 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    final l10n = context.l10n;
-    if (_selectedCategoryId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.category)),
-      );
-      return;
-    }
-    if (_firstPaymentDate == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.selectStartDate)),
-      );
-      return;
-    }
 
     final params = CreateDebtParams(
       name: _nameCtrl.text.trim(),
@@ -114,9 +105,10 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
           _descCtrl.text.trim().isEmpty ? null : _descCtrl.text.trim(),
       firstPaymentDate: _firstPaymentDate!,
       lastPaymentDate: _lastPaymentDate,
-      paymentPeriodType: _periodType,
+      paymentPeriodType: _periodType!,
       amount: double.parse(_amountCtrl.text.replaceAll(',', '.')),
       autoPayment: _autoPayment,
+      currency: _selectedCurrency,
     );
 
     final repo = ref.read(debtRepositoryProvider);
@@ -157,6 +149,7 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final categoriesAsync = ref.watch(categoryListProvider);
+    final currenciesAsync = ref.watch(currencyListProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -247,6 +240,34 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
               ),
               const SizedBox(height: 16),
 
+              // ── Para Birimi ─────────────────────────────────────────
+              currenciesAsync.when(
+                loading: () => const LinearProgressIndicator(),
+                error: (e, s) => const SizedBox.shrink(),
+                data: (currencies) =>
+                    // ignore: deprecated_member_use
+                    DropdownButtonFormField<String>(
+                  // ignore: deprecated_member_use
+                  value: _selectedCurrency,
+                  decoration: InputDecoration(
+                    labelText: l10n.currency,
+                    prefixIcon: const Icon(Icons.currency_exchange),
+                  ),
+                  hint: Text(l10n.select),
+                  items: currencies
+                      .map((c) => DropdownMenuItem(
+                            value: c.code,
+                            child: Text('${c.code}  ${c.symbol}'),
+                          ))
+                      .toList(),
+                  onChanged: (v) => setState(() => _selectedCurrency = v),
+                  validator: (v) => v == null
+                      ? Validators.required(null, fieldName: l10n.currency)
+                      : null,
+                ),
+              ),
+              const SizedBox(height: 16),
+
               // ── Ödeme Periyodu ──────────────────────────────────────
               // ignore: deprecated_member_use
               DropdownButtonFormField<PaymentPeriodType>(
@@ -256,11 +277,15 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                   labelText: l10n.paymentPeriod,
                   prefixIcon: const Icon(Icons.repeat),
                 ),
+                hint: Text(l10n.select),
                 items: PaymentPeriodType.values
                     .map((t) => DropdownMenuItem(
                         value: t, child: Text(t.l10nLabel(l10n))))
                     .toList(),
-                onChanged: (v) => setState(() => _periodType = v!),
+                onChanged: (v) => setState(() => _periodType = v),
+                validator: (v) => v == null
+                    ? Validators.required(null, fieldName: l10n.paymentPeriod)
+                    : null,
               ),
               const SizedBox(height: 16),
 
@@ -268,17 +293,25 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
               Row(
                 children: [
                   Expanded(
-                    child: InkWell(
-                      onTap: () => _pickDate(true),
-                      child: InputDecorator(
-                        decoration: InputDecoration(
-                          labelText: l10n.startDate,
-                          prefixIcon: const Icon(Icons.calendar_today),
-                        ),
-                        child: Text(
-                          _firstPaymentDate != null
-                              ? DateFormatter.formatDate(_firstPaymentDate!)
-                              : l10n.select,
+                    child: FormField<DateTime?>(
+                      key: _startDateKey,
+                      initialValue: _firstPaymentDate,
+                      validator: (v) => v == null
+                          ? Validators.required(null, fieldName: l10n.startDate)
+                          : null,
+                      builder: (state) => InkWell(
+                        onTap: () => _pickDate(true),
+                        child: InputDecorator(
+                          decoration: InputDecoration(
+                            labelText: l10n.startDate,
+                            prefixIcon: const Icon(Icons.calendar_today),
+                            errorText: state.errorText,
+                          ),
+                          child: Text(
+                            _firstPaymentDate != null
+                                ? DateFormatter.formatDate(_firstPaymentDate!)
+                                : l10n.select,
+                          ),
                         ),
                       ),
                     ),

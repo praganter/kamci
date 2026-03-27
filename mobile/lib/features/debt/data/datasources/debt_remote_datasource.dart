@@ -5,6 +5,7 @@ import '../../../../core/constants/api_constants.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/network/dio_client.dart';
 import '../models/create_debt_request.dart';
+import '../models/currency_model.dart';
 import '../models/debt_model.dart';
 
 part 'debt_remote_datasource.g.dart';
@@ -97,6 +98,18 @@ class DebtRemoteDatasource {
     try {
       final response = await _dio.get('${ApiConstants.debtGetById}/$id');
       return DebtModel.fromJson(response.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      throw _mapException(e);
+    }
+  }
+
+  Future<List<CurrencyModel>> getCurrencies() async {
+    try {
+      final response = await _dio.get(ApiConstants.debtCurrencies);
+      final list = response.data as List<dynamic>;
+      return list
+          .map((e) => CurrencyModel.fromJson(e as Map<String, dynamic>))
+          .toList();
     } on DioException catch (e) {
       throw _mapException(e);
     }

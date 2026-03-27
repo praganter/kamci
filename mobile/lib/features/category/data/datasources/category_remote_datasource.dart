@@ -49,7 +49,9 @@ class CategoryRemoteDatasource {
         ApiConstants.categoryUpdate,
         data: {'id': id, 'name': name},
       );
-      return CategoryModel.fromJson(response.data as Map<String, dynamic>);
+      final data = Map<String, dynamic>.from(response.data as Map<String, dynamic>);
+      data.putIfAbsent('ownerId', () => '');
+      return CategoryModel.fromJson(data);
     } on DioException catch (e) {
       throw _mapException(e);
     }

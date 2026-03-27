@@ -1,0 +1,13 @@
+project_type: dart
+
+roots:
+  - ./lib
+
+exclude:
+  - build
+  - .dart_tool
+  - .flutter-plugins
+  - .flutter-plugins-dependencies
+  - "**/*.freezed.dart"
+  - "**/*.g.dart"
+  - "lib/gen"

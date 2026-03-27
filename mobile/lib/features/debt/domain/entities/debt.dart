@@ -44,6 +44,7 @@ class Debt {
     required this.autoPayment,
     required this.paidCurrentPeriod,
     required this.payments,
+    this.currency,
     this.reminder,
     this.nextReminderDate,
     this.createdAt,
@@ -59,6 +60,7 @@ class Debt {
   final DateTime? lastPaymentDate;
   final PaymentPeriodType paymentPeriodType;
   final double amount;
+  final String? currency;
   final DebtStatus status;
   final bool autoPayment;
   final bool paidCurrentPeriod;

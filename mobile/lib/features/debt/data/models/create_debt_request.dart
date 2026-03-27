@@ -16,6 +16,7 @@ abstract class CreateDebtRequest with _$CreateDebtRequest {
     required PaymentPeriodTypeJson paymentPeriodType,
     required double amount,
     @Default(false) bool autoPayment,
+    String? currency,
   }) = _CreateDebtRequest;
 
   factory CreateDebtRequest.fromJson(Map<String, dynamic> json) =>

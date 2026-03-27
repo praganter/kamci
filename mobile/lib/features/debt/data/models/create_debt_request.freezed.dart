@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$CreateDebtRequest {
 
- String? get id; String get name; String? get categoryId; String? get description; String get firstPaymentDate; String? get lastPaymentDate; PaymentPeriodTypeJson get paymentPeriodType; double get amount; bool get autoPayment;
+ String? get id; String get name; String? get categoryId; String? get description; String get firstPaymentDate; String? get lastPaymentDate; PaymentPeriodTypeJson get paymentPeriodType; double get amount; bool get autoPayment; String? get currency;
 /// Create a copy of CreateDebtRequest
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $CreateDebtRequestCopyWith<CreateDebtRequest> get copyWith => _$CreateDebtReques
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is CreateDebtRequest&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.description, description) || other.description == description)&&(identical(other.firstPaymentDate, firstPaymentDate) || other.firstPaymentDate == firstPaymentDate)&&(identical(other.lastPaymentDate, lastPaymentDate) || other.lastPaymentDate == lastPaymentDate)&&(identical(other.paymentPeriodType, paymentPeriodType) || other.paymentPeriodType == paymentPeriodType)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.autoPayment, autoPayment) || other.autoPayment == autoPayment));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CreateDebtRequest&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.description, description) || other.description == description)&&(identical(other.firstPaymentDate, firstPaymentDate) || other.firstPaymentDate == firstPaymentDate)&&(identical(other.lastPaymentDate, lastPaymentDate) || other.lastPaymentDate == lastPaymentDate)&&(identical(other.paymentPeriodType, paymentPeriodType) || other.paymentPeriodType == paymentPeriodType)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.autoPayment, autoPayment) || other.autoPayment == autoPayment)&&(identical(other.currency, currency) || other.currency == currency));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,categoryId,description,firstPaymentDate,lastPaymentDate,paymentPeriodType,amount,autoPayment);
+int get hashCode => Object.hash(runtimeType,id,name,categoryId,description,firstPaymentDate,lastPaymentDate,paymentPeriodType,amount,autoPayment,currency);
 
 @override
 String toString() {
-  return 'CreateDebtRequest(id: $id, name: $name, categoryId: $categoryId, description: $description, firstPaymentDate: $firstPaymentDate, lastPaymentDate: $lastPaymentDate, paymentPeriodType: $paymentPeriodType, amount: $amount, autoPayment: $autoPayment)';
+  return 'CreateDebtRequest(id: $id, name: $name, categoryId: $categoryId, description: $description, firstPaymentDate: $firstPaymentDate, lastPaymentDate: $lastPaymentDate, paymentPeriodType: $paymentPeriodType, amount: $amount, autoPayment: $autoPayment, currency: $currency)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $CreateDebtRequestCopyWith<$Res>  {
   factory $CreateDebtRequestCopyWith(CreateDebtRequest value, $Res Function(CreateDebtRequest) _then) = _$CreateDebtRequestCopyWithImpl;
 @useResult
 $Res call({
- String? id, String name, String? categoryId, String? description, String firstPaymentDate, String? lastPaymentDate, PaymentPeriodTypeJson paymentPeriodType, double amount, bool autoPayment
+ String? id, String name, String? categoryId, String? description, String firstPaymentDate, String? lastPaymentDate, PaymentPeriodTypeJson paymentPeriodType, double amount, bool autoPayment, String? currency
 });
 
 
@@ -65,7 +65,7 @@ class _$CreateDebtRequestCopyWithImpl<$Res>
 
 /// Create a copy of CreateDebtRequest
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? name = null,Object? categoryId = freezed,Object? description = freezed,Object? firstPaymentDate = null,Object? lastPaymentDate = freezed,Object? paymentPeriodType = null,Object? amount = null,Object? autoPayment = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? name = null,Object? categoryId = freezed,Object? description = freezed,Object? firstPaymentDate = null,Object? lastPaymentDate = freezed,Object? paymentPeriodType = null,Object? amount = null,Object? autoPayment = null,Object? currency = freezed,}) {
   return _then(_self.copyWith(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String?,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -76,7 +76,8 @@ as String,lastPaymentDate: freezed == lastPaymentDate ? _self.lastPaymentDate : 
 as String?,paymentPeriodType: null == paymentPeriodType ? _self.paymentPeriodType : paymentPeriodType // ignore: cast_nullable_to_non_nullable
 as PaymentPeriodTypeJson,amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
 as double,autoPayment: null == autoPayment ? _self.autoPayment : autoPayment // ignore: cast_nullable_to_non_nullable
-as bool,
+as bool,currency: freezed == currency ? _self.currency : currency // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
@@ -161,10 +162,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? id,  String name,  String? categoryId,  String? description,  String firstPaymentDate,  String? lastPaymentDate,  PaymentPeriodTypeJson paymentPeriodType,  double amount,  bool autoPayment)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? id,  String name,  String? categoryId,  String? description,  String firstPaymentDate,  String? lastPaymentDate,  PaymentPeriodTypeJson paymentPeriodType,  double amount,  bool autoPayment,  String? currency)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _CreateDebtRequest() when $default != null:
-return $default(_that.id,_that.name,_that.categoryId,_that.description,_that.firstPaymentDate,_that.lastPaymentDate,_that.paymentPeriodType,_that.amount,_that.autoPayment);case _:
+return $default(_that.id,_that.name,_that.categoryId,_that.description,_that.firstPaymentDate,_that.lastPaymentDate,_that.paymentPeriodType,_that.amount,_that.autoPayment,_that.currency);case _:
   return orElse();
 
 }
@@ -182,10 +183,10 @@ return $default(_that.id,_that.name,_that.categoryId,_that.description,_that.fir
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? id,  String name,  String? categoryId,  String? description,  String firstPaymentDate,  String? lastPaymentDate,  PaymentPeriodTypeJson paymentPeriodType,  double amount,  bool autoPayment)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? id,  String name,  String? categoryId,  String? description,  String firstPaymentDate,  String? lastPaymentDate,  PaymentPeriodTypeJson paymentPeriodType,  double amount,  bool autoPayment,  String? currency)  $default,) {final _that = this;
 switch (_that) {
 case _CreateDebtRequest():
-return $default(_that.id,_that.name,_that.categoryId,_that.description,_that.firstPaymentDate,_that.lastPaymentDate,_that.paymentPeriodType,_that.amount,_that.autoPayment);case _:
+return $default(_that.id,_that.name,_that.categoryId,_that.description,_that.firstPaymentDate,_that.lastPaymentDate,_that.paymentPeriodType,_that.amount,_that.autoPayment,_that.currency);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -202,10 +203,10 @@ return $default(_that.id,_that.name,_that.categoryId,_that.description,_that.fir
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? id,  String name,  String? categoryId,  String? description,  String firstPaymentDate,  String? lastPaymentDate,  PaymentPeriodTypeJson paymentPeriodType,  double amount,  bool autoPayment)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? id,  String name,  String? categoryId,  String? description,  String firstPaymentDate,  String? lastPaymentDate,  PaymentPeriodTypeJson paymentPeriodType,  double amount,  bool autoPayment,  String? currency)?  $default,) {final _that = this;
 switch (_that) {
 case _CreateDebtRequest() when $default != null:
-return $default(_that.id,_that.name,_that.categoryId,_that.description,_that.firstPaymentDate,_that.lastPaymentDate,_that.paymentPeriodType,_that.amount,_that.autoPayment);case _:
+return $default(_that.id,_that.name,_that.categoryId,_that.description,_that.firstPaymentDate,_that.lastPaymentDate,_that.paymentPeriodType,_that.amount,_that.autoPayment,_that.currency);case _:
   return null;
 
 }
@@ -217,7 +218,7 @@ return $default(_that.id,_that.name,_that.categoryId,_that.description,_that.fir
 @JsonSerializable()
 
 class _CreateDebtRequest implements CreateDebtRequest {
-  const _CreateDebtRequest({this.id, required this.name, this.categoryId, this.description, required this.firstPaymentDate, this.lastPaymentDate, required this.paymentPeriodType, required this.amount, this.autoPayment = false});
+  const _CreateDebtRequest({this.id, required this.name, this.categoryId, this.description, required this.firstPaymentDate, this.lastPaymentDate, required this.paymentPeriodType, required this.amount, this.autoPayment = false, this.currency});
   factory _CreateDebtRequest.fromJson(Map<String, dynamic> json) => _$CreateDebtRequestFromJson(json);
 
 @override final  String? id;
@@ -229,6 +230,7 @@ class _CreateDebtRequest implements CreateDebtRequest {
 @override final  PaymentPeriodTypeJson paymentPeriodType;
 @override final  double amount;
 @override@JsonKey() final  bool autoPayment;
+@override final  String? currency;
 
 /// Create a copy of CreateDebtRequest
 /// with the given fields replaced by the non-null parameter values.
@@ -243,16 +245,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CreateDebtRequest&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.description, description) || other.description == description)&&(identical(other.firstPaymentDate, firstPaymentDate) || other.firstPaymentDate == firstPaymentDate)&&(identical(other.lastPaymentDate, lastPaymentDate) || other.lastPaymentDate == lastPaymentDate)&&(identical(other.paymentPeriodType, paymentPeriodType) || other.paymentPeriodType == paymentPeriodType)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.autoPayment, autoPayment) || other.autoPayment == autoPayment));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CreateDebtRequest&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.description, description) || other.description == description)&&(identical(other.firstPaymentDate, firstPaymentDate) || other.firstPaymentDate == firstPaymentDate)&&(identical(other.lastPaymentDate, lastPaymentDate) || other.lastPaymentDate == lastPaymentDate)&&(identical(other.paymentPeriodType, paymentPeriodType) || other.paymentPeriodType == paymentPeriodType)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.autoPayment, autoPayment) || other.autoPayment == autoPayment)&&(identical(other.currency, currency) || other.currency == currency));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,categoryId,description,firstPaymentDate,lastPaymentDate,paymentPeriodType,amount,autoPayment);
+int get hashCode => Object.hash(runtimeType,id,name,categoryId,description,firstPaymentDate,lastPaymentDate,paymentPeriodType,amount,autoPayment,currency);
 
 @override
 String toString() {
-  return 'CreateDebtRequest(id: $id, name: $name, categoryId: $categoryId, description: $description, firstPaymentDate: $firstPaymentDate, lastPaymentDate: $lastPaymentDate, paymentPeriodType: $paymentPeriodType, amount: $amount, autoPayment: $autoPayment)';
+  return 'CreateDebtRequest(id: $id, name: $name, categoryId: $categoryId, description: $description, firstPaymentDate: $firstPaymentDate, lastPaymentDate: $lastPaymentDate, paymentPeriodType: $paymentPeriodType, amount: $amount, autoPayment: $autoPayment, currency: $currency)';
 }
 
 
@@ -263,7 +265,7 @@ abstract mixin class _$CreateDebtRequestCopyWith<$Res> implements $CreateDebtReq
   factory _$CreateDebtRequestCopyWith(_CreateDebtRequest value, $Res Function(_CreateDebtRequest) _then) = __$CreateDebtRequestCopyWithImpl;
 @override @useResult
 $Res call({
- String? id, String name, String? categoryId, String? description, String firstPaymentDate, String? lastPaymentDate, PaymentPeriodTypeJson paymentPeriodType, double amount, bool autoPayment
+ String? id, String name, String? categoryId, String? description, String firstPaymentDate, String? lastPaymentDate, PaymentPeriodTypeJson paymentPeriodType, double amount, bool autoPayment, String? currency
 });
 
 
@@ -280,7 +282,7 @@ class __$CreateDebtRequestCopyWithImpl<$Res>
 
 /// Create a copy of CreateDebtRequest
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? name = null,Object? categoryId = freezed,Object? description = freezed,Object? firstPaymentDate = null,Object? lastPaymentDate = freezed,Object? paymentPeriodType = null,Object? amount = null,Object? autoPayment = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? name = null,Object? categoryId = freezed,Object? description = freezed,Object? firstPaymentDate = null,Object? lastPaymentDate = freezed,Object? paymentPeriodType = null,Object? amount = null,Object? autoPayment = null,Object? currency = freezed,}) {
   return _then(_CreateDebtRequest(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String?,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -291,7 +293,8 @@ as String,lastPaymentDate: freezed == lastPaymentDate ? _self.lastPaymentDate : 
 as String?,paymentPeriodType: null == paymentPeriodType ? _self.paymentPeriodType : paymentPeriodType // ignore: cast_nullable_to_non_nullable
 as PaymentPeriodTypeJson,amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
 as double,autoPayment: null == autoPayment ? _self.autoPayment : autoPayment // ignore: cast_nullable_to_non_nullable
-as bool,
+as bool,currency: freezed == currency ? _self.currency : currency // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 

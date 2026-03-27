@@ -65,6 +65,7 @@ class DebtRepositoryImpl implements DebtRepository {
       paymentPeriodType: PaymentPeriodTypeJson.fromDomain(params.paymentPeriodType),
       amount: params.amount,
       autoPayment: params.autoPayment,
+      currency: params.currency,
     );
   }
 }

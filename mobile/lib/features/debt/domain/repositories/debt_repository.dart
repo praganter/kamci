@@ -22,6 +22,7 @@ class CreateDebtParams {
     required this.amount,
     this.autoPayment = false,
     this.reminder,
+    this.currency,
   });
 
   final String? id;
@@ -34,4 +35,5 @@ class CreateDebtParams {
   final double amount;
   final bool autoPayment;
   final ReminderEmbedded? reminder;
+  final String? currency;
 }

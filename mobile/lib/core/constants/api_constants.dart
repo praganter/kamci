@@ -17,6 +17,7 @@ abstract final class ApiConstants {
   static const String debtDelete = '/debt/delete';
   static const String debtGetById = '/debt';
   static const String debtGet = '/debt/get';
+  static const String debtCurrencies = '/debt/currencies';
 
   static const String categorySave = '/category/save';
   static const String categoryUpdate = '/category/update';
