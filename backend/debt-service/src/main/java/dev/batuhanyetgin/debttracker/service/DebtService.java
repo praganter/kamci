@@ -135,9 +135,10 @@ public class DebtService {
                 .build());
         existing.setPayments(payments);
 
-        if (existing.getLastPaymentDate() != null && !now.isBefore(existing.getLastPaymentDate())) {
+        if (existing.getInstallmentCount() != null
+                && existing.getPayments().size() >= existing.getInstallmentCount()) {
             existing.setStatus(DebtStatus.PASSIVE);
-            log.info("Debt {} marked as PASSIVE — lastPaymentDate reached", id);
+            log.info("Debt {} marked as PASSIVE — all {} installments paid", id, existing.getInstallmentCount());
         }
 
         final DebtDocument updated = debtRS.update(existing);

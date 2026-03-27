@@ -728,8 +728,8 @@ class DebtServiceTest {
         }
 
         @Test
-        @DisplayName("lastPaymentDate reached → status set to PASSIVE after payment")
-        void lastPaymentDateReached_statusPassive() {
+        @DisplayName("installmentCount reached → status set to PASSIVE after payment")
+        void installmentCountReached_statusPassive() {
             try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
                 ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
 
@@ -738,7 +738,7 @@ class DebtServiceTest {
                         .name("Test Debt").amount(BigDecimal.TEN)
                         .paymentPeriodType(PaymentPeriodType.MONTHLY)
                         .firstPaymentDate(LocalDateTime.now().minusMonths(1))
-                        .lastPaymentDate(LocalDateTime.now().minusDays(1))
+                        .installmentCount(1)
                         .build();
                 when(debtRS.findById(DEBT_ID)).thenReturn(existing);
                 when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
@@ -754,8 +754,8 @@ class DebtServiceTest {
         }
 
         @Test
-        @DisplayName("lastPaymentDate not yet reached → status remains ACTIVE after payment")
-        void lastPaymentDateNotReached_statusRemainsActive() {
+        @DisplayName("installmentCount not yet reached → status remains ACTIVE after payment")
+        void installmentCountNotReached_statusRemainsActive() {
             try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
                 ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
 
@@ -764,7 +764,7 @@ class DebtServiceTest {
                         .name("Test Debt").amount(BigDecimal.TEN)
                         .paymentPeriodType(PaymentPeriodType.MONTHLY)
                         .firstPaymentDate(LocalDateTime.now())
-                        .lastPaymentDate(LocalDateTime.now().plusMonths(6))
+                        .installmentCount(6)
                         .build();
                 when(debtRS.findById(DEBT_ID)).thenReturn(existing);
                 when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));

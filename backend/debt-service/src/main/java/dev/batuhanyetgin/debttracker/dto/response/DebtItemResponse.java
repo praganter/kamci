@@ -28,7 +28,7 @@ public class DebtItemResponse {
 
     private LocalDateTime firstPaymentDate;
 
-    private LocalDateTime lastPaymentDate;
+    private Integer installmentCount;
 
     private PaymentPeriodType paymentPeriodType;
 

@@ -224,15 +224,14 @@ class DebtReminderSchedulerTest {
         }
 
         @Test
-        @DisplayName("lastPaymentDate reached → debt marked PASSIVE, nextAutoPaymentDate not advanced")
-        void lastPaymentDateReached_markedPassiveNoAdvance() {
-            final LocalDateTime lastPayment = LocalDateTime.now().minusDays(1); // real past
+        @DisplayName("installmentCount reached → debt marked PASSIVE, nextAutoPaymentDate not advanced")
+        void installmentCountReached_markedPassiveNoAdvance() {
             final DebtDocument debt = DebtDocument.builder()
                     .id("debt1").ownerId("owner1").name("Auto Debt")
                     .amount(java.math.BigDecimal.TEN)
                     .paymentPeriodType(PaymentPeriodType.MONTHLY)
                     .firstPaymentDate(LocalDateTime.now().minusMonths(2))
-                    .lastPaymentDate(lastPayment)
+                    .installmentCount(1)
                     .autoPayment(true)
                     .nextAutoPaymentDate(BASE_TIME)
                     .build();
@@ -248,14 +247,14 @@ class DebtReminderSchedulerTest {
         }
 
         @Test
-        @DisplayName("lastPaymentDate not yet reached → nextAutoPaymentDate advanced, status remains ACTIVE")
-        void lastPaymentDateNotReached_advancedAndActive() {
+        @DisplayName("installmentCount not yet reached → nextAutoPaymentDate advanced, status remains ACTIVE")
+        void installmentCountNotReached_advancedAndActive() {
             final DebtDocument debt = DebtDocument.builder()
                     .id("debt1").ownerId("owner1").name("Auto Debt")
                     .amount(java.math.BigDecimal.TEN)
                     .paymentPeriodType(PaymentPeriodType.MONTHLY)
                     .firstPaymentDate(BASE_TIME)
-                    .lastPaymentDate(BASE_TIME.plusMonths(6))
+                    .installmentCount(6)
                     .autoPayment(true)
                     .nextAutoPaymentDate(BASE_TIME)
                     .build();

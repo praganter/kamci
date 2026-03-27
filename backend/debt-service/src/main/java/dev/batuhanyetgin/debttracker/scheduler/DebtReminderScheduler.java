@@ -125,9 +125,11 @@ public class DebtReminderScheduler {
                                         final AtomicInteger success, final AtomicInteger failure) {
         recordAutoPayment(debt, now);
 
-        if (debt.getLastPaymentDate() != null && !now.isBefore(debt.getLastPaymentDate())) {
+        if (debt.getInstallmentCount() != null
+                && debt.getPayments().size() >= debt.getInstallmentCount()) {
             debt.setStatus(DebtStatus.PASSIVE);
-            log.info("Debt {} marked as PASSIVE after auto-payment — lastPaymentDate reached", debt.getId());
+            log.info("Debt {} marked as PASSIVE after auto-payment — all {} installments paid",
+                    debt.getId(), debt.getInstallmentCount());
         } else {
             advanceNextAutoPaymentDate(debt);
         }

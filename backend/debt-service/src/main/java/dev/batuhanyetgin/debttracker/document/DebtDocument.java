@@ -42,8 +42,8 @@ public class DebtDocument extends BaseDocument {
     @Field("first_payment_date")
     private LocalDateTime firstPaymentDate;
 
-    @Field("last_payment_date")
-    private LocalDateTime lastPaymentDate;
+    @Field("installment_count")
+    private Integer installmentCount;
 
     @Field("payment_period_type")
     private PaymentPeriodType paymentPeriodType;

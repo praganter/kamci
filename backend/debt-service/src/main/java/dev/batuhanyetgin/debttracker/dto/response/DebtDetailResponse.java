@@ -30,7 +30,9 @@ public class DebtDetailResponse {
 
     private LocalDateTime firstPaymentDate;
 
-    private LocalDateTime lastPaymentDate;
+    private Integer installmentCount;
+
+    private int paidInstallmentCount;
 
     private PaymentPeriodType paymentPeriodType;
 

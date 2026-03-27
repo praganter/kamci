@@ -30,7 +30,8 @@ public class CreateDebtRequest {
     @NotNull(message = "{error.validation.not_null}")
     private LocalDateTime firstPaymentDate;
 
-    private LocalDateTime lastPaymentDate;
+    @Min(value = 1, message = "{error.validation.min}")
+    private Integer installmentCount;
 
     @NotNull(message = "{error.validation.not_null}")
     private PaymentPeriodType paymentPeriodType;
