@@ -23,7 +23,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -79,7 +78,6 @@ public class CategoryService {
                 .build();
     }
 
-    @Transactional
     public void delete(final String id) {
         final String userId = RequestContextUtil.getUserId();
         final CategoryDocument category = categoryRS.findById(id);
@@ -96,25 +94,27 @@ public class CategoryService {
         final CategoryDocument category = categoryRS.findById(categoryId);
 
         checkOwner(category, userId);
-        addMemberToCategory(category, request.getUserId(), request.getAccessLevel());
-        log.info("Added member {} to category {} with access {}", request.getUserId(), categoryId, request.getAccessLevel());
+        addMemberToCategory(category, request.getEmail(), request.getAccessLevel());
+        log.info("Added member {} to category {} with access {}", request.getEmail(), categoryId, request.getAccessLevel());
     }
 
-    @Transactional
     public void bulkAddMember(final BulkAddMemberRequest request) {
         final String userId = RequestContextUtil.getUserId();
 
         for (final String categoryId : request.getCategoryIds()) {
             final CategoryDocument category = categoryRS.findById(categoryId);
             checkOwner(category, userId);
-            addMemberToCategory(category, request.getUserId(), request.getAccessLevel());
-            log.info("Bulk added member {} to category {} with access {}", request.getUserId(), categoryId, request.getAccessLevel());
+            addMemberToCategory(category, request.getEmail(), request.getAccessLevel());
+            log.info("Bulk added member {} to category {} with access {}", request.getEmail(), categoryId, request.getAccessLevel());
         }
     }
 
-    private void addMemberToCategory(final CategoryDocument category, final String memberUserId, final AccessLevelType accessLevel) {
-        if (!authClient.userExists(memberUserId)) {
-            throw BaseException.notFound("error.category.member_user_not_found", memberUserId);
+    private void addMemberToCategory(final CategoryDocument category, final String email, final AccessLevelType accessLevel) {
+        final String memberUserId;
+        try {
+            memberUserId = authClient.getUserIdByEmail(email);
+        } catch (feign.FeignException.NotFound e) {
+            throw BaseException.notFound("error.category.member_user_not_found", email);
         }
 
         final boolean alreadyMember = category.getMembers().stream()

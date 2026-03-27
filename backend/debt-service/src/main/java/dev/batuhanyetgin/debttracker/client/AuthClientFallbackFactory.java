@@ -11,9 +11,18 @@ public class AuthClientFallbackFactory implements FallbackFactory<AuthClient> {
 
     @Override
     public AuthClient create(final Throwable cause) {
-        return userId -> {
-            log.error("auth-service unavailable for userExists(userId={}): {}", userId, cause.getMessage());
-            throw BaseException.serviceUnavailable("error.auth_service.unavailable");
+        return new AuthClient() {
+            @Override
+            public boolean userExists(final String userId) {
+                log.error("auth-service unavailable for userExists(userId={}): {}", userId, cause.getMessage());
+                throw BaseException.serviceUnavailable("error.auth_service.unavailable");
+            }
+
+            @Override
+            public String getUserIdByEmail(final String email) {
+                log.error("auth-service unavailable for getUserIdByEmail(email={}): {}", email, cause.getMessage());
+                throw BaseException.serviceUnavailable("error.auth_service.unavailable");
+            }
         };
     }
 }

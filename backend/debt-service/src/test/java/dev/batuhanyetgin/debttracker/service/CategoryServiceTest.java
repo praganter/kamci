@@ -31,6 +31,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
 
+import feign.FeignException;
+import feign.Request;
+
+import java.util.Collections;
+
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -48,11 +53,12 @@ class CategoryServiceTest {
 
     private CategoryService categoryService;
 
-    private static final String OWNER_ID  = "owner123";
-    private static final String OTHER_ID  = "other456";
-    private static final String MEMBER_ID = "member789";
-    private static final String CAT_ID    = "cat123";
-    private static final String CAT_ID_2  = "cat456";
+    private static final String OWNER_ID     = "owner123";
+    private static final String OTHER_ID     = "other456";
+    private static final String MEMBER_ID    = "member789";
+    private static final String MEMBER_EMAIL = "member@example.com";
+    private static final String CAT_ID       = "cat123";
+    private static final String CAT_ID_2     = "cat456";
 
     @BeforeEach
     void setUp() {
@@ -223,11 +229,11 @@ class CategoryServiceTest {
 
                 final CategoryDocument cat = buildCategory(CAT_ID, OWNER_ID);
                 when(categoryRS.findById(CAT_ID)).thenReturn(cat);
-                when(authClient.userExists(MEMBER_ID)).thenReturn(true);
+                when(authClient.getUserIdByEmail(MEMBER_EMAIL)).thenReturn(MEMBER_ID);
                 when(categoryRS.save(cat)).thenReturn(cat);
 
                 final AddMemberRequest request = new AddMemberRequest();
-                request.setUserId(MEMBER_ID);
+                request.setEmail(MEMBER_EMAIL);
                 request.setAccessLevel(AccessLevelType.READ);
 
                 assertThatNoException().isThrownBy(() -> categoryService.addMember(CAT_ID, request));
@@ -243,7 +249,7 @@ class CategoryServiceTest {
                 when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
 
                 final AddMemberRequest request = new AddMemberRequest();
-                request.setUserId(MEMBER_ID);
+                request.setEmail(MEMBER_EMAIL);
                 request.setAccessLevel(AccessLevelType.READ);
 
                 assertThatExceptionOfType(BaseException.class)
@@ -261,10 +267,14 @@ class CategoryServiceTest {
                 ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
 
                 when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
-                when(authClient.userExists(MEMBER_ID)).thenReturn(false);
+                final Request feignReq = Request.create(
+                        Request.HttpMethod.GET, "http://auth-service/auth/user/id-by-email/" + MEMBER_EMAIL,
+                        Collections.emptyMap(), null, null, null);
+                when(authClient.getUserIdByEmail(MEMBER_EMAIL))
+                        .thenThrow(new FeignException.NotFound("not found", feignReq, null, null));
 
                 final AddMemberRequest request = new AddMemberRequest();
-                request.setUserId(MEMBER_ID);
+                request.setEmail(MEMBER_EMAIL);
                 request.setAccessLevel(AccessLevelType.READ);
 
                 assertThatExceptionOfType(BaseException.class)
@@ -283,10 +293,10 @@ class CategoryServiceTest {
 
                 final CategoryDocument cat = buildCategoryWithMember(CAT_ID, OWNER_ID, MEMBER_ID, AccessLevelType.READ);
                 when(categoryRS.findById(CAT_ID)).thenReturn(cat);
-                when(authClient.userExists(MEMBER_ID)).thenReturn(true);
+                when(authClient.getUserIdByEmail(MEMBER_EMAIL)).thenReturn(MEMBER_ID);
 
                 final AddMemberRequest request = new AddMemberRequest();
-                request.setUserId(MEMBER_ID);
+                request.setEmail(MEMBER_EMAIL);
                 request.setAccessLevel(AccessLevelType.WRITE);
 
                 assertThatExceptionOfType(BaseException.class)
@@ -312,12 +322,12 @@ class CategoryServiceTest {
 
                 when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
                 when(categoryRS.findById(CAT_ID_2)).thenReturn(buildCategory(CAT_ID_2, OWNER_ID));
-                when(authClient.userExists(MEMBER_ID)).thenReturn(true);
+                when(authClient.getUserIdByEmail(MEMBER_EMAIL)).thenReturn(MEMBER_ID);
                 when(categoryRS.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
                 final BulkAddMemberRequest request = new BulkAddMemberRequest();
                 request.setCategoryIds(List.of(CAT_ID, CAT_ID_2));
-                request.setUserId(MEMBER_ID);
+                request.setEmail(MEMBER_EMAIL);
                 request.setAccessLevel(AccessLevelType.READ);
 
                 assertThatNoException().isThrownBy(() -> categoryService.bulkAddMember(request));
@@ -333,12 +343,12 @@ class CategoryServiceTest {
 
                 when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
                 when(categoryRS.findById(CAT_ID_2)).thenReturn(buildCategory(CAT_ID_2, OTHER_ID));
-                when(authClient.userExists(MEMBER_ID)).thenReturn(true);
+                when(authClient.getUserIdByEmail(MEMBER_EMAIL)).thenReturn(MEMBER_ID);
                 when(categoryRS.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
                 final BulkAddMemberRequest request = new BulkAddMemberRequest();
                 request.setCategoryIds(List.of(CAT_ID, CAT_ID_2));
-                request.setUserId(MEMBER_ID);
+                request.setEmail(MEMBER_EMAIL);
                 request.setAccessLevel(AccessLevelType.READ);
 
                 assertThatExceptionOfType(BaseException.class)
