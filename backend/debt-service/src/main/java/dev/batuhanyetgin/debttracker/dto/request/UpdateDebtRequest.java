@@ -1,6 +1,7 @@
 package dev.batuhanyetgin.debttracker.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import dev.batuhanyetgin.debttracker.enums.CurrencyType;
 import dev.batuhanyetgin.debttracker.enums.PaymentPeriodType;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
@@ -41,6 +42,9 @@ public class UpdateDebtRequest {
     @NotNull(message = "{error.validation.not_null}")
     @Min(value = 0, message = "{error.validation.min}")
     private BigDecimal amount;
+
+    @NotNull(message = "{error.validation.not_null}")
+    private CurrencyType currency;
 
     @NotBlank(message = "{error.validation.not_blank}")
     @Size(max = 24, message = "{error.validation.size}")

@@ -3,6 +3,7 @@ package dev.batuhanyetgin.debttracker.document;
 import dev.batuhanyetgin.commonmodule.document.BaseDocument;
 import dev.batuhanyetgin.debttracker.document.embedded.PaymentEmbedded;
 import dev.batuhanyetgin.debttracker.document.embedded.ReminderEmbedded;
+import dev.batuhanyetgin.debttracker.enums.CurrencyType;
 import dev.batuhanyetgin.debttracker.enums.DebtStatus;
 import dev.batuhanyetgin.debttracker.enums.PaymentPeriodType;
 import lombok.*;
@@ -49,6 +50,9 @@ public class DebtDocument extends BaseDocument {
 
     @Field("amount")
     private BigDecimal amount;
+
+    @Field("currency")
+    private CurrencyType currency;
 
     @Builder.Default
     @Field("status")

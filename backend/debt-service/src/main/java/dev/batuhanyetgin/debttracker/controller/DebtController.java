@@ -2,10 +2,12 @@ package dev.batuhanyetgin.debttracker.controller;
 
 import dev.batuhanyetgin.debttracker.dto.request.CreateDebtRequest;
 import dev.batuhanyetgin.debttracker.dto.request.UpdateDebtRequest;
+import dev.batuhanyetgin.debttracker.dto.response.CurrencyResponse;
 import dev.batuhanyetgin.debttracker.dto.response.DebtDetailResponse;
 import dev.batuhanyetgin.debttracker.dto.response.DebtResponse;
 import dev.batuhanyetgin.debttracker.dto.response.DeleteDebtResponse;
 import dev.batuhanyetgin.debttracker.dto.response.GetDebtResponse;
+import dev.batuhanyetgin.debttracker.enums.CurrencyType;
 import dev.batuhanyetgin.debttracker.service.DebtService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -17,6 +19,8 @@ import org.springframework.context.MessageSource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 
 @RestController
@@ -92,5 +96,18 @@ public class DebtController {
     @GetMapping("get")
     ResponseEntity<GetDebtResponse> get() {
         return ResponseEntity.ok(debtService.get());
+    }
+
+    @Operation(summary = "Get all supported currencies with their symbols")
+    @ApiResponse(responseCode = "200", description = "Currency list returned")
+    @GetMapping("currencies")
+    ResponseEntity<List<CurrencyResponse>> getCurrencies() {
+        final List<CurrencyResponse> currencies = Arrays.stream(CurrencyType.values())
+                .map(c -> CurrencyResponse.builder()
+                        .code(c.name())
+                        .symbol(c.getSymbol())
+                        .build())
+                .toList();
+        return ResponseEntity.ok(currencies);
     }
 }
