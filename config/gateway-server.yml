@@ -52,6 +52,19 @@ eureka:
 jwt:
   secret: ${JWT_SECRET}
 
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    path: /swagger-ui.html
+    urls:
+      - name: auth-service
+        url: /auth-service/v3/api-docs
+      - name: debt-service
+        url: /debt-service/v3/api-docs
+      - name: notification-service
+        url: /notification-service/v3/api-docs
+
 endpoints:
   publicEndpoints:
     - /auth/register
@@ -63,6 +76,21 @@ endpoints:
     - /actuator/health
     - /actuator/prometheus
     - /actuator/info
+    - /swagger-ui.html
+    - /swagger-ui/**
+    - /webjars/**
+    - /*/v3/api-docs
+
+rate-limit:
+  rules:
+    - path: /auth/login
+      capacity: 10
+      refillTokens: 10
+      refillSeconds: 60
+    - path: /auth/forget-password
+      capacity: 5
+      refillTokens: 5
+      refillSeconds: 3600
 
 logging:
   level:
