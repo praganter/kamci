@@ -14,6 +14,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -76,4 +77,13 @@ public class DebtDocument extends BaseDocument {
     @Indexed
     @Field("next_auto_payment_date")
     private LocalDateTime nextAutoPaymentDate;
+
+    public void addPayment(final LocalDateTime paidTime) {
+        final List<PaymentEmbedded> updated = new ArrayList<>(this.payments);
+        updated.add(PaymentEmbedded.builder()
+                .paid(true)
+                .paidTime(paidTime)
+                .build());
+        this.payments = updated;
+    }
 }
