@@ -5,7 +5,6 @@ import dev.batuhanyetgin.commonmodule.exception.BaseException;
 import dev.batuhanyetgin.commonmodule.util.RequestContextUtil;
 import dev.batuhanyetgin.debttracker.document.CategoryDocument;
 import dev.batuhanyetgin.debttracker.document.DebtDocument;
-import dev.batuhanyetgin.debttracker.document.embedded.PaymentEmbedded;
 import dev.batuhanyetgin.debttracker.document.embedded.ReminderEmbedded;
 import dev.batuhanyetgin.debttracker.dto.request.CreateDebtRequest;
 import dev.batuhanyetgin.debttracker.dto.request.UpdateDebtRequest;
@@ -81,6 +80,10 @@ public class DebtService {
         final String userId = RequestContextUtil.getUserId();
         final DebtDocument existing = debtRS.findById(request.getId());
 
+        if (existing.getStatus() == DebtStatus.PASSIVE) {
+            throw BaseException.conflict("error.debt.already_completed");
+        }
+
         final CategoryDocument currentCategory = categoryRS.findById(existing.getCategoryId());
         if (lacksWriteAccess(currentCategory, userId)) {
             throw BaseException.forbidden("error.debt.permission_denied");
@@ -110,6 +113,10 @@ public class DebtService {
         final String userId = RequestContextUtil.getUserId();
         final DebtDocument existing = debtRS.findById(id);
 
+        if (existing.getStatus() == DebtStatus.PASSIVE) {
+            throw BaseException.conflict("error.debt.already_completed");
+        }
+
         if (existing.isAutoPayment()) {
             throw BaseException.conflict("error.debt.auto_payment_enabled");
         }
@@ -123,22 +130,21 @@ public class DebtService {
         final LocalDateTime periodStart = getCurrentPeriodStart(
                 existing.getFirstPaymentDate(), existing.getPaymentPeriodType(), now);
         final boolean alreadyPaidThisPeriod = existing.getPayments().stream()
-                .anyMatch(p -> !p.getPaidTime().isBefore(periodStart));
+                .anyMatch(p -> p.isPaid() && p.getPaidTime() != null
+                        && !p.getPaidTime().isBefore(periodStart));
         if (alreadyPaidThisPeriod) {
             throw BaseException.conflict("error.debt.already_paid_this_period");
         }
 
-        final List<PaymentEmbedded> payments = new ArrayList<>(existing.getPayments());
-        payments.add(PaymentEmbedded.builder()
-                .paid(true)
-                .paidTime(now)
-                .build());
-        existing.setPayments(payments);
+        existing.addPayment(now);
 
         if (existing.getInstallmentCount() != null
                 && existing.getPayments().size() >= existing.getInstallmentCount()) {
             existing.setStatus(DebtStatus.PASSIVE);
             log.info("Debt {} marked as PASSIVE — all {} installments paid", id, existing.getInstallmentCount());
+        } else if (existing.getStatus() == DebtStatus.OVERDUE) {
+            existing.setStatus(DebtStatus.ACTIVE);
+            log.info("Debt {} restored to ACTIVE after overdue payment", id);
         }
 
         final DebtDocument updated = debtRS.update(existing);
@@ -235,9 +241,12 @@ public class DebtService {
     private void setNextReminderDate(final DebtDocument debtDocument) {
         final ReminderEmbedded reminder = debtDocument.getReminder();
 
-        if (reminder == null || !reminder.isEnabled()
-                || reminder.getReminderDate() == null || reminder.getReminderTime() == null) {
+        if (reminder == null || !reminder.isEnabled()) {
             return;
+        }
+
+        if (reminder.getReminderDate() == null || reminder.getReminderTime() == null) {
+            throw BaseException.badRequest("error.reminder.date_or_time_missing");
         }
 
         debtDocument.setNextReminderDate(
@@ -260,9 +269,17 @@ public class DebtService {
                 final long weeks = ChronoUnit.WEEKS.between(firstPaymentDate, now);
                 yield firstPaymentDate.plusWeeks(weeks);
             }
+            case BI_WEEKLY -> {
+                final long biWeeks = ChronoUnit.WEEKS.between(firstPaymentDate, now) / 2;
+                yield firstPaymentDate.plusWeeks(biWeeks * 2);
+            }
             case MONTHLY -> {
                 final long months = ChronoUnit.MONTHS.between(firstPaymentDate, now);
                 yield firstPaymentDate.plusMonths(months);
+            }
+            case QUARTERLY -> {
+                final long quarters = ChronoUnit.MONTHS.between(firstPaymentDate, now) / 3;
+                yield firstPaymentDate.plusMonths(quarters * 3);
             }
             case HALF_YEARLY -> {
                 final long halfYears = ChronoUnit.MONTHS.between(firstPaymentDate, now) / 6;

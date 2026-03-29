@@ -61,4 +61,9 @@ public class DebtRepositoryService {
     public List<DebtDocument> findDueAutoPayments(final LocalDateTime now) {
         return debtRepository.findByAutoPaymentTrueAndNextAutoPaymentDateLessThanEqual(now);
     }
+
+    public List<DebtDocument> findActiveManualDueDebts(final LocalDateTime now) {
+        return debtRepository.findByStatusAndAutoPaymentFalseAndFirstPaymentDateLessThanEqual(
+                DebtStatus.ACTIVE, now);
+    }
 }

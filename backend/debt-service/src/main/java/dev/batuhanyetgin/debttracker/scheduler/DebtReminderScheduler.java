@@ -16,6 +16,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -40,6 +41,7 @@ public class DebtReminderScheduler {
 
         processReminderBatch(debtRS.findDueReminders(now), now);
         processAutoPaymentBatch(debtRS.findDueAutoPayments(now), now);
+        processOverdueBatch(debtRS.findActiveManualDueDebts(now), now);
     }
 
     private void processReminderBatch(final List<DebtDocument> debts, final LocalDateTime now) {
@@ -92,7 +94,7 @@ public class DebtReminderScheduler {
                         .debtName(debt.getName())
                         .amount(debt.getAmount())
                         .nextReminderDate(reminderDate)
-                        .channels(debt.getReminder().getChannels())
+                        .channels(debt.getReminder() != null ? debt.getReminder().getChannels() : null)
                         .build()
         );
     }
@@ -143,13 +145,69 @@ public class DebtReminderScheduler {
         }
     }
 
+    private void processOverdueBatch(final List<DebtDocument> debts, final LocalDateTime now) {
+        if (debts.isEmpty()) return;
+
+        final AtomicInteger marked = new AtomicInteger();
+        final List<CompletableFuture<Void>> futures = debts.stream()
+                .map(debt -> CompletableFuture.runAsync(() -> {
+                    if (isCurrentPeriodUnpaid(debt, now)) {
+                        debt.setStatus(DebtStatus.OVERDUE);
+                        try {
+                            debtRS.update(debt);
+                            log.info("Debt {} marked as OVERDUE", debt.getId());
+                            marked.incrementAndGet();
+                        } catch (Exception e) {
+                            log.error("Failed to mark debt {} as OVERDUE: {}", debt.getId(), e.getMessage(), e);
+                        }
+                    }
+                }, taskExecutor))
+                .toList();
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+        log.info("Overdue batch complete — {} debt(s) marked as OVERDUE", marked.get());
+    }
+
+    private boolean isCurrentPeriodUnpaid(final DebtDocument debt, final LocalDateTime now) {
+        if (debt.getPayments() == null || debt.getPayments().isEmpty()) {
+            return true;
+        }
+        final LocalDateTime periodStart = switch (debt.getPaymentPeriodType()) {
+            case DAILY -> {
+                final long days = ChronoUnit.DAYS.between(debt.getFirstPaymentDate(), now);
+                yield debt.getFirstPaymentDate().plusDays(days);
+            }
+            case WEEKLY -> {
+                final long weeks = ChronoUnit.WEEKS.between(debt.getFirstPaymentDate(), now);
+                yield debt.getFirstPaymentDate().plusWeeks(weeks);
+            }
+            case BI_WEEKLY -> {
+                final long biWeeks = ChronoUnit.WEEKS.between(debt.getFirstPaymentDate(), now) / 2;
+                yield debt.getFirstPaymentDate().plusWeeks(biWeeks * 2);
+            }
+            case MONTHLY -> {
+                final long months = ChronoUnit.MONTHS.between(debt.getFirstPaymentDate(), now);
+                yield debt.getFirstPaymentDate().plusMonths(months);
+            }
+            case QUARTERLY -> {
+                final long quarters = ChronoUnit.MONTHS.between(debt.getFirstPaymentDate(), now) / 3;
+                yield debt.getFirstPaymentDate().plusMonths(quarters * 3);
+            }
+            case HALF_YEARLY -> {
+                final long halfYears = ChronoUnit.MONTHS.between(debt.getFirstPaymentDate(), now) / 6;
+                yield debt.getFirstPaymentDate().plusMonths(halfYears * 6);
+            }
+            case YEARLY -> {
+                final long years = ChronoUnit.YEARS.between(debt.getFirstPaymentDate(), now);
+                yield debt.getFirstPaymentDate().plusYears(years);
+            }
+        };
+        return debt.getPayments().stream()
+                .noneMatch(p -> p.isPaid() && p.getPaidTime() != null
+                        && !p.getPaidTime().isBefore(periodStart));
+    }
+
     private void recordAutoPayment(final DebtDocument debt, final LocalDateTime now) {
-        final List<PaymentEmbedded> payments = new ArrayList<>(debt.getPayments());
-        payments.add(PaymentEmbedded.builder()
-                .paid(true)
-                .paidTime(now)
-                .build());
-        debt.setPayments(payments);
+        debt.addPayment(now);
         log.info("Auto-payment recorded for debt: {}", debt.getId());
     }
 
@@ -165,7 +223,9 @@ public class DebtReminderScheduler {
         return switch (type) {
             case DAILY -> current.plusDays(1);
             case WEEKLY -> current.plusWeeks(1);
+            case BI_WEEKLY -> current.plusWeeks(2);
             case MONTHLY -> clampToDay(current.plusMonths(1), originalDay);
+            case QUARTERLY -> clampToDay(current.plusMonths(3), originalDay);
             case HALF_YEARLY -> clampToDay(current.plusMonths(6), originalDay);
             case YEARLY -> clampToDay(current.plusYears(1), originalDay);
         };

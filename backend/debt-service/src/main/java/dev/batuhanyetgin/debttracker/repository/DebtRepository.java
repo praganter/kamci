@@ -26,4 +26,7 @@ public interface DebtRepository extends MongoRepository<DebtDocument, String> {
 
     List<DebtDocument> findByAutoPaymentTrueAndNextAutoPaymentDateLessThanEqual(
             final LocalDateTime dateTime);
+
+    List<DebtDocument> findByStatusAndAutoPaymentFalseAndFirstPaymentDateLessThanEqual(
+            final DebtStatus status, final LocalDateTime dateTime);
 }

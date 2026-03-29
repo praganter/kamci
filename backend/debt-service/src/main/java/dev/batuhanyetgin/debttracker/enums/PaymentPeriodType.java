@@ -8,7 +8,9 @@ import lombok.Getter;
 public enum PaymentPeriodType {
     DAILY('D'),
     WEEKLY('W'),
+    BI_WEEKLY('B'),
     MONTHLY('M'),
+    QUARTERLY('Q'),
     HALF_YEARLY('H'),
     YEARLY('Y');
 
