@@ -34,7 +34,8 @@ import java.util.concurrent.Executor;
 @RequiredArgsConstructor
 public class CategoryService {
 
-    private static final int MAX_CATEGORIES = 150;
+    private static final int FREE_MAX_CATEGORIES = 2;
+    private static final int PREMIUM_MAX_CATEGORIES = 200;
 
     private final CategoryRepositoryService categoryRS;
     private final DebtRepositoryService debtRS;
@@ -47,7 +48,8 @@ public class CategoryService {
     public SaveCategoryResponse save(final CreateCategoryRequest request) {
         final String userId = RequestContextUtil.getUserId();
 
-        if (categoryRS.countByOwnerId(userId) >= MAX_CATEGORIES) {
+        final int maxCategories = RequestContextUtil.isPremium() ? PREMIUM_MAX_CATEGORIES : FREE_MAX_CATEGORIES;
+        if (categoryRS.countByOwnerId(userId) >= maxCategories) {
             throw BaseException.badRequest("error.category.limit_exceeded");
         }
 
@@ -90,6 +92,9 @@ public class CategoryService {
     }
 
     public void addMember(final String categoryId, final AddMemberRequest request) {
+        if (!RequestContextUtil.isPremium()) {
+            throw BaseException.forbidden("error.category.premium_required");
+        }
         final String userId = RequestContextUtil.getUserId();
         final CategoryDocument category = categoryRS.findById(categoryId);
 
@@ -99,6 +104,9 @@ public class CategoryService {
     }
 
     public void bulkAddMember(final BulkAddMemberRequest request) {
+        if (!RequestContextUtil.isPremium()) {
+            throw BaseException.forbidden("error.category.premium_required");
+        }
         final String userId = RequestContextUtil.getUserId();
 
         for (final String categoryId : request.getCategoryIds()) {

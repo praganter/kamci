@@ -48,11 +48,14 @@ public class JwtService {
         return claims.getSubject();
     }
 
-    public String generateToken(final String userId, final boolean isRefreshToken) {
+    public String generateToken(final String userId, final boolean isRefreshToken, final boolean isPremium) {
         Objects.requireNonNull(userId, "User ID cannot be null");
 
         final Map<String, Object> claims = new HashMap<>();
         claims.put("type", isRefreshToken ? "REFRESH" : "ACCESS");
+        if (!isRefreshToken) {
+            claims.put("premium", isPremium);
+        }
         final Date tokenLife = isRefreshToken
                 ? new Date(System.currentTimeMillis() + jwtExpirationRefreshMs)
                 : new Date(System.currentTimeMillis() + jwtExpirationMs);

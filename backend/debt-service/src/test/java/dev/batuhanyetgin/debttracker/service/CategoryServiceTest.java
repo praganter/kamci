@@ -94,6 +94,7 @@ class CategoryServiceTest {
         void underLimit_savesAndReturns() {
             try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
                 ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+                ctx.when(RequestContextUtil::isPremium).thenReturn(true);
 
                 when(categoryRS.countByOwnerId(OWNER_ID)).thenReturn(0L);
                 final CategoryDocument saved = buildCategory(CAT_ID, OWNER_ID);
@@ -114,7 +115,8 @@ class CategoryServiceTest {
         void limitExceeded_throwsBadRequest() {
             try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
                 ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
-                when(categoryRS.countByOwnerId(OWNER_ID)).thenReturn(150L);
+                ctx.when(RequestContextUtil::isPremium).thenReturn(true);
+                when(categoryRS.countByOwnerId(OWNER_ID)).thenReturn(200L);
 
                 final CreateCategoryRequest request = new CreateCategoryRequest();
                 request.setName("New Category");
@@ -139,6 +141,7 @@ class CategoryServiceTest {
         void ownerUpdates_returnsResponse() {
             try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
                 ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+                ctx.when(RequestContextUtil::isPremium).thenReturn(true);
 
                 final CategoryDocument cat = buildCategory(CAT_ID, OWNER_ID);
                 when(categoryRS.findById(CAT_ID)).thenReturn(cat);
@@ -162,6 +165,7 @@ class CategoryServiceTest {
         void nonOwner_throwsForbidden() {
             try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
                 ctx.when(RequestContextUtil::getUserId).thenReturn(OTHER_ID);
+                ctx.when(RequestContextUtil::isPremium).thenReturn(true);
 
                 when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
 
@@ -189,6 +193,7 @@ class CategoryServiceTest {
         void ownerDeletes_removesDebtsAndCategory() {
             try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
                 ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+                ctx.when(RequestContextUtil::isPremium).thenReturn(true);
                 when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
 
                 categoryService.delete(CAT_ID);
@@ -203,6 +208,7 @@ class CategoryServiceTest {
         void nonOwner_throwsForbidden() {
             try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
                 ctx.when(RequestContextUtil::getUserId).thenReturn(OTHER_ID);
+                ctx.when(RequestContextUtil::isPremium).thenReturn(true);
                 when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
 
                 assertThatExceptionOfType(BaseException.class)
@@ -226,6 +232,7 @@ class CategoryServiceTest {
         void ownerAddsNewMember_saves() {
             try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
                 ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+                ctx.when(RequestContextUtil::isPremium).thenReturn(true);
 
                 final CategoryDocument cat = buildCategory(CAT_ID, OWNER_ID);
                 when(categoryRS.findById(CAT_ID)).thenReturn(cat);
@@ -246,6 +253,7 @@ class CategoryServiceTest {
         void nonOwner_throwsForbidden() {
             try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
                 ctx.when(RequestContextUtil::getUserId).thenReturn(OTHER_ID);
+                ctx.when(RequestContextUtil::isPremium).thenReturn(true);
                 when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
 
                 final AddMemberRequest request = new AddMemberRequest();
@@ -265,6 +273,7 @@ class CategoryServiceTest {
         void userNotFound_throwsNotFound() {
             try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
                 ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+                ctx.when(RequestContextUtil::isPremium).thenReturn(true);
 
                 when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
                 final Request feignReq = Request.create(
@@ -290,6 +299,7 @@ class CategoryServiceTest {
         void alreadyMember_throwsConflict() {
             try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
                 ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+                ctx.when(RequestContextUtil::isPremium).thenReturn(true);
 
                 final CategoryDocument cat = buildCategoryWithMember(CAT_ID, OWNER_ID, MEMBER_ID, AccessLevelType.READ);
                 when(categoryRS.findById(CAT_ID)).thenReturn(cat);
@@ -319,6 +329,7 @@ class CategoryServiceTest {
         void ownerBulkAdds_savesEach() {
             try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
                 ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+                ctx.when(RequestContextUtil::isPremium).thenReturn(true);
 
                 when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
                 when(categoryRS.findById(CAT_ID_2)).thenReturn(buildCategory(CAT_ID_2, OWNER_ID));
@@ -340,6 +351,7 @@ class CategoryServiceTest {
         void oneNotOwned_throwsForbidden() {
             try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
                 ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+                ctx.when(RequestContextUtil::isPremium).thenReturn(true);
 
                 when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
                 when(categoryRS.findById(CAT_ID_2)).thenReturn(buildCategory(CAT_ID_2, OTHER_ID));
@@ -369,6 +381,7 @@ class CategoryServiceTest {
         void ownerRemovesMember_memberGone() {
             try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
                 ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+                ctx.when(RequestContextUtil::isPremium).thenReturn(true);
 
                 final CategoryDocument cat = buildCategoryWithMember(CAT_ID, OWNER_ID, MEMBER_ID, AccessLevelType.READ);
                 when(categoryRS.findById(CAT_ID)).thenReturn(cat);
@@ -386,6 +399,7 @@ class CategoryServiceTest {
         void nonOwner_throwsForbidden() {
             try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
                 ctx.when(RequestContextUtil::getUserId).thenReturn(OTHER_ID);
+                ctx.when(RequestContextUtil::isPremium).thenReturn(true);
                 when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
 
                 assertThatExceptionOfType(BaseException.class)
@@ -408,6 +422,7 @@ class CategoryServiceTest {
         void getAll_returnsOwnedAndShared() {
             try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
                 ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+                ctx.when(RequestContextUtil::isPremium).thenReturn(true);
 
                 when(categoryRS.findByOwnerId(OWNER_ID)).thenReturn(List.of(buildCategory(CAT_ID, OWNER_ID)));
                 when(categoryRS.findByMemberUserId(OWNER_ID)).thenReturn(List.of(buildCategory(CAT_ID_2, OTHER_ID)));
@@ -429,6 +444,7 @@ class CategoryServiceTest {
         void getAll_noCategories_returnsEmpty() {
             try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
                 ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+                ctx.when(RequestContextUtil::isPremium).thenReturn(true);
 
                 when(categoryRS.findByOwnerId(OWNER_ID)).thenReturn(List.of());
                 when(categoryRS.findByMemberUserId(OWNER_ID)).thenReturn(List.of());

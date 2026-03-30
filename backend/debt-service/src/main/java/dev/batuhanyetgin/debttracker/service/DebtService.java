@@ -35,7 +35,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class DebtService {
 
-    private static final int MAX_DEBTS = 150;
+    private static final int FREE_MAX_DEBTS = 5;
+    private static final int PREMIUM_MAX_DEBTS = 200;
 
     private final DebtRepositoryService debtRS;
     private final CategoryRepositoryService categoryRS;
@@ -54,7 +55,8 @@ public class DebtService {
                 CompletableFuture.supplyAsync(() -> categoryRS.findById(request.getCategoryId()), taskExecutor);
         CompletableFuture.allOf(countFuture, categoryFuture).join();
 
-        if (countFuture.join() >= MAX_DEBTS) {
+        final int maxDebts = RequestContextUtil.isPremium() ? PREMIUM_MAX_DEBTS : FREE_MAX_DEBTS;
+        if (countFuture.join() >= maxDebts) {
             throw BaseException.badRequest("error.debt.limit_exceeded");
         }
 
@@ -243,6 +245,10 @@ public class DebtService {
 
         if (reminder == null || !reminder.isEnabled()) {
             return;
+        }
+
+        if (!RequestContextUtil.isPremium()) {
+            throw BaseException.forbidden("error.debt.premium_required");
         }
 
         if (reminder.getReminderDate() == null || reminder.getReminderTime() == null) {

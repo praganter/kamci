@@ -79,8 +79,8 @@ class AuthServiceTest {
 
                 final AuthDocument saved = buildAuthDocWithId();
                 when(authRS.save(any(AuthDocument.class))).thenReturn(saved);
-                when(jwtService.generateToken(USER_ID, false)).thenReturn(ACCESS_TOKEN);
-                when(jwtService.generateToken(USER_ID, true)).thenReturn(REFRESH_TOKEN);
+                when(jwtService.generateToken(USER_ID, false, false)).thenReturn(ACCESS_TOKEN);
+                when(jwtService.generateToken(USER_ID, true, false)).thenReturn(REFRESH_TOKEN);
 
                 final RegisterRequest request = RegisterRequest.builder()
                         .email(EMAIL).password(PASSWORD).build();
@@ -123,8 +123,8 @@ class AuthServiceTest {
             final AuthDocument doc = buildAuthDocWithId();
             when(authRS.findByEMail(EMAIL)).thenReturn(doc);
             when(passwordEncoder.matches(PASSWORD, HASH)).thenReturn(true);
-            when(jwtService.generateToken(USER_ID, false)).thenReturn(ACCESS_TOKEN);
-            when(jwtService.generateToken(USER_ID, true)).thenReturn(REFRESH_TOKEN);
+            when(jwtService.generateToken(USER_ID, false, false)).thenReturn(ACCESS_TOKEN);
+            when(jwtService.generateToken(USER_ID, true, false)).thenReturn(REFRESH_TOKEN);
 
             final LoginRequest request = LoginRequest.builder()
                     .email(EMAIL).password(PASSWORD).build();
@@ -161,8 +161,9 @@ class AuthServiceTest {
         @DisplayName("valid Bearer header → returns new token pair")
         void validHeader_returnsTokenResponse() {
             when(jwtService.validateRefreshToken(REFRESH_TOKEN)).thenReturn(USER_ID);
-            when(jwtService.generateToken(USER_ID, false)).thenReturn(ACCESS_TOKEN);
-            when(jwtService.generateToken(USER_ID, true)).thenReturn(REFRESH_TOKEN);
+            when(authRS.findById(USER_ID)).thenReturn(buildAuthDocWithId());
+            when(jwtService.generateToken(USER_ID, false, false)).thenReturn(ACCESS_TOKEN);
+            when(jwtService.generateToken(USER_ID, true, false)).thenReturn(REFRESH_TOKEN);
 
             final TokenResponse response = authService.refreshToken("Bearer " + REFRESH_TOKEN);
 

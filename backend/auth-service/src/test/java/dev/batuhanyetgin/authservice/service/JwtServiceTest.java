@@ -37,7 +37,7 @@ class JwtServiceTest {
         @Test
         @DisplayName("access token contains type=ACCESS and correct subject")
         void accessToken_containsCorrectClaims() {
-            final String token = jwtService.generateToken(USER_ID, false);
+            final String token = jwtService.generateToken(USER_ID, false, false);
 
             final Claims claims = jwtService.validateToken(token);
             assertThat(claims.getSubject()).isEqualTo(USER_ID);
@@ -47,7 +47,7 @@ class JwtServiceTest {
         @Test
         @DisplayName("refresh token contains type=REFRESH and correct subject")
         void refreshToken_containsCorrectClaims() {
-            final String token = jwtService.generateToken(USER_ID, true);
+            final String token = jwtService.generateToken(USER_ID, true, false);
 
             final Claims claims = jwtService.validateToken(token);
             assertThat(claims.getSubject()).isEqualTo(USER_ID);
@@ -58,7 +58,7 @@ class JwtServiceTest {
         @DisplayName("null userId throws NullPointerException")
         void nullUserId_throws() {
             assertThatNullPointerException()
-                    .isThrownBy(() -> jwtService.generateToken(null, false));
+                    .isThrownBy(() -> jwtService.generateToken(null, false, false));
         }
     }
 
@@ -71,7 +71,7 @@ class JwtServiceTest {
         @Test
         @DisplayName("valid token returns claims")
         void validToken_returnsClaims() {
-            final String token = jwtService.generateToken(USER_ID, false);
+            final String token = jwtService.generateToken(USER_ID, false, false);
             assertThat(jwtService.validateToken(token)).isNotNull();
         }
 
@@ -92,7 +92,7 @@ class JwtServiceTest {
         @Test
         @DisplayName("tampered token throws JwtException")
         void tamperedToken_throwsJwtException() {
-            final String token = jwtService.generateToken(USER_ID, false);
+            final String token = jwtService.generateToken(USER_ID, false, false);
             final String tampered = token.substring(0, token.length() - 5) + "XXXXX";
 
             assertThatExceptionOfType(JwtException.class)
@@ -103,7 +103,7 @@ class JwtServiceTest {
         @DisplayName("expired token throws JwtException")
         void expiredToken_throwsJwtException() {
             ReflectionTestUtils.setField(jwtService, "jwtExpirationMs", -1L);
-            final String token = jwtService.generateToken(USER_ID, false);
+            final String token = jwtService.generateToken(USER_ID, false, false);
 
             // restore
             ReflectionTestUtils.setField(jwtService, "jwtExpirationMs", EXPIRATION_MS);
@@ -122,7 +122,7 @@ class JwtServiceTest {
         @Test
         @DisplayName("returns userId from valid token")
         void validToken_returnsUserId() {
-            final String token = jwtService.generateToken(USER_ID, false);
+            final String token = jwtService.generateToken(USER_ID, false, false);
             assertThat(jwtService.getUserIdFromToken(token)).isEqualTo(USER_ID);
         }
 
@@ -143,14 +143,14 @@ class JwtServiceTest {
         @Test
         @DisplayName("valid refresh token returns userId")
         void validRefreshToken_returnsUserId() {
-            final String token = jwtService.generateToken(USER_ID, true);
+            final String token = jwtService.generateToken(USER_ID, true, false);
             assertThat(jwtService.validateRefreshToken(token)).isEqualTo(USER_ID);
         }
 
         @Test
         @DisplayName("access token passed as refresh throws JwtException")
         void accessTokenAsRefresh_throwsJwtException() {
-            final String accessToken = jwtService.generateToken(USER_ID, false);
+            final String accessToken = jwtService.generateToken(USER_ID, false, false);
 
             assertThatExceptionOfType(JwtException.class)
                     .isThrownBy(() -> jwtService.validateRefreshToken(accessToken))
@@ -174,7 +174,7 @@ class JwtServiceTest {
         @Test
         @DisplayName("access token passed as reset throws JwtException")
         void accessTokenAsReset_throwsJwtException() {
-            final String accessToken = jwtService.generateToken(USER_ID, false);
+            final String accessToken = jwtService.generateToken(USER_ID, false, false);
 
             assertThatExceptionOfType(JwtException.class)
                     .isThrownBy(() -> jwtService.validatePasswordResetToken(accessToken))

@@ -126,6 +126,9 @@ class DebtServiceTest {
         void ownerCreatesDebt_returnsResponse() {
             try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
                 ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+                ctx.when(RequestContextUtil::isPremium).thenReturn(true);
+                ctx.when(RequestContextUtil::getLocale).thenReturn("en");
+                ctx.when(RequestContextUtil::isPremium).thenReturn(true);
                 ctx.when(RequestContextUtil::getLocale).thenReturn("en");
 
                 when(debtRS.countByOwnerId(OWNER_ID)).thenReturn(0L);
@@ -156,6 +159,7 @@ class DebtServiceTest {
         void writeMemberCreatesDebt_succeeds() {
             try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
                 ctx.when(RequestContextUtil::getUserId).thenReturn(OTHER_ID);
+                ctx.when(RequestContextUtil::isPremium).thenReturn(true);
                 ctx.when(RequestContextUtil::getLocale).thenReturn("en");
 
                 when(debtRS.countByOwnerId(OTHER_ID)).thenReturn(0L);
@@ -181,9 +185,12 @@ class DebtServiceTest {
         void limitExceeded_throwsBadRequest() {
             try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
                 ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+                ctx.when(RequestContextUtil::isPremium).thenReturn(true);
+                ctx.when(RequestContextUtil::getLocale).thenReturn("en");
+                ctx.when(RequestContextUtil::isPremium).thenReturn(true);
                 ctx.when(RequestContextUtil::getLocale).thenReturn("en");
 
-                when(debtRS.countByOwnerId(OWNER_ID)).thenReturn(150L);
+                when(debtRS.countByOwnerId(OWNER_ID)).thenReturn(200L);
                 when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
 
                 final CreateDebtRequest request = CreateDebtRequest.builder()
@@ -204,6 +211,7 @@ class DebtServiceTest {
         void readOnlyMember_throwsForbidden() {
             try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
                 ctx.when(RequestContextUtil::getUserId).thenReturn(OTHER_ID);
+                ctx.when(RequestContextUtil::isPremium).thenReturn(true);
                 ctx.when(RequestContextUtil::getLocale).thenReturn("en");
 
                 when(debtRS.countByOwnerId(OTHER_ID)).thenReturn(0L);
@@ -226,6 +234,7 @@ class DebtServiceTest {
         void nonMember_throwsForbidden() {
             try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
                 ctx.when(RequestContextUtil::getUserId).thenReturn(OTHER_ID);
+                ctx.when(RequestContextUtil::isPremium).thenReturn(true);
                 ctx.when(RequestContextUtil::getLocale).thenReturn("en");
 
                 when(debtRS.countByOwnerId(OTHER_ID)).thenReturn(0L);
@@ -255,6 +264,8 @@ class DebtServiceTest {
         void ownerUpdatesSameCategory_succeeds() {
             try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
                 ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+                ctx.when(RequestContextUtil::isPremium).thenReturn(true);
+                ctx.when(RequestContextUtil::getLocale).thenReturn("en");
 
                 final DebtDocument existing = buildDebt(DEBT_ID, OWNER_ID, CAT_ID);
                 when(debtRS.findById(DEBT_ID)).thenReturn(existing);
@@ -281,6 +292,8 @@ class DebtServiceTest {
         void ownerMovesToNewCategory_succeeds() {
             try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
                 ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+                ctx.when(RequestContextUtil::isPremium).thenReturn(true);
+                ctx.when(RequestContextUtil::getLocale).thenReturn("en");
 
                 final DebtDocument existing = buildDebt(DEBT_ID, OWNER_ID, CAT_ID);
                 when(debtRS.findById(DEBT_ID)).thenReturn(existing);
@@ -327,6 +340,8 @@ class DebtServiceTest {
         void existingPayments_preserved() {
             try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
                 ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+                ctx.when(RequestContextUtil::isPremium).thenReturn(true);
+                ctx.when(RequestContextUtil::getLocale).thenReturn("en");
 
                 final List<PaymentEmbedded> existingPayments = List.of(
                         PaymentEmbedded.builder().paid(true).paidTime(LocalDateTime.now()).build());
@@ -361,6 +376,8 @@ class DebtServiceTest {
         void noAccessToNewCategory_throwsForbidden() {
             try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
                 ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+                ctx.when(RequestContextUtil::isPremium).thenReturn(true);
+                ctx.when(RequestContextUtil::getLocale).thenReturn("en");
 
                 final DebtDocument existing = buildDebt(DEBT_ID, OWNER_ID, CAT_ID);
                 when(debtRS.findById(DEBT_ID)).thenReturn(existing);
@@ -391,6 +408,8 @@ class DebtServiceTest {
         void ownerDeletesDebt_succeeds() {
             try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
                 ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+                ctx.when(RequestContextUtil::isPremium).thenReturn(true);
+                ctx.when(RequestContextUtil::getLocale).thenReturn("en");
 
                 when(debtRS.findById(DEBT_ID)).thenReturn(buildDebt(DEBT_ID, OWNER_ID, CAT_ID));
                 when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
@@ -429,6 +448,8 @@ class DebtServiceTest {
         void owner_returnsDebtWithPayments() {
             try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
                 ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+                ctx.when(RequestContextUtil::isPremium).thenReturn(true);
+                ctx.when(RequestContextUtil::getLocale).thenReturn("en");
 
                 final DebtDocument debt = buildDebt(DEBT_ID, OWNER_ID, CAT_ID);
                 when(debtRS.findById(DEBT_ID)).thenReturn(debt);
@@ -486,6 +507,8 @@ class DebtServiceTest {
         void get_returnsGroupedDebts() {
             try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
                 ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+                ctx.when(RequestContextUtil::isPremium).thenReturn(true);
+                ctx.when(RequestContextUtil::getLocale).thenReturn("en");
 
                 final CategoryDocument owned = buildCategory(CAT_ID, OWNER_ID);
                 final CategoryDocument shared = buildCategory(NEW_CAT_ID, OTHER_ID);
@@ -511,6 +534,8 @@ class DebtServiceTest {
         void get_ownedFlagSetCorrectly() {
             try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
                 ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+                ctx.when(RequestContextUtil::isPremium).thenReturn(true);
+                ctx.when(RequestContextUtil::getLocale).thenReturn("en");
 
                 final CategoryDocument owned = buildCategory(CAT_ID, OWNER_ID);
                 final CategoryDocument shared = buildCategory(NEW_CAT_ID, OTHER_ID);
@@ -537,6 +562,8 @@ class DebtServiceTest {
         void get_noCategories_returnsEmpty() {
             try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
                 ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+                ctx.when(RequestContextUtil::isPremium).thenReturn(true);
+                ctx.when(RequestContextUtil::getLocale).thenReturn("en");
 
                 when(categoryRS.findByOwnerId(OWNER_ID)).thenReturn(List.of());
                 when(categoryRS.findByMemberUserId(OWNER_ID)).thenReturn(List.of());
@@ -559,6 +586,8 @@ class DebtServiceTest {
         void ownerPays_addsPaymentAndReturns() {
             try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
                 ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+                ctx.when(RequestContextUtil::isPremium).thenReturn(true);
+                ctx.when(RequestContextUtil::getLocale).thenReturn("en");
 
                 final DebtDocument existing = buildDebt(DEBT_ID, OWNER_ID, CAT_ID);
                 when(debtRS.findById(DEBT_ID)).thenReturn(existing);
@@ -599,6 +628,8 @@ class DebtServiceTest {
         void paymentFromPreviousPeriod_allowsNewPayment() {
             try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
                 ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+                ctx.when(RequestContextUtil::isPremium).thenReturn(true);
+                ctx.when(RequestContextUtil::getLocale).thenReturn("en");
 
                 // firstPaymentDate = now → current period starts now
                 // existing payment was yesterday → belongs to previous period
@@ -629,6 +660,8 @@ class DebtServiceTest {
         void duplicatePayInSamePeriod_throwsConflict() {
             try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
                 ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+                ctx.when(RequestContextUtil::isPremium).thenReturn(true);
+                ctx.when(RequestContextUtil::getLocale).thenReturn("en");
 
                 // firstPaymentDate = 5 days ago → current period started 5 days ago
                 // existing payment = 2 days ago → within current period
@@ -659,6 +692,8 @@ class DebtServiceTest {
         void payAfterNewPeriodStarted_allowsPayment() {
             try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
                 ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+                ctx.when(RequestContextUtil::isPremium).thenReturn(true);
+                ctx.when(RequestContextUtil::getLocale).thenReturn("en");
 
                 // firstPaymentDate = 35 days ago → current MONTHLY period started 5 days ago
                 // existing payment = 30 days ago → in the previous period
@@ -708,6 +743,8 @@ class DebtServiceTest {
         void autoPaymentEnabled_throwsConflict() {
             try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
                 ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+                ctx.when(RequestContextUtil::isPremium).thenReturn(true);
+                ctx.when(RequestContextUtil::getLocale).thenReturn("en");
 
                 final DebtDocument autoDebt = DebtDocument.builder()
                         .id(DEBT_ID).ownerId(OWNER_ID).categoryId(CAT_ID)
@@ -732,6 +769,8 @@ class DebtServiceTest {
         void installmentCountReached_statusPassive() {
             try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
                 ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+                ctx.when(RequestContextUtil::isPremium).thenReturn(true);
+                ctx.when(RequestContextUtil::getLocale).thenReturn("en");
 
                 final DebtDocument existing = DebtDocument.builder()
                         .id(DEBT_ID).ownerId(OWNER_ID).categoryId(CAT_ID)
@@ -758,6 +797,8 @@ class DebtServiceTest {
         void installmentCountNotReached_statusRemainsActive() {
             try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
                 ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+                ctx.when(RequestContextUtil::isPremium).thenReturn(true);
+                ctx.when(RequestContextUtil::getLocale).thenReturn("en");
 
                 final DebtDocument existing = DebtDocument.builder()
                         .id(DEBT_ID).ownerId(OWNER_ID).categoryId(CAT_ID)

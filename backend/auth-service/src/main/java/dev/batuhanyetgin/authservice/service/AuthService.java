@@ -56,8 +56,8 @@ public class AuthService {
         );
 
         return TokenResponse.builder()
-                .refreshToken(jwtService.generateToken(authDocument.getId(), true))
-                .token(jwtService.generateToken(authDocument.getId(), false))
+                .refreshToken(jwtService.generateToken(authDocument.getId(), true, false))
+                .token(jwtService.generateToken(authDocument.getId(), false, false))
                 .build();
     }
 
@@ -114,8 +114,8 @@ public class AuthService {
         log.info("User logged in successfully with id: {}", userDocument.getId());
 
         return TokenResponse.builder()
-                .refreshToken(jwtService.generateToken(userDocument.getId(), true))
-                .token(jwtService.generateToken(userDocument.getId(), false))
+                .refreshToken(jwtService.generateToken(userDocument.getId(), true, false))
+                .token(jwtService.generateToken(userDocument.getId(), false, userDocument.isPremium()))
                 .build();
     }
 
@@ -136,12 +136,13 @@ public class AuthService {
         }
 
         final String userId = jwtService.validateRefreshToken(token);
+        final AuthDocument authDocument = authRS.findById(userId);
 
         log.info("Token refreshed for userId: {}", userId);
 
         return TokenResponse.builder()
-                .refreshToken(jwtService.generateToken(userId, true))
-                .token(jwtService.generateToken(userId, false))
+                .refreshToken(jwtService.generateToken(userId, true, false))
+                .token(jwtService.generateToken(userId, false, authDocument.isPremium()))
                 .build();
     }
 

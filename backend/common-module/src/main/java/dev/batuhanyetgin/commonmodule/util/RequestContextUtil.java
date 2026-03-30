@@ -22,6 +22,16 @@ public final class RequestContextUtil {
                 .orElseThrow(() -> new BaseException("error.user.not_found_in_context", HttpStatus.UNAUTHORIZED));
     }
 
+    public static boolean isPremium() {
+        return Optional.ofNullable(RequestContextHolder.getRequestAttributes())
+                .filter(ServletRequestAttributes.class::isInstance)
+                .map(ServletRequestAttributes.class::cast)
+                .map(ServletRequestAttributes::getRequest)
+                .map(request -> request.getHeader(CommonConstants.PREMIUM_HEADER))
+                .map("true"::equalsIgnoreCase)
+                .orElse(false);
+    }
+
     public static String getLocale() {
         return Optional.ofNullable(RequestContextHolder.getRequestAttributes())
                 .filter(ServletRequestAttributes.class::isInstance)
