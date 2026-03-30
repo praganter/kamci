@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import '../../../../core/l10n/l10n.dart';
-import '../../../../core/router/route_names.dart';
 import '../../../../shared/widgets/app_error_widget.dart';
 import '../../../../shared/widgets/confirm_dialog.dart';
 import '../../../../shared/providers/current_user_provider.dart';
 import '../providers/category_providers.dart';
 import '../widgets/access_level_badge.dart';
+import '../widgets/add_category_sheet.dart';
 import '../widgets/add_member_dialog.dart';
 
 class CategoryDetailScreen extends ConsumerWidget {
@@ -42,9 +41,18 @@ class CategoryDetailScreen extends ConsumerWidget {
               if (isOwner)
                 IconButton(
                   icon: const Icon(Icons.edit_outlined),
-                  onPressed: () => context.pushNamed(
-                    RouteNames.categoryEdit,
-                    pathParameters: {'id': id},
+                  onPressed: () => showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    useSafeArea: true,
+                    shape: const RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.vertical(top: Radius.circular(24)),
+                    ),
+                    builder: (_) => AddCategorySheet(
+                      categoryId: id,
+                      initialName: category.name,
+                    ),
                   ),
                 ),
             ],
@@ -91,8 +99,7 @@ class CategoryDetailScreen extends ConsumerWidget {
                                   .primaryContainer,
                               child: Icon(
                                 Icons.person_outline,
-                                color:
-                                    Theme.of(context).colorScheme.primary,
+                                color: Theme.of(context).colorScheme.primary,
                                 size: 20,
                               ),
                             ),
@@ -106,13 +113,11 @@ class CategoryDetailScreen extends ConsumerWidget {
                                   IconButton(
                                     icon: Icon(
                                       Icons.remove_circle_outline,
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .error,
+                                      color:
+                                          Theme.of(context).colorScheme.error,
                                     ),
                                     onPressed: () async {
-                                      final confirmed =
-                                          await showConfirmDialog(
+                                      final confirmed = await showConfirmDialog(
                                         context,
                                         title: l10n.removeMember,
                                         content: l10n.removeMemberConfirm,

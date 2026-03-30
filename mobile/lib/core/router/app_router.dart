@@ -134,22 +134,9 @@ GoRouter appRouter(Ref ref) {
             builder: (context, _) => const CategoryListScreen(),
             routes: [
               GoRoute(
-                path: 'new',
-                name: RouteNames.categoryNew,
-                builder: (context, _) => const CategoryFormScreen(),
-              ),
-              GoRoute(
                 path: ':id',
                 name: RouteNames.categoryDetail,
                 builder: (_, state) => CategoryDetailScreen(id: state.pathParameters['id']!),
-                routes: [
-                  GoRoute(
-                    path: 'edit',
-                    name: RouteNames.categoryEdit,
-                    builder: (_, state) =>
-                        CategoryFormScreen(categoryId: state.pathParameters['id']),
-                  ),
-                ],
               ),
             ],
           ),
