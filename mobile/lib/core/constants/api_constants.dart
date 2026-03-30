@@ -10,6 +10,7 @@ abstract final class ApiConstants {
   static const String forgetPassword = '/auth/forget-password';
   static const String resetPassword = '/auth/reset-password';
   static const String changePassword = '/auth/change-password';
+  static const String userDetail = '/auth/user-detail';
 
   static const String debtSave = '/debt/save';
   static const String debtUpdate = '/debt/update';
@@ -17,11 +18,12 @@ abstract final class ApiConstants {
   static const String debtDelete = '/debt/delete';
   static const String debtGetById = '/debt';
   static const String debtGet = '/debt/get';
-  static const String debtCurrencies = '/debt/currencies';
-
   static const String categorySave = '/category/save';
   static const String categoryUpdate = '/category/update';
   static const String categoryDelete = '/category/delete';
   static const String categoryGetAll = '/category/getAll';
   static const String categoryMemberBulk = '/category/members/bulk';
+
+  static const String subscriptionVerify = '/subscription/verify';
+  static const String subscriptionStatus = '/subscription/status';
 }

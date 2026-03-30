@@ -34,6 +34,7 @@ dependencies:
   shimmer: ^3.0.0
   shared_preferences: ^2.3.3
   url_launcher: ^6.3.1
+  in_app_purchase: ^3.2.0
 
 dev_dependencies:
   flutter_test:
@@ -51,3 +52,5 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   generate: true
+  assets:
+    - assets/currencies.json

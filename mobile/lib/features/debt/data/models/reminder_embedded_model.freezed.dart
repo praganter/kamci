@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ReminderEmbeddedModel {
 
- bool get enabled; String? get frequency;
+ bool get enabled; List<String> get channels; String? get reminderDate; String? get reminderTime;
 /// Create a copy of ReminderEmbeddedModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $ReminderEmbeddedModelCopyWith<ReminderEmbeddedModel> get copyWith => _$Reminder
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ReminderEmbeddedModel&&(identical(other.enabled, enabled) || other.enabled == enabled)&&(identical(other.frequency, frequency) || other.frequency == frequency));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ReminderEmbeddedModel&&(identical(other.enabled, enabled) || other.enabled == enabled)&&const DeepCollectionEquality().equals(other.channels, channels)&&(identical(other.reminderDate, reminderDate) || other.reminderDate == reminderDate)&&(identical(other.reminderTime, reminderTime) || other.reminderTime == reminderTime));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,enabled,frequency);
+int get hashCode => Object.hash(runtimeType,enabled,const DeepCollectionEquality().hash(channels),reminderDate,reminderTime);
 
 @override
 String toString() {
-  return 'ReminderEmbeddedModel(enabled: $enabled, frequency: $frequency)';
+  return 'ReminderEmbeddedModel(enabled: $enabled, channels: $channels, reminderDate: $reminderDate, reminderTime: $reminderTime)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $ReminderEmbeddedModelCopyWith<$Res>  {
   factory $ReminderEmbeddedModelCopyWith(ReminderEmbeddedModel value, $Res Function(ReminderEmbeddedModel) _then) = _$ReminderEmbeddedModelCopyWithImpl;
 @useResult
 $Res call({
- bool enabled, String? frequency
+ bool enabled, List<String> channels, String? reminderDate, String? reminderTime
 });
 
 
@@ -65,10 +65,12 @@ class _$ReminderEmbeddedModelCopyWithImpl<$Res>
 
 /// Create a copy of ReminderEmbeddedModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? enabled = null,Object? frequency = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? enabled = null,Object? channels = null,Object? reminderDate = freezed,Object? reminderTime = freezed,}) {
   return _then(_self.copyWith(
 enabled: null == enabled ? _self.enabled : enabled // ignore: cast_nullable_to_non_nullable
-as bool,frequency: freezed == frequency ? _self.frequency : frequency // ignore: cast_nullable_to_non_nullable
+as bool,channels: null == channels ? _self.channels : channels // ignore: cast_nullable_to_non_nullable
+as List<String>,reminderDate: freezed == reminderDate ? _self.reminderDate : reminderDate // ignore: cast_nullable_to_non_nullable
+as String?,reminderTime: freezed == reminderTime ? _self.reminderTime : reminderTime // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
@@ -154,10 +156,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool enabled,  String? frequency)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool enabled,  List<String> channels,  String? reminderDate,  String? reminderTime)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ReminderEmbeddedModel() when $default != null:
-return $default(_that.enabled,_that.frequency);case _:
+return $default(_that.enabled,_that.channels,_that.reminderDate,_that.reminderTime);case _:
   return orElse();
 
 }
@@ -175,10 +177,10 @@ return $default(_that.enabled,_that.frequency);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool enabled,  String? frequency)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool enabled,  List<String> channels,  String? reminderDate,  String? reminderTime)  $default,) {final _that = this;
 switch (_that) {
 case _ReminderEmbeddedModel():
-return $default(_that.enabled,_that.frequency);case _:
+return $default(_that.enabled,_that.channels,_that.reminderDate,_that.reminderTime);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -195,10 +197,10 @@ return $default(_that.enabled,_that.frequency);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool enabled,  String? frequency)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool enabled,  List<String> channels,  String? reminderDate,  String? reminderTime)?  $default,) {final _that = this;
 switch (_that) {
 case _ReminderEmbeddedModel() when $default != null:
-return $default(_that.enabled,_that.frequency);case _:
+return $default(_that.enabled,_that.channels,_that.reminderDate,_that.reminderTime);case _:
   return null;
 
 }
@@ -210,11 +212,19 @@ return $default(_that.enabled,_that.frequency);case _:
 @JsonSerializable()
 
 class _ReminderEmbeddedModel implements ReminderEmbeddedModel {
-  const _ReminderEmbeddedModel({this.enabled = false, this.frequency});
+  const _ReminderEmbeddedModel({this.enabled = false, final  List<String> channels = const [], this.reminderDate, this.reminderTime}): _channels = channels;
   factory _ReminderEmbeddedModel.fromJson(Map<String, dynamic> json) => _$ReminderEmbeddedModelFromJson(json);
 
 @override@JsonKey() final  bool enabled;
-@override final  String? frequency;
+ final  List<String> _channels;
+@override@JsonKey() List<String> get channels {
+  if (_channels is EqualUnmodifiableListView) return _channels;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_channels);
+}
+
+@override final  String? reminderDate;
+@override final  String? reminderTime;
 
 /// Create a copy of ReminderEmbeddedModel
 /// with the given fields replaced by the non-null parameter values.
@@ -229,16 +239,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ReminderEmbeddedModel&&(identical(other.enabled, enabled) || other.enabled == enabled)&&(identical(other.frequency, frequency) || other.frequency == frequency));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ReminderEmbeddedModel&&(identical(other.enabled, enabled) || other.enabled == enabled)&&const DeepCollectionEquality().equals(other._channels, _channels)&&(identical(other.reminderDate, reminderDate) || other.reminderDate == reminderDate)&&(identical(other.reminderTime, reminderTime) || other.reminderTime == reminderTime));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,enabled,frequency);
+int get hashCode => Object.hash(runtimeType,enabled,const DeepCollectionEquality().hash(_channels),reminderDate,reminderTime);
 
 @override
 String toString() {
-  return 'ReminderEmbeddedModel(enabled: $enabled, frequency: $frequency)';
+  return 'ReminderEmbeddedModel(enabled: $enabled, channels: $channels, reminderDate: $reminderDate, reminderTime: $reminderTime)';
 }
 
 
@@ -249,7 +259,7 @@ abstract mixin class _$ReminderEmbeddedModelCopyWith<$Res> implements $ReminderE
   factory _$ReminderEmbeddedModelCopyWith(_ReminderEmbeddedModel value, $Res Function(_ReminderEmbeddedModel) _then) = __$ReminderEmbeddedModelCopyWithImpl;
 @override @useResult
 $Res call({
- bool enabled, String? frequency
+ bool enabled, List<String> channels, String? reminderDate, String? reminderTime
 });
 
 
@@ -266,10 +276,12 @@ class __$ReminderEmbeddedModelCopyWithImpl<$Res>
 
 /// Create a copy of ReminderEmbeddedModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? enabled = null,Object? frequency = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? enabled = null,Object? channels = null,Object? reminderDate = freezed,Object? reminderTime = freezed,}) {
   return _then(_ReminderEmbeddedModel(
 enabled: null == enabled ? _self.enabled : enabled // ignore: cast_nullable_to_non_nullable
-as bool,frequency: freezed == frequency ? _self.frequency : frequency // ignore: cast_nullable_to_non_nullable
+as bool,channels: null == channels ? _self._channels : channels // ignore: cast_nullable_to_non_nullable
+as List<String>,reminderDate: freezed == reminderDate ? _self.reminderDate : reminderDate // ignore: cast_nullable_to_non_nullable
+as String?,reminderTime: freezed == reminderTime ? _self.reminderTime : reminderTime // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }

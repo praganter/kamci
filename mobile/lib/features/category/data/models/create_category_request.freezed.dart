@@ -281,7 +281,7 @@ as String,
 /// @nodoc
 mixin _$AddMemberRequest {
 
- String get userId; AccessLevelJson get accessLevel;
+ String get email; AccessLevelJson get accessLevel;
 /// Create a copy of AddMemberRequest
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -294,16 +294,16 @@ $AddMemberRequestCopyWith<AddMemberRequest> get copyWith => _$AddMemberRequestCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AddMemberRequest&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.accessLevel, accessLevel) || other.accessLevel == accessLevel));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AddMemberRequest&&(identical(other.email, email) || other.email == email)&&(identical(other.accessLevel, accessLevel) || other.accessLevel == accessLevel));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,userId,accessLevel);
+int get hashCode => Object.hash(runtimeType,email,accessLevel);
 
 @override
 String toString() {
-  return 'AddMemberRequest(userId: $userId, accessLevel: $accessLevel)';
+  return 'AddMemberRequest(email: $email, accessLevel: $accessLevel)';
 }
 
 
@@ -314,7 +314,7 @@ abstract mixin class $AddMemberRequestCopyWith<$Res>  {
   factory $AddMemberRequestCopyWith(AddMemberRequest value, $Res Function(AddMemberRequest) _then) = _$AddMemberRequestCopyWithImpl;
 @useResult
 $Res call({
- String userId, AccessLevelJson accessLevel
+ String email, AccessLevelJson accessLevel
 });
 
 
@@ -331,9 +331,9 @@ class _$AddMemberRequestCopyWithImpl<$Res>
 
 /// Create a copy of AddMemberRequest
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? userId = null,Object? accessLevel = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? email = null,Object? accessLevel = null,}) {
   return _then(_self.copyWith(
-userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
+email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
 as String,accessLevel: null == accessLevel ? _self.accessLevel : accessLevel // ignore: cast_nullable_to_non_nullable
 as AccessLevelJson,
   ));
@@ -420,10 +420,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String userId,  AccessLevelJson accessLevel)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String email,  AccessLevelJson accessLevel)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AddMemberRequest() when $default != null:
-return $default(_that.userId,_that.accessLevel);case _:
+return $default(_that.email,_that.accessLevel);case _:
   return orElse();
 
 }
@@ -441,10 +441,10 @@ return $default(_that.userId,_that.accessLevel);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String userId,  AccessLevelJson accessLevel)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String email,  AccessLevelJson accessLevel)  $default,) {final _that = this;
 switch (_that) {
 case _AddMemberRequest():
-return $default(_that.userId,_that.accessLevel);case _:
+return $default(_that.email,_that.accessLevel);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -461,10 +461,10 @@ return $default(_that.userId,_that.accessLevel);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String userId,  AccessLevelJson accessLevel)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String email,  AccessLevelJson accessLevel)?  $default,) {final _that = this;
 switch (_that) {
 case _AddMemberRequest() when $default != null:
-return $default(_that.userId,_that.accessLevel);case _:
+return $default(_that.email,_that.accessLevel);case _:
   return null;
 
 }
@@ -476,10 +476,10 @@ return $default(_that.userId,_that.accessLevel);case _:
 @JsonSerializable()
 
 class _AddMemberRequest implements AddMemberRequest {
-  const _AddMemberRequest({required this.userId, required this.accessLevel});
+  const _AddMemberRequest({required this.email, required this.accessLevel});
   factory _AddMemberRequest.fromJson(Map<String, dynamic> json) => _$AddMemberRequestFromJson(json);
 
-@override final  String userId;
+@override final  String email;
 @override final  AccessLevelJson accessLevel;
 
 /// Create a copy of AddMemberRequest
@@ -495,16 +495,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AddMemberRequest&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.accessLevel, accessLevel) || other.accessLevel == accessLevel));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AddMemberRequest&&(identical(other.email, email) || other.email == email)&&(identical(other.accessLevel, accessLevel) || other.accessLevel == accessLevel));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,userId,accessLevel);
+int get hashCode => Object.hash(runtimeType,email,accessLevel);
 
 @override
 String toString() {
-  return 'AddMemberRequest(userId: $userId, accessLevel: $accessLevel)';
+  return 'AddMemberRequest(email: $email, accessLevel: $accessLevel)';
 }
 
 
@@ -515,7 +515,7 @@ abstract mixin class _$AddMemberRequestCopyWith<$Res> implements $AddMemberReque
   factory _$AddMemberRequestCopyWith(_AddMemberRequest value, $Res Function(_AddMemberRequest) _then) = __$AddMemberRequestCopyWithImpl;
 @override @useResult
 $Res call({
- String userId, AccessLevelJson accessLevel
+ String email, AccessLevelJson accessLevel
 });
 
 
@@ -532,9 +532,9 @@ class __$AddMemberRequestCopyWithImpl<$Res>
 
 /// Create a copy of AddMemberRequest
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? userId = null,Object? accessLevel = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? email = null,Object? accessLevel = null,}) {
   return _then(_AddMemberRequest(
-userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
+email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
 as String,accessLevel: null == accessLevel ? _self.accessLevel : accessLevel // ignore: cast_nullable_to_non_nullable
 as AccessLevelJson,
   ));

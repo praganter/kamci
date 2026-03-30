@@ -38,27 +38,19 @@ class CategoryRepositoryImpl implements CategoryRepository {
   Future<void> delete(String id) => _datasource.delete(id);
 
   @override
-  Future<Category> addMember(
+  Future<void> addMember(
     String categoryId,
-    String userId,
+    String email,
     AccessLevel accessLevel,
-  ) async {
-    final model = await _datasource.addMember(categoryId, userId, accessLevel);
-    return model.toDomain();
-  }
+  ) => _datasource.addMember(categoryId, email, accessLevel);
 
   @override
-  Future<Category> addMembersBulk(
+  Future<void> addMembersBulk(
     String categoryId,
-    List<({String userId, AccessLevel accessLevel})> members,
-  ) async {
-    final model = await _datasource.addMembersBulk(categoryId, members);
-    return model.toDomain();
-  }
+    List<({String email, AccessLevel accessLevel})> members,
+  ) => _datasource.addMembersBulk(categoryId, members);
 
   @override
-  Future<Category> removeMember(String categoryId, String userId) async {
-    final model = await _datasource.removeMember(categoryId, userId);
-    return model.toDomain();
-  }
+  Future<void> removeMember(String categoryId, String userId) =>
+      _datasource.removeMember(categoryId, userId);
 }

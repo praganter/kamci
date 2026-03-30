@@ -37,7 +37,8 @@ class Debt {
     this.categoryId,
     this.description,
     required this.firstPaymentDate,
-    this.lastPaymentDate,
+    this.installmentCount,
+    this.paidInstallmentCount,
     required this.paymentPeriodType,
     required this.amount,
     required this.status,
@@ -57,7 +58,8 @@ class Debt {
   final String? categoryId;
   final String? description;
   final DateTime firstPaymentDate;
-  final DateTime? lastPaymentDate;
+  final int? installmentCount;
+  final int? paidInstallmentCount;
   final PaymentPeriodType paymentPeriodType;
   final double amount;
   final String? currency;

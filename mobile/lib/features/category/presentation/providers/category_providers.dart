@@ -30,23 +30,21 @@ class CategoryDetail extends _$CategoryDetail {
   }
 
   Future<void> addMember(
-    String userId,
+    String email,
     AccessLevel accessLevel,
   ) async {
     final category = await future;
-    final updated = await ref
+    await ref
         .read(categoryRepositoryProvider)
-        .addMember(category.id, userId, accessLevel);
-    state = AsyncData(updated);
+        .addMember(category.id, email, accessLevel);
     ref.invalidate(categoryListProvider);
   }
 
   Future<void> removeMember(String userId) async {
     final category = await future;
-    final updated = await ref
+    await ref
         .read(categoryRepositoryProvider)
         .removeMember(category.id, userId);
-    state = AsyncData(updated);
     ref.invalidate(categoryListProvider);
   }
 }

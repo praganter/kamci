@@ -13,7 +13,8 @@ _DebtModel _$DebtModelFromJson(Map<String, dynamic> json) => _DebtModel(
   categoryId: json['categoryId'] as String?,
   description: json['description'] as String?,
   firstPaymentDate: json['firstPaymentDate'] as String?,
-  lastPaymentDate: json['lastPaymentDate'] as String?,
+  installmentCount: (json['installmentCount'] as num?)?.toInt(),
+  paidInstallmentCount: (json['paidInstallmentCount'] as num?)?.toInt(),
   paymentPeriodType: $enumDecode(
     _$PaymentPeriodTypeJsonEnumMap,
     json['paymentPeriodType'],
@@ -50,7 +51,9 @@ Map<String, dynamic> _$DebtModelToJson(
   if (instance.categoryId case final value?) 'categoryId': value,
   if (instance.description case final value?) 'description': value,
   if (instance.firstPaymentDate case final value?) 'firstPaymentDate': value,
-  if (instance.lastPaymentDate case final value?) 'lastPaymentDate': value,
+  if (instance.installmentCount case final value?) 'installmentCount': value,
+  if (instance.paidInstallmentCount case final value?)
+    'paidInstallmentCount': value,
   'paymentPeriodType':
       _$PaymentPeriodTypeJsonEnumMap[instance.paymentPeriodType]!,
   'amount': instance.amount,

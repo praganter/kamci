@@ -336,7 +336,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get feedbackDesc => 'Share your thoughts and suggestions with us';
 
   @override
-  String get appearance => 'Appearance';
+  String get appearance => 'App Settings';
 
   @override
   String get language => 'Language';
@@ -363,7 +363,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get langEnglish => 'English';
 
   @override
-  String get visibility => 'Visibility';
+  String get visibility => 'Debt Visibility';
 
   @override
   String get filterAll => 'All';
@@ -381,4 +381,50 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get currency => 'Currency';
+
+  @override
+  String get installmentCount => 'Installment Count';
+
+  @override
+  String get installmentCountOptional => 'Installment Count (Optional)';
+
+  @override
+  String installmentProgress(int paid, int total) {
+    return '$paid/$total installments';
+  }
+
+  @override
+  String get openEnded => 'Open-Ended';
+
+  @override
+  String get memberEmail => 'Member Email Address';
+
+  @override
+  String get reminder => 'Reminder';
+
+  @override
+  String get reminderDate => 'Reminder Date';
+
+  @override
+  String get reminderTime => 'Reminder Time';
+
+  @override
+  String get reminderChannels => 'Notification Channels';
+
+  @override
+  String get channelEmail => 'Email';
+
+  @override
+  String get channelInApp => 'In-App';
+
+  @override
+  String get premiumRequiredTitle => 'Premium Required';
+
+  @override
+  String premiumLimitReached(int limit, String feature) {
+    return 'In the free version, you can add at most $limit $feature. Upgrade to Premium to continue.';
+  }
+
+  @override
+  String get maybeLater => 'Maybe Later';
 }

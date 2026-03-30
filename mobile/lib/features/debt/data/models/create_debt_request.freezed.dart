@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$CreateDebtRequest {
 
- String? get id; String get name; String? get categoryId; String? get description; String get firstPaymentDate; String? get lastPaymentDate; PaymentPeriodTypeJson get paymentPeriodType; double get amount; bool get autoPayment; String? get currency;
+ String? get id; String get name; String? get categoryId; String? get description; String get firstPaymentDate; int? get installmentCount; PaymentPeriodTypeJson get paymentPeriodType; double get amount; bool get autoPayment; String? get currency; ReminderEmbeddedModel? get reminder;
 /// Create a copy of CreateDebtRequest
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $CreateDebtRequestCopyWith<CreateDebtRequest> get copyWith => _$CreateDebtReques
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is CreateDebtRequest&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.description, description) || other.description == description)&&(identical(other.firstPaymentDate, firstPaymentDate) || other.firstPaymentDate == firstPaymentDate)&&(identical(other.lastPaymentDate, lastPaymentDate) || other.lastPaymentDate == lastPaymentDate)&&(identical(other.paymentPeriodType, paymentPeriodType) || other.paymentPeriodType == paymentPeriodType)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.autoPayment, autoPayment) || other.autoPayment == autoPayment)&&(identical(other.currency, currency) || other.currency == currency));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CreateDebtRequest&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.description, description) || other.description == description)&&(identical(other.firstPaymentDate, firstPaymentDate) || other.firstPaymentDate == firstPaymentDate)&&(identical(other.installmentCount, installmentCount) || other.installmentCount == installmentCount)&&(identical(other.paymentPeriodType, paymentPeriodType) || other.paymentPeriodType == paymentPeriodType)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.autoPayment, autoPayment) || other.autoPayment == autoPayment)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.reminder, reminder) || other.reminder == reminder));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,categoryId,description,firstPaymentDate,lastPaymentDate,paymentPeriodType,amount,autoPayment,currency);
+int get hashCode => Object.hash(runtimeType,id,name,categoryId,description,firstPaymentDate,installmentCount,paymentPeriodType,amount,autoPayment,currency,reminder);
 
 @override
 String toString() {
-  return 'CreateDebtRequest(id: $id, name: $name, categoryId: $categoryId, description: $description, firstPaymentDate: $firstPaymentDate, lastPaymentDate: $lastPaymentDate, paymentPeriodType: $paymentPeriodType, amount: $amount, autoPayment: $autoPayment, currency: $currency)';
+  return 'CreateDebtRequest(id: $id, name: $name, categoryId: $categoryId, description: $description, firstPaymentDate: $firstPaymentDate, installmentCount: $installmentCount, paymentPeriodType: $paymentPeriodType, amount: $amount, autoPayment: $autoPayment, currency: $currency, reminder: $reminder)';
 }
 
 
@@ -48,11 +48,11 @@ abstract mixin class $CreateDebtRequestCopyWith<$Res>  {
   factory $CreateDebtRequestCopyWith(CreateDebtRequest value, $Res Function(CreateDebtRequest) _then) = _$CreateDebtRequestCopyWithImpl;
 @useResult
 $Res call({
- String? id, String name, String? categoryId, String? description, String firstPaymentDate, String? lastPaymentDate, PaymentPeriodTypeJson paymentPeriodType, double amount, bool autoPayment, String? currency
+ String? id, String name, String? categoryId, String? description, String firstPaymentDate, int? installmentCount, PaymentPeriodTypeJson paymentPeriodType, double amount, bool autoPayment, String? currency, ReminderEmbeddedModel? reminder
 });
 
 
-
+$ReminderEmbeddedModelCopyWith<$Res>? get reminder;
 
 }
 /// @nodoc
@@ -65,22 +65,35 @@ class _$CreateDebtRequestCopyWithImpl<$Res>
 
 /// Create a copy of CreateDebtRequest
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? name = null,Object? categoryId = freezed,Object? description = freezed,Object? firstPaymentDate = null,Object? lastPaymentDate = freezed,Object? paymentPeriodType = null,Object? amount = null,Object? autoPayment = null,Object? currency = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? name = null,Object? categoryId = freezed,Object? description = freezed,Object? firstPaymentDate = null,Object? installmentCount = freezed,Object? paymentPeriodType = null,Object? amount = null,Object? autoPayment = null,Object? currency = freezed,Object? reminder = freezed,}) {
   return _then(_self.copyWith(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String?,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,categoryId: freezed == categoryId ? _self.categoryId : categoryId // ignore: cast_nullable_to_non_nullable
 as String?,description: freezed == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
 as String?,firstPaymentDate: null == firstPaymentDate ? _self.firstPaymentDate : firstPaymentDate // ignore: cast_nullable_to_non_nullable
-as String,lastPaymentDate: freezed == lastPaymentDate ? _self.lastPaymentDate : lastPaymentDate // ignore: cast_nullable_to_non_nullable
-as String?,paymentPeriodType: null == paymentPeriodType ? _self.paymentPeriodType : paymentPeriodType // ignore: cast_nullable_to_non_nullable
+as String,installmentCount: freezed == installmentCount ? _self.installmentCount : installmentCount // ignore: cast_nullable_to_non_nullable
+as int?,paymentPeriodType: null == paymentPeriodType ? _self.paymentPeriodType : paymentPeriodType // ignore: cast_nullable_to_non_nullable
 as PaymentPeriodTypeJson,amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
 as double,autoPayment: null == autoPayment ? _self.autoPayment : autoPayment // ignore: cast_nullable_to_non_nullable
 as bool,currency: freezed == currency ? _self.currency : currency // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,reminder: freezed == reminder ? _self.reminder : reminder // ignore: cast_nullable_to_non_nullable
+as ReminderEmbeddedModel?,
   ));
 }
+/// Create a copy of CreateDebtRequest
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$ReminderEmbeddedModelCopyWith<$Res>? get reminder {
+    if (_self.reminder == null) {
+    return null;
+  }
 
+  return $ReminderEmbeddedModelCopyWith<$Res>(_self.reminder!, (value) {
+    return _then(_self.copyWith(reminder: value));
+  });
+}
 }
 
 
@@ -162,10 +175,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? id,  String name,  String? categoryId,  String? description,  String firstPaymentDate,  String? lastPaymentDate,  PaymentPeriodTypeJson paymentPeriodType,  double amount,  bool autoPayment,  String? currency)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? id,  String name,  String? categoryId,  String? description,  String firstPaymentDate,  int? installmentCount,  PaymentPeriodTypeJson paymentPeriodType,  double amount,  bool autoPayment,  String? currency,  ReminderEmbeddedModel? reminder)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _CreateDebtRequest() when $default != null:
-return $default(_that.id,_that.name,_that.categoryId,_that.description,_that.firstPaymentDate,_that.lastPaymentDate,_that.paymentPeriodType,_that.amount,_that.autoPayment,_that.currency);case _:
+return $default(_that.id,_that.name,_that.categoryId,_that.description,_that.firstPaymentDate,_that.installmentCount,_that.paymentPeriodType,_that.amount,_that.autoPayment,_that.currency,_that.reminder);case _:
   return orElse();
 
 }
@@ -183,10 +196,10 @@ return $default(_that.id,_that.name,_that.categoryId,_that.description,_that.fir
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? id,  String name,  String? categoryId,  String? description,  String firstPaymentDate,  String? lastPaymentDate,  PaymentPeriodTypeJson paymentPeriodType,  double amount,  bool autoPayment,  String? currency)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? id,  String name,  String? categoryId,  String? description,  String firstPaymentDate,  int? installmentCount,  PaymentPeriodTypeJson paymentPeriodType,  double amount,  bool autoPayment,  String? currency,  ReminderEmbeddedModel? reminder)  $default,) {final _that = this;
 switch (_that) {
 case _CreateDebtRequest():
-return $default(_that.id,_that.name,_that.categoryId,_that.description,_that.firstPaymentDate,_that.lastPaymentDate,_that.paymentPeriodType,_that.amount,_that.autoPayment,_that.currency);case _:
+return $default(_that.id,_that.name,_that.categoryId,_that.description,_that.firstPaymentDate,_that.installmentCount,_that.paymentPeriodType,_that.amount,_that.autoPayment,_that.currency,_that.reminder);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -203,10 +216,10 @@ return $default(_that.id,_that.name,_that.categoryId,_that.description,_that.fir
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? id,  String name,  String? categoryId,  String? description,  String firstPaymentDate,  String? lastPaymentDate,  PaymentPeriodTypeJson paymentPeriodType,  double amount,  bool autoPayment,  String? currency)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? id,  String name,  String? categoryId,  String? description,  String firstPaymentDate,  int? installmentCount,  PaymentPeriodTypeJson paymentPeriodType,  double amount,  bool autoPayment,  String? currency,  ReminderEmbeddedModel? reminder)?  $default,) {final _that = this;
 switch (_that) {
 case _CreateDebtRequest() when $default != null:
-return $default(_that.id,_that.name,_that.categoryId,_that.description,_that.firstPaymentDate,_that.lastPaymentDate,_that.paymentPeriodType,_that.amount,_that.autoPayment,_that.currency);case _:
+return $default(_that.id,_that.name,_that.categoryId,_that.description,_that.firstPaymentDate,_that.installmentCount,_that.paymentPeriodType,_that.amount,_that.autoPayment,_that.currency,_that.reminder);case _:
   return null;
 
 }
@@ -218,7 +231,7 @@ return $default(_that.id,_that.name,_that.categoryId,_that.description,_that.fir
 @JsonSerializable()
 
 class _CreateDebtRequest implements CreateDebtRequest {
-  const _CreateDebtRequest({this.id, required this.name, this.categoryId, this.description, required this.firstPaymentDate, this.lastPaymentDate, required this.paymentPeriodType, required this.amount, this.autoPayment = false, this.currency});
+  const _CreateDebtRequest({this.id, required this.name, this.categoryId, this.description, required this.firstPaymentDate, this.installmentCount, required this.paymentPeriodType, required this.amount, this.autoPayment = false, this.currency, this.reminder});
   factory _CreateDebtRequest.fromJson(Map<String, dynamic> json) => _$CreateDebtRequestFromJson(json);
 
 @override final  String? id;
@@ -226,11 +239,12 @@ class _CreateDebtRequest implements CreateDebtRequest {
 @override final  String? categoryId;
 @override final  String? description;
 @override final  String firstPaymentDate;
-@override final  String? lastPaymentDate;
+@override final  int? installmentCount;
 @override final  PaymentPeriodTypeJson paymentPeriodType;
 @override final  double amount;
 @override@JsonKey() final  bool autoPayment;
 @override final  String? currency;
+@override final  ReminderEmbeddedModel? reminder;
 
 /// Create a copy of CreateDebtRequest
 /// with the given fields replaced by the non-null parameter values.
@@ -245,16 +259,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CreateDebtRequest&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.description, description) || other.description == description)&&(identical(other.firstPaymentDate, firstPaymentDate) || other.firstPaymentDate == firstPaymentDate)&&(identical(other.lastPaymentDate, lastPaymentDate) || other.lastPaymentDate == lastPaymentDate)&&(identical(other.paymentPeriodType, paymentPeriodType) || other.paymentPeriodType == paymentPeriodType)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.autoPayment, autoPayment) || other.autoPayment == autoPayment)&&(identical(other.currency, currency) || other.currency == currency));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CreateDebtRequest&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.description, description) || other.description == description)&&(identical(other.firstPaymentDate, firstPaymentDate) || other.firstPaymentDate == firstPaymentDate)&&(identical(other.installmentCount, installmentCount) || other.installmentCount == installmentCount)&&(identical(other.paymentPeriodType, paymentPeriodType) || other.paymentPeriodType == paymentPeriodType)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.autoPayment, autoPayment) || other.autoPayment == autoPayment)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.reminder, reminder) || other.reminder == reminder));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,categoryId,description,firstPaymentDate,lastPaymentDate,paymentPeriodType,amount,autoPayment,currency);
+int get hashCode => Object.hash(runtimeType,id,name,categoryId,description,firstPaymentDate,installmentCount,paymentPeriodType,amount,autoPayment,currency,reminder);
 
 @override
 String toString() {
-  return 'CreateDebtRequest(id: $id, name: $name, categoryId: $categoryId, description: $description, firstPaymentDate: $firstPaymentDate, lastPaymentDate: $lastPaymentDate, paymentPeriodType: $paymentPeriodType, amount: $amount, autoPayment: $autoPayment, currency: $currency)';
+  return 'CreateDebtRequest(id: $id, name: $name, categoryId: $categoryId, description: $description, firstPaymentDate: $firstPaymentDate, installmentCount: $installmentCount, paymentPeriodType: $paymentPeriodType, amount: $amount, autoPayment: $autoPayment, currency: $currency, reminder: $reminder)';
 }
 
 
@@ -265,11 +279,11 @@ abstract mixin class _$CreateDebtRequestCopyWith<$Res> implements $CreateDebtReq
   factory _$CreateDebtRequestCopyWith(_CreateDebtRequest value, $Res Function(_CreateDebtRequest) _then) = __$CreateDebtRequestCopyWithImpl;
 @override @useResult
 $Res call({
- String? id, String name, String? categoryId, String? description, String firstPaymentDate, String? lastPaymentDate, PaymentPeriodTypeJson paymentPeriodType, double amount, bool autoPayment, String? currency
+ String? id, String name, String? categoryId, String? description, String firstPaymentDate, int? installmentCount, PaymentPeriodTypeJson paymentPeriodType, double amount, bool autoPayment, String? currency, ReminderEmbeddedModel? reminder
 });
 
 
-
+@override $ReminderEmbeddedModelCopyWith<$Res>? get reminder;
 
 }
 /// @nodoc
@@ -282,23 +296,36 @@ class __$CreateDebtRequestCopyWithImpl<$Res>
 
 /// Create a copy of CreateDebtRequest
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? name = null,Object? categoryId = freezed,Object? description = freezed,Object? firstPaymentDate = null,Object? lastPaymentDate = freezed,Object? paymentPeriodType = null,Object? amount = null,Object? autoPayment = null,Object? currency = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? name = null,Object? categoryId = freezed,Object? description = freezed,Object? firstPaymentDate = null,Object? installmentCount = freezed,Object? paymentPeriodType = null,Object? amount = null,Object? autoPayment = null,Object? currency = freezed,Object? reminder = freezed,}) {
   return _then(_CreateDebtRequest(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String?,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,categoryId: freezed == categoryId ? _self.categoryId : categoryId // ignore: cast_nullable_to_non_nullable
 as String?,description: freezed == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
 as String?,firstPaymentDate: null == firstPaymentDate ? _self.firstPaymentDate : firstPaymentDate // ignore: cast_nullable_to_non_nullable
-as String,lastPaymentDate: freezed == lastPaymentDate ? _self.lastPaymentDate : lastPaymentDate // ignore: cast_nullable_to_non_nullable
-as String?,paymentPeriodType: null == paymentPeriodType ? _self.paymentPeriodType : paymentPeriodType // ignore: cast_nullable_to_non_nullable
+as String,installmentCount: freezed == installmentCount ? _self.installmentCount : installmentCount // ignore: cast_nullable_to_non_nullable
+as int?,paymentPeriodType: null == paymentPeriodType ? _self.paymentPeriodType : paymentPeriodType // ignore: cast_nullable_to_non_nullable
 as PaymentPeriodTypeJson,amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
 as double,autoPayment: null == autoPayment ? _self.autoPayment : autoPayment // ignore: cast_nullable_to_non_nullable
 as bool,currency: freezed == currency ? _self.currency : currency // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,reminder: freezed == reminder ? _self.reminder : reminder // ignore: cast_nullable_to_non_nullable
+as ReminderEmbeddedModel?,
   ));
 }
 
+/// Create a copy of CreateDebtRequest
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$ReminderEmbeddedModelCopyWith<$Res>? get reminder {
+    if (_self.reminder == null) {
+    return null;
+  }
 
+  return $ReminderEmbeddedModelCopyWith<$Res>(_self.reminder!, (value) {
+    return _then(_self.copyWith(reminder: value));
+  });
+}
 }
 
 // dart format on

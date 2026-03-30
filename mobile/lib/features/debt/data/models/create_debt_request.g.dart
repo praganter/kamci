@@ -13,7 +13,7 @@ _CreateDebtRequest _$CreateDebtRequestFromJson(Map<String, dynamic> json) =>
       categoryId: json['categoryId'] as String?,
       description: json['description'] as String?,
       firstPaymentDate: json['firstPaymentDate'] as String,
-      lastPaymentDate: json['lastPaymentDate'] as String?,
+      installmentCount: (json['installmentCount'] as num?)?.toInt(),
       paymentPeriodType: $enumDecode(
         _$PaymentPeriodTypeJsonEnumMap,
         json['paymentPeriodType'],
@@ -21,22 +21,29 @@ _CreateDebtRequest _$CreateDebtRequestFromJson(Map<String, dynamic> json) =>
       amount: (json['amount'] as num).toDouble(),
       autoPayment: json['autoPayment'] as bool? ?? false,
       currency: json['currency'] as String?,
+      reminder: json['reminder'] == null
+          ? null
+          : ReminderEmbeddedModel.fromJson(
+              json['reminder'] as Map<String, dynamic>,
+            ),
     );
 
-Map<String, dynamic> _$CreateDebtRequestToJson(_CreateDebtRequest instance) =>
-    <String, dynamic>{
-      if (instance.id case final value?) 'id': value,
-      'name': instance.name,
-      if (instance.categoryId case final value?) 'categoryId': value,
-      if (instance.description case final value?) 'description': value,
-      'firstPaymentDate': instance.firstPaymentDate,
-      if (instance.lastPaymentDate case final value?) 'lastPaymentDate': value,
-      'paymentPeriodType':
-          _$PaymentPeriodTypeJsonEnumMap[instance.paymentPeriodType]!,
-      'amount': instance.amount,
-      'autoPayment': instance.autoPayment,
-      if (instance.currency case final value?) 'currency': value,
-    };
+Map<String, dynamic> _$CreateDebtRequestToJson(
+  _CreateDebtRequest instance,
+) => <String, dynamic>{
+  if (instance.id case final value?) 'id': value,
+  'name': instance.name,
+  if (instance.categoryId case final value?) 'categoryId': value,
+  if (instance.description case final value?) 'description': value,
+  'firstPaymentDate': instance.firstPaymentDate,
+  if (instance.installmentCount case final value?) 'installmentCount': value,
+  'paymentPeriodType':
+      _$PaymentPeriodTypeJsonEnumMap[instance.paymentPeriodType]!,
+  'amount': instance.amount,
+  'autoPayment': instance.autoPayment,
+  if (instance.currency case final value?) 'currency': value,
+  if (instance.reminder?.toJson() case final value?) 'reminder': value,
+};
 
 const _$PaymentPeriodTypeJsonEnumMap = {
   PaymentPeriodTypeJson.daily: 'DAILY',

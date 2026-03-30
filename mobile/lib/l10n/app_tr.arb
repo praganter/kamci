@@ -153,7 +153,7 @@
   "feedback": "Geri Bildirim",
   "sendFeedback": "Öneri / Şikayet Gönder",
   "feedbackDesc": "Görüş ve önerilerinizi bizimle paylaşın",
-  "appearance": "Görünüm",
+  "appearance": "Uygulama Ayarları",
   "language": "Dil",
   "theme": "Tema",
   "themeSystem": "Sistem",
@@ -162,7 +162,7 @@
   "langSystem": "Sistem",
   "langTurkish": "Türkçe",
   "langEnglish": "English",
-  "visibility": "Görünürlük",
+  "visibility": "Borç Görünürlüğü",
   "filterAll": "Hepsi",
   "filterActive": "Aktif",
   "filterInactive": "Pasif",
@@ -174,5 +174,33 @@
     }
   },
 
-  "currency": "Para Birimi"
+  "currency": "Para Birimi",
+
+  "installmentCount": "Taksit Sayısı",
+  "installmentCountOptional": "Taksit Sayısı (İsteğe Bağlı)",
+  "installmentProgress": "{paid}/{total} taksit",
+  "@installmentProgress": {
+    "placeholders": {
+      "paid": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "openEnded": "Açık Uçlu",
+  "memberEmail": "Üye E-posta Adresi",
+
+  "reminder": "Hatırlatma",
+  "reminderDate": "Hatırlatma Tarihi",
+  "reminderTime": "Hatırlatma Saati",
+  "reminderChannels": "Bildirim Kanalları",
+  "channelEmail": "E-posta",
+  "channelInApp": "Uygulama İçi",
+  "premiumRequiredTitle": "Premium Gerekli",
+  "premiumLimitReached": "Ücretsiz sürümde en fazla {limit} {feature} ekleyebilirsiniz. Devam etmek için Premium'a geçin.",
+  "@premiumLimitReached": {
+    "placeholders": {
+      "limit": { "type": "int" },
+      "feature": { "type": "String" }
+    }
+  },
+  "maybeLater": "Belki Daha Sonra"
 }

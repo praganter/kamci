@@ -6,7 +6,11 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/providers/app_settings_provider.dart';
 import '../../../../core/router/route_names.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../auth/domain/entities/user_detail.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../debt/domain/entities/debt.dart';
+import '../../../subscription/presentation/widgets/premium_card.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -25,7 +29,36 @@ class SettingsScreen extends ConsumerWidget {
             child: ListView(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               children: [
-                // ── Account ────────────────────────────────────────────────
+                // ── Premium ───────────────────────────────────────────────
+                const PremiumCard(),
+                const SizedBox(height: 12),
+
+                // ── Profile ────────────────────────────────────────────────
+                _ProfileCard(),
+                const SizedBox(height: 20),
+
+                // ── Borç Görünürlüğü ───────────────────────────────────────
+                _SectionHeader(label: l10n.visibility),
+                _SegmentCard(
+                  label: l10n.status,
+                  child: _StatusFilterSegmented(),
+                ),
+                const SizedBox(height: 20),
+
+                // ── Uygulama Ayarları ──────────────────────────────────────
+                _SectionHeader(label: l10n.appearance),
+                _SegmentCard(
+                  label: l10n.theme,
+                  child: _ThemeSegmented(),
+                ),
+                const SizedBox(height: 10),
+                _SegmentCard(
+                  label: l10n.language,
+                  child: _LocaleSegmented(),
+                ),
+                const SizedBox(height: 20),
+
+                // ── Hesap ──────────────────────────────────────────────────
                 _SectionHeader(label: l10n.account),
                 _SettingsTile(
                   icon: Icons.lock_reset_outlined,
@@ -35,7 +68,7 @@ class SettingsScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 20),
 
-                // ── Feedback ───────────────────────────────────────────────
+                // ── Geri Bildirim ──────────────────────────────────────────
                 _SectionHeader(label: l10n.feedback),
                 _SettingsTile(
                   icon: Icons.mail_outline_rounded,
@@ -53,27 +86,6 @@ class SettingsScreen extends ConsumerWidget {
                       await launchUrl(uri);
                     }
                   },
-                ),
-                const SizedBox(height: 20),
-
-                // ── Visibility ─────────────────────────────────────────────
-                _SectionHeader(label: l10n.visibility),
-                _SegmentCard(
-                  label: l10n.status,
-                  child: _StatusFilterSegmented(),
-                ),
-                const SizedBox(height: 20),
-
-                // ── Appearance ─────────────────────────────────────────────
-                _SectionHeader(label: l10n.appearance),
-                _SegmentCard(
-                  label: l10n.theme,
-                  child: _ThemeSegmented(),
-                ),
-                const SizedBox(height: 10),
-                _SegmentCard(
-                  label: l10n.language,
-                  child: _LocaleSegmented(),
                 ),
               ],
             ),
@@ -105,7 +117,107 @@ class SettingsScreen extends ConsumerWidget {
   }
 }
 
-// ── Section header ──────────────────────────────────────────────────────────
+// ── Profile card ─────────────────────────────────────────────────────────────
+
+class _ProfileCard extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+    final userAsync = ref.watch(userDetailProvider);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      decoration: BoxDecoration(
+        color: cs.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: cs.outlineVariant),
+      ),
+      child: userAsync.when(
+        loading: () => const SizedBox(
+          height: 48,
+          child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+        ),
+        error: (_, _) => const SizedBox.shrink(),
+        data: (user) => _ProfileContent(user: user, cs: cs, tt: tt),
+      ),
+    );
+  }
+}
+
+class _ProfileContent extends StatelessWidget {
+  const _ProfileContent({
+    required this.user,
+    required this.cs,
+    required this.tt,
+  });
+
+  final UserDetail user;
+  final ColorScheme cs;
+  final TextTheme tt;
+
+  @override
+  Widget build(BuildContext context) {
+    final initial = user.email.isNotEmpty ? user.email[0].toUpperCase() : '?';
+
+    return Row(
+      children: [
+        CircleAvatar(
+          radius: 24,
+          backgroundColor: AppColors.primary,
+          child: Text(
+            initial,
+            style: tt.titleMedium?.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                user.email,
+                style: tt.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+                overflow: TextOverflow.ellipsis,
+              ),
+              if (user.premium) ...[
+                const SizedBox(height: 4),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: AppColors.warning.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.star_rounded,
+                          size: 13, color: AppColors.warning),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Premium',
+                        style: tt.labelSmall?.copyWith(
+                          color: AppColors.warning,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ── Section header ───────────────────────────────────────────────────────────
 
 class _SectionHeader extends StatelessWidget {
   const _SectionHeader({required this.label});
@@ -129,7 +241,7 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
-// ── Settings tile ───────────────────────────────────────────────────────────
+// ── Settings tile ────────────────────────────────────────────────────────────
 
 class _SettingsTile extends StatelessWidget {
   const _SettingsTile({
@@ -198,7 +310,7 @@ class _SettingsTile extends StatelessWidget {
   }
 }
 
-// ── Segment card ────────────────────────────────────────────────────────────
+// ── Segment card ─────────────────────────────────────────────────────────────
 
 class _SegmentCard extends StatelessWidget {
   const _SegmentCard({required this.label, required this.child});
@@ -233,7 +345,7 @@ class _SegmentCard extends StatelessWidget {
   }
 }
 
-// ── Theme segmented ─────────────────────────────────────────────────────────
+// ── Theme segmented ──────────────────────────────────────────────────────────
 
 class _ThemeSegmented extends ConsumerWidget {
   @override
@@ -246,18 +358,9 @@ class _ThemeSegmented extends ConsumerWidget {
       selected: {current},
       onSelectionChanged: (v) => ref.read(themeModeProvider.notifier).set(v.first),
       segments: [
-        ButtonSegment(
-          value: ThemeMode.system,
-          label: Text(l10n.themeSystem),
-        ),
-        ButtonSegment(
-          value: ThemeMode.light,
-          label: Text(l10n.themeLight),
-        ),
-        ButtonSegment(
-          value: ThemeMode.dark,
-          label: Text(l10n.themeDark),
-        ),
+        ButtonSegment(value: ThemeMode.system, label: Text(l10n.themeSystem)),
+        ButtonSegment(value: ThemeMode.light, label: Text(l10n.themeLight)),
+        ButtonSegment(value: ThemeMode.dark, label: Text(l10n.themeDark)),
       ],
     );
   }
@@ -277,24 +380,15 @@ class _StatusFilterSegmented extends ConsumerWidget {
       onSelectionChanged: (v) =>
           ref.read(debtStatusFilterProvider.notifier).set(v.first),
       segments: [
-        ButtonSegment(
-          value: DebtStatusFilter.all,
-          label: Text(l10n.filterAll),
-        ),
-        ButtonSegment(
-          value: DebtStatusFilter.active,
-          label: Text(l10n.filterActive),
-        ),
-        ButtonSegment(
-          value: DebtStatusFilter.passive,
-          label: Text(l10n.filterInactive),
-        ),
+        ButtonSegment(value: DebtStatusFilter.all, label: Text(l10n.filterAll)),
+        ButtonSegment(value: DebtStatusFilter.active, label: Text(l10n.filterActive)),
+        ButtonSegment(value: DebtStatusFilter.passive, label: Text(l10n.filterInactive)),
       ],
     );
   }
 }
 
-// ── Locale segmented ────────────────────────────────────────────────────────
+// ── Locale segmented ─────────────────────────────────────────────────────────
 
 class _LocaleSegmented extends ConsumerWidget {
   @override
@@ -312,18 +406,9 @@ class _LocaleSegmented extends ConsumerWidget {
             );
       },
       segments: [
-        ButtonSegment(
-          value: 'system',
-          label: Text(l10n.langSystem),
-        ),
-        ButtonSegment(
-          value: 'tr',
-          label: Text(l10n.langTurkish),
-        ),
-        ButtonSegment(
-          value: 'en',
-          label: Text(l10n.langEnglish),
-        ),
+        ButtonSegment(value: 'system', label: Text(l10n.langSystem)),
+        ButtonSegment(value: 'tr', label: Text(l10n.langTurkish)),
+        ButtonSegment(value: 'en', label: Text(l10n.langEnglish)),
       ],
     );
   }

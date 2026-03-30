@@ -719,7 +719,7 @@ abstract class AppLocalizations {
   /// No description provided for @appearance.
   ///
   /// In tr, this message translates to:
-  /// **'Görünüm'**
+  /// **'Uygulama Ayarları'**
   String get appearance;
 
   /// No description provided for @language.
@@ -773,7 +773,7 @@ abstract class AppLocalizations {
   /// No description provided for @visibility.
   ///
   /// In tr, this message translates to:
-  /// **'Görünürlük'**
+  /// **'Borç Görünürlüğü'**
   String get visibility;
 
   /// No description provided for @filterAll.
@@ -805,6 +805,90 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Para Birimi'**
   String get currency;
+
+  /// No description provided for @installmentCount.
+  ///
+  /// In tr, this message translates to:
+  /// **'Taksit Sayısı'**
+  String get installmentCount;
+
+  /// No description provided for @installmentCountOptional.
+  ///
+  /// In tr, this message translates to:
+  /// **'Taksit Sayısı (İsteğe Bağlı)'**
+  String get installmentCountOptional;
+
+  /// No description provided for @installmentProgress.
+  ///
+  /// In tr, this message translates to:
+  /// **'{paid}/{total} taksit'**
+  String installmentProgress(int paid, int total);
+
+  /// No description provided for @openEnded.
+  ///
+  /// In tr, this message translates to:
+  /// **'Açık Uçlu'**
+  String get openEnded;
+
+  /// No description provided for @memberEmail.
+  ///
+  /// In tr, this message translates to:
+  /// **'Üye E-posta Adresi'**
+  String get memberEmail;
+
+  /// No description provided for @reminder.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hatırlatma'**
+  String get reminder;
+
+  /// No description provided for @reminderDate.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hatırlatma Tarihi'**
+  String get reminderDate;
+
+  /// No description provided for @reminderTime.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hatırlatma Saati'**
+  String get reminderTime;
+
+  /// No description provided for @reminderChannels.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bildirim Kanalları'**
+  String get reminderChannels;
+
+  /// No description provided for @channelEmail.
+  ///
+  /// In tr, this message translates to:
+  /// **'E-posta'**
+  String get channelEmail;
+
+  /// No description provided for @channelInApp.
+  ///
+  /// In tr, this message translates to:
+  /// **'Uygulama İçi'**
+  String get channelInApp;
+
+  /// No description provided for @premiumRequiredTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Premium Gerekli'**
+  String get premiumRequiredTitle;
+
+  /// No description provided for @premiumLimitReached.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ücretsiz sürümde en fazla {limit} {feature} ekleyebilirsiniz. Devam etmek için Premium\'a geçin.'**
+  String premiumLimitReached(int limit, String feature);
+
+  /// No description provided for @maybeLater.
+  ///
+  /// In tr, this message translates to:
+  /// **'Belki Daha Sonra'**
+  String get maybeLater;
 }
 
 class _AppLocalizationsDelegate

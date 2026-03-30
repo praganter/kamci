@@ -12,6 +12,8 @@ import '../../../category/presentation/providers/category_providers.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/app_error_widget.dart';
 import '../../../../shared/widgets/confirm_dialog.dart';
+import '../../../../shared/widgets/premium_required_sheet.dart';
+import '../../../subscription/presentation/providers/subscription_providers.dart';
 import '../../domain/entities/category_with_debts.dart';
 import '../../domain/entities/debt.dart';
 import '../providers/debt_providers.dart';
@@ -91,6 +93,23 @@ class _DebtTabView extends ConsumerWidget {
       floatingActionButton: owned
           ? FloatingActionButton(
               onPressed: () async {
+                final isPremium = ref.read(isPremiumProvider);
+                if (!isPremium) {
+                  final groups = groupedAsync.valueOrNull ?? [];
+                  final totalDebts = groups
+                      .where((g) => g.owned)
+                      .fold(0, (sum, g) => sum + g.debts.length);
+
+                  if (totalDebts >= 5) {
+                    PremiumRequiredSheet.show(
+                      context,
+                      featureName: context.l10n.debts.toLowerCase(),
+                      limitCount: 5,
+                    );
+                    return;
+                  }
+                }
+
                 ref.invalidate(categoryListProvider);
                 ref.invalidate(currencyListProvider);
                 ref.read(currencyListProvider.future).ignore();
@@ -106,32 +125,53 @@ class _DebtTabView extends ConsumerWidget {
 
 // ── Katman 1: Özet Header ────────────────────────────────────────────────────
 
-class _DebtSummaryHeader extends StatelessWidget {
+class _DebtSummaryHeader extends ConsumerWidget {
   const _DebtSummaryHeader({required this.groups});
 
   final List<CategoryWithDebts> groups;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final cs = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final currencyFormat = NumberFormat.currency(
-      locale: 'tr_TR',
-      symbol: '₺',
-      decimalDigits: 0,
+
+    final currenciesAsync = ref.watch(currencyListProvider);
+    final currencySymbols = currenciesAsync.maybeWhen(
+      data: (list) => {for (final c in list) c.code: c.symbol},
+      orElse: () => <String, String>{},
     );
 
-    double activeAmount = 0;
-    double inactiveAmount = 0;
-    double totalAmount = 0;
+    final Map<String, double> activeAmounts = {};
+    final Map<String, double> inactiveAmounts = {};
 
     for (final group in groups) {
       for (final debt in group.debts) {
-        totalAmount += debt.amount;
-        if (debt.status == DebtStatus.active) activeAmount += debt.amount;
-        if (debt.status == DebtStatus.passive) inactiveAmount += debt.amount;
+        final code = debt.currency ?? 'TRY';
+        if (debt.status == DebtStatus.active) {
+          activeAmounts.update(code, (v) => v + debt.amount,
+              ifAbsent: () => debt.amount);
+        } else {
+          inactiveAmounts.update(code, (v) => v + debt.amount,
+              ifAbsent: () => debt.amount);
+        }
       }
+    }
+
+    final allCodes = {...activeAmounts.keys, ...inactiveAmounts.keys};
+    final Map<String, double> totalAmounts = {
+      for (final code in allCodes)
+        code: (activeAmounts[code] ?? 0) + (inactiveAmounts[code] ?? 0),
+    };
+
+    String formatAmounts(Map<String, double> amounts) {
+      if (amounts.isEmpty) return '—';
+      return amounts.entries.map((e) {
+        final symbol = currencySymbols[e.key] ?? e.key;
+        return NumberFormat.currency(
+                locale: 'tr_TR', symbol: symbol, decimalDigits: 0)
+            .format(e.value);
+      }).join('\n');
     }
 
     return Container(
@@ -150,42 +190,43 @@ class _DebtSummaryHeader extends StatelessWidget {
           color: cs.primary.withValues(alpha: isDark ? 0.25 : 0.12),
         ),
       ),
-      child: Row(
-        children: [
-          Expanded(
-            child: _AmountColumn(
-              label: l10n.statusActive,
-              amount: currencyFormat.format(activeAmount),
-              color: AppColors.statusActive,
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              child: _AmountColumn(
+                label: l10n.statusActive,
+                amounts: formatAmounts(activeAmounts),
+                color: AppColors.statusActive,
+              ),
             ),
-          ),
-          Container(
-            width: 1,
-            height: 40,
-            margin: const EdgeInsets.symmetric(horizontal: 12),
-            color: cs.primary.withValues(alpha: 0.2),
-          ),
-          Expanded(
-            child: _AmountColumn(
-              label: l10n.statusInactive,
-              amount: currencyFormat.format(inactiveAmount),
-              color: AppColors.statusInactive,
+            Container(
+              width: 1,
+              margin: const EdgeInsets.symmetric(horizontal: 12),
+              color: cs.primary.withValues(alpha: 0.2),
             ),
-          ),
-          Container(
-            width: 1,
-            height: 40,
-            margin: const EdgeInsets.symmetric(horizontal: 12),
-            color: cs.primary.withValues(alpha: 0.2),
-          ),
-          Expanded(
-            child: _AmountColumn(
-              label: l10n.summaryTotal,
-              amount: currencyFormat.format(totalAmount),
-              color: cs.primary,
+            Expanded(
+              child: _AmountColumn(
+                label: l10n.statusInactive,
+                amounts: formatAmounts(inactiveAmounts),
+                color: AppColors.statusInactive,
+              ),
             ),
-          ),
-        ],
+            Container(
+              width: 1,
+              margin: const EdgeInsets.symmetric(horizontal: 12),
+              color: cs.primary.withValues(alpha: 0.2),
+            ),
+            Expanded(
+              child: _AmountColumn(
+                label: l10n.summaryTotal,
+                amounts: formatAmounts(totalAmounts),
+                color: cs.primary,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -194,12 +235,12 @@ class _DebtSummaryHeader extends StatelessWidget {
 class _AmountColumn extends StatelessWidget {
   const _AmountColumn({
     required this.label,
-    required this.amount,
+    required this.amounts,
     required this.color,
   });
 
   final String label;
-  final String amount;
+  final String amounts;
   final Color color;
 
   @override
@@ -207,6 +248,7 @@ class _AmountColumn extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Row(
           mainAxisSize: MainAxisSize.min,
@@ -229,7 +271,7 @@ class _AmountColumn extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         Text(
-          amount,
+          amounts,
           style: Theme.of(context).textTheme.titleSmall?.copyWith(
                 fontWeight: FontWeight.w800,
                 color: cs.onSurface,
@@ -350,11 +392,6 @@ class _CategorySection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final currencyFormat = NumberFormat.currency(
-      locale: 'tr_TR',
-      symbol: '₺',
-      decimalDigits: 0,
-    );
     final cs = Theme.of(context).colorScheme;
 
     final activeCount =
@@ -364,17 +401,23 @@ class _CategorySection extends ConsumerWidget {
     final total = group.debts.length;
     final completionRatio = total > 0 ? inactiveCount / total : 0.0;
 
-    final Map<PaymentPeriodType, double> totals = {};
+    final currenciesAsync = ref.watch(currencyListProvider);
+    final currencySymbols = currenciesAsync.maybeWhen(
+      data: (list) => {for (final c in list) c.code: c.symbol},
+      orElse: () => <String, String>{},
+    );
+
+    final Map<(PaymentPeriodType, String), double> totals = {};
     for (final debt in group.debts) {
-      totals.update(
-        debt.paymentPeriodType,
-        (v) => v + debt.amount,
-        ifAbsent: () => debt.amount,
-      );
+      final key = (debt.paymentPeriodType, debt.currency ?? 'TRY');
+      totals.update(key, (v) => v + debt.amount, ifAbsent: () => debt.amount);
     }
-    final amountSummary = totals.entries
-        .map((e) => '${e.key.l10nLabel(l10n)}: ${currencyFormat.format(e.value)}')
-        .join('  •  ');
+    final amountSummary = totals.entries.map((e) {
+      final symbol = currencySymbols[e.key.$2] ?? e.key.$2;
+      final fmt = NumberFormat.currency(
+          locale: 'tr_TR', symbol: symbol, decimalDigits: 0);
+      return '${e.key.$1.l10nLabel(l10n)}: ${fmt.format(e.value)}';
+    }).join('  •  ');
 
     return GestureDetector(
       onLongPress: () => showModalBottomSheet(
@@ -525,7 +568,7 @@ class _CategoryManagementSheetState
     extends ConsumerState<_CategoryManagementSheet> {
   _SheetPage _page = _SheetPage.main;
   late final TextEditingController _nameCtrl;
-  final _userIdCtrl = TextEditingController();
+  final _emailCtrl = TextEditingController();
   AccessLevel _accessLevel = AccessLevel.read;
   bool _isLoading = false;
 
@@ -538,7 +581,7 @@ class _CategoryManagementSheetState
   @override
   void dispose() {
     _nameCtrl.dispose();
-    _userIdCtrl.dispose();
+    _emailCtrl.dispose();
     super.dispose();
   }
 
@@ -562,16 +605,16 @@ class _CategoryManagementSheetState
   }
 
   Future<void> _addMember() async {
-    final userId = _userIdCtrl.text.trim();
-    if (userId.isEmpty) return;
+    final email = _emailCtrl.text.trim();
+    if (email.isEmpty) return;
     setState(() => _isLoading = true);
     try {
       await ref
           .read(categoryDetailProvider(widget.categoryId).notifier)
-          .addMember(userId, _accessLevel);
+          .addMember(email, _accessLevel);
       ref.invalidate(debtGroupedProvider);
       if (mounted) {
-        _userIdCtrl.clear();
+        _emailCtrl.clear();
         setState(() {
           _page = _SheetPage.main;
           _isLoading = false;
@@ -773,11 +816,12 @@ class _CategoryManagementSheetState
         ),
         const SizedBox(height: 16),
         TextField(
-          controller: _userIdCtrl,
+          controller: _emailCtrl,
           autofocus: true,
+          keyboardType: TextInputType.emailAddress,
           decoration: InputDecoration(
-            labelText: 'User ID',
-            prefixIcon: const Icon(Icons.person_outline),
+            labelText: l10n.memberEmail,
+            prefixIcon: const Icon(Icons.email_outlined),
           ),
         ),
         const SizedBox(height: 12),
@@ -978,18 +1022,31 @@ class _SwipeableTileState extends ConsumerState<_SwipeableTile>
 
 // ── Katman 3: Borç Satırı ────────────────────────────────────────────────────
 
-class _CompactDebtTile extends StatelessWidget {
+class _CompactDebtTile extends ConsumerWidget {
   const _CompactDebtTile({required this.debt});
 
   final Debt debt;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
+    final currenciesAsync = ref.watch(currencyListProvider);
+    final currencySymbol = currenciesAsync.maybeWhen(
+      data: (list) {
+        final code = debt.currency ?? 'TRY';
+        return list
+            .firstWhere((c) => c.code == code,
+                orElse: () => list.firstWhere((c) => c.code == 'TRY',
+                    orElse: () => list.first))
+            .symbol;
+      },
+      orElse: () => '₺',
+    );
+    final decimalDigits = debt.amount % 1 == 0 ? 0 : 2;
     final currencyFormat = NumberFormat.currency(
       locale: 'tr_TR',
-      symbol: '₺',
-      decimalDigits: 0,
+      symbol: currencySymbol,
+      decimalDigits: decimalDigits,
     );
     final cs = Theme.of(context).colorScheme;
 
@@ -1101,6 +1158,30 @@ class _CompactDebtTile extends StatelessWidget {
                               ),
                         ),
                       ),
+                      if (debt.installmentCount != null) ...[
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 7, vertical: 3),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: cs.outlineVariant),
+                          ),
+                          child: Text(
+                            l10n.installmentProgress(
+                              debt.paidInstallmentCount ?? 0,
+                              debt.installmentCount!,
+                            ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelSmall
+                                ?.copyWith(
+                                  color: cs.onSurfaceVariant,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ],

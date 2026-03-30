@@ -22,7 +22,7 @@ final categoryListProvider =
     );
 
 typedef _$CategoryList = AutoDisposeAsyncNotifier<List<Category>>;
-String _$categoryDetailHash() => r'c99f97a11d84de349b60ce2929a10c84bbec4048';
+String _$categoryDetailHash() => r'70bb19493c99cf1942e7e5c646bfccf30c49b568';
 
 /// Copied from Dart SDK
 class _SystemHash {

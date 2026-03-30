@@ -29,3 +29,7 @@ class ServerException extends ApiException {
 class UnknownException extends ApiException {
   const UnknownException([super.message = 'Beklenmeyen bir hata oluştu.']);
 }
+
+class PremiumLimitException extends ApiException {
+  const PremiumLimitException([super.message = 'Bu özellik premium üyeler içindir.']);
+}

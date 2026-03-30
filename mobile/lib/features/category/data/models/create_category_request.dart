@@ -18,7 +18,7 @@ abstract class CreateCategoryRequest with _$CreateCategoryRequest {
 @freezed
 abstract class AddMemberRequest with _$AddMemberRequest {
   const factory AddMemberRequest({
-    required String userId,
+    required String email,
     required AccessLevelJson accessLevel,
   }) = _AddMemberRequest;
 

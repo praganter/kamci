@@ -123,7 +123,7 @@
   "feedback": "Feedback",
   "sendFeedback": "Send Suggestion / Complaint",
   "feedbackDesc": "Share your thoughts and suggestions with us",
-  "appearance": "Appearance",
+  "appearance": "App Settings",
   "language": "Language",
   "theme": "Theme",
   "themeSystem": "System",
@@ -132,7 +132,7 @@
   "langSystem": "System",
   "langTurkish": "Türkçe",
   "langEnglish": "English",
-  "visibility": "Visibility",
+  "visibility": "Debt Visibility",
   "filterAll": "All",
   "filterActive": "Active",
   "filterInactive": "Inactive",
@@ -144,5 +144,33 @@
     }
   },
 
-  "currency": "Currency"
+  "currency": "Currency",
+
+  "installmentCount": "Installment Count",
+  "installmentCountOptional": "Installment Count (Optional)",
+  "installmentProgress": "{paid}/{total} installments",
+  "@installmentProgress": {
+    "placeholders": {
+      "paid": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "openEnded": "Open-Ended",
+  "memberEmail": "Member Email Address",
+
+  "reminder": "Reminder",
+  "reminderDate": "Reminder Date",
+  "reminderTime": "Reminder Time",
+  "reminderChannels": "Notification Channels",
+  "channelEmail": "Email",
+  "channelInApp": "In-App",
+  "premiumRequiredTitle": "Premium Required",
+  "premiumLimitReached": "In the free version, you can add at most {limit} {feature}. Upgrade to Premium to continue.",
+  "@premiumLimitReached": {
+    "placeholders": {
+      "limit": { "type": "int" },
+      "feature": { "type": "String" }
+    }
+  },
+  "maybeLater": "Maybe Later"
 }

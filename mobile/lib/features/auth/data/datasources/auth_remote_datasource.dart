@@ -4,6 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../core/constants/api_constants.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/network/dio_client.dart';
+import '../../domain/entities/user_detail.dart';
 import '../models/auth_response.dart';
 import '../models/login_request.dart';
 import '../models/register_request.dart';
@@ -94,6 +95,20 @@ class AuthRemoteDatasource {
           'currentPassword': currentPassword,
           'newPassword': newPassword,
         },
+      );
+    } on DioException catch (e) {
+      throw _mapException(e);
+    }
+  }
+
+  Future<UserDetail> userDetail() async {
+    try {
+      final response = await _authDio.get(ApiConstants.userDetail);
+      final data = response.data as Map<String, dynamic>;
+      return UserDetail(
+        email: data['email'] as String,
+        premium: data['premium'] as bool? ?? false,
+        createdAt: DateTime.parse(data['createdAt'] as String),
       );
     } on DioException catch (e) {
       throw _mapException(e);

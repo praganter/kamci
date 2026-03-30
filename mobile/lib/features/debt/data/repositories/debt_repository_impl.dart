@@ -6,6 +6,7 @@ import '../../domain/repositories/debt_repository.dart';
 import '../datasources/debt_remote_datasource.dart';
 import '../models/create_debt_request.dart';
 import '../models/debt_model.dart';
+import '../models/reminder_embedded_model.dart';
 
 part 'debt_repository_impl.g.dart';
 
@@ -59,13 +60,12 @@ class DebtRepositoryImpl implements DebtRepository {
       categoryId: params.categoryId,
       description: params.description,
       firstPaymentDate: DateFormatter.toApiDateTimeFormat(params.firstPaymentDate),
-      lastPaymentDate: params.lastPaymentDate != null
-          ? DateFormatter.toApiDateTimeFormat(params.lastPaymentDate!)
-          : null,
+      installmentCount: params.installmentCount,
       paymentPeriodType: PaymentPeriodTypeJson.fromDomain(params.paymentPeriodType),
       amount: params.amount,
       autoPayment: params.autoPayment,
       currency: params.currency,
+      reminder: params.reminder?.toModel(),
     );
   }
 }

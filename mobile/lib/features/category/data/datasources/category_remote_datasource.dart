@@ -65,52 +65,49 @@ class CategoryRemoteDatasource {
     }
   }
 
-  Future<CategoryModel> addMember(
+  Future<void> addMember(
     String categoryId,
-    String userId,
+    String email,
     AccessLevel accessLevel,
   ) async {
     try {
-      final response = await _dio.post(
+      await _dio.post(
         '/category/$categoryId/member',
         data: AddMemberRequest(
-          userId: userId,
+          email: email,
           accessLevel: AccessLevelJson.fromDomain(accessLevel),
         ).toJson(),
       );
-      return CategoryModel.fromJson(response.data as Map<String, dynamic>);
     } on DioException catch (e) {
       throw _mapException(e);
     }
   }
 
-  Future<CategoryModel> addMembersBulk(
+  Future<void> addMembersBulk(
     String categoryId,
-    List<({String userId, AccessLevel accessLevel})> members,
+    List<({String email, AccessLevel accessLevel})> members,
   ) async {
     try {
-      final response = await _dio.post(
+      await _dio.post(
         ApiConstants.categoryMemberBulk,
         data: AddMembersBulkRequest(
           categoryId: categoryId,
           members: members
               .map((m) => AddMemberRequest(
-                    userId: m.userId,
+                    email: m.email,
                     accessLevel: AccessLevelJson.fromDomain(m.accessLevel),
                   ))
               .toList(),
         ).toJson(),
       );
-      return CategoryModel.fromJson(response.data as Map<String, dynamic>);
     } on DioException catch (e) {
       throw _mapException(e);
     }
   }
 
-  Future<CategoryModel> removeMember(String categoryId, String userId) async {
+  Future<void> removeMember(String categoryId, String userId) async {
     try {
-      final response = await _dio.delete('/category/$categoryId/member/$userId');
-      return CategoryModel.fromJson(response.data as Map<String, dynamic>);
+      await _dio.delete('/category/$categoryId/member/$userId');
     } on DioException catch (e) {
       throw _mapException(e);
     }
@@ -119,7 +116,10 @@ class CategoryRemoteDatasource {
   ApiException _mapException(DioException e) {
     final statusCode = e.response?.statusCode;
     if (statusCode == 401) return const UnauthorizedException();
-    if (statusCode == 403) return const ForbiddenException();
+    if (statusCode == 403) {
+      final msg = e.response?.data?['message'] as String?;
+      return PremiumLimitException(msg ?? 'Bu özellik premium üyeler içindir.');
+    }
     if (statusCode == 404) return const NotFoundException();
     if (statusCode == 422) {
       final data = e.response?.data;

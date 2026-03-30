@@ -36,8 +36,20 @@ class DebtDetailScreen extends ConsumerWidget {
       ),
       data: (debt) {
         final isOwner = currentUserId == debt.ownerId;
-        final currencyFormat =
-            NumberFormat.currency(locale: 'tr_TR', symbol: '₺');
+        final currenciesAsync = ref.watch(currencyListProvider);
+        final currencySymbol = currenciesAsync.maybeWhen(
+          data: (list) =>
+              list.firstWhere((c) => c.code == (debt.currency ?? 'TRY'),
+                  orElse: () => list.firstWhere((c) => c.code == 'TRY',
+                      orElse: () => list.first)).symbol,
+          orElse: () => '₺',
+        );
+        final decimalDigits = debt.amount % 1 == 0 ? 0 : 2;
+        final currencyFormat = NumberFormat.currency(
+          locale: 'tr_TR',
+          symbol: currencySymbol,
+          decimalDigits: decimalDigits,
+        );
 
         return Scaffold(
           appBar: AppBar(
@@ -84,9 +96,16 @@ class DebtDetailScreen extends ConsumerWidget {
                         debt.paymentPeriodType.l10nLabel(l10n)),
                     _InfoRow(l10n.startDate,
                         DateFormatter.formatDate(debt.firstPaymentDate)),
-                    if (debt.lastPaymentDate != null)
-                      _InfoRow(l10n.endDate,
-                          DateFormatter.formatDate(debt.lastPaymentDate!)),
+                    _InfoRow(
+                      l10n.installmentCount,
+                      debt.installmentCount != null
+                          ? l10n.installmentProgress(
+                              debt.paidInstallmentCount ?? 0,
+                              debt.installmentCount!)
+                          : l10n.openEnded,
+                    ),
+                    _InfoRow(l10n.autoPayment,
+                        debt.autoPayment ? '✓' : '—'),
                     if (debt.description != null)
                       _InfoRow(l10n.description, debt.description!),
                     if (debt.nextReminderDate != null)

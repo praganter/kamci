@@ -10,12 +10,18 @@ _ReminderEmbeddedModel _$ReminderEmbeddedModelFromJson(
   Map<String, dynamic> json,
 ) => _ReminderEmbeddedModel(
   enabled: json['enabled'] as bool? ?? false,
-  frequency: json['frequency'] as String?,
+  channels:
+      (json['channels'] as List<dynamic>?)?.map((e) => e as String).toList() ??
+      const [],
+  reminderDate: json['reminderDate'] as String?,
+  reminderTime: json['reminderTime'] as String?,
 );
 
 Map<String, dynamic> _$ReminderEmbeddedModelToJson(
   _ReminderEmbeddedModel instance,
 ) => <String, dynamic>{
   'enabled': instance.enabled,
-  if (instance.frequency case final value?) 'frequency': value,
+  'channels': instance.channels,
+  if (instance.reminderDate case final value?) 'reminderDate': value,
+  if (instance.reminderTime case final value?) 'reminderTime': value,
 };

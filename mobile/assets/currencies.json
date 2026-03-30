@@ -1,0 +1,17 @@
+[
+  {"code": "USD", "symbol": "$"},
+  {"code": "EUR", "symbol": "€"},
+  {"code": "TRY", "symbol": "₺"},
+  {"code": "GBP", "symbol": "£"},
+  {"code": "JPY", "symbol": "¥"},
+  {"code": "CNY", "symbol": "¥"},
+  {"code": "CAD", "symbol": "CA$"},
+  {"code": "AUD", "symbol": "A$"},
+  {"code": "CHF", "symbol": "Fr"},
+  {"code": "RUB", "symbol": "₽"},
+  {"code": "INR", "symbol": "₹"},
+  {"code": "BRL", "symbol": "R$"},
+  {"code": "KRW", "symbol": "₩"},
+  {"code": "SAR", "symbol": "﷼"},
+  {"code": "AED", "symbol": "د.إ"}
+]

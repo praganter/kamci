@@ -19,13 +19,13 @@ Map<String, dynamic> _$CreateCategoryRequestToJson(
 
 _AddMemberRequest _$AddMemberRequestFromJson(Map<String, dynamic> json) =>
     _AddMemberRequest(
-      userId: json['userId'] as String,
+      email: json['email'] as String,
       accessLevel: $enumDecode(_$AccessLevelJsonEnumMap, json['accessLevel']),
     );
 
 Map<String, dynamic> _$AddMemberRequestToJson(_AddMemberRequest instance) =>
     <String, dynamic>{
-      'userId': instance.userId,
+      'email': instance.email,
       'accessLevel': _$AccessLevelJsonEnumMap[instance.accessLevel]!,
     };
 

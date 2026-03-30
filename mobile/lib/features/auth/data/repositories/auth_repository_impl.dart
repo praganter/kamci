@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../domain/entities/auth_tokens.dart';
+import '../../domain/entities/user_detail.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/auth_remote_datasource.dart';
 import '../models/login_request.dart';
@@ -63,4 +64,7 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<void> changePassword(String currentPassword, String newPassword) =>
       _datasource.changePassword(currentPassword, newPassword);
+
+  @override
+  Future<UserDetail> userDetail() => _datasource.userDetail();
 }

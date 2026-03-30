@@ -1,6 +1,8 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../data/repositories/auth_repository_impl.dart';
 import '../../domain/entities/auth_tokens.dart';
+import '../../domain/entities/user_detail.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/storage/secure_storage_service.dart';
 import 'auth_state.dart';
@@ -114,3 +116,7 @@ class AuthNotifier extends _$AuthNotifier {
     }
   }
 }
+
+@riverpod
+Future<UserDetail> userDetail(Ref ref) =>
+    ref.watch(authRepositoryProvider).userDetail();

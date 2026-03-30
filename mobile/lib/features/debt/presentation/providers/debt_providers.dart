@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../core/storage/secure_storage_service.dart';
@@ -8,7 +10,6 @@ import '../../data/models/debt_model.dart';
 import '../../data/repositories/debt_repository_impl.dart';
 import '../../domain/entities/category_with_debts.dart';
 import '../../domain/entities/debt.dart';
-import '../../domain/repositories/debt_repository.dart';
 
 part 'debt_providers.g.dart';
 
@@ -77,132 +78,9 @@ class DebtGrouped extends _$DebtGrouped {
 }
 
 @riverpod
-Future<List<CurrencyModel>> currencyList(Ref ref) =>
-    ref.watch(debtRemoteDatasourceProvider).getCurrencies();
-
-typedef DebtFormState = ({
-  String name,
-  String? categoryId,
-  String? description,
-  DateTime? firstPaymentDate,
-  DateTime? lastPaymentDate,
-  PaymentPeriodType? paymentPeriodType,
-  String amount,
-  bool isLoading,
-  String? error,
-  bool isSuccess,
-});
-
-@riverpod
-class DebtForm extends _$DebtForm {
-  @override
-  DebtFormState build() => (
-    name: '',
-    categoryId: null,
-    description: null,
-    firstPaymentDate: null,
-    lastPaymentDate: null,
-    paymentPeriodType: PaymentPeriodType.monthly,
-    amount: '',
-    isLoading: false,
-    error: null,
-    isSuccess: false,
-  );
-
-  void updateName(String v) => state = (
-    name: v,
-    categoryId: state.categoryId,
-    description: state.description,
-    firstPaymentDate: state.firstPaymentDate,
-    lastPaymentDate: state.lastPaymentDate,
-    paymentPeriodType: state.paymentPeriodType,
-    amount: state.amount,
-    isLoading: state.isLoading,
-    error: null,
-    isSuccess: false,
-  );
-
-  void updateField({
-    String? name,
-    String? categoryId,
-    String? description,
-    DateTime? firstPaymentDate,
-    DateTime? lastPaymentDate,
-    PaymentPeriodType? paymentPeriodType,
-    String? amount,
-  }) {
-    state = (
-      name: name ?? state.name,
-      categoryId: categoryId ?? state.categoryId,
-      description: description ?? state.description,
-      firstPaymentDate: firstPaymentDate ?? state.firstPaymentDate,
-      lastPaymentDate: lastPaymentDate ?? state.lastPaymentDate,
-      paymentPeriodType: paymentPeriodType ?? state.paymentPeriodType,
-      amount: amount ?? state.amount,
-      isLoading: false,
-      error: null,
-      isSuccess: false,
-    );
-  }
-
-  Future<void> submit({String? debtId}) async {
-    state = (
-      name: state.name,
-      categoryId: state.categoryId,
-      description: state.description,
-      firstPaymentDate: state.firstPaymentDate,
-      lastPaymentDate: state.lastPaymentDate,
-      paymentPeriodType: state.paymentPeriodType,
-      amount: state.amount,
-      isLoading: true,
-      error: null,
-      isSuccess: false,
-    );
-
-    try {
-      final params = CreateDebtParams(
-        name: state.name,
-        categoryId: state.categoryId,
-        description: state.description,
-        firstPaymentDate: state.firstPaymentDate!,
-        lastPaymentDate: state.lastPaymentDate,
-        paymentPeriodType: state.paymentPeriodType!,
-        amount: double.parse(state.amount.replaceAll(',', '.')),
-      );
-
-      final repo = ref.read(debtRepositoryProvider);
-      if (debtId != null) {
-        await repo.update(debtId, params);
-      } else {
-        await repo.create(params);
-      }
-
-      ref.invalidate(debtListProvider);
-      state = (
-        name: state.name,
-        categoryId: state.categoryId,
-        description: state.description,
-        firstPaymentDate: state.firstPaymentDate,
-        lastPaymentDate: state.lastPaymentDate,
-        paymentPeriodType: state.paymentPeriodType,
-        amount: state.amount,
-        isLoading: false,
-        error: null,
-        isSuccess: true,
-      );
-    } catch (e) {
-      state = (
-        name: state.name,
-        categoryId: state.categoryId,
-        description: state.description,
-        firstPaymentDate: state.firstPaymentDate,
-        lastPaymentDate: state.lastPaymentDate,
-        paymentPeriodType: state.paymentPeriodType,
-        amount: state.amount,
-        isLoading: false,
-        error: e.toString(),
-        isSuccess: false,
-      );
-    }
-  }
+Future<List<CurrencyModel>> currencyList(Ref ref) async {
+  final data = await rootBundle.loadString('assets/currencies.json');
+  final list = jsonDecode(data) as List<dynamic>;
+  return list.map((e) => CurrencyModel.fromJson(e as Map<String, dynamic>)).toList();
 }
+

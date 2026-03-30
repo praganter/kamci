@@ -17,7 +17,7 @@ class CreateDebtParams {
     this.categoryId,
     this.description,
     required this.firstPaymentDate,
-    this.lastPaymentDate,
+    this.installmentCount,
     required this.paymentPeriodType,
     required this.amount,
     this.autoPayment = false,
@@ -30,7 +30,7 @@ class CreateDebtParams {
   final String? categoryId;
   final String? description;
   final DateTime firstPaymentDate;
-  final DateTime? lastPaymentDate;
+  final int? installmentCount;
   final PaymentPeriodType paymentPeriodType;
   final double amount;
   final bool autoPayment;

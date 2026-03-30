@@ -56,7 +56,8 @@ abstract class DebtModel with _$DebtModel {
     String? categoryId,
     String? description,
     String? firstPaymentDate,
-    String? lastPaymentDate,
+    int? installmentCount,
+    int? paidInstallmentCount,
     required PaymentPeriodTypeJson paymentPeriodType,
     @JsonKey(fromJson: _amountFromJson) required double amount,
     @Default(DebtStatusJson.active) DebtStatusJson status,
@@ -91,7 +92,8 @@ extension DebtModelMapper on DebtModel {
     firstPaymentDate: firstPaymentDate != null
         ? DateTime.parse(firstPaymentDate!)
         : DateTime(2000),
-    lastPaymentDate: lastPaymentDate != null ? DateTime.tryParse(lastPaymentDate!) : null,
+    installmentCount: installmentCount,
+    paidInstallmentCount: paidInstallmentCount,
     paymentPeriodType: paymentPeriodType.toDomain(),
     amount: amount,
     currency: currency,

@@ -6,7 +6,7 @@ part of 'debt_providers.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$currencyListHash() => r'9fe30be4257f064bfd5f8153325b5353bc28ab89';
+String _$currencyListHash() => r'ec624278587af5026f0aa2b7aa5e44b93b3354b8';
 
 /// See also [currencyList].
 @ProviderFor(currencyList)
@@ -209,21 +209,5 @@ final debtGroupedProvider =
     );
 
 typedef _$DebtGrouped = AutoDisposeAsyncNotifier<List<CategoryWithDebts>>;
-String _$debtFormHash() => r'02e4075ad466ed398eeb7fbcb8a7246edb7ec176';
-
-/// See also [DebtForm].
-@ProviderFor(DebtForm)
-final debtFormProvider =
-    AutoDisposeNotifierProvider<DebtForm, DebtFormState>.internal(
-      DebtForm.new,
-      name: r'debtFormProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$debtFormHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-typedef _$DebtForm = AutoDisposeNotifier<DebtFormState>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

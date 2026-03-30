@@ -336,7 +336,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get feedbackDesc => 'Görüş ve önerilerinizi bizimle paylaşın';
 
   @override
-  String get appearance => 'Görünüm';
+  String get appearance => 'Uygulama Ayarları';
 
   @override
   String get language => 'Dil';
@@ -363,7 +363,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get langEnglish => 'English';
 
   @override
-  String get visibility => 'Görünürlük';
+  String get visibility => 'Borç Görünürlüğü';
 
   @override
   String get filterAll => 'Hepsi';
@@ -381,4 +381,50 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get currency => 'Para Birimi';
+
+  @override
+  String get installmentCount => 'Taksit Sayısı';
+
+  @override
+  String get installmentCountOptional => 'Taksit Sayısı (İsteğe Bağlı)';
+
+  @override
+  String installmentProgress(int paid, int total) {
+    return '$paid/$total taksit';
+  }
+
+  @override
+  String get openEnded => 'Açık Uçlu';
+
+  @override
+  String get memberEmail => 'Üye E-posta Adresi';
+
+  @override
+  String get reminder => 'Hatırlatma';
+
+  @override
+  String get reminderDate => 'Hatırlatma Tarihi';
+
+  @override
+  String get reminderTime => 'Hatırlatma Saati';
+
+  @override
+  String get reminderChannels => 'Bildirim Kanalları';
+
+  @override
+  String get channelEmail => 'E-posta';
+
+  @override
+  String get channelInApp => 'Uygulama İçi';
+
+  @override
+  String get premiumRequiredTitle => 'Premium Gerekli';
+
+  @override
+  String premiumLimitReached(int limit, String feature) {
+    return 'Ücretsiz sürümde en fazla $limit $feature ekleyebilirsiniz. Devam etmek için Premium\'a geçin.';
+  }
+
+  @override
+  String get maybeLater => 'Belki Daha Sonra';
 }

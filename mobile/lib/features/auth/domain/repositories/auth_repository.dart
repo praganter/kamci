@@ -1,4 +1,5 @@
 import '../entities/auth_tokens.dart';
+import '../entities/user_detail.dart';
 
 abstract interface class AuthRepository {
   Future<AuthTokens> login(String email, String password);
@@ -7,4 +8,5 @@ abstract interface class AuthRepository {
   Future<void> forgotPassword(String email);
   Future<void> resetPassword(String token, String newPassword);
   Future<void> changePassword(String currentPassword, String newPassword);
+  Future<UserDetail> userDetail();
 }
