@@ -1108,7 +1108,10 @@ class _CompactDebtTile extends ConsumerWidget {
                         ),
                   ),
                   const SizedBox(height: 6),
-                  Row(
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 4,
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       // Status chip
                       Container(
@@ -1138,7 +1141,6 @@ class _CompactDebtTile extends ConsumerWidget {
                           ],
                         ),
                       ),
-                      const SizedBox(width: 6),
                       // Period chip
                       Container(
                         padding: const EdgeInsets.symmetric(
@@ -1158,8 +1160,8 @@ class _CompactDebtTile extends ConsumerWidget {
                               ),
                         ),
                       ),
-                      if (debt.installmentCount != null) ...[
-                        const SizedBox(width: 6),
+                      if (debt.installmentCount != null &&
+                          debt.installmentCount! > 0)
                         Container(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 7, vertical: 3),
@@ -1181,7 +1183,6 @@ class _CompactDebtTile extends ConsumerWidget {
                                 ),
                           ),
                         ),
-                      ],
                     ],
                   ),
                 ],

@@ -117,6 +117,10 @@ class DebtRemoteDatasource {
       final msg = e.response?.data?['message'] as String?;
       return PremiumLimitException(msg ?? 'Bu özellik premium üyeler içindir.');
     }
+    if (statusCode == 409) {
+      final msg = e.response?.data?['message'] as String?;
+      return BusinessException(msg ?? 'Bu işlem şu an gerçekleştirilemiyor.');
+    }
     if (statusCode == 404) return const NotFoundException();
     if (statusCode == 422) {
       final data = e.response?.data;

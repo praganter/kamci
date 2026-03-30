@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../domain/entities/reminder_embedded.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/l10n/enum_l10n.dart';
+import '../../../../core/network/api_exception.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/utils/validators.dart';
 import '../../../../features/category/presentation/providers/category_providers.dart';
@@ -146,6 +147,14 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
       }
       ref.invalidate(debtListProvider);
       if (mounted) context.pop();
+    } on PremiumLimitException catch (e) {
+      if (mounted) {
+        PremiumRequiredSheet.show(
+          context,
+          featureName: context.l10n.debts.toLowerCase(),
+          limitCount: 5,
+        );
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

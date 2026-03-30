@@ -33,3 +33,7 @@ class UnknownException extends ApiException {
 class PremiumLimitException extends ApiException {
   const PremiumLimitException([super.message = 'Bu özellik premium üyeler içindir.']);
 }
+
+class BusinessException extends ApiException {
+  const BusinessException(super.message);
+}
