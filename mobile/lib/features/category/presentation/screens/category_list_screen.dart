@@ -3,15 +3,46 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/router/route_names.dart';
-import '../../../../core/utils/validators.dart';
 import '../../../../shared/providers/current_user_provider.dart';
 import '../../../../shared/widgets/app_error_widget.dart';
 import '../../../../shared/widgets/confirm_dialog.dart';
+import '../../../../shared/widgets/premium_required_sheet.dart';
+import '../../../subscription/presentation/providers/subscription_providers.dart';
 import '../../domain/entities/category.dart';
 import '../providers/category_providers.dart';
+import '../widgets/add_category_sheet.dart';
 
 class CategoryListScreen extends ConsumerWidget {
   const CategoryListScreen({super.key});
+
+  Future<void> _openAddSheet(BuildContext context, WidgetRef ref) async {
+    final isPremium = ref.read(isPremiumProvider);
+    if (!isPremium) {
+      final categories = ref.read(categoryListProvider).valueOrNull ?? [];
+      final currentUserId = ref.read(currentUserIdProvider).valueOrNull;
+      final ownedCategories =
+          categories.where((c) => c.ownerId == currentUserId).length;
+
+      if (ownedCategories >= 2) {
+        PremiumRequiredSheet.show(
+          context,
+          featureName: context.l10n.categories.toLowerCase(),
+          limitCount: 2,
+        );
+        return;
+      }
+    }
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) => const AddCategorySheet(),
+    );
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -47,15 +78,7 @@ class CategoryListScreen extends ConsumerWidget {
           ),
         ),
         floatingActionButton: FloatingActionButton(
-          onPressed: () => showModalBottomSheet(
-            context: context,
-            isScrollControlled: true,
-            useSafeArea: true,
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-            ),
-            builder: (_) => const _AddCategorySheet(),
-          ),
+          onPressed: () => _openAddSheet(context, ref),
           child: const Icon(Icons.add),
         ),
         body: const TabBarView(
@@ -143,9 +166,18 @@ class _CategoryTabView extends ConsumerWidget {
                   pathParameters: {'id': category.id},
                 ),
                 onEdit: isOwner
-                    ? () => context.pushNamed(
-                          RouteNames.categoryEdit,
-                          pathParameters: {'id': category.id},
+                    ? () => showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          useSafeArea: true,
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.vertical(
+                                top: Radius.circular(24)),
+                          ),
+                          builder: (_) => AddCategorySheet(
+                            categoryId: category.id,
+                            initialName: category.name,
+                          ),
                         )
                     : null,
                 onDelete: isOwner
@@ -263,86 +295,6 @@ class _CategoryCard extends StatelessWidget {
                 ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _AddCategorySheet extends ConsumerStatefulWidget {
-  const _AddCategorySheet();
-
-  @override
-  ConsumerState<_AddCategorySheet> createState() => _AddCategorySheetState();
-}
-
-class _AddCategorySheetState extends ConsumerState<_AddCategorySheet> {
-  final _formKey = GlobalKey<FormState>();
-  final _nameCtrl = TextEditingController();
-
-  @override
-  void dispose() {
-    _nameCtrl.dispose();
-    super.dispose();
-  }
-
-  Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
-    await ref
-        .read(categoryFormProvider.notifier)
-        .submit(_nameCtrl.text.trim());
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-
-    ref.listen(categoryFormProvider, (_, state) {
-      if (state.isSuccess) Navigator.of(context).pop();
-      if (state.error != null) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(state.error!)));
-      }
-    });
-
-    final formState = ref.watch(categoryFormProvider);
-
-    return Padding(
-      padding: EdgeInsets.fromLTRB(
-          24, 24, 24, MediaQuery.viewInsetsOf(context).bottom + 24),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(l10n.newCategory,
-                style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 20),
-            TextFormField(
-              controller: _nameCtrl,
-              autofocus: true,
-              decoration: InputDecoration(
-                labelText: l10n.categoryName,
-                prefixIcon: const Icon(Icons.folder_outlined),
-              ),
-              textInputAction: TextInputAction.done,
-              onFieldSubmitted: (_) => _submit(),
-              validator: (v) =>
-                  Validators.required(v, fieldName: l10n.categoryName),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: formState.isLoading ? null : _submit,
-              child: formState.isLoading
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : Text(l10n.create),
-            ),
-          ],
         ),
       ),
     );

@@ -5,7 +5,14 @@ import '../../../../core/utils/validators.dart';
 import '../providers/category_providers.dart';
 
 class AddCategorySheet extends ConsumerStatefulWidget {
-  const AddCategorySheet({super.key});
+  const AddCategorySheet({
+    super.key,
+    this.categoryId,
+    this.initialName,
+  });
+
+  final String? categoryId;
+  final String? initialName;
 
   @override
   ConsumerState<AddCategorySheet> createState() => _AddCategorySheetState();
@@ -13,7 +20,13 @@ class AddCategorySheet extends ConsumerStatefulWidget {
 
 class _AddCategorySheetState extends ConsumerState<AddCategorySheet> {
   final _formKey = GlobalKey<FormState>();
-  final _nameCtrl = TextEditingController();
+  late final TextEditingController _nameCtrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameCtrl = TextEditingController(text: widget.initialName);
+  }
 
   @override
   void dispose() {
@@ -23,14 +36,16 @@ class _AddCategorySheetState extends ConsumerState<AddCategorySheet> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    await ref
-        .read(categoryFormProvider.notifier)
-        .submit(_nameCtrl.text.trim());
+    await ref.read(categoryFormProvider.notifier).submit(
+          _nameCtrl.text.trim(),
+          categoryId: widget.categoryId,
+        );
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final isEdit = widget.categoryId != null;
 
     ref.listen(categoryFormProvider, (_, state) {
       if (state.isSuccess) Navigator.of(context).pop(state.createdId);
@@ -51,8 +66,10 @@ class _AddCategorySheetState extends ConsumerState<AddCategorySheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(l10n.newCategory,
-                style: Theme.of(context).textTheme.titleLarge),
+            Text(
+              isEdit ? l10n.editCategory : l10n.newCategory,
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
             const SizedBox(height: 20),
             TextFormField(
               controller: _nameCtrl,
@@ -75,7 +92,7 @@ class _AddCategorySheetState extends ConsumerState<AddCategorySheet> {
                       width: 20,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : Text(l10n.create),
+                  : Text(isEdit ? l10n.update : l10n.create),
             ),
           ],
         ),

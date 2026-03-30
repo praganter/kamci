@@ -12,9 +12,7 @@ abstract final class RouteNames {
   static const String debtEdit = 'debt-edit';
 
   static const String categories = 'categories';
-  static const String categoryNew = 'category-new';
   static const String categoryDetail = 'category-detail';
-  static const String categoryEdit = 'category-edit';
 
   static const String settings = 'settings';
   static const String changePassword = 'change-password';
