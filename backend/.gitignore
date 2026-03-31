@@ -33,7 +33,5 @@ build/
 .vscode/
 .env
 .env.local
-.vexp
-vexp.toml
 .claude
-firebase-adminsdk.json
+firebase-service-account.json
