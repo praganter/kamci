@@ -4,6 +4,7 @@ import '../../data/repositories/auth_repository_impl.dart';
 import '../../domain/entities/auth_tokens.dart';
 import '../../domain/entities/user_detail.dart';
 import '../../../../core/network/api_exception.dart';
+import '../../../../core/services/notification_service.dart';
 import '../../../../core/storage/secure_storage_service.dart';
 import 'auth_state.dart';
 
@@ -72,6 +73,7 @@ class AuthNotifier extends _$AuthNotifier {
         refreshToken: tokens.refreshToken,
       );
       await _saveUserIdFromToken(tokens);
+      await ref.read(notificationServiceProvider).registerToken(email: email);
       state = AuthState.authenticated(tokens);
     } on ApiException catch (e) {
       state = AuthState.error(e.message);
@@ -95,6 +97,7 @@ class AuthNotifier extends _$AuthNotifier {
         refreshToken: tokens.refreshToken,
       );
       await _saveUserIdFromToken(tokens);
+      await ref.read(notificationServiceProvider).registerToken(email: email);
       state = AuthState.authenticated(tokens);
     } on ApiException catch (e) {
       state = AuthState.error(e.message);
@@ -104,6 +107,7 @@ class AuthNotifier extends _$AuthNotifier {
   }
 
   Future<void> logout() async {
+    await ref.read(notificationServiceProvider).unregisterToken();
     final storage = ref.read(secureStorageServiceProvider);
     await storage.clearAll();
     state = const AuthState.unauthenticated();
