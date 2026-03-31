@@ -86,4 +86,13 @@ public class DebtDocument extends BaseDocument {
                 .build());
         this.payments = updated;
     }
+
+    public void skipPayment(final LocalDateTime time) {
+        final List<PaymentEmbedded> updated = new ArrayList<>(this.payments);
+        updated.add(PaymentEmbedded.builder()
+                .paid(false)
+                .paidTime(time)
+                .build());
+        this.payments = updated;
+    }
 }

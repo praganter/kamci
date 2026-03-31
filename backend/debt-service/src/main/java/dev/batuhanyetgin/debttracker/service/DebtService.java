@@ -154,6 +154,44 @@ public class DebtService {
         return DebtResponse.builder().debt(debtMapper.convert(updated)).build();
     }
 
+    public DebtResponse skip(final String id) {
+        final String userId = RequestContextUtil.getUserId();
+        final DebtDocument existing = debtRS.findById(id);
+
+        if (existing.getStatus() == DebtStatus.PASSIVE) {
+            throw BaseException.conflict("error.debt.already_completed");
+        }
+
+        if (existing.isAutoPayment()) {
+            throw BaseException.conflict("error.debt.auto_payment_enabled");
+        }
+
+        final CategoryDocument category = categoryRS.findById(existing.getCategoryId());
+        if (lacksWriteAccess(category, userId)) {
+            throw BaseException.forbidden("error.debt.permission_denied");
+        }
+
+        final LocalDateTime now = LocalDateTime.now();
+        final LocalDateTime periodStart = getCurrentPeriodStart(
+                existing.getFirstPaymentDate(), existing.getPaymentPeriodType(), now);
+        final boolean periodAlreadyRecorded = existing.getPayments().stream()
+                .anyMatch(p -> p.getPaidTime() != null && !p.getPaidTime().isBefore(periodStart));
+        if (periodAlreadyRecorded) {
+            throw BaseException.conflict("error.debt.period_already_recorded");
+        }
+
+        existing.skipPayment(now);
+
+        if (existing.getStatus() == DebtStatus.OVERDUE) {
+            existing.setStatus(DebtStatus.ACTIVE);
+            log.info("Debt {} restored to ACTIVE after skip acknowledgement", id);
+        }
+
+        final DebtDocument updated = debtRS.update(existing);
+        log.info("Payment skipped for debt: {}", id);
+        return DebtResponse.builder().debt(debtMapper.convert(updated)).build();
+    }
+
     public DebtDetailResponse getById(final String id) {
         final String userId = RequestContextUtil.getUserId();
         final DebtDocument debt = debtRS.findById(id);

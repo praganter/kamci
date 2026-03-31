@@ -76,6 +76,18 @@ public class DebtController {
         return ResponseEntity.ok(debtService.pay(id));
     }
 
+    @Operation(summary = "Mark current period as skipped (unpaid) for a debt")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Period skipped"),
+            @ApiResponse(responseCode = "403", description = "No write access"),
+            @ApiResponse(responseCode = "404", description = "Debt not found"),
+            @ApiResponse(responseCode = "409", description = "Debt completed, auto-payment enabled, or period already recorded")
+    })
+    @PostMapping("skip/{id}")
+    ResponseEntity<DebtResponse> skip(@PathVariable final String id) {
+        return ResponseEntity.ok(debtService.skip(id));
+    }
+
     @Operation(summary = "Get a single debt by ID with full payment history")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Debt returned"),
