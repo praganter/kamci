@@ -22,6 +22,21 @@ import org.springframework.web.bind.annotation.*;
 public class DeviceTokenController {
 
     private final DeviceTokenRepository deviceTokenRepository;
+    private final dev.batuhanyetgin.notificationservice.service.FcmService fcmService;
+
+    @Operation(summary = "Send a test FCM notification to a specific user")
+    @PostMapping("test")
+    ResponseEntity<Void> sendTestNotification(@RequestBody @Valid final dev.batuhanyetgin.notificationservice.dto.request.NotificationTestRequest request) {
+        log.info("Sending test notification to userId: {}", request.getUserId());
+        deviceTokenRepository.findByUserId(request.getUserId())
+                .ifPresentOrElse(
+                        doc -> fcmService.send(doc.getFcmToken(), request.getTitle(), request.getBody(), java.util.Map.of("test", "true")),
+                        () -> {
+                            throw new RuntimeException("Device token not found for user: " + request.getUserId());
+                        }
+                );
+        return ResponseEntity.noContent().build();
+    }
 
     @Operation(summary = "Register or update the FCM device token for the authenticated user")
     @ApiResponses({

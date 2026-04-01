@@ -34,4 +34,4 @@ build/
 .env
 .env.local
 .claude
-firebase-service-account.json
+firebase-adminsdk.json
