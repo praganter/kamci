@@ -43,11 +43,14 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
             try {
                 Claims claims = jwtUtil.getAllClaimsFromToken(token);
                 final String userId = claims.getSubject();
+                final boolean isPremium = Boolean.TRUE.equals(claims.get("premium", Boolean.class));
                 exchange = exchange.mutate()
                         .request(r -> r.headers(headers -> {
                             headers.remove("user-id");
                             headers.remove("User-ID");
                             headers.add("user-id", userId);
+                            headers.remove("user-premium");
+                            headers.add("user-premium", String.valueOf(isPremium));
                         }))
                         .build();
             } catch (Exception e) {
