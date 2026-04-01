@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -14,6 +15,7 @@ import '../../../../shared/widgets/app_error_widget.dart';
 import '../../../../shared/widgets/confirm_dialog.dart';
 import '../../../../shared/widgets/premium_required_sheet.dart';
 import '../../../subscription/presentation/providers/subscription_providers.dart';
+import '../../../subscription/presentation/widgets/premium_card.dart';
 import '../../domain/entities/category_with_debts.dart';
 import '../../domain/entities/debt.dart';
 import '../providers/debt_providers.dart';
@@ -38,6 +40,38 @@ class _DebtTabView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final groupedAsync = ref.watch(debtGroupedProvider);
     final statusFilter = ref.watch(debtStatusFilterProvider);
+    final isPremium = ref.watch(isPremiumProvider);
+
+    // If "Shared" tab and not premium, show premium card
+    if (!owned && !isPremium) {
+      return Scaffold(
+        body: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.people_outline, size: 64, color: AppColors.statusActive),
+                const SizedBox(height: 16),
+                Text(
+                  context.l10n.noSharedDebts,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Paylaşılan borçları görmek ve arkadaşlarınla ortak borç yönetmek için Premium üye olmalısın.',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 32),
+                const PremiumCard(),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       body: SafeArea(
@@ -83,7 +117,15 @@ class _DebtTabView extends ConsumerWidget {
                   if (index == 0) {
                     return _DebtSummaryHeader(groups: filtered);
                   }
-                  return _CategorySection(group: filtered[index - 1]);
+                  
+                  final categoryIndex = index - 1;
+                  // If not premium and it's the 3rd category (index 2) or beyond
+                  final isLocked = !isPremium && categoryIndex >= 2;
+                  
+                  return _CategorySection(
+                    group: filtered[categoryIndex],
+                    isLocked: isLocked,
+                  );
                 },
               ),
             );
@@ -385,9 +427,13 @@ class _EmptyState extends StatelessWidget {
 // ── Katman 2: Kategori Kartı ─────────────────────────────────────────────────
 
 class _CategorySection extends ConsumerWidget {
-  const _CategorySection({required this.group});
+  const _CategorySection({
+    required this.group,
+    this.isLocked = false,
+  });
 
   final CategoryWithDebts group;
+  final bool isLocked;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -419,8 +465,8 @@ class _CategorySection extends ConsumerWidget {
       return '${e.key.$1.l10nLabel(l10n)}: ${fmt.format(e.value)}';
     }).join('  •  ');
 
-    return GestureDetector(
-      onLongPress: () => showModalBottomSheet(
+    Widget body = GestureDetector(
+      onLongPress: isLocked ? null : () => showModalBottomSheet(
         context: context,
         isScrollControlled: true,
         useSafeArea: true,
@@ -444,6 +490,7 @@ class _CategorySection extends ConsumerWidget {
         borderRadius: BorderRadius.circular(15),
         child: ExpansionTile(
           tilePadding: const EdgeInsets.fromLTRB(12, 4, 12, 4),
+          enabled: !isLocked,
           title: Text(
             group.categoryName,
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
@@ -542,6 +589,58 @@ class _CategorySection extends ConsumerWidget {
       ),
     ),
     );
+
+    if (isLocked) {
+      return Stack(
+        children: [
+          body,
+          Positioned.fill(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+                child: Container(
+                  margin: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Center(
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: cs.surface.withValues(alpha: 0.8),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.1),
+                            blurRadius: 8,
+                            spreadRadius: 2,
+                          ),
+                        ],
+                      ),
+                      child: Icon(Icons.lock_outline, color: cs.primary, size: 24),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Positioned.fill(
+            child: GestureDetector(
+              onTap: () => PremiumRequiredSheet.show(
+                context,
+                featureName: 'Kategori',
+                limitCount: 2,
+              ),
+              child: Container(color: Colors.transparent),
+            ),
+          ),
+        ],
+      );
+    }
+
+    return body;
   }
 }
 

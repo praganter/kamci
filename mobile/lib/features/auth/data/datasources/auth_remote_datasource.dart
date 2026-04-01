@@ -115,28 +115,5 @@ class AuthRemoteDatasource {
     }
   }
 
-  ApiException _mapException(DioException e) {
-    final statusCode = e.response?.statusCode;
-    if (statusCode == 401) return const UnauthorizedException();
-    if (statusCode == 403) return const ForbiddenException();
-    if (statusCode == 404) return const NotFoundException();
-    if (statusCode == 422) {
-      final data = e.response?.data;
-      final errors = data?['errors'] as List?;
-      final message = errors != null && errors.isNotEmpty
-          ? (errors.first['message'] as String?) ?? 'Doğrulama hatası.'
-          : (data?['message'] as String?) ?? 'Doğrulama hatası.';
-      return ServerException(message);
-    }
-    if (statusCode != null && statusCode >= 500) {
-      final message = e.response?.data?['message'] as String?;
-      return ServerException(message ?? 'Sunucu hatası oluştu.');
-    }
-    if (e.type == DioExceptionType.connectionTimeout ||
-        e.type == DioExceptionType.receiveTimeout ||
-        e.type == DioExceptionType.connectionError) {
-      return const NetworkException();
-    }
-    return const UnknownException();
-  }
+  ApiException _mapException(DioException e) => ApiException.fromDioException(e);
 }

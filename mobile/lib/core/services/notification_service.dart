@@ -25,7 +25,12 @@ Future<void> firebaseBackgroundHandler(RemoteMessage message) async {
 NotificationService notificationService(Ref ref) => NotificationService(ref);
 
 class NotificationService {
-  NotificationService(this._ref);
+  NotificationService(this._ref) {
+    // Listen for token refreshes
+    FirebaseMessaging.instance.onTokenRefresh.listen((token) {
+      registerToken();
+    });
+  }
 
   final Ref _ref;
 
@@ -58,6 +63,21 @@ class NotificationService {
 
     // Show local notification when app is in foreground
     FirebaseMessaging.onMessage.listen(_showForegroundNotification);
+
+    // Handle notification clicks when app is in background
+    FirebaseMessaging.onMessageOpenedApp.listen(_handleNotificationClick);
+
+    // Handle notification click when app is terminated
+    FirebaseMessaging.instance.getInitialMessage().then((message) {
+      if (message != null) {
+        _handleNotificationClick(message);
+      }
+    });
+  }
+
+  static void _handleNotificationClick(RemoteMessage message) {
+    debugPrint('Notification clicked: ${message.data}');
+    // TODO: Add navigation logic based on message.data if needed
   }
 
   static void _showForegroundNotification(RemoteMessage message) {
@@ -81,11 +101,11 @@ class NotificationService {
   }
 
   /// Get FCM token and register it with the backend.
-  /// Silently fails if Firebase is not configured or token fetch fails.
   Future<void> registerToken({String? email}) async {
     try {
       final token = await FirebaseMessaging.instance.getToken();
       if (token == null) return;
+
       final dio = _ref.read(dioClientProvider);
       await dio.patch(
         ApiConstants.deviceToken,
@@ -94,6 +114,7 @@ class NotificationService {
           if (email != null) 'email': email,
         },
       );
+      debugPrint('FCM token registered successfully: $token');
     } catch (e) {
       debugPrint('FCM registerToken failed: $e');
     }
