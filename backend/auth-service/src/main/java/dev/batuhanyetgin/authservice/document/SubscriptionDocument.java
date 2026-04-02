@@ -6,6 +6,7 @@ import dev.batuhanyetgin.authservice.enums.SubscriptionStatus;
 import dev.batuhanyetgin.commonmodule.document.BaseDocument;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -19,6 +20,7 @@ import java.time.LocalDateTime;
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder
 @Document(collection = "subscriptions")
+@CompoundIndex(def = "{'status': 1, 'expiry_date': 1}")
 public class SubscriptionDocument extends BaseDocument {
 
     @Indexed(unique = true)
