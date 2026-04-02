@@ -34,6 +34,7 @@ public class SubscriptionService {
     private final SubscriptionRepositoryService subscriptionRS;
     private final JwtService jwtService;
     private final ObjectMapper objectMapper;
+    private final AppleJwsVerifier appleJwsVerifier;
 
     @Value("${apple.store.shared-secret}")
     private String appleSharedSecret;
@@ -82,11 +83,15 @@ public class SubscriptionService {
         final SubscriptionDocument subscription = subscriptionRS.findByUserId(userId)
                 .orElse(SubscriptionDocument.builder().userId(userId).build());
 
+        final boolean isNew = subscription.getId() == null;
+
         subscription.setPlan(plan);
         subscription.setPlatform(platform);
         subscription.setStatus(SubscriptionStatus.ACTIVE);
         subscription.setProductId(request.getProductId());
-        subscription.setStartDate(LocalDateTime.now());
+        if (isNew) {
+            subscription.setStartDate(LocalDateTime.now());
+        }
         subscription.setExpiryDate(expiryDate);
 
         if (platform == SubscriptionPlatform.IOS) {
@@ -116,15 +121,8 @@ public class SubscriptionService {
 
     public void handleAppleWebhook(final String signedPayload) {
         try {
-            // Apple SSNS V2: signed JWS — decode middle part (payload)
-            final String[] parts = signedPayload.split("\\.");
-            if (parts.length < 2) {
-                log.warn("Invalid Apple JWS payload format");
-                return;
-            }
-
-            final String payloadJson = new String(Base64.getUrlDecoder().decode(parts[1]));
-            final JsonNode payload = objectMapper.readTree(payloadJson);
+            // Apple SSNS V2: verify JWS signature, then decode payload
+            final JsonNode payload = appleJwsVerifier.verifyAndDecode(signedPayload);
 
             final String notificationType = payload.path("notificationType").asText();
             final JsonNode data = payload.path("data");
@@ -160,6 +158,24 @@ public class SubscriptionService {
                     updatePremiumStatus(sub.getUserId(), false);
                     log.info("Apple subscription expired/cancelled for transactionId: {}", originalTransactionId);
                 }
+                case "GRACE_PERIOD_EXPIRED" -> {
+                    final SubscriptionDocument sub = subscriptionRS.findByOriginalTransactionId(originalTransactionId);
+                    sub.setStatus(SubscriptionStatus.EXPIRED);
+                    subscriptionRS.save(sub);
+                    updatePremiumStatus(sub.getUserId(), false);
+                    log.info("Apple grace period expired for transactionId: {}", originalTransactionId);
+                }
+                case "DID_CHANGE_RENEWAL_STATUS" -> {
+                    final String[] rnParts = signedRenewalInfo.split("\\.");
+                    final JsonNode rnInfo = objectMapper.readTree(
+                            new String(Base64.getUrlDecoder().decode(rnParts[1]))
+                    );
+                    final int autoRenewStatus = rnInfo.path("autoRenewStatus").asInt(-1);
+                    log.info("Apple DID_CHANGE_RENEWAL_STATUS for transactionId: {}, autoRenewStatus: {}",
+                            originalTransactionId, autoRenewStatus);
+                    // autoRenewStatus=0 means auto-renew disabled; premium not revoked until period ends.
+                    // Scheduler will handle expiry when expiryDate passes.
+                }
                 default -> log.debug("Unhandled Apple notification type: {}", notificationType);
             }
         } catch (Exception e) {
@@ -189,14 +205,26 @@ public class SubscriptionService {
                     updatePremiumStatus(sub.getUserId(), true);
                     log.info("Google subscription renewed/activated for purchaseToken: {}", purchaseToken);
                 }
-                case GOOGLE_SUBSCRIPTION_EXPIRED, GOOGLE_SUBSCRIPTION_CANCELED,
-                        GOOGLE_SUBSCRIPTION_REVOKED, GOOGLE_SUBSCRIPTION_ON_HOLD -> {
+                case GOOGLE_SUBSCRIPTION_EXPIRED -> {
                     final SubscriptionDocument sub = subscriptionRS.findByPurchaseToken(purchaseToken);
-                    sub.setStatus(notificationType == GOOGLE_SUBSCRIPTION_CANCELED || notificationType == GOOGLE_SUBSCRIPTION_REVOKED
-                            ? SubscriptionStatus.CANCELLED : SubscriptionStatus.EXPIRED);
+                    sub.setStatus(SubscriptionStatus.EXPIRED);
                     subscriptionRS.save(sub);
                     updatePremiumStatus(sub.getUserId(), false);
-                    log.info("Google subscription expired/cancelled for purchaseToken: {}", purchaseToken);
+                    log.info("Google subscription expired for purchaseToken: {}", purchaseToken);
+                }
+                case GOOGLE_SUBSCRIPTION_CANCELED, GOOGLE_SUBSCRIPTION_REVOKED -> {
+                    final SubscriptionDocument sub = subscriptionRS.findByPurchaseToken(purchaseToken);
+                    sub.setStatus(SubscriptionStatus.CANCELLED);
+                    subscriptionRS.save(sub);
+                    updatePremiumStatus(sub.getUserId(), false);
+                    log.info("Google subscription cancelled/revoked for purchaseToken: {}", purchaseToken);
+                }
+                case GOOGLE_SUBSCRIPTION_ON_HOLD -> {
+                    final SubscriptionDocument sub = subscriptionRS.findByPurchaseToken(purchaseToken);
+                    sub.setStatus(SubscriptionStatus.ON_HOLD);
+                    subscriptionRS.save(sub);
+                    updatePremiumStatus(sub.getUserId(), false);
+                    log.warn("Google subscription ON_HOLD (payment withheld) for purchaseToken: {}", purchaseToken);
                 }
                 default -> log.debug("Unhandled Google notification type: {}", notificationType);
             }
@@ -243,7 +271,7 @@ public class SubscriptionService {
         if (!latestReceiptInfo.isArray() || latestReceiptInfo.isEmpty()) {
             throw BaseException.badRequest("error.subscription.verification_failed");
         }
-        return latestReceiptInfo.get(0);
+        return latestReceiptInfo.get(latestReceiptInfo.size() - 1);
     }
 
     private JsonNode verifyGooglePurchase(final String packageName, final String productId, final String purchaseToken) {

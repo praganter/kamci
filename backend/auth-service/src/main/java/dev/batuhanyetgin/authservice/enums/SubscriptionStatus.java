@@ -3,5 +3,6 @@ package dev.batuhanyetgin.authservice.enums;
 public enum SubscriptionStatus {
     ACTIVE,
     EXPIRED,
-    CANCELLED
+    CANCELLED,
+    ON_HOLD
 }
