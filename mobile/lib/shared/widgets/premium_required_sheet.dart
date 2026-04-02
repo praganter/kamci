@@ -1,20 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_colors.dart';
 import '../../features/subscription/presentation/widgets/premium_card.dart';
 
 class PremiumRequiredSheet extends ConsumerWidget {
-  const PremiumRequiredSheet({
-    super.key,
-    required this.featureName,
-    required this.limitCount,
-  });
+  const PremiumRequiredSheet({super.key, required this.featureName, required this.limitCount});
 
   final String featureName;
   final int limitCount;
 
-  static Future<void> show(BuildContext context, {
+  static Future<void> show(
+    BuildContext context, {
     required String featureName,
     required int limitCount,
   }) {
@@ -24,10 +22,7 @@ class PremiumRequiredSheet extends ConsumerWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (_) => PremiumRequiredSheet(
-        featureName: featureName,
-        limitCount: limitCount,
-      ),
+      builder: (_) => PremiumRequiredSheet(featureName: featureName, limitCount: limitCount),
     );
   }
 
@@ -38,8 +33,7 @@ class PremiumRequiredSheet extends ConsumerWidget {
     final tt = Theme.of(context).textTheme;
 
     return Padding(
-      padding: EdgeInsets.fromLTRB(
-          20, 20, 20, MediaQuery.of(context).viewInsets.bottom + 32),
+      padding: EdgeInsets.fromLTRB(20, 20, 20, MediaQuery.of(context).viewInsets.bottom + 32),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -52,14 +46,10 @@ class PremiumRequiredSheet extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 24),
-          const Icon(
-            Icons.workspace_premium_rounded,
-            size: 64,
-            color: AppColors.warning,
-          ),
+          const Icon(Icons.workspace_premium_rounded, size: 64, color: AppColors.warning),
           const SizedBox(height: 16),
           Text(
-            l10n.premiumRequiredTitle ?? 'Premium Gerekli',
+            l10n.premiumRequiredTitle,
             style: tt.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
             textAlign: TextAlign.center,
           ),
@@ -75,7 +65,7 @@ class PremiumRequiredSheet extends ConsumerWidget {
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text(
-              l10n.maybeLater ?? 'Belki Daha Sonra',
+              l10n.maybeLater,
               style: TextStyle(color: cs.onSurfaceVariant),
             ),
           ),

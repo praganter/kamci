@@ -61,10 +61,6 @@ class UnauthorizedException extends ApiException {
   const UnauthorizedException([super.message = 'Oturum süresi doldu. Lütfen tekrar giriş yapın.']);
 }
 
-class ForbiddenException extends ApiException {
-  const ForbiddenException([super.message = 'Bu işlem için yetkiniz yok.']);
-}
-
 class NotFoundException extends ApiException {
   const NotFoundException([super.message = 'İstenen kaynak bulunamadı.']);
 }

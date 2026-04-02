@@ -55,7 +55,7 @@ class LoggingInterceptor extends Interceptor {
     debugPrint(lines.join('\n'));
   }
 
-  List<String> _formatMap(Map<String, dynamic> map) {
+  List<String> _formatMap(Map<String, Object?> map) {
     return map.entries
         .map((e) => '    ${e.key}: ${e.value}')
         .toList();

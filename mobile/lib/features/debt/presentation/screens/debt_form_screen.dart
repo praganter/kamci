@@ -147,7 +147,7 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
       }
       ref.invalidate(debtListProvider);
       if (mounted) context.pop();
-    } on PremiumLimitException catch (e) {
+    } on PremiumLimitException {
       if (mounted) {
         PremiumRequiredSheet.show(
           context,

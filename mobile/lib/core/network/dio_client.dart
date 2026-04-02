@@ -21,11 +21,7 @@ BaseOptions _baseOptions() => BaseOptions(
 
 @riverpod
 Dio refreshDio(Ref ref) {
-  final dio = Dio(_baseOptions());
-  if (kDebugMode) {
-    dio.interceptors.add(LoggingInterceptor());
-  }
-  return dio;
+  return Dio(_baseOptions());
 }
 
 @riverpod
