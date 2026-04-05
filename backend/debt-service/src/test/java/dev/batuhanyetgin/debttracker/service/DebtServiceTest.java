@@ -7,6 +7,7 @@ import dev.batuhanyetgin.debttracker.document.DebtDocument;
 import dev.batuhanyetgin.debttracker.document.embedded.MemberEmbedded;
 import dev.batuhanyetgin.debttracker.document.embedded.PaymentEmbedded;
 import dev.batuhanyetgin.debttracker.dto.request.CreateDebtRequest;
+import dev.batuhanyetgin.debttracker.dto.request.PayDebtRequest;
 import dev.batuhanyetgin.debttracker.dto.request.UpdateDebtRequest;
 import dev.batuhanyetgin.debttracker.dto.response.DebtDetailResponse;
 import dev.batuhanyetgin.debttracker.dto.response.DebtItemResponse;
@@ -18,6 +19,7 @@ import dev.batuhanyetgin.debttracker.enums.PaymentPeriodType;
 import dev.batuhanyetgin.debttracker.mapper.DebtMapper;
 import dev.batuhanyetgin.debttracker.repositoryservice.CategoryRepositoryService;
 import dev.batuhanyetgin.debttracker.repositoryservice.DebtRepositoryService;
+import dev.batuhanyetgin.debttracker.repositoryservice.UserIncomeRepositoryService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -46,6 +48,7 @@ class DebtServiceTest {
     @Mock private CategoryRepositoryService categoryRS;
     @Mock private DebtMapper debtMapper;
     @Mock private DebtEventAsyncPublisher debtEventAsyncPublisher;
+    @Mock private UserIncomeRepositoryService incomeRS;
 
     // Synchronous executor — runs tasks on the calling thread
     private final Executor taskExecutor = Runnable::run;
@@ -60,7 +63,7 @@ class DebtServiceTest {
 
     @BeforeEach
     void setUp() {
-        debtService = new DebtService(debtRS, categoryRS, debtMapper, debtEventAsyncPublisher, taskExecutor);
+        debtService = new DebtService(debtRS, categoryRS, debtMapper, debtEventAsyncPublisher, incomeRS, taskExecutor);
     }
 
     private DebtDocument buildDebt(final String id, final String ownerId, final String catId) {
@@ -597,7 +600,7 @@ class DebtServiceTest {
                 when(debtRS.update(captor.capture())).thenReturn(existing);
                 when(debtMapper.convert(existing)).thenReturn(buildDebtItemResponse());
 
-                final DebtResponse response = debtService.pay(DEBT_ID);
+                final DebtResponse response = debtService.pay(DEBT_ID, null);
 
                 assertThat(response.getDebt()).isNotNull();
                 assertThat(captor.getValue().getPayments()).hasSize(1);
@@ -619,7 +622,7 @@ class DebtServiceTest {
                 when(debtRS.update(any())).thenReturn(existing);
                 when(debtMapper.convert(existing)).thenReturn(buildDebtItemResponse());
 
-                assertThatNoException().isThrownBy(() -> debtService.pay(DEBT_ID));
+                assertThatNoException().isThrownBy(() -> debtService.pay(DEBT_ID, null));
             }
         }
 
@@ -649,7 +652,7 @@ class DebtServiceTest {
                 when(debtRS.update(captor.capture())).thenReturn(existing);
                 when(debtMapper.convert(existing)).thenReturn(buildDebtItemResponse());
 
-                debtService.pay(DEBT_ID);
+                debtService.pay(DEBT_ID, null);
 
                 assertThat(captor.getValue().getPayments()).hasSize(2);
             }
@@ -680,7 +683,7 @@ class DebtServiceTest {
                 when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
 
                 assertThatExceptionOfType(BaseException.class)
-                        .isThrownBy(() -> debtService.pay(DEBT_ID))
+                        .isThrownBy(() -> debtService.pay(DEBT_ID, null))
                         .matches(e -> e.getStatus() == HttpStatus.CONFLICT);
 
                 verify(debtRS, never()).update(any());
@@ -715,7 +718,7 @@ class DebtServiceTest {
                 when(debtRS.update(captor.capture())).thenReturn(existing);
                 when(debtMapper.convert(existing)).thenReturn(buildDebtItemResponse());
 
-                debtService.pay(DEBT_ID);
+                debtService.pay(DEBT_ID, null);
 
                 assertThat(captor.getValue().getPayments()).hasSize(2);
             }
@@ -731,7 +734,7 @@ class DebtServiceTest {
                 when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
 
                 assertThatExceptionOfType(BaseException.class)
-                        .isThrownBy(() -> debtService.pay(DEBT_ID))
+                        .isThrownBy(() -> debtService.pay(DEBT_ID, null))
                         .matches(e -> e.getStatus() == HttpStatus.FORBIDDEN);
 
                 verify(debtRS, never()).update(any());
@@ -756,7 +759,7 @@ class DebtServiceTest {
                 when(debtRS.findById(DEBT_ID)).thenReturn(autoDebt);
 
                 assertThatExceptionOfType(BaseException.class)
-                        .isThrownBy(() -> debtService.pay(DEBT_ID))
+                        .isThrownBy(() -> debtService.pay(DEBT_ID, null))
                         .matches(e -> e.getStatus() == HttpStatus.CONFLICT);
 
                 verify(debtRS, never()).update(any());
@@ -765,8 +768,8 @@ class DebtServiceTest {
         }
 
         @Test
-        @DisplayName("installmentCount reached → status set to PASSIVE after payment")
-        void installmentCountReached_statusPassive() {
+        @DisplayName("installmentCount reached → status set to PAID after payment")
+        void installmentCountReached_statusPaid() {
             try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
                 ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
                 ctx.when(RequestContextUtil::isPremium).thenReturn(true);
@@ -786,15 +789,15 @@ class DebtServiceTest {
                 when(debtRS.update(captor.capture())).thenReturn(existing);
                 when(debtMapper.convert(existing)).thenReturn(buildDebtItemResponse());
 
-                debtService.pay(DEBT_ID);
+                debtService.pay(DEBT_ID, null);
 
-                assertThat(captor.getValue().getStatus()).isEqualTo(DebtStatus.PASSIVE);
+                assertThat(captor.getValue().getStatus()).isEqualTo(DebtStatus.PAID);
             }
         }
 
         @Test
-        @DisplayName("installmentCount not yet reached → status remains ACTIVE after payment")
-        void installmentCountNotReached_statusRemainsActive() {
+        @DisplayName("installmentCount not yet reached → status remains UNPAID after payment")
+        void installmentCountNotReached_statusRemainsUnpaid() {
             try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
                 ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
                 ctx.when(RequestContextUtil::isPremium).thenReturn(true);
@@ -814,10 +817,55 @@ class DebtServiceTest {
                 when(debtRS.update(captor.capture())).thenReturn(existing);
                 when(debtMapper.convert(existing)).thenReturn(buildDebtItemResponse());
 
-                debtService.pay(DEBT_ID);
+                debtService.pay(DEBT_ID, null);
 
-                assertThat(captor.getValue().getStatus()).isEqualTo(DebtStatus.ACTIVE);
+                assertThat(captor.getValue().getStatus()).isEqualTo(DebtStatus.UNPAID);
+            }
+        }
+
+        @Test
+        @DisplayName("partial payment → amountPaid stored as provided value")
+        void partialPayment_usesProvidedAmount() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+
+                final DebtDocument existing = buildDebt(DEBT_ID, OWNER_ID, CAT_ID);
+                when(debtRS.findById(DEBT_ID)).thenReturn(existing);
+                when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
+
+                final ArgumentCaptor<DebtDocument> captor = ArgumentCaptor.forClass(DebtDocument.class);
+                when(debtRS.update(captor.capture())).thenReturn(existing);
+                when(debtMapper.convert(existing)).thenReturn(buildDebtItemResponse());
+
+                final BigDecimal partial = new BigDecimal("15000");
+                debtService.pay(DEBT_ID, PayDebtRequest.builder().amountPaid(partial).build());
+
+                assertThat(captor.getValue().getPayments()).hasSize(1);
+                assertThat(captor.getValue().getPayments().get(0).getAmountPaid()).isEqualByComparingTo(partial);
+            }
+        }
+
+        @Test
+        @DisplayName("null request → amountPaid defaults to debt amount")
+        void nullRequest_usesFullAmount() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+
+                final DebtDocument existing = buildDebt(DEBT_ID, OWNER_ID, CAT_ID);
+                when(debtRS.findById(DEBT_ID)).thenReturn(existing);
+                when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
+
+                final ArgumentCaptor<DebtDocument> captor = ArgumentCaptor.forClass(DebtDocument.class);
+                when(debtRS.update(captor.capture())).thenReturn(existing);
+                when(debtMapper.convert(existing)).thenReturn(buildDebtItemResponse());
+
+                debtService.pay(DEBT_ID, null);
+
+                assertThat(captor.getValue().getPayments()).hasSize(1);
+                assertThat(captor.getValue().getPayments().get(0).getAmountPaid())
+                        .isEqualByComparingTo(existing.getAmount());
             }
         }
     }
 }
+

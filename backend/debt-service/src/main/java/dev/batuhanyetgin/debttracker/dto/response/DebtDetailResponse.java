@@ -1,6 +1,5 @@
 package dev.batuhanyetgin.debttracker.dto.response;
 
-import dev.batuhanyetgin.debttracker.document.embedded.PaymentEmbedded;
 import dev.batuhanyetgin.debttracker.document.embedded.ReminderEmbedded;
 import dev.batuhanyetgin.debttracker.enums.CurrencyType;
 import dev.batuhanyetgin.debttracker.enums.DebtStatus;
@@ -44,7 +43,7 @@ public class DebtDetailResponse {
 
     private boolean autoPayment;
 
-    private List<PaymentEmbedded> payments;
+    private List<PaymentHistoryResponse> payments;
 
     private ReminderEmbedded reminder;
 

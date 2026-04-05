@@ -55,15 +55,15 @@ public class DebtRepositoryService {
 
     public List<DebtDocument> findDueReminders(final LocalDateTime now) {
         return debtRepository.findByStatusAndReminderEnabledTrueAndNextReminderDateLessThanEqual(
-                DebtStatus.ACTIVE, now);
+                DebtStatus.UNPAID, now);
     }
 
     public List<DebtDocument> findDueAutoPayments(final LocalDateTime now) {
         return debtRepository.findByAutoPaymentTrueAndNextAutoPaymentDateLessThanEqual(now);
     }
 
-    public List<DebtDocument> findActiveManualDueDebts(final LocalDateTime now) {
+    public List<DebtDocument> findUnpaidManualDueDebts(final LocalDateTime now) {
         return debtRepository.findByStatusAndAutoPaymentFalseAndFirstPaymentDateLessThanEqual(
-                DebtStatus.ACTIVE, now);
+                DebtStatus.UNPAID, now);
     }
 }

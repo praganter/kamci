@@ -6,9 +6,10 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum DebtStatus {
-    ACTIVE('A'),
-    PASSIVE('P'),
-    OVERDUE('O');
+    PAID('P'),
+    UNPAID('U'),
+    OVERDUE('O'),
+    PARTIALLY_PAID('M');
 
     private final Character value;
 }

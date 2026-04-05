@@ -149,12 +149,12 @@ class DebtRepositoryServiceTest {
         }
 
         @Test
-        @DisplayName("findDueReminders returns active debts with past reminder date")
+        @DisplayName("findDueReminders returns unpaid debts with past reminder date")
         void findDueReminders_returnsDebts() {
             final LocalDateTime now = LocalDateTime.now();
             final List<DebtDocument> debts = List.of(buildDebt());
             when(debtRepository.findByStatusAndReminderEnabledTrueAndNextReminderDateLessThanEqual(
-                    DebtStatus.ACTIVE, now)).thenReturn(debts);
+                    DebtStatus.UNPAID, now)).thenReturn(debts);
             assertThat(debtRepositoryService.findDueReminders(now)).isEqualTo(debts);
         }
 

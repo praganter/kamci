@@ -224,8 +224,8 @@ class DebtReminderSchedulerTest {
         }
 
         @Test
-        @DisplayName("installmentCount reached → debt marked PASSIVE, nextAutoPaymentDate not advanced")
-        void installmentCountReached_markedPassiveNoAdvance() {
+        @DisplayName("installmentCount reached → debt marked PAID, nextAutoPaymentDate not advanced")
+        void installmentCountReached_markedPaidNoAdvance() {
             final DebtDocument debt = DebtDocument.builder()
                     .id("debt1").ownerId("owner1").name("Auto Debt")
                     .amount(java.math.BigDecimal.TEN)
@@ -242,13 +242,13 @@ class DebtReminderSchedulerTest {
 
             scheduler.processReminders();
 
-            assertThat(captor.getValue().getStatus()).isEqualTo(DebtStatus.PASSIVE);
+            assertThat(captor.getValue().getStatus()).isEqualTo(DebtStatus.PAID);
             assertThat(captor.getValue().getNextAutoPaymentDate()).isEqualTo(BASE_TIME); // not advanced
         }
 
         @Test
-        @DisplayName("installmentCount not yet reached → nextAutoPaymentDate advanced, status remains ACTIVE")
-        void installmentCountNotReached_advancedAndActive() {
+        @DisplayName("installmentCount not yet reached → nextAutoPaymentDate advanced, status remains UNPAID")
+        void installmentCountNotReached_advancedAndUnpaid() {
             final DebtDocument debt = DebtDocument.builder()
                     .id("debt1").ownerId("owner1").name("Auto Debt")
                     .amount(java.math.BigDecimal.TEN)
@@ -265,7 +265,7 @@ class DebtReminderSchedulerTest {
 
             scheduler.processReminders();
 
-            assertThat(captor.getValue().getStatus()).isEqualTo(DebtStatus.ACTIVE);
+            assertThat(captor.getValue().getStatus()).isEqualTo(DebtStatus.UNPAID);
             assertThat(captor.getValue().getNextAutoPaymentDate()).isEqualTo(BASE_TIME.plusMonths(1));
         }
     }

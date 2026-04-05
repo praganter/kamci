@@ -1,11 +1,9 @@
 package dev.batuhanyetgin.debttracker.controller;
 
 import dev.batuhanyetgin.debttracker.dto.request.CreateDebtRequest;
+import dev.batuhanyetgin.debttracker.dto.request.PayDebtRequest;
 import dev.batuhanyetgin.debttracker.dto.request.UpdateDebtRequest;
-import dev.batuhanyetgin.debttracker.dto.response.DebtDetailResponse;
-import dev.batuhanyetgin.debttracker.dto.response.DebtResponse;
-import dev.batuhanyetgin.debttracker.dto.response.DeleteDebtResponse;
-import dev.batuhanyetgin.debttracker.dto.response.GetDebtResponse;
+import dev.batuhanyetgin.debttracker.dto.response.*;
 import dev.batuhanyetgin.debttracker.service.DebtService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -14,9 +12,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Locale;
 
 @RestController
@@ -72,8 +73,9 @@ public class DebtController {
             @ApiResponse(responseCode = "404", description = "Debt not found")
     })
     @PostMapping("pay/{id}")
-    ResponseEntity<DebtResponse> pay(@PathVariable final String id) {
-        return ResponseEntity.ok(debtService.pay(id));
+    ResponseEntity<DebtResponse> pay(@PathVariable final String id,
+                                     @RequestBody(required = false) @Valid final PayDebtRequest request) {
+        return ResponseEntity.ok(debtService.pay(id, request));
     }
 
     @Operation(summary = "Mark current period as skipped (unpaid) for a debt")
@@ -104,6 +106,27 @@ public class DebtController {
     @GetMapping("get")
     ResponseEntity<GetDebtResponse> get() {
         return ResponseEntity.ok(debtService.get());
+    }
+
+    @Operation(summary = "Get payment history for a specific debt filtered by date range")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Payment history returned"),
+            @ApiResponse(responseCode = "403", description = "No read access"),
+            @ApiResponse(responseCode = "404", description = "Debt not found")
+    })
+    @GetMapping("{id}/payments")
+    ResponseEntity<List<PaymentHistoryResponse>> getPaymentHistory(
+            @PathVariable final String id,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) final LocalDateTime from,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) final LocalDateTime to) {
+        return ResponseEntity.ok(debtService.getPaymentHistory(id, from, to));
+    }
+
+    @Operation(summary = "Get monthly debt summary with optional debt-to-income ratio")
+    @ApiResponse(responseCode = "200", description = "Monthly summary returned")
+    @GetMapping("summary")
+    ResponseEntity<MonthlySummaryResponse> getMonthlySummary(@RequestParam final String month) {
+        return ResponseEntity.ok(debtService.getMonthlySummary(month));
     }
 
 }
