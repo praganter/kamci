@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 
+import '../../../../core/l10n/l10n.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../data/models/verify_receipt_request.dart';
 import '../../subscription_constants.dart';
@@ -143,7 +144,7 @@ class _PremiumActiveCard extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Premium',
+                  context.l10n.premium,
                   style: tt.titleMedium?.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.w800,
@@ -152,7 +153,7 @@ class _PremiumActiveCard extends ConsumerWidget {
                 statusAsync.whenOrNull(
                       data: (sub) => sub.expiresDate != null
                           ? Text(
-                              'Renews ${_fmt(sub.expiresDate!)}',
+                              context.l10n.renewsOn(_fmt(sub.expiresDate!)),
                               style: tt.bodySmall?.copyWith(
                                 color: Colors.white.withValues(alpha: 0.85),
                               ),
@@ -171,7 +172,7 @@ class _PremiumActiveCard extends ConsumerWidget {
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
-              'Active',
+              context.l10n.premiumActive,
               style: tt.labelSmall?.copyWith(
                 color: Colors.white,
                 fontWeight: FontWeight.w700,
@@ -246,7 +247,7 @@ class _UpgradeCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Get Premium',
+                      context.l10n.getPremium,
                       style: tt.titleSmall?.copyWith(
                         fontWeight: FontWeight.w700,
                         color: AppColors.primary,
@@ -254,7 +255,7 @@ class _UpgradeCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Unlimited debts, categories & more',
+                      context.l10n.premiumUnlimitedDesc,
                       style: tt.bodySmall?.copyWith(
                         color: cs.onSurfaceVariant,
                       ),
@@ -322,18 +323,18 @@ class _PlanSheet extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            'Go Premium',
+            context.l10n.goPremium,
             style: tt.titleLarge?.copyWith(fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 6),
           Text(
-            'Unlock the full potential of Debt Tracker',
+            context.l10n.premiumUnlockDesc,
             style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),
           _PlanOption(
-            label: 'Monthly',
+            label: context.l10n.periodMonthly,
             price: monthly?.price,
             badge: null,
             onTap: monthly == null
@@ -345,9 +346,9 @@ class _PlanSheet extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           _PlanOption(
-            label: 'Yearly',
+            label: context.l10n.periodYearly,
             price: yearly?.price,
-            badge: 'Best Value',
+            badge: context.l10n.bestValue,
             onTap: yearly == null
                 ? null
                 : () {
@@ -357,7 +358,7 @@ class _PlanSheet extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'Renews automatically. Cancel anytime.',
+            context.l10n.autoRenewInfo,
             style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
             textAlign: TextAlign.center,
           ),

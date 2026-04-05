@@ -199,7 +199,7 @@ class _ProfileContent extends StatelessWidget {
                           size: 13, color: AppColors.warning),
                       const SizedBox(width: 4),
                       Text(
-                        'Premium',
+                        context.l10n.premium,
                         style: tt.labelSmall?.copyWith(
                           color: AppColors.warning,
                           fontWeight: FontWeight.w700,

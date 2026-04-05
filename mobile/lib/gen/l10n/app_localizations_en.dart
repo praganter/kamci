@@ -9,7 +9,7 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appName => 'DebtTracker';
+  String get appName => 'Kamci';
 
   @override
   String get save => 'Save';
@@ -427,4 +427,46 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get maybeLater => 'Maybe Later';
+
+  @override
+  String get premium => 'Premium';
+
+  @override
+  String get getPremium => 'Get Premium';
+
+  @override
+  String get goPremium => 'Go Premium';
+
+  @override
+  String get premiumActive => 'Active';
+
+  @override
+  String get premiumUnlockDesc => 'Unlock the full potential of Kamci';
+
+  @override
+  String get premiumUnlimitedDesc => 'Unlimited debts, categories & more';
+
+  @override
+  String renewsOn(String date) {
+    return 'Renews $date';
+  }
+
+  @override
+  String get bestValue => 'Best Value';
+
+  @override
+  String get autoRenewInfo => 'Renews automatically. Cancel anytime.';
+
+  @override
+  String get sharedPremiumDesc =>
+      'You need to be a Premium member to view shared debts and manage debts with friends.';
+
+  @override
+  String get userId => 'User ID';
+
+  @override
+  String get userIdHint => 'Enter User ID';
+
+  @override
+  String get accessLevel => 'Access Level';
 }

@@ -14,7 +14,17 @@ class SplashScreen extends ConsumerWidget {
             const _DtLogo(size: 88),
             const SizedBox(height: 28),
             _BrandName(context: context),
-            const SizedBox(height: 72),
+            const SizedBox(height: 8),
+            Text(
+              "Borç yiğidin 'Kamci'sıdır",
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                fontSize: 13,
+                fontWeight: FontWeight.w400,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+            const SizedBox(height: 64),
             SizedBox(
               width: 24,
               height: 24,
@@ -68,7 +78,7 @@ class _DtLogo extends StatelessWidget {
             ),
           ),
           Text(
-            'DT',
+            'K',
             style: TextStyle(
               color: Colors.white,
               fontSize: size * 0.38,
@@ -88,28 +98,13 @@ class _BrandName extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return RichText(
-      text: TextSpan(
-        children: [
-          TextSpan(
-            text: 'Debt',
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.primary,
-              fontSize: 30,
-              fontWeight: FontWeight.w800,
-              letterSpacing: -0.5,
-            ),
-          ),
-          TextSpan(
-            text: 'Tracker',
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurface,
-              fontSize: 30,
-              fontWeight: FontWeight.w300,
-              letterSpacing: -0.5,
-            ),
-          ),
-        ],
+    return Text(
+      'Kamci',
+      style: TextStyle(
+        color: Theme.of(context).colorScheme.primary,
+        fontSize: 30,
+        fontWeight: FontWeight.w800,
+        letterSpacing: -0.5,
       ),
     );
   }

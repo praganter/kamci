@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/l10n/l10n.dart';
 import '../../domain/entities/member_embedded.dart';
 
 class AddMemberDialog extends StatefulWidget {
@@ -21,22 +22,22 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Üye Ekle'),
+      title: Text(context.l10n.addMember),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           TextField(
             controller: _userIdCtrl,
-            decoration: const InputDecoration(
-              labelText: 'Kullanıcı ID',
-              hintText: 'Kullanıcı ID\'sini girin',
+            decoration: InputDecoration(
+              labelText: context.l10n.userId,
+              hintText: context.l10n.userIdHint,
             ),
           ),
           const SizedBox(height: 16),
           DropdownButtonFormField<AccessLevel>(
             // ignore: deprecated_member_use
             value: _selectedLevel,
-            decoration: const InputDecoration(labelText: 'Erişim Seviyesi'),
+            decoration: InputDecoration(labelText: context.l10n.accessLevel),
             items: AccessLevel.values
                 .map((l) => DropdownMenuItem(value: l, child: Text(l.label)))
                 .toList(),
@@ -47,7 +48,7 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('İptal'),
+          child: Text(context.l10n.cancel),
         ),
         FilledButton(
           onPressed: () {
@@ -58,7 +59,7 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
               );
             }
           },
-          child: const Text('Ekle'),
+          child: Text(context.l10n.add),
         ),
       ],
     );

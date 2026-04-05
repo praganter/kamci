@@ -59,7 +59,7 @@ class _DebtTabView extends ConsumerWidget {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'Paylaşılan borçları görmek ve arkadaşlarınla ortak borç yönetmek için Premium üye olmalısın.',
+                  context.l10n.sharedPremiumDesc,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
                   textAlign: TextAlign.center,
                 ),

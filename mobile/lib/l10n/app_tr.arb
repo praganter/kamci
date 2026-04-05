@@ -1,7 +1,7 @@
 {
   "@@locale": "tr",
 
-  "appName": "DebtTracker",
+  "appName": "Kamci",
 
   "save": "Kaydet",
   "cancel": "İptal",
@@ -202,5 +202,24 @@
       "feature": { "type": "String" }
     }
   },
-  "maybeLater": "Belki Daha Sonra"
+  "maybeLater": "Belki Daha Sonra",
+
+  "premium": "Premium",
+  "getPremium": "Premium Al",
+  "goPremium": "Premium'a Geç",
+  "premiumActive": "Aktif",
+  "premiumUnlockDesc": "Kamci'nin tüm potansiyelinin kilidini aç",
+  "premiumUnlimitedDesc": "Sınırsız borç, kategori ve daha fazlası",
+  "renewsOn": "Yenileme: {date}",
+  "@renewsOn": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "bestValue": "En İyi Değer",
+  "autoRenewInfo": "Otomatik yenilenir. İstediğinizde iptal edin.",
+  "sharedPremiumDesc": "Paylaşılan borçları görmek ve arkadaşlarınla ortak borç yönetmek için Premium üye olmalısın.",
+  "userId": "Kullanıcı ID",
+  "userIdHint": "Kullanıcı ID'sini girin",
+  "accessLevel": "Erişim Seviyesi"
 }

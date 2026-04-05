@@ -1,7 +1,7 @@
 {
   "@@locale": "en",
 
-  "appName": "DebtTracker",
+  "appName": "Kamci",
 
   "save": "Save",
   "cancel": "Cancel",
@@ -172,5 +172,24 @@
       "feature": { "type": "String" }
     }
   },
-  "maybeLater": "Maybe Later"
+  "maybeLater": "Maybe Later",
+
+  "premium": "Premium",
+  "getPremium": "Get Premium",
+  "goPremium": "Go Premium",
+  "premiumActive": "Active",
+  "premiumUnlockDesc": "Unlock the full potential of Kamci",
+  "premiumUnlimitedDesc": "Unlimited debts, categories & more",
+  "renewsOn": "Renews {date}",
+  "@renewsOn": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "bestValue": "Best Value",
+  "autoRenewInfo": "Renews automatically. Cancel anytime.",
+  "sharedPremiumDesc": "You need to be a Premium member to view shared debts and manage debts with friends.",
+  "userId": "User ID",
+  "userIdHint": "Enter User ID",
+  "accessLevel": "Access Level"
 }

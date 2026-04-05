@@ -101,7 +101,7 @@ abstract class AppLocalizations {
   /// No description provided for @appName.
   ///
   /// In tr, this message translates to:
-  /// **'DebtTracker'**
+  /// **'Kamci'**
   String get appName;
 
   /// No description provided for @save.
@@ -889,6 +889,84 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Belki Daha Sonra'**
   String get maybeLater;
+
+  /// No description provided for @premium.
+  ///
+  /// In tr, this message translates to:
+  /// **'Premium'**
+  String get premium;
+
+  /// No description provided for @getPremium.
+  ///
+  /// In tr, this message translates to:
+  /// **'Premium Al'**
+  String get getPremium;
+
+  /// No description provided for @goPremium.
+  ///
+  /// In tr, this message translates to:
+  /// **'Premium\'a Geç'**
+  String get goPremium;
+
+  /// No description provided for @premiumActive.
+  ///
+  /// In tr, this message translates to:
+  /// **'Aktif'**
+  String get premiumActive;
+
+  /// No description provided for @premiumUnlockDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kamci\'nin tüm potansiyelinin kilidini aç'**
+  String get premiumUnlockDesc;
+
+  /// No description provided for @premiumUnlimitedDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sınırsız borç, kategori ve daha fazlası'**
+  String get premiumUnlimitedDesc;
+
+  /// No description provided for @renewsOn.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yenileme: {date}'**
+  String renewsOn(String date);
+
+  /// No description provided for @bestValue.
+  ///
+  /// In tr, this message translates to:
+  /// **'En İyi Değer'**
+  String get bestValue;
+
+  /// No description provided for @autoRenewInfo.
+  ///
+  /// In tr, this message translates to:
+  /// **'Otomatik yenilenir. İstediğinizde iptal edin.'**
+  String get autoRenewInfo;
+
+  /// No description provided for @sharedPremiumDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Paylaşılan borçları görmek ve arkadaşlarınla ortak borç yönetmek için Premium üye olmalısın.'**
+  String get sharedPremiumDesc;
+
+  /// No description provided for @userId.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kullanıcı ID'**
+  String get userId;
+
+  /// No description provided for @userIdHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kullanıcı ID\'sini girin'**
+  String get userIdHint;
+
+  /// No description provided for @accessLevel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Erişim Seviyesi'**
+  String get accessLevel;
 }
 
 class _AppLocalizationsDelegate

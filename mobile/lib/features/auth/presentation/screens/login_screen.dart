@@ -63,28 +63,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 Center(child: _DtLogo(size: 72, cs: cs)),
                 const SizedBox(height: 20),
                 Center(
-                  child: RichText(
-                    text: TextSpan(
-                      children: [
-                        TextSpan(
-                          text: 'Debt',
-                          style: TextStyle(
-                            color: cs.primary,
-                            fontSize: 26,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: -0.5,
-                          ),
-                        ),
-                        TextSpan(
-                          text: 'Tracker',
-                          style: TextStyle(
-                            color: cs.onSurface,
-                            fontSize: 26,
-                            fontWeight: FontWeight.w300,
-                            letterSpacing: -0.5,
-                          ),
-                        ),
-                      ],
+                  child: Text(
+                    l10n.appName,
+                    style: TextStyle(
+                      color: cs.primary,
+                      fontSize: 26,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.5,
                     ),
                   ),
                 ),
@@ -208,7 +193,7 @@ class _DtLogo extends StatelessWidget {
             ),
           ),
           Text(
-            'DT',
+            'K',
             style: TextStyle(
               color: Colors.white,
               fontSize: size * 0.38,
