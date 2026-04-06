@@ -4,6 +4,7 @@ import dev.batuhanyetgin.commonmodule.event.DebtReminderEvent;
 import dev.batuhanyetgin.commonmodule.event.RabbitMQConstants;
 import dev.batuhanyetgin.debttracker.document.DebtDocument;
 import dev.batuhanyetgin.debttracker.enums.DebtStatus;
+import dev.batuhanyetgin.debttracker.enums.PaymentStatus;
 import dev.batuhanyetgin.debttracker.enums.PaymentPeriodType;
 import dev.batuhanyetgin.debttracker.producer.DebtEventProducer;
 import dev.batuhanyetgin.debttracker.repositoryservice.DebtRepositoryService;
@@ -37,9 +38,41 @@ public class DebtReminderScheduler {
         final LocalDateTime now = LocalDateTime.now();
         log.info("Processing debt reminders/auto-payments at: {}", now);
 
+        processStatusResetBatch(debtRS.findActiveDebts(), now);
         processReminderBatch(debtRS.findDueReminders(now), now);
         processAutoPaymentBatch(debtRS.findDueAutoPayments(now), now);
         processOverdueBatch(debtRS.findUnpaidManualDueDebts(now), now);
+    }
+
+    private void processStatusResetBatch(final List<DebtDocument> debts, final LocalDateTime now) {
+        if (debts.isEmpty()) return;
+
+        final AtomicInteger resetCount = new AtomicInteger();
+        debts.forEach(debt -> {
+            if (shouldResetPaymentStatus(debt, now)) {
+                debt.setPaymentStatus(PaymentStatus.UNPAID);
+                try {
+                    debtRS.update(debt);
+                    resetCount.incrementAndGet();
+                } catch (Exception e) {
+                    log.error("Failed to reset payment status for debt {}: {}", debt.getId(), e.getMessage());
+                }
+            }
+        });
+        if (resetCount.get() > 0) {
+            log.info("Reset payment status to UNPAID for {} ACTIVE debt(s) due to new period", resetCount.get());
+        }
+    }
+
+    private boolean shouldResetPaymentStatus(final DebtDocument debt, final LocalDateTime now) {
+        if (debt.getPaymentStatus() == PaymentStatus.UNPAID) return false;
+
+        final LocalDateTime periodStart = PaymentPeriodUtil.getPeriodStart(
+                debt.getFirstPaymentDate(), debt.getPaymentPeriodType(), now);
+
+        // If last payment/skip was in a previous period, reset to UNPAID for current period
+        return debt.getPayments().stream()
+                .noneMatch(p -> p.getPaidTime() != null && !p.getPaidTime().isBefore(periodStart));
     }
 
     private void processReminderBatch(final List<DebtDocument> debts, final LocalDateTime now) {
@@ -128,8 +161,8 @@ public class DebtReminderScheduler {
 
         if (debt.getInstallmentCount() != null
                 && debt.getPayments().size() >= debt.getInstallmentCount()) {
-            debt.setStatus(DebtStatus.PAID);
-            log.info("Debt {} marked as PAID after auto-payment — all {} installments paid",
+            debt.setStatus(DebtStatus.COMPLETED);
+            log.info("Debt {} marked as COMPLETED after auto-payment — all {} installments paid",
                     debt.getId(), debt.getInstallmentCount());
         } else {
             advanceNextAutoPaymentDate(debt);
@@ -151,10 +184,10 @@ public class DebtReminderScheduler {
         final List<CompletableFuture<Void>> futures = debts.stream()
                 .map(debt -> CompletableFuture.runAsync(() -> {
                     if (isCurrentPeriodUnpaid(debt, now)) {
-                        debt.setStatus(DebtStatus.OVERDUE);
+                        debt.setPaymentStatus(PaymentStatus.OVERDUE);
                         try {
                             debtRS.update(debt);
-                            log.info("Debt {} marked as OVERDUE", debt.getId());
+                            log.info("Debt {} payment status marked as OVERDUE", debt.getId());
                             marked.incrementAndGet();
                         } catch (Exception e) {
                             log.error("Failed to mark debt {} as OVERDUE: {}", debt.getId(), e.getMessage(), e);
@@ -183,6 +216,7 @@ public class DebtReminderScheduler {
         final LocalDateTime periodEnd = PaymentPeriodUtil.getPeriodEnd(
                 periodStart, debt.getPaymentPeriodType(), originalDay);
         debt.addPayment(now, periodStart, periodEnd, debt.getAmount());
+        debt.setPaymentStatus(PaymentStatus.PAID);
         log.info("Auto-payment recorded for debt: {}", debt.getId());
     }
 

@@ -4,6 +4,7 @@ import dev.batuhanyetgin.commonmodule.event.ReminderChannelType;
 import dev.batuhanyetgin.debttracker.document.DebtDocument;
 import dev.batuhanyetgin.debttracker.document.embedded.ReminderEmbedded;
 import dev.batuhanyetgin.debttracker.enums.DebtStatus;
+import dev.batuhanyetgin.debttracker.enums.PaymentStatus;
 import dev.batuhanyetgin.debttracker.enums.PaymentPeriodType;
 import dev.batuhanyetgin.debttracker.producer.DebtEventProducer;
 import dev.batuhanyetgin.debttracker.repositoryservice.DebtRepositoryService;
@@ -85,8 +86,10 @@ class DebtReminderSchedulerTest {
     class ProcessReminderFlow {
 
         @BeforeEach
-        void stubAutoPaymentEmpty() {
-            when(debtRS.findDueAutoPayments(any())).thenReturn(List.of());
+        void stubBase() {
+            lenient().when(debtRS.findDueAutoPayments(any())).thenReturn(List.of());
+            lenient().when(debtRS.findActiveDebts()).thenReturn(List.of());
+            lenient().when(debtRS.findUnpaidManualDueDebts(any())).thenReturn(List.of());
         }
 
         @Test
@@ -224,8 +227,8 @@ class DebtReminderSchedulerTest {
         }
 
         @Test
-        @DisplayName("installmentCount reached → debt marked PAID, nextAutoPaymentDate not advanced")
-        void installmentCountReached_markedPaidNoAdvance() {
+        @DisplayName("installmentCount reached → debt marked COMPLETED, paymentStatus PAID, nextAutoPaymentDate not advanced")
+        void installmentCountReached_markedCompletedAndPaid() {
             final DebtDocument debt = DebtDocument.builder()
                     .id("debt1").ownerId("owner1").name("Auto Debt")
                     .amount(java.math.BigDecimal.TEN)
@@ -242,13 +245,14 @@ class DebtReminderSchedulerTest {
 
             scheduler.processReminders();
 
-            assertThat(captor.getValue().getStatus()).isEqualTo(DebtStatus.PAID);
+            assertThat(captor.getValue().getStatus()).isEqualTo(DebtStatus.COMPLETED);
+            assertThat(captor.getValue().getPaymentStatus()).isEqualTo(PaymentStatus.PAID);
             assertThat(captor.getValue().getNextAutoPaymentDate()).isEqualTo(BASE_TIME); // not advanced
         }
 
         @Test
-        @DisplayName("installmentCount not yet reached → nextAutoPaymentDate advanced, status remains UNPAID")
-        void installmentCountNotReached_advancedAndUnpaid() {
+        @DisplayName("installmentCount not yet reached → nextAutoPaymentDate advanced, status remains ACTIVE")
+        void installmentCountNotReached_advancedAndActive() {
             final DebtDocument debt = DebtDocument.builder()
                     .id("debt1").ownerId("owner1").name("Auto Debt")
                     .amount(java.math.BigDecimal.TEN)
@@ -265,8 +269,72 @@ class DebtReminderSchedulerTest {
 
             scheduler.processReminders();
 
-            assertThat(captor.getValue().getStatus()).isEqualTo(DebtStatus.UNPAID);
+            assertThat(captor.getValue().getStatus()).isEqualTo(DebtStatus.ACTIVE);
+            assertThat(captor.getValue().getPaymentStatus()).isEqualTo(PaymentStatus.PAID);
             assertThat(captor.getValue().getNextAutoPaymentDate()).isEqualTo(BASE_TIME.plusMonths(1));
+        }
+    }
+
+    // ─── processReminders (overdue flow) ────────────────────────────────────
+
+    @Nested
+    @DisplayName("processReminders — overdue flow")
+    class ProcessOverdueFlow {
+
+        @BeforeEach
+        void stubBase() {
+            lenient().when(debtRS.findDueAutoPayments(any())).thenReturn(List.of());
+            lenient().when(debtRS.findActiveDebts()).thenReturn(List.of());
+            lenient().when(debtRS.findDueReminders(any())).thenReturn(List.of());
+        }
+
+        @Test
+        @DisplayName("unpaid manual debt past due date → paymentStatus set to OVERDUE")
+        void unpaidManualDebt_markedOverdue() {
+            final DebtDocument debt = buildReminderDebt("debt1", PaymentPeriodType.MONTHLY, BASE_TIME.minusDays(5), BASE_TIME);
+            debt.setPaymentStatus(PaymentStatus.UNPAID);
+            debt.setAutoPayment(false);
+            
+            when(debtRS.findUnpaidManualDueDebts(any())).thenReturn(List.of(debt));
+            final ArgumentCaptor<DebtDocument> captor = ArgumentCaptor.forClass(DebtDocument.class);
+            when(debtRS.update(captor.capture())).thenReturn(debt);
+
+            scheduler.processReminders();
+
+            assertThat(captor.getValue().getPaymentStatus()).isEqualTo(PaymentStatus.OVERDUE);
+            assertThat(captor.getValue().getStatus()).isEqualTo(DebtStatus.ACTIVE);
+        }
+    }
+
+    // ─── processReminders (status reset flow) ────────────────────────────────
+
+    @Nested
+    @DisplayName("processReminders — status reset flow")
+    class ProcessStatusResetFlow {
+
+        @BeforeEach
+        void stubBase() {
+            lenient().when(debtRS.findDueAutoPayments(any())).thenReturn(List.of());
+            lenient().when(debtRS.findDueReminders(any())).thenReturn(List.of());
+            lenient().when(debtRS.findUnpaidManualDueDebts(any())).thenReturn(List.of());
+        }
+
+        @Test
+        @DisplayName("ACTIVE debt with PAID status from previous period → paymentStatus reset to UNPAID")
+        void paidDebtInNewPeriod_resetToUnpaid() {
+            // Debt was paid last month
+            final LocalDateTime lastMonth = BASE_TIME.minusMonths(1);
+            final DebtDocument debt = buildReminderDebt("debt1", PaymentPeriodType.MONTHLY, lastMonth, BASE_TIME);
+            debt.setPaymentStatus(PaymentStatus.PAID);
+            debt.addPayment(lastMonth, lastMonth, lastMonth.plusDays(30), BigDecimal.TEN);
+
+            when(debtRS.findActiveDebts()).thenReturn(List.of(debt));
+            final ArgumentCaptor<DebtDocument> captor = ArgumentCaptor.forClass(DebtDocument.class);
+            when(debtRS.update(captor.capture())).thenReturn(debt);
+
+            scheduler.processReminders();
+
+            assertThat(captor.getValue().getPaymentStatus()).isEqualTo(PaymentStatus.UNPAID);
         }
     }
 
@@ -277,8 +345,10 @@ class DebtReminderSchedulerTest {
     class AdvanceNextReminderDate {
 
         @BeforeEach
-        void stubAutoPaymentEmpty() {
-            when(debtRS.findDueAutoPayments(any())).thenReturn(List.of());
+        void stubBase() {
+            lenient().when(debtRS.findDueAutoPayments(any())).thenReturn(List.of());
+            lenient().when(debtRS.findActiveDebts()).thenReturn(List.of());
+            lenient().when(debtRS.findUnpaidManualDueDebts(any())).thenReturn(List.of());
         }
 
         private LocalDateTime captureNextReminderDate(final PaymentPeriodType periodType,

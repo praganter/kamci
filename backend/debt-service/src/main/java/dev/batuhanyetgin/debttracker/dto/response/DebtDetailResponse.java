@@ -3,6 +3,7 @@ package dev.batuhanyetgin.debttracker.dto.response;
 import dev.batuhanyetgin.debttracker.document.embedded.ReminderEmbedded;
 import dev.batuhanyetgin.debttracker.enums.CurrencyType;
 import dev.batuhanyetgin.debttracker.enums.DebtStatus;
+import dev.batuhanyetgin.debttracker.enums.PaymentStatus;
 import dev.batuhanyetgin.debttracker.enums.PaymentPeriodType;
 import lombok.Builder;
 import lombok.Getter;
@@ -40,6 +41,8 @@ public class DebtDetailResponse {
     private CurrencyType currency;
 
     private DebtStatus status;
+
+    private PaymentStatus paymentStatus;
 
     private boolean autoPayment;
 

@@ -13,6 +13,7 @@ import dev.batuhanyetgin.debttracker.dto.response.*;
 import dev.batuhanyetgin.debttracker.document.embedded.PaymentEmbedded;
 import dev.batuhanyetgin.debttracker.enums.AccessLevelType;
 import dev.batuhanyetgin.debttracker.enums.DebtStatus;
+import dev.batuhanyetgin.debttracker.enums.PaymentStatus;
 import dev.batuhanyetgin.debttracker.mapper.DebtMapper;
 import dev.batuhanyetgin.debttracker.repositoryservice.CategoryRepositoryService;
 import dev.batuhanyetgin.debttracker.repositoryservice.DebtRepositoryService;
@@ -89,7 +90,7 @@ public class DebtService {
         final String userId = RequestContextUtil.getUserId();
         final DebtDocument existing = debtRS.findById(request.getId());
 
-        if (existing.getStatus() == DebtStatus.PAID) {
+        if (existing.getStatus() == DebtStatus.COMPLETED) {
             throw BaseException.conflict("error.debt.already_completed");
         }
 
@@ -127,7 +128,7 @@ public class DebtService {
         final String userId = RequestContextUtil.getUserId();
         final DebtDocument existing = debtRS.findById(id);
 
-        if (existing.getStatus() == DebtStatus.PAID) {
+        if (existing.getStatus() == DebtStatus.COMPLETED) {
             throw BaseException.conflict("error.debt.already_completed");
         }
 
@@ -159,14 +160,16 @@ public class DebtService {
                 : existing.getAmount();
         existing.addPayment(now, periodStart, periodEnd, amount);
 
+        final boolean isFullPayment = amount.compareTo(existing.getAmount()) >= 0;
+        existing.setPaymentStatus(isFullPayment ? PaymentStatus.PAID : PaymentStatus.PARTIALLY_PAID);
+
         if (existing.getInstallmentCount() != null
                 && existing.getPayments().size() >= existing.getInstallmentCount()) {
-            existing.setStatus(DebtStatus.PAID);
-            log.info("Debt {} marked as PAID — all {} installments paid", id, existing.getInstallmentCount());
-            } else if (existing.getStatus() == DebtStatus.OVERDUE) {
-            existing.setStatus(DebtStatus.UNPAID);
-            log.info("Debt {} restored to UNPAID after overdue payment", id);
-            }
+            existing.setStatus(DebtStatus.COMPLETED);
+            log.info("Debt {} marked as COMPLETED — all {} installments paid", id, existing.getInstallmentCount());
+        } else {
+            log.info("Payment recorded for debt {}. Payment status: {}", id, existing.getPaymentStatus());
+        }
 
         final DebtDocument updated = debtRS.update(existing);
         log.info("Payment recorded for debt: {}", id);
@@ -177,7 +180,7 @@ public class DebtService {
         final String userId = RequestContextUtil.getUserId();
         final DebtDocument existing = debtRS.findById(id);
 
-        if (existing.getStatus() == DebtStatus.PAID) {
+        if (existing.getStatus() == DebtStatus.COMPLETED) {
             throw BaseException.conflict("error.debt.already_completed");
         }
 
@@ -205,9 +208,9 @@ public class DebtService {
                 periodStart, existing.getPaymentPeriodType(), originalDay);
         existing.skipPayment(now, periodStart, periodEnd);
 
-        if (existing.getStatus() == DebtStatus.OVERDUE) {
-            existing.setStatus(DebtStatus.UNPAID);
-            log.info("Debt {} restored to UNPAID after skip acknowledgement", id);
+        if (existing.getPaymentStatus() == PaymentStatus.OVERDUE) {
+            existing.setPaymentStatus(PaymentStatus.UNPAID);
+            log.info("Debt {} payment status restored to UNPAID after skip acknowledgement", id);
         }
 
         final DebtDocument updated = debtRS.update(existing);
@@ -275,7 +278,9 @@ public class DebtService {
                         .debts(byCategory.getOrDefault(cat.getId(), List.of())
                                 .stream().map(debt -> {
                                     final DebtItemResponse item = debtMapper.convert(debt);
-                                    item.setPaidCurrentPeriod(isPaidCurrentPeriod(debt));
+                                    final PaymentStatus currentPaymentStatus = calculateCurrentPaymentStatus(debt);
+                                    item.setPaymentStatus(currentPaymentStatus);
+                                    item.setPaidCurrentPeriod(currentPaymentStatus == PaymentStatus.PAID);
                                     return item;
                                 }).toList())
                         .build())
@@ -321,17 +326,37 @@ public class DebtService {
         );
     }
 
-    private boolean isPaidCurrentPeriod(final DebtDocument debt) {
+    private PaymentStatus calculateCurrentPaymentStatus(final DebtDocument debt) {
+        if (debt.getStatus() == DebtStatus.COMPLETED) {
+            return PaymentStatus.PAID;
+        }
+
         if (debt.getPayments() == null || debt.getPayments().isEmpty()
                 || debt.getPaymentPeriodType() == null) {
-            return false;
+            return debt.getPaymentStatus();
         }
+
         final LocalDateTime now = LocalDateTime.now();
         final LocalDateTime periodStart = PaymentPeriodUtil.getPeriodStart(
                 debt.getFirstPaymentDate(), debt.getPaymentPeriodType(), now);
-        return debt.getPayments().stream()
-                .anyMatch(p -> p.isPaid() && p.getPaidTime() != null
-                        && !p.getPaidTime().isBefore(periodStart));
+
+        final List<PaymentEmbedded> currentPeriodPayments = debt.getPayments().stream()
+                .filter(p -> p.getPaidTime() != null && !p.getPaidTime().isBefore(periodStart))
+                .toList();
+
+        if (currentPeriodPayments.isEmpty()) {
+            return debt.getPaymentStatus(); // Returns UNPAID or OVERDUE from document
+        }
+
+        final boolean hasFullPayment = currentPeriodPayments.stream().anyMatch(PaymentEmbedded::isPaid);
+        if (hasFullPayment) {
+            return PaymentStatus.PAID;
+        }
+
+        final boolean hasPartialPayment = currentPeriodPayments.stream()
+                .anyMatch(p -> p.getAmountPaid() != null && p.getAmountPaid().compareTo(BigDecimal.ZERO) > 0);
+
+        return hasPartialPayment ? PaymentStatus.PARTIALLY_PAID : debt.getPaymentStatus();
     }
 
     public List<PaymentHistoryResponse> getPaymentHistory(final String id,

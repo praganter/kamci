@@ -6,6 +6,7 @@ import dev.batuhanyetgin.debttracker.document.embedded.PaymentEmbedded;
 import dev.batuhanyetgin.debttracker.document.embedded.ReminderEmbedded;
 import dev.batuhanyetgin.debttracker.enums.CurrencyType;
 import dev.batuhanyetgin.debttracker.enums.DebtStatus;
+import dev.batuhanyetgin.debttracker.enums.PaymentStatus;
 import dev.batuhanyetgin.debttracker.enums.PaymentPeriodType;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -59,7 +60,11 @@ public class DebtDocument extends BaseDocument {
 
     @Builder.Default
     @Field("status")
-    private DebtStatus status = DebtStatus.UNPAID;
+    private DebtStatus status = DebtStatus.ACTIVE;
+
+    @Builder.Default
+    @Field("payment_status")
+    private PaymentStatus paymentStatus = PaymentStatus.UNPAID;
 
     @Builder.Default
     @Field("auto_payment")

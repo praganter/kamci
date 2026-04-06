@@ -2,6 +2,7 @@ package dev.batuhanyetgin.debttracker.repository;
 
 import dev.batuhanyetgin.debttracker.document.DebtDocument;
 import dev.batuhanyetgin.debttracker.enums.DebtStatus;
+import dev.batuhanyetgin.debttracker.enums.PaymentStatus;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
@@ -21,12 +22,14 @@ public interface DebtRepository extends MongoRepository<DebtDocument, String> {
 
     long countByOwnerId(final String ownerId);
 
-    List<DebtDocument> findByStatusAndReminderEnabledTrueAndNextReminderDateLessThanEqual(
-            final DebtStatus status, final LocalDateTime dateTime);
+    List<DebtDocument> findByStatusAndPaymentStatusInAndReminderEnabledTrueAndNextReminderDateLessThanEqual(
+            final DebtStatus status, final List<PaymentStatus> paymentStatuses, final LocalDateTime dateTime);
 
     List<DebtDocument> findByAutoPaymentTrueAndNextAutoPaymentDateLessThanEqual(
             final LocalDateTime dateTime);
 
-    List<DebtDocument> findByStatusAndAutoPaymentFalseAndFirstPaymentDateLessThanEqual(
-            final DebtStatus status, final LocalDateTime dateTime);
+    List<DebtDocument> findByStatusAndPaymentStatusInAndAutoPaymentFalseAndFirstPaymentDateLessThanEqual(
+            final DebtStatus status, final List<PaymentStatus> paymentStatuses, final LocalDateTime dateTime);
+
+    List<DebtDocument> findByStatus(final DebtStatus status);
 }

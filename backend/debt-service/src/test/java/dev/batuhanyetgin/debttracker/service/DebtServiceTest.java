@@ -15,6 +15,7 @@ import dev.batuhanyetgin.debttracker.dto.response.DebtResponse;
 import dev.batuhanyetgin.debttracker.dto.response.GetDebtResponse;
 import dev.batuhanyetgin.debttracker.enums.AccessLevelType;
 import dev.batuhanyetgin.debttracker.enums.DebtStatus;
+import dev.batuhanyetgin.debttracker.enums.PaymentStatus;
 import dev.batuhanyetgin.debttracker.enums.PaymentPeriodType;
 import dev.batuhanyetgin.debttracker.mapper.DebtMapper;
 import dev.batuhanyetgin.debttracker.repositoryservice.CategoryRepositoryService;
@@ -768,8 +769,8 @@ class DebtServiceTest {
         }
 
         @Test
-        @DisplayName("installmentCount reached → status set to PAID after payment")
-        void installmentCountReached_statusPaid() {
+        @DisplayName("installmentCount reached → lifecycle status set to COMPLETED and payment status PAID")
+        void installmentCountReached_statusCompletedAndPaid() {
             try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
                 ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
                 ctx.when(RequestContextUtil::isPremium).thenReturn(true);
@@ -791,13 +792,14 @@ class DebtServiceTest {
 
                 debtService.pay(DEBT_ID, null);
 
-                assertThat(captor.getValue().getStatus()).isEqualTo(DebtStatus.PAID);
+                assertThat(captor.getValue().getStatus()).isEqualTo(DebtStatus.COMPLETED);
+                assertThat(captor.getValue().getPaymentStatus()).isEqualTo(PaymentStatus.PAID);
             }
         }
 
         @Test
-        @DisplayName("installmentCount not yet reached → status remains UNPAID after payment")
-        void installmentCountNotReached_statusRemainsUnpaid() {
+        @DisplayName("installmentCount not yet reached → lifecycle status remains ACTIVE and payment status PAID")
+        void installmentCountNotReached_statusActiveAndPaid() {
             try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
                 ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
                 ctx.when(RequestContextUtil::isPremium).thenReturn(true);
@@ -819,7 +821,8 @@ class DebtServiceTest {
 
                 debtService.pay(DEBT_ID, null);
 
-                assertThat(captor.getValue().getStatus()).isEqualTo(DebtStatus.UNPAID);
+                assertThat(captor.getValue().getStatus()).isEqualTo(DebtStatus.ACTIVE);
+                assertThat(captor.getValue().getPaymentStatus()).isEqualTo(PaymentStatus.PAID);
             }
         }
 

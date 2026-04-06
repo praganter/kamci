@@ -3,6 +3,7 @@ package dev.batuhanyetgin.debttracker.repositoryservice;
 import dev.batuhanyetgin.commonmodule.exception.BaseException;
 import dev.batuhanyetgin.debttracker.document.DebtDocument;
 import dev.batuhanyetgin.debttracker.enums.DebtStatus;
+import dev.batuhanyetgin.debttracker.enums.PaymentStatus;
 import dev.batuhanyetgin.debttracker.enums.PaymentPeriodType;
 import dev.batuhanyetgin.debttracker.repository.DebtRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -149,12 +150,12 @@ class DebtRepositoryServiceTest {
         }
 
         @Test
-        @DisplayName("findDueReminders returns unpaid debts with past reminder date")
+        @DisplayName("findDueReminders returns active debts with due paymentStatus")
         void findDueReminders_returnsDebts() {
             final LocalDateTime now = LocalDateTime.now();
             final List<DebtDocument> debts = List.of(buildDebt());
-            when(debtRepository.findByStatusAndReminderEnabledTrueAndNextReminderDateLessThanEqual(
-                    DebtStatus.UNPAID, now)).thenReturn(debts);
+            when(debtRepository.findByStatusAndPaymentStatusInAndReminderEnabledTrueAndNextReminderDateLessThanEqual(
+                    eq(DebtStatus.ACTIVE), anyList(), eq(now))).thenReturn(debts);
             assertThat(debtRepositoryService.findDueReminders(now)).isEqualTo(debts);
         }
 
@@ -166,6 +167,24 @@ class DebtRepositoryServiceTest {
             when(debtRepository.findByAutoPaymentTrueAndNextAutoPaymentDateLessThanEqual(now))
                     .thenReturn(debts);
             assertThat(debtRepositoryService.findDueAutoPayments(now)).isEqualTo(debts);
+        }
+
+        @Test
+        @DisplayName("findUnpaidManualDueDebts returns active debts with manual due paymentStatus")
+        void findUnpaidManualDueDebts_returnsDebts() {
+            final LocalDateTime now = LocalDateTime.now();
+            final List<DebtDocument> debts = List.of(buildDebt());
+            when(debtRepository.findByStatusAndPaymentStatusInAndAutoPaymentFalseAndFirstPaymentDateLessThanEqual(
+                    eq(DebtStatus.ACTIVE), anyList(), eq(now))).thenReturn(debts);
+            assertThat(debtRepositoryService.findUnpaidManualDueDebts(now)).isEqualTo(debts);
+        }
+
+        @Test
+        @DisplayName("findActiveDebts returns all active debts")
+        void findActiveDebts_returnsDebts() {
+            final List<DebtDocument> debts = List.of(buildDebt());
+            when(debtRepository.findByStatus(DebtStatus.ACTIVE)).thenReturn(debts);
+            assertThat(debtRepositoryService.findActiveDebts()).isEqualTo(debts);
         }
     }
 }

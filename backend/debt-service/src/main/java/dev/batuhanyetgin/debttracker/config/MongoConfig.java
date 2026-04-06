@@ -8,9 +8,11 @@ import com.mongodb.lang.NonNull;
 import dev.batuhanyetgin.debttracker.converter.read.AccessLevelTypeReadConverter;
 import dev.batuhanyetgin.debttracker.converter.read.DebtStatusReadConverter;
 import dev.batuhanyetgin.debttracker.converter.read.PaymentPeriodTypeReadConverter;
+import dev.batuhanyetgin.debttracker.converter.read.PaymentStatusReadConverter;
 import dev.batuhanyetgin.debttracker.converter.write.AccessLevelTypeWriteConverter;
 import dev.batuhanyetgin.debttracker.converter.write.DebtStatusWriteConverter;
 import dev.batuhanyetgin.debttracker.converter.write.PaymentPeriodTypeWriteConverter;
+import dev.batuhanyetgin.debttracker.converter.write.PaymentStatusWriteConverter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -48,7 +50,9 @@ public class MongoConfig extends AbstractMongoClientConfiguration {
                 new PaymentPeriodTypeReadConverter(),
                 new PaymentPeriodTypeWriteConverter(),
                 new DebtStatusReadConverter(),
-                new DebtStatusWriteConverter()
+                new DebtStatusWriteConverter(),
+                new PaymentStatusReadConverter(),
+                new PaymentStatusWriteConverter()
         ));
     }
 

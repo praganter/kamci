@@ -35,3 +35,5 @@ build/
 .env.local
 .claude
 firebase-adminsdk.json
+.vexp
+vexp.toml

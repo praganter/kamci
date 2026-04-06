@@ -3,6 +3,7 @@ package dev.batuhanyetgin.debttracker.repositoryservice;
 import dev.batuhanyetgin.commonmodule.exception.BaseException;
 import dev.batuhanyetgin.debttracker.document.DebtDocument;
 import dev.batuhanyetgin.debttracker.enums.DebtStatus;
+import dev.batuhanyetgin.debttracker.enums.PaymentStatus;
 import dev.batuhanyetgin.debttracker.repository.DebtRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -54,8 +55,8 @@ public class DebtRepositoryService {
     }
 
     public List<DebtDocument> findDueReminders(final LocalDateTime now) {
-        return debtRepository.findByStatusAndReminderEnabledTrueAndNextReminderDateLessThanEqual(
-                DebtStatus.UNPAID, now);
+        return debtRepository.findByStatusAndPaymentStatusInAndReminderEnabledTrueAndNextReminderDateLessThanEqual(
+                DebtStatus.ACTIVE, List.of(PaymentStatus.UNPAID, PaymentStatus.OVERDUE, PaymentStatus.PARTIALLY_PAID), now);
     }
 
     public List<DebtDocument> findDueAutoPayments(final LocalDateTime now) {
@@ -63,7 +64,11 @@ public class DebtRepositoryService {
     }
 
     public List<DebtDocument> findUnpaidManualDueDebts(final LocalDateTime now) {
-        return debtRepository.findByStatusAndAutoPaymentFalseAndFirstPaymentDateLessThanEqual(
-                DebtStatus.UNPAID, now);
+        return debtRepository.findByStatusAndPaymentStatusInAndAutoPaymentFalseAndFirstPaymentDateLessThanEqual(
+                DebtStatus.ACTIVE, List.of(PaymentStatus.UNPAID, PaymentStatus.PARTIALLY_PAID), now);
+    }
+
+    public List<DebtDocument> findActiveDebts() {
+        return debtRepository.findByStatus(DebtStatus.ACTIVE);
     }
 }
