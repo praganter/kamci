@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../../core/storage/secure_storage_service.dart';
 import '../../data/models/verify_receipt_request.dart';
 import '../../data/repositories/subscription_repository_impl.dart';
 import '../../domain/entities/subscription.dart';
@@ -33,6 +34,12 @@ class SubscriptionNotifier extends _$SubscriptionNotifier {
       final sub = await ref
           .read(subscriptionRepositoryProvider)
           .verifyReceipt(request);
+      if (sub.accessToken != null && sub.refreshToken != null) {
+        await ref.read(secureStorageServiceProvider).saveTokens(
+          accessToken: sub.accessToken!,
+          refreshToken: sub.refreshToken!,
+        );
+      }
       ref.invalidate(userDetailProvider);
       ref.invalidate(subscriptionStatusProvider);
       return sub;

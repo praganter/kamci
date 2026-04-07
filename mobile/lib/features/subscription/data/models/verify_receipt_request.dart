@@ -6,10 +6,8 @@ part 'verify_receipt_request.g.dart';
 @freezed
 abstract class VerifyReceiptRequest with _$VerifyReceiptRequest {
   const factory VerifyReceiptRequest({
+    required String receipt,
     required String platform,
-    required String plan,
-    String? receiptData,
-    String? purchaseToken,
   }) = _VerifyReceiptRequest;
 
   factory VerifyReceiptRequest.fromJson(Map<String, dynamic> json) =>

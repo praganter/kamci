@@ -47,15 +47,9 @@ class SettingsScreen extends ConsumerWidget {
 
                 // ── Uygulama Ayarları ──────────────────────────────────────
                 _SectionHeader(label: l10n.appearance),
-                _SegmentCard(
-                  label: l10n.theme,
-                  child: _ThemeSegmented(),
-                ),
+                _SegmentCard(label: l10n.theme, child: _ThemeSegmented()),
                 const SizedBox(height: 10),
-                _SegmentCard(
-                  label: l10n.language,
-                  child: _LocaleSegmented(),
-                ),
+                _SegmentCard(label: l10n.language, child: _LocaleSegmented()),
                 const SizedBox(height: 20),
 
                 // ── Hesap ──────────────────────────────────────────────────
@@ -65,6 +59,16 @@ class SettingsScreen extends ConsumerWidget {
                   title: l10n.changePassword,
                   subtitle: l10n.changePasswordDesc,
                   onTap: () => context.pushNamed(RouteNames.changePassword),
+                ),
+                const SizedBox(height: 20),
+
+                // ── Gelir ─────────────────────────────────────────────────
+                _SectionHeader(label: l10n.income),
+                _SettingsTile(
+                  icon: Icons.savings_outlined,
+                  title: l10n.income,
+                  subtitle: l10n.incomeHistory,
+                  onTap: () => context.pushNamed(RouteNames.income),
                 ),
                 const SizedBox(height: 20),
 
@@ -186,8 +190,10 @@ class _ProfileContent extends StatelessWidget {
               if (user.premium) ...[
                 const SizedBox(height: 4),
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.warning.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(6),
@@ -195,8 +201,11 @@ class _ProfileContent extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.star_rounded,
-                          size: 13, color: AppColors.warning),
+                      Icon(
+                        Icons.star_rounded,
+                        size: 13,
+                        color: AppColors.warning,
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         context.l10n.premium,
@@ -232,10 +241,10 @@ class _SectionHeader extends StatelessWidget {
       child: Text(
         label.toUpperCase(),
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: cs.primary,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1.1,
-            ),
+          color: cs.primary,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 1.1,
+        ),
       ),
     );
   }
@@ -289,8 +298,8 @@ class _SettingsTile extends StatelessWidget {
                     Text(
                       title,
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(
@@ -300,8 +309,11 @@ class _SettingsTile extends StatelessWidget {
                   ],
                 ),
               ),
-              Icon(Icons.chevron_right_rounded,
-                  size: 20, color: cs.onSurfaceVariant),
+              Icon(
+                Icons.chevron_right_rounded,
+                size: 20,
+                color: cs.onSurfaceVariant,
+              ),
             ],
           ),
         ),
@@ -333,9 +345,9 @@ class _SegmentCard extends StatelessWidget {
         children: [
           Text(
             label,
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 12),
           SizedBox(width: double.infinity, child: child),
@@ -356,7 +368,8 @@ class _ThemeSegmented extends ConsumerWidget {
     return SegmentedButton<ThemeMode>(
       showSelectedIcon: false,
       selected: {current},
-      onSelectionChanged: (v) => ref.read(themeModeProvider.notifier).set(v.first),
+      onSelectionChanged: (v) =>
+          ref.read(themeModeProvider.notifier).set(v.first),
       segments: [
         ButtonSegment(value: ThemeMode.system, label: Text(l10n.themeSystem)),
         ButtonSegment(value: ThemeMode.light, label: Text(l10n.themeLight)),
@@ -381,8 +394,14 @@ class _StatusFilterSegmented extends ConsumerWidget {
           ref.read(debtStatusFilterProvider.notifier).set(v.first),
       segments: [
         ButtonSegment(value: DebtStatusFilter.all, label: Text(l10n.filterAll)),
-        ButtonSegment(value: DebtStatusFilter.active, label: Text(l10n.filterActive)),
-        ButtonSegment(value: DebtStatusFilter.passive, label: Text(l10n.filterInactive)),
+        ButtonSegment(
+          value: DebtStatusFilter.active,
+          label: Text(l10n.filterActive),
+        ),
+        ButtonSegment(
+          value: DebtStatusFilter.completed,
+          label: Text(l10n.filterInactive),
+        ),
       ],
     );
   }
@@ -401,9 +420,9 @@ class _LocaleSegmented extends ConsumerWidget {
       selected: {current?.languageCode ?? 'system'},
       onSelectionChanged: (v) {
         final code = v.first;
-        ref.read(localeProvider.notifier).set(
-              code == 'system' ? null : Locale(code),
-            );
+        ref
+            .read(localeProvider.notifier)
+            .set(code == 'system' ? null : Locale(code));
       },
       segments: [
         ButtonSegment(value: 'system', label: Text(l10n.langSystem)),

@@ -38,5 +38,6 @@ class SubscriptionRemoteDatasource {
     }
   }
 
-  ApiException _mapException(DioException e) => ApiException.fromDioException(e);
+  ApiException _mapException(DioException e) =>
+      ApiException.fromDioException(e);
 }

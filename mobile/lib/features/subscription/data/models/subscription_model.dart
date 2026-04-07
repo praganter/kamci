@@ -9,7 +9,9 @@ abstract class SubscriptionModel with _$SubscriptionModel {
   const factory SubscriptionModel({
     required String plan,
     required String status,
-    DateTime? expiresDate,
+    @JsonKey(name: 'expiryDate') DateTime? expiresDate,
+    String? accessToken,
+    String? refreshToken,
   }) = _SubscriptionModel;
 
   factory SubscriptionModel.fromJson(Map<String, dynamic> json) =>
@@ -18,8 +20,10 @@ abstract class SubscriptionModel with _$SubscriptionModel {
 
 extension SubscriptionModelX on SubscriptionModel {
   Subscription toDomain() => Subscription(
-        plan: plan,
-        status: status,
-        expiresDate: expiresDate,
-      );
+    plan: plan,
+    status: status,
+    expiresDate: expiresDate,
+    accessToken: accessToken,
+    refreshToken: refreshToken,
+  );
 }

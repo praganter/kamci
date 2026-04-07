@@ -25,8 +25,9 @@ class _PremiumCardState extends ConsumerState<PremiumCard> {
   @override
   void initState() {
     super.initState();
-    _purchaseSub =
-        InAppPurchase.instance.purchaseStream.listen(_onPurchaseUpdate);
+    _purchaseSub = InAppPurchase.instance.purchaseStream.listen(
+      _onPurchaseUpdate,
+    );
   }
 
   @override
@@ -40,16 +41,12 @@ class _PremiumCardState extends ConsumerState<PremiumCard> {
       switch (p.status) {
         case PurchaseStatus.purchased:
         case PurchaseStatus.restored:
-          await ref.read(subscriptionNotifierProvider.notifier).verifyReceipt(
+          await ref
+              .read(subscriptionNotifierProvider.notifier)
+              .verifyReceipt(
                 VerifyReceiptRequest(
                   platform: Platform.isIOS ? 'IOS' : 'ANDROID',
-                  plan: SubscriptionConstants.planForProductId(p.productID),
-                  receiptData: Platform.isIOS
-                      ? p.verificationData.serverVerificationData
-                      : null,
-                  purchaseToken: Platform.isAndroid
-                      ? p.verificationData.serverVerificationData
-                      : null,
+                  receipt: p.verificationData.serverVerificationData,
                 ),
               );
           await InAppPurchase.instance.completePurchase(p);
@@ -69,8 +66,9 @@ class _PremiumCardState extends ConsumerState<PremiumCard> {
     final available = await InAppPurchase.instance.isAvailable();
     if (!available || !context.mounted) return;
 
-    final response = await InAppPurchase.instance
-        .queryProductDetails(SubscriptionConstants.productIds);
+    final response = await InAppPurchase.instance.queryProductDetails(
+      SubscriptionConstants.productIds,
+    );
 
     if (!context.mounted) return;
 
@@ -165,8 +163,7 @@ class _PremiumActiveCard extends ConsumerWidget {
             ),
           ),
           Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.25),
               borderRadius: BorderRadius.circular(20),
@@ -216,16 +213,13 @@ class _UpgradeCard extends StatelessWidget {
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: AppColors.primary.withValues(alpha: 0.3),
-        ),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
       ),
       child: InkWell(
         onTap: loading ? null : onTap,
         borderRadius: BorderRadius.circular(16),
         child: Padding(
-          padding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           child: Row(
             children: [
               Container(
@@ -256,9 +250,7 @@ class _UpgradeCard extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       context.l10n.premiumUnlimitedDesc,
-                      style: tt.bodySmall?.copyWith(
-                        color: cs.onSurfaceVariant,
-                      ),
+                      style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
                     ),
                   ],
                 ),
@@ -303,7 +295,11 @@ class _PlanSheet extends StatelessWidget {
 
     return Padding(
       padding: EdgeInsets.fromLTRB(
-        20, 20, 20, MediaQuery.of(context).viewInsets.bottom + 32),
+        20,
+        20,
+        20,
+        MediaQuery.of(context).viewInsets.bottom + 32,
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -390,8 +386,7 @@ class _PlanOption extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding:
-            const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
         decoration: BoxDecoration(
           color: cs.surface,
           borderRadius: BorderRadius.circular(14),
@@ -412,17 +407,19 @@ class _PlanOption extends StatelessWidget {
                     children: [
                       Text(
                         label,
-                        style: tt.titleSmall
-                            ?.copyWith(fontWeight: FontWeight.w700),
+                        style: tt.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                       if (badge != null) ...[
                         const SizedBox(width: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 7, vertical: 2),
+                            horizontal: 7,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
-                            color: AppColors.warning
-                                .withValues(alpha: 0.15),
+                            color: AppColors.warning.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
