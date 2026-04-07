@@ -57,6 +57,7 @@ services:
       - SPRING_RABBITMQ_PORT=5672
       - SPRING_RABBITMQ_USERNAME=${RABBITMQ_DEFAULT_USER}
       - SPRING_RABBITMQ_PASSWORD=${RABBITMQ_DEFAULT_PASS}
+      - ADMIN_SECRET_KEY=${ADMIN_SECRET_KEY}
     depends_on:
       mongodb:
         condition: service_healthy

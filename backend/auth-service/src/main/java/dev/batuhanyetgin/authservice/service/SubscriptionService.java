@@ -14,7 +14,10 @@ import dev.batuhanyetgin.commonmodule.exception.BaseException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -30,24 +33,8 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class SubscriptionService {
 
-    private final AuthRepositoryService authRS;
-    private final SubscriptionRepositoryService subscriptionRS;
-    private final JwtService jwtService;
-    private final ObjectMapper objectMapper;
-    private final AppleJwsVerifier appleJwsVerifier;
-
-    @Value("${apple.store.shared-secret}")
-    private String appleSharedSecret;
-
-    @Value("${apple.store.verify-url}")
-    private String appleVerifyUrl;
-
-    @Value("${apple.store.sandbox-verify-url}")
-    private String appleSandboxVerifyUrl;
-
     private static final int APPLE_STATUS_OK = 0;
     private static final int APPLE_STATUS_SANDBOX = 21007;
-
     // Google Play subscription notification types
     private static final int GOOGLE_SUBSCRIPTION_RECOVERED = 1;
     private static final int GOOGLE_SUBSCRIPTION_RENEWED = 4;
@@ -56,6 +43,19 @@ public class SubscriptionService {
     private static final int GOOGLE_SUBSCRIPTION_ON_HOLD = 5;
     private static final int GOOGLE_SUBSCRIPTION_EXPIRED = 13;
     private static final int GOOGLE_SUBSCRIPTION_REVOKED = 12;
+    private final AuthRepositoryService authRS;
+    private final SubscriptionRepositoryService subscriptionRS;
+    private final JwtService jwtService;
+    private final ObjectMapper objectMapper;
+    private final AppleJwsVerifier appleJwsVerifier;
+    @Value("${apple.store.shared-secret}")
+    private String appleSharedSecret;
+    @Value("${apple.store.verify-url}")
+    private String appleVerifyUrl;
+    @Value("${apple.store.sandbox-verify-url}")
+    private String appleSandboxVerifyUrl;
+    @Value("${ADMIN_SECRET_KEY:}")
+    private String adminSecretKey;
 
     public SubscriptionResponse verifyReceipt(final String userId, final VerifyReceiptRequest request) {
         final SubscriptionPlatform platform = SubscriptionPlatform.valueOf(request.getPlatform());
@@ -231,6 +231,38 @@ public class SubscriptionService {
         } catch (Exception e) {
             log.error("Failed to process Google webhook: {}", e.getMessage(), e);
         }
+    }
+
+    public void grantPremium(final String userId) {
+        final var authDocument = authRS.findById(userId);
+        authDocument.setPremium(true);
+        authRS.save(authDocument);
+
+        final var subscription = subscriptionRS.findByUserId(userId)
+                .orElseGet(() -> SubscriptionDocument.builder()
+                        .userId(userId)
+                        .build());
+
+        subscription.setStatus(SubscriptionStatus.ACTIVE);
+        subscription.setPlan(SubscriptionPlan.YEARLY);
+        subscription.setPlatform(SubscriptionPlatform.ANDROID);
+        subscription.setStartDate(LocalDateTime.now());
+        subscription.setExpiryDate(LocalDateTime.now().plusYears(100));
+        subscription.setOriginalTransactionId("ADMIN_GRANT_" + userId);
+        subscription.setPurchaseToken("ADMIN_GRANT_" + userId);
+
+        subscriptionRS.save(subscription);
+    }
+
+    public void revokePremium(final String userId) {
+        final var authDocument = authRS.findById(userId);
+        authDocument.setPremium(false);
+        authRS.save(authDocument);
+
+        subscriptionRS.findByUserId(userId).ifPresent(subscription -> {
+            subscription.setStatus(SubscriptionStatus.CANCELLED);
+            subscriptionRS.save(subscription);
+        });
     }
 
     private JsonNode verifyAppleReceipt(final String receiptData) {
