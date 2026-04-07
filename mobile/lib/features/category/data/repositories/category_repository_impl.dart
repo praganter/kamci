@@ -46,9 +46,10 @@ class CategoryRepositoryImpl implements CategoryRepository {
 
   @override
   Future<void> addMembersBulk(
-    String categoryId,
-    List<({String email, AccessLevel accessLevel})> members,
-  ) => _datasource.addMembersBulk(categoryId, members);
+    List<String> categoryIds,
+    String email,
+    AccessLevel accessLevel,
+  ) => _datasource.addMembersBulk(categoryIds, email, accessLevel);
 
   @override
   Future<void> removeMember(String categoryId, String userId) =>

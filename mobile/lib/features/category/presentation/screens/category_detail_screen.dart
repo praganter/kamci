@@ -21,9 +21,8 @@ class CategoryDetailScreen extends ConsumerWidget {
     final currentUserId = currentUserAsync.valueOrNull;
 
     return categoryAsync.when(
-      loading: () => const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      ),
+      loading: () =>
+          const Scaffold(body: Center(child: CircularProgressIndicator())),
       error: (e, _) => Scaffold(
         appBar: AppBar(),
         body: AppErrorWidget(
@@ -46,8 +45,9 @@ class CategoryDetailScreen extends ConsumerWidget {
                     isScrollControlled: true,
                     useSafeArea: true,
                     shape: const RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.vertical(top: Radius.circular(24)),
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(24),
+                      ),
                     ),
                     builder: (_) => AddCategorySheet(
                       categoryId: id,
@@ -60,11 +60,13 @@ class CategoryDetailScreen extends ConsumerWidget {
           floatingActionButton: isOwner
               ? FloatingActionButton.extended(
                   onPressed: () async {
-                    final result = await showDialog<
-                        ({String userId, dynamic accessLevel})>(
-                      context: context,
-                      builder: (_) => const AddMemberDialog(),
-                    );
+                    final result =
+                        await showDialog<
+                          ({String userId, dynamic accessLevel})
+                        >(
+                          context: context,
+                          builder: (_) => const AddMemberDialog(),
+                        );
                     if (result != null && context.mounted) {
                       await ref
                           .read(categoryDetailProvider(id).notifier)
@@ -94,9 +96,9 @@ class CategoryDetailScreen extends ConsumerWidget {
                           final member = category.members[index];
                           return ListTile(
                             leading: CircleAvatar(
-                              backgroundColor: Theme.of(context)
-                                  .colorScheme
-                                  .primaryContainer,
+                              backgroundColor: Theme.of(
+                                context,
+                              ).colorScheme.primaryContainer,
                               child: Icon(
                                 Icons.person_outline,
                                 color: Theme.of(context).colorScheme.primary,
@@ -113,8 +115,9 @@ class CategoryDetailScreen extends ConsumerWidget {
                                   IconButton(
                                     icon: Icon(
                                       Icons.remove_circle_outline,
-                                      color:
-                                          Theme.of(context).colorScheme.error,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.error,
                                     ),
                                     onPressed: () async {
                                       final confirmed = await showConfirmDialog(
@@ -125,8 +128,11 @@ class CategoryDetailScreen extends ConsumerWidget {
                                       );
                                       if (confirmed && context.mounted) {
                                         await ref
-                                            .read(categoryDetailProvider(id)
-                                                .notifier)
+                                            .read(
+                                              categoryDetailProvider(
+                                                id,
+                                              ).notifier,
+                                            )
                                             .removeMember(member.userId);
                                       }
                                     },

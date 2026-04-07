@@ -6,9 +6,12 @@ part 'member_embedded_model.g.dart';
 
 @JsonEnum(alwaysCreate: true)
 enum AccessLevelJson {
-  @JsonValue('READ') read,
-  @JsonValue('WRITE') write,
-  @JsonValue('ADMIN') admin;
+  @JsonValue('READ')
+  read,
+  @JsonValue('WRITE')
+  write,
+  @JsonValue('ADMIN')
+  admin;
 
   AccessLevel toDomain() => switch (this) {
     AccessLevelJson.read => AccessLevel.read,
@@ -35,8 +38,6 @@ abstract class MemberEmbeddedModel with _$MemberEmbeddedModel {
 }
 
 extension MemberEmbeddedModelMapper on MemberEmbeddedModel {
-  MemberEmbedded toDomain() => MemberEmbedded(
-    userId: userId,
-    accessLevel: accessLevel.toDomain(),
-  );
+  MemberEmbedded toDomain() =>
+      MemberEmbedded(userId: userId, accessLevel: accessLevel.toDomain());
 }

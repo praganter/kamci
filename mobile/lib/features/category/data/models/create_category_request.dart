@@ -29,8 +29,9 @@ abstract class AddMemberRequest with _$AddMemberRequest {
 @freezed
 abstract class AddMembersBulkRequest with _$AddMembersBulkRequest {
   const factory AddMembersBulkRequest({
-    required String categoryId,
-    required List<AddMemberRequest> members,
+    required List<String> categoryIds,
+    required String email,
+    required AccessLevelJson accessLevel,
   }) = _AddMembersBulkRequest;
 
   factory AddMembersBulkRequest.fromJson(Map<String, dynamic> json) =>

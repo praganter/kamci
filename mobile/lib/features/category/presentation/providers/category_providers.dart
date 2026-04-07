@@ -29,10 +29,7 @@ class CategoryDetail extends _$CategoryDetail {
     );
   }
 
-  Future<void> addMember(
-    String email,
-    AccessLevel accessLevel,
-  ) async {
+  Future<void> addMember(String email, AccessLevel accessLevel) async {
     final category = await future;
     await ref
         .read(categoryRepositoryProvider)
@@ -52,8 +49,8 @@ class CategoryDetail extends _$CategoryDetail {
 @riverpod
 class CategoryForm extends _$CategoryForm {
   @override
-  ({bool isLoading, String? error, bool isSuccess, String? createdId}) build() =>
-      (isLoading: false, error: null, isSuccess: false, createdId: null);
+  ({bool isLoading, String? error, bool isSuccess, String? createdId})
+  build() => (isLoading: false, error: null, isSuccess: false, createdId: null);
 
   Future<void> submit(String name, {String? categoryId}) async {
     state = (isLoading: true, error: null, isSuccess: false, createdId: null);
@@ -67,9 +64,19 @@ class CategoryForm extends _$CategoryForm {
         createdId = created.id;
       }
       ref.invalidate(categoryListProvider);
-      state = (isLoading: false, error: null, isSuccess: true, createdId: createdId);
+      state = (
+        isLoading: false,
+        error: null,
+        isSuccess: true,
+        createdId: createdId,
+      );
     } catch (e) {
-      state = (isLoading: false, error: e.toString(), isSuccess: false, createdId: null);
+      state = (
+        isLoading: false,
+        error: e.toString(),
+        isSuccess: false,
+        createdId: null,
+      );
     }
   }
 }

@@ -53,10 +53,10 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
         FilledButton(
           onPressed: () {
             if (_userIdCtrl.text.trim().isNotEmpty) {
-              Navigator.pop(
-                context,
-                (userId: _userIdCtrl.text.trim(), accessLevel: _selectedLevel),
-              );
+              Navigator.pop(context, (
+                userId: _userIdCtrl.text.trim(),
+                accessLevel: _selectedLevel,
+              ));
             }
           },
           child: Text(context.l10n.add),

@@ -5,11 +5,7 @@ import '../../../../core/utils/validators.dart';
 import '../providers/category_providers.dart';
 
 class AddCategorySheet extends ConsumerStatefulWidget {
-  const AddCategorySheet({
-    super.key,
-    this.categoryId,
-    this.initialName,
-  });
+  const AddCategorySheet({super.key, this.categoryId, this.initialName});
 
   final String? categoryId;
   final String? initialName;
@@ -36,10 +32,9 @@ class _AddCategorySheetState extends ConsumerState<AddCategorySheet> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    await ref.read(categoryFormProvider.notifier).submit(
-          _nameCtrl.text.trim(),
-          categoryId: widget.categoryId,
-        );
+    await ref
+        .read(categoryFormProvider.notifier)
+        .submit(_nameCtrl.text.trim(), categoryId: widget.categoryId);
   }
 
   @override
@@ -50,8 +45,9 @@ class _AddCategorySheetState extends ConsumerState<AddCategorySheet> {
     ref.listen(categoryFormProvider, (_, state) {
       if (state.isSuccess) Navigator.of(context).pop(state.createdId);
       if (state.error != null) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(state.error!)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(state.error!)));
       }
     });
 
@@ -59,7 +55,11 @@ class _AddCategorySheetState extends ConsumerState<AddCategorySheet> {
 
     return Padding(
       padding: EdgeInsets.fromLTRB(
-          24, 24, 24, MediaQuery.viewInsetsOf(context).bottom + 24),
+        24,
+        24,
+        24,
+        MediaQuery.viewInsetsOf(context).bottom + 24,
+      ),
       child: Form(
         key: _formKey,
         child: Column(

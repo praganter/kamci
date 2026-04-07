@@ -23,7 +23,9 @@ class CategoryRemoteDatasource {
     try {
       final response = await _dio.get(ApiConstants.categoryGetAll);
       final list = response.data as List<dynamic>;
-      return list.map((e) => CategoryModel.fromJson(e as Map<String, dynamic>)).toList();
+      return list
+          .map((e) => CategoryModel.fromJson(e as Map<String, dynamic>))
+          .toList();
     } on DioException catch (e) {
       throw _mapException(e);
     }
@@ -35,7 +37,9 @@ class CategoryRemoteDatasource {
         ApiConstants.categorySave,
         data: {'name': name},
       );
-      final data = Map<String, dynamic>.from(response.data as Map<String, dynamic>);
+      final data = Map<String, dynamic>.from(
+        response.data as Map<String, dynamic>,
+      );
       data.putIfAbsent('ownerId', () => '');
       return CategoryModel.fromJson(data);
     } on DioException catch (e) {
@@ -49,7 +53,9 @@ class CategoryRemoteDatasource {
         ApiConstants.categoryUpdate,
         data: {'id': id, 'name': name},
       );
-      final data = Map<String, dynamic>.from(response.data as Map<String, dynamic>);
+      final data = Map<String, dynamic>.from(
+        response.data as Map<String, dynamic>,
+      );
       data.putIfAbsent('ownerId', () => '');
       return CategoryModel.fromJson(data);
     } on DioException catch (e) {
@@ -72,7 +78,7 @@ class CategoryRemoteDatasource {
   ) async {
     try {
       await _dio.post(
-        '/category/$categoryId/member',
+        '${ApiConstants.categoryMemberAdd}/$categoryId/member',
         data: AddMemberRequest(
           email: email,
           accessLevel: AccessLevelJson.fromDomain(accessLevel),
@@ -84,20 +90,17 @@ class CategoryRemoteDatasource {
   }
 
   Future<void> addMembersBulk(
-    String categoryId,
-    List<({String email, AccessLevel accessLevel})> members,
+    List<String> categoryIds,
+    String email,
+    AccessLevel accessLevel,
   ) async {
     try {
       await _dio.post(
         ApiConstants.categoryMemberBulk,
         data: AddMembersBulkRequest(
-          categoryId: categoryId,
-          members: members
-              .map((m) => AddMemberRequest(
-                    email: m.email,
-                    accessLevel: AccessLevelJson.fromDomain(m.accessLevel),
-                  ))
-              .toList(),
+          categoryIds: categoryIds,
+          email: email,
+          accessLevel: AccessLevelJson.fromDomain(accessLevel),
         ).toJson(),
       );
     } on DioException catch (e) {
@@ -107,11 +110,14 @@ class CategoryRemoteDatasource {
 
   Future<void> removeMember(String categoryId, String userId) async {
     try {
-      await _dio.delete('/category/$categoryId/member/$userId');
+      await _dio.delete(
+        '${ApiConstants.categoryMemberRemove}/$categoryId/member/$userId',
+      );
     } on DioException catch (e) {
       throw _mapException(e);
     }
   }
 
-  ApiException _mapException(DioException e) => ApiException.fromDioException(e);
+  ApiException _mapException(DioException e) =>
+      ApiException.fromDioException(e);
 }

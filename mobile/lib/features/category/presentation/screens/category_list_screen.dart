@@ -20,8 +20,9 @@ class CategoryListScreen extends ConsumerWidget {
     if (!isPremium) {
       final categories = ref.read(categoryListProvider).valueOrNull ?? [];
       final currentUserId = ref.read(currentUserIdProvider).valueOrNull;
-      final ownedCategories =
-          categories.where((c) => c.ownerId == currentUserId).length;
+      final ownedCategories = categories
+          .where((c) => c.ownerId == currentUserId)
+          .length;
 
       if (ownedCategories >= 2) {
         PremiumRequiredSheet.show(
@@ -56,24 +57,26 @@ class CategoryListScreen extends ConsumerWidget {
             preferredSize: const Size.fromHeight(48),
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-              child: Builder(builder: (context) {
-                final cs = Theme.of(context).colorScheme;
-                return TabBar(
-                  indicatorSize: TabBarIndicatorSize.tab,
-                  indicator: BoxDecoration(
-                    color: cs.primaryContainer,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  dividerColor: Colors.transparent,
-                  labelColor: cs.primary,
-                  unselectedLabelColor: cs.onSurfaceVariant,
-                  labelStyle: const TextStyle(fontWeight: FontWeight.w600),
-                  tabs: [
-                    Tab(text: l10n.myCategories),
-                    Tab(text: l10n.joinedCategories),
-                  ],
-                );
-              }),
+              child: Builder(
+                builder: (context) {
+                  final cs = Theme.of(context).colorScheme;
+                  return TabBar(
+                    indicatorSize: TabBarIndicatorSize.tab,
+                    indicator: BoxDecoration(
+                      color: cs.primaryContainer,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    dividerColor: Colors.transparent,
+                    labelColor: cs.primary,
+                    unselectedLabelColor: cs.onSurfaceVariant,
+                    labelStyle: const TextStyle(fontWeight: FontWeight.w600),
+                    tabs: [
+                      Tab(text: l10n.myCategories),
+                      Tab(text: l10n.joinedCategories),
+                    ],
+                  );
+                },
+              ),
             ),
           ),
         ),
@@ -129,9 +132,7 @@ class _CategoryTabView extends ConsumerWidget {
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
-                    isOwner
-                        ? Icons.folder_open_outlined
-                        : Icons.group_outlined,
+                    isOwner ? Icons.folder_open_outlined : Icons.group_outlined,
                     size: 32,
                     color: Theme.of(context).colorScheme.primary,
                   ),
@@ -167,18 +168,19 @@ class _CategoryTabView extends ConsumerWidget {
                 ),
                 onEdit: isOwner
                     ? () => showModalBottomSheet(
-                          context: context,
-                          isScrollControlled: true,
-                          useSafeArea: true,
-                          shape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.vertical(
-                                top: Radius.circular(24)),
+                        context: context,
+                        isScrollControlled: true,
+                        useSafeArea: true,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.vertical(
+                            top: Radius.circular(24),
                           ),
-                          builder: (_) => AddCategorySheet(
-                            categoryId: category.id,
-                            initialName: category.name,
-                          ),
-                        )
+                        ),
+                        builder: (_) => AddCategorySheet(
+                          categoryId: category.id,
+                          initialName: category.name,
+                        ),
+                      )
                     : null,
                 onDelete: isOwner
                     ? () async {
@@ -257,8 +259,8 @@ class _CategoryCard extends StatelessWidget {
                     Text(
                       category.name,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(
@@ -270,16 +272,21 @@ class _CategoryCard extends StatelessWidget {
               ),
               if (onEdit != null || onDelete != null)
                 PopupMenuButton(
-                  icon: Icon(Icons.more_vert,
-                      size: 18, color: cs.onSurfaceVariant),
+                  icon: Icon(
+                    Icons.more_vert,
+                    size: 18,
+                    color: cs.onSurfaceVariant,
+                  ),
                   itemBuilder: (_) => [
                     if (onEdit != null)
                       PopupMenuItem(value: 'edit', child: Text(l10n.edit)),
                     if (onDelete != null)
                       PopupMenuItem(
                         value: 'delete',
-                        child: Text(l10n.delete,
-                            style: const TextStyle(color: Colors.red)),
+                        child: Text(
+                          l10n.delete,
+                          style: const TextStyle(color: Colors.red),
+                        ),
                       ),
                   ],
                   onSelected: (value) {
