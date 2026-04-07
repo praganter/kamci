@@ -8,7 +8,9 @@ class ChangePasswordNotifier extends StateNotifier<AsyncValue<void>> {
   final dynamic _repository;
 
   Future<bool> changePassword(
-      String currentPassword, String newPassword) async {
+    String currentPassword,
+    String newPassword,
+  ) async {
     state = const AsyncLoading();
     try {
       await _repository.changePassword(currentPassword, newPassword);
@@ -22,7 +24,9 @@ class ChangePasswordNotifier extends StateNotifier<AsyncValue<void>> {
       return false;
     } catch (_) {
       state = const AsyncError(
-          'Beklenmeyen bir hata oluştu.', StackTrace.empty);
+        'Beklenmeyen bir hata oluştu.',
+        StackTrace.empty,
+      );
       return false;
     }
   }
@@ -30,7 +34,7 @@ class ChangePasswordNotifier extends StateNotifier<AsyncValue<void>> {
   void reset() => state = const AsyncData(null);
 }
 
-final changePasswordProvider = StateNotifierProvider.autoDispose<
-    ChangePasswordNotifier, AsyncValue<void>>(
-  (ref) => ChangePasswordNotifier(ref.watch(authRepositoryProvider)),
-);
+final changePasswordProvider =
+    StateNotifierProvider.autoDispose<ChangePasswordNotifier, AsyncValue<void>>(
+      (ref) => ChangePasswordNotifier(ref.watch(authRepositoryProvider)),
+    );

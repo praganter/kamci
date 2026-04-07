@@ -31,9 +31,9 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
         .read(changePasswordProvider.notifier)
         .changePassword(_currentCtrl.text, _newCtrl.text);
     if (success && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.passwordUpdated)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(context.l10n.passwordUpdated)));
       Navigator.of(context).pop();
     }
   }
@@ -63,9 +63,11 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                 decoration: InputDecoration(
                   labelText: l10n.currentPassword,
                   suffixIcon: IconButton(
-                    icon: Icon(_showCurrent
-                        ? Icons.visibility_off_outlined
-                        : Icons.visibility_outlined),
+                    icon: Icon(
+                      _showCurrent
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility_outlined,
+                    ),
                     onPressed: () =>
                         setState(() => _showCurrent = !_showCurrent),
                   ),
@@ -84,9 +86,11 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                 decoration: InputDecoration(
                   labelText: l10n.newPassword,
                   suffixIcon: IconButton(
-                    icon: Icon(_showNew
-                        ? Icons.visibility_off_outlined
-                        : Icons.visibility_outlined),
+                    icon: Icon(
+                      _showNew
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility_outlined,
+                    ),
                     onPressed: () => setState(() => _showNew = !_showNew),
                   ),
                 ),
@@ -103,7 +107,9 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                 const SizedBox(height: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 14, vertical: 10),
+                    horizontal: 14,
+                    vertical: 10,
+                  ),
                   decoration: BoxDecoration(
                     color: cs.errorContainer,
                     borderRadius: BorderRadius.circular(12),

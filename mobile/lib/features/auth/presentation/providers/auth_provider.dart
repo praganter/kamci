@@ -94,7 +94,11 @@ class AuthNotifier extends _$AuthNotifier {
     state = const AuthState.loading();
     try {
       final repository = ref.read(authRepositoryProvider);
-      final tokens = await repository.register(email, password, premium: premium);
+      final tokens = await repository.register(
+        email,
+        password,
+        premium: premium,
+      );
       final storage = ref.read(secureStorageServiceProvider);
       await storage.saveTokens(
         accessToken: tokens.accessToken,

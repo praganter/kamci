@@ -66,10 +66,7 @@ class AuthRemoteDatasource {
 
   Future<void> forgotPassword(String email) async {
     try {
-      await _dio.post(
-        ApiConstants.forgetPassword,
-        data: {'email': email},
-      );
+      await _dio.post(ApiConstants.forgetPassword, data: {'email': email});
     } on DioException catch (e) {
       throw _mapException(e);
     }
@@ -87,14 +84,13 @@ class AuthRemoteDatasource {
   }
 
   Future<void> changePassword(
-      String currentPassword, String newPassword) async {
+    String currentPassword,
+    String newPassword,
+  ) async {
     try {
       await _authDio.post(
         ApiConstants.changePassword,
-        data: {
-          'currentPassword': currentPassword,
-          'newPassword': newPassword,
-        },
+        data: {'currentPassword': currentPassword, 'newPassword': newPassword},
       );
     } on DioException catch (e) {
       throw _mapException(e);
@@ -115,5 +111,6 @@ class AuthRemoteDatasource {
     }
   }
 
-  ApiException _mapException(DioException e) => ApiException.fromDioException(e);
+  ApiException _mapException(DioException e) =>
+      ApiException.fromDioException(e);
 }

@@ -1,10 +1,7 @@
 import 'dart:convert';
 
 class AuthTokens {
-  const AuthTokens({
-    required this.accessToken,
-    required this.refreshToken,
-  });
+  const AuthTokens({required this.accessToken, required this.refreshToken});
 
   final String accessToken;
   final String refreshToken;
@@ -14,7 +11,10 @@ class AuthTokens {
       final parts = accessToken.split('.');
       if (parts.length != 3) return null;
       final payload = parts[1];
-      final padded = payload.padRight(payload.length + (4 - payload.length % 4) % 4, '=');
+      final padded = payload.padRight(
+        payload.length + (4 - payload.length % 4) % 4,
+        '=',
+      );
       final decoded = utf8.decode(base64Url.decode(padded));
       final map = json.decode(decoded) as Map<String, dynamic>;
       return map['sub'] as String?;
@@ -28,7 +28,10 @@ class AuthTokens {
       final parts = accessToken.split('.');
       if (parts.length != 3) return true;
       final payload = parts[1];
-      final padded = payload.padRight(payload.length + (4 - payload.length % 4) % 4, '=');
+      final padded = payload.padRight(
+        payload.length + (4 - payload.length % 4) % 4,
+        '=',
+      );
       final decoded = utf8.decode(base64Url.decode(padded));
       final map = json.decode(decoded) as Map<String, dynamic>;
       final exp = map['exp'] as int?;

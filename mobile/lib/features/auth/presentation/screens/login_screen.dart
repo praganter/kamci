@@ -40,9 +40,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final l10n = context.l10n;
     ref.listen<AuthState>(authNotifierProvider, (_, state) {
       if (state is AuthStateError) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(state.message)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(state.message)));
       }
     });
 
@@ -78,8 +78,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   child: Text(
                     l10n.welcome,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: cs.onSurfaceVariant,
-                        ),
+                      color: cs.onSurfaceVariant,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 40),
@@ -110,9 +110,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     style: TextButton.styleFrom(
                       foregroundColor: cs.primary,
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 4, vertical: 8),
+                        horizontal: 4,
+                        vertical: 8,
+                      ),
                       textStyle: const TextStyle(
-                          fontSize: 13, fontWeight: FontWeight.w500),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                     child: Text(l10n.forgotPassword),
                   ),
@@ -130,17 +134,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     Text(
                       l10n.noAccount,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: cs.onSurfaceVariant,
-                          ),
+                        color: cs.onSurfaceVariant,
+                      ),
                     ),
                     TextButton(
                       onPressed: () => context.pushNamed(RouteNames.register),
                       style: TextButton.styleFrom(
                         foregroundColor: cs.primary,
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 8),
+                          horizontal: 6,
+                          vertical: 8,
+                        ),
                         textStyle: const TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.w600),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                       child: Text(l10n.signUp),
                     ),

@@ -5,6 +5,9 @@ class RegisterUsecase {
   const RegisterUsecase(this._repository);
   final AuthRepository _repository;
 
-  Future<AuthTokens> call(String email, String password, {bool premium = false}) =>
-      _repository.register(email, password, premium: premium);
+  Future<AuthTokens> call(
+    String email,
+    String password, {
+    bool premium = false,
+  }) => _repository.register(email, password, premium: premium);
 }
