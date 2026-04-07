@@ -19,8 +19,8 @@ class DebtRepositoryImpl implements DebtRepository {
   final DebtRemoteDatasource _datasource;
 
   @override
-  Future<List<Debt>> getAll() async {
-    final models = await _datasource.getAll();
+  Future<List<Debt>> getAll(String month) async {
+    final models = await _datasource.getAll(month);
     return models.map((m) => m.toDomain()).toList();
   }
 
@@ -45,13 +45,30 @@ class DebtRepositoryImpl implements DebtRepository {
   }
 
   @override
-  Future<Debt> pay(String id) async {
-    final model = await _datasource.pay(id);
+  Future<Debt> pay(String id, {double? amountPaid}) async {
+    final model = await _datasource.pay(id, amountPaid: amountPaid);
+    return model.toDomain();
+  }
+
+  @override
+  Future<Debt> skip(String id) async {
+    final model = await _datasource.skip(id);
     return model.toDomain();
   }
 
   @override
   Future<void> delete(String id) => _datasource.delete(id);
+
+  @override
+  Future<Map<String, dynamic>> getSummary(String month) =>
+      _datasource.getSummary(month);
+
+  @override
+  Future<List<Map<String, dynamic>>> getPaymentHistory(
+    String id,
+    DateTime from,
+    DateTime to,
+  ) => _datasource.getPaymentHistory(id, from, to);
 
   CreateDebtRequest _paramsToRequest(CreateDebtParams params, {String? id}) {
     return CreateDebtRequest(
@@ -59,9 +76,13 @@ class DebtRepositoryImpl implements DebtRepository {
       name: params.name,
       categoryId: params.categoryId,
       description: params.description,
-      firstPaymentDate: DateFormatter.toApiDateTimeFormat(params.firstPaymentDate),
+      firstPaymentDate: DateFormatter.toApiDateTimeFormat(
+        params.firstPaymentDate,
+      ),
       installmentCount: params.installmentCount,
-      paymentPeriodType: PaymentPeriodTypeJson.fromDomain(params.paymentPeriodType),
+      paymentPeriodType: PaymentPeriodTypeJson.fromDomain(
+        params.paymentPeriodType,
+      ),
       amount: params.amount,
       autoPayment: params.autoPayment,
       currency: params.currency,

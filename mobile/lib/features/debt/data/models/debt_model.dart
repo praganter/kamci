@@ -8,42 +8,76 @@ part 'debt_model.g.dart';
 
 @JsonEnum(alwaysCreate: true)
 enum PaymentPeriodTypeJson {
-  @JsonValue('DAILY') daily,
-  @JsonValue('WEEKLY') weekly,
-  @JsonValue('MONTHLY') monthly,
-  @JsonValue('QUARTERLY') quarterly,
-  @JsonValue('YEARLY') yearly;
+  @JsonValue('DAILY')
+  daily,
+  @JsonValue('WEEKLY')
+  weekly,
+  @JsonValue('BI_WEEKLY')
+  biWeekly,
+  @JsonValue('MONTHLY')
+  monthly,
+  @JsonValue('QUARTERLY')
+  quarterly,
+  @JsonValue('HALF_YEARLY')
+  halfYearly,
+  @JsonValue('YEARLY')
+  yearly;
 
   PaymentPeriodType toDomain() => switch (this) {
     PaymentPeriodTypeJson.daily => PaymentPeriodType.daily,
     PaymentPeriodTypeJson.weekly => PaymentPeriodType.weekly,
+    PaymentPeriodTypeJson.biWeekly => PaymentPeriodType.biWeekly,
     PaymentPeriodTypeJson.monthly => PaymentPeriodType.monthly,
     PaymentPeriodTypeJson.quarterly => PaymentPeriodType.quarterly,
+    PaymentPeriodTypeJson.halfYearly => PaymentPeriodType.halfYearly,
     PaymentPeriodTypeJson.yearly => PaymentPeriodType.yearly,
   };
 
   static PaymentPeriodTypeJson fromDomain(PaymentPeriodType t) => switch (t) {
     PaymentPeriodType.daily => PaymentPeriodTypeJson.daily,
     PaymentPeriodType.weekly => PaymentPeriodTypeJson.weekly,
+    PaymentPeriodType.biWeekly => PaymentPeriodTypeJson.biWeekly,
     PaymentPeriodType.monthly => PaymentPeriodTypeJson.monthly,
     PaymentPeriodType.quarterly => PaymentPeriodTypeJson.quarterly,
+    PaymentPeriodType.halfYearly => PaymentPeriodTypeJson.halfYearly,
     PaymentPeriodType.yearly => PaymentPeriodTypeJson.yearly,
   };
 }
 
 @JsonEnum(alwaysCreate: true)
 enum DebtStatusJson {
-  @JsonValue('ACTIVE') active,
-  @JsonValue('PASSIVE') passive;
+  @JsonValue('ACTIVE')
+  active,
+  @JsonValue('COMPLETED')
+  completed;
 
   DebtStatus toDomain() => switch (this) {
     DebtStatusJson.active => DebtStatus.active,
-    DebtStatusJson.passive => DebtStatus.passive,
+    DebtStatusJson.completed => DebtStatus.completed,
   };
 
   static DebtStatusJson fromDomain(DebtStatus s) => switch (s) {
     DebtStatus.active => DebtStatusJson.active,
-    DebtStatus.passive => DebtStatusJson.passive,
+    DebtStatus.completed => DebtStatusJson.completed,
+  };
+}
+
+@JsonEnum(alwaysCreate: true)
+enum PaymentStatusJson {
+  @JsonValue('PAID')
+  paid,
+  @JsonValue('UNPAID')
+  unpaid,
+  @JsonValue('OVERDUE')
+  overdue,
+  @JsonValue('PARTIALLY_PAID')
+  partiallyPaid;
+
+  PaymentStatus toDomain() => switch (this) {
+    PaymentStatusJson.paid => PaymentStatus.paid,
+    PaymentStatusJson.unpaid => PaymentStatus.unpaid,
+    PaymentStatusJson.overdue => PaymentStatus.overdue,
+    PaymentStatusJson.partiallyPaid => PaymentStatus.partiallyPaid,
   };
 }
 
@@ -61,9 +95,9 @@ abstract class DebtModel with _$DebtModel {
     required PaymentPeriodTypeJson paymentPeriodType,
     @JsonKey(fromJson: _amountFromJson) required double amount,
     @Default(DebtStatusJson.active) DebtStatusJson status,
+    @Default(PaymentStatusJson.unpaid) PaymentStatusJson paymentStatus,
     String? currency,
     @Default(false) bool autoPayment,
-    @Default(false) bool paidCurrentPeriod,
     @Default([]) List<PaymentEmbeddedModel> payments,
     ReminderEmbeddedModel? reminder,
     String? nextReminderDate,
@@ -99,11 +133,12 @@ extension DebtModelMapper on DebtModel {
     currency: currency,
     status: status.toDomain(),
     autoPayment: autoPayment,
-    paidCurrentPeriod: paidCurrentPeriod,
+    paymentStatus: paymentStatus.toDomain(),
     payments: payments.map((p) => p.toDomain()).toList(),
     reminder: reminder?.toDomain(),
-    nextReminderDate:
-        nextReminderDate != null ? DateTime.tryParse(nextReminderDate!) : null,
+    nextReminderDate: nextReminderDate != null
+        ? DateTime.tryParse(nextReminderDate!)
+        : null,
     createdAt: createdAt != null ? DateTime.tryParse(createdAt!) : null,
     updatedAt: updatedAt != null ? DateTime.tryParse(updatedAt!) : null,
   );

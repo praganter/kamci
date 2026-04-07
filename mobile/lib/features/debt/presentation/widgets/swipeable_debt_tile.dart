@@ -74,8 +74,11 @@ class _SwipeableTileState extends ConsumerState<SwipeableTile>
           SnackBar(
             content: Row(
               children: [
-                const Icon(Icons.check_circle_rounded,
-                    color: Colors.white, size: 20),
+                const Icon(
+                  Icons.check_circle_rounded,
+                  color: Colors.white,
+                  size: 20,
+                ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
@@ -87,8 +90,9 @@ class _SwipeableTileState extends ConsumerState<SwipeableTile>
             ),
             backgroundColor: AppColors.statusActive,
             behavior: SnackBarBehavior.floating,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
             duration: const Duration(seconds: 3),
           ),
         );
@@ -100,8 +104,9 @@ class _SwipeableTileState extends ConsumerState<SwipeableTile>
             content: Text(e.toString()),
             backgroundColor: const Color(0xFFEF4444),
             behavior: SnackBarBehavior.floating,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         );
       }
@@ -116,8 +121,10 @@ class _SwipeableTileState extends ConsumerState<SwipeableTile>
     return GestureDetector(
       onHorizontalDragUpdate: (details) {
         setState(() {
-          _dragOffset = (_dragOffset + details.delta.dx)
-              .clamp(-_actionWidth, _actionWidth);
+          _dragOffset = (_dragOffset + details.delta.dx).clamp(
+            -_actionWidth,
+            _actionWidth,
+          );
         });
       },
       onHorizontalDragEnd: (_) {
@@ -136,8 +143,11 @@ class _SwipeableTileState extends ConsumerState<SwipeableTile>
                 child: Container(
                   color: AppColors.statusActive,
                   child: const Center(
-                    child: Icon(Icons.payments_rounded,
-                        color: Colors.white, size: 26),
+                    child: Icon(
+                      Icons.payments_rounded,
+                      color: Colors.white,
+                      size: 26,
+                    ),
                   ),
                 ),
               ),
@@ -153,8 +163,11 @@ class _SwipeableTileState extends ConsumerState<SwipeableTile>
                 child: Container(
                   color: const Color(0xFFEF4444),
                   child: const Center(
-                    child: Icon(Icons.delete_rounded,
-                        color: Colors.white, size: 26),
+                    child: Icon(
+                      Icons.delete_rounded,
+                      color: Colors.white,
+                      size: 26,
+                    ),
                   ),
                 ),
               ),

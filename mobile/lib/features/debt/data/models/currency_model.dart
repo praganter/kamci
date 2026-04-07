@@ -5,7 +5,7 @@ class CurrencyModel {
   final String symbol;
 
   factory CurrencyModel.fromJson(Map<String, dynamic> json) => CurrencyModel(
-        code: json['code'] as String,
-        symbol: json['symbol'] as String,
-      );
+    code: json['code'] as String,
+    symbol: json['symbol'] as String,
+  );
 }

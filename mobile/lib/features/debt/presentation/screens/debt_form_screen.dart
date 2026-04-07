@@ -67,8 +67,9 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
       _amountCtrl.text = debt.amount.toString();
       _descCtrl.text = debt.description ?? '';
       _firstPaymentDate = debt.firstPaymentDate;
-      _installmentCtrl.text =
-          debt.installmentCount != null ? debt.installmentCount.toString() : '';
+      _installmentCtrl.text = debt.installmentCount != null
+          ? debt.installmentCount.toString()
+          : '';
       _periodType = debt.paymentPeriodType;
       _selectedCategoryId = debt.categoryId;
       _selectedCurrency = debt.currency;
@@ -115,11 +116,32 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
+    final l10n = context.l10n;
+    if (_reminderEnabled) {
+      if (_reminderChannels.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.reminderChannelRequired)),
+        );
+        return;
+      }
+      if (_reminderDate == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.reminderDateRequired)),
+        );
+        return;
+      }
+      if (_reminderTime == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.reminderTimeRequired)),
+        );
+        return;
+      }
+    }
+
     final params = CreateDebtParams(
       name: _nameCtrl.text.trim(),
       categoryId: _selectedCategoryId,
-      description:
-          _descCtrl.text.trim().isEmpty ? null : _descCtrl.text.trim(),
+      description: _descCtrl.text.trim().isEmpty ? null : _descCtrl.text.trim(),
       firstPaymentDate: _firstPaymentDate!,
       installmentCount: int.tryParse(_installmentCtrl.text.trim()),
       paymentPeriodType: _periodType!,
@@ -157,9 +179,9 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
       }
     }
   }
@@ -169,7 +191,9 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
     if (!isPremium) {
       final categories = ref.read(categoryListProvider).valueOrNull ?? [];
       final currentUserId = ref.read(currentUserIdProvider).valueOrNull;
-      final ownedCategories = categories.where((c) => c.ownerId == currentUserId).length;
+      final ownedCategories = categories
+          .where((c) => c.ownerId == currentUserId)
+          .length;
 
       if (ownedCategories >= 2) {
         PremiumRequiredSheet.show(
@@ -231,14 +255,20 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                         ),
                         hint: Text(l10n.select),
                         items: categories
-                            .map((c) => DropdownMenuItem(
-                                value: c.id, child: Text(c.name)))
+                            .map(
+                              (c) => DropdownMenuItem(
+                                value: c.id,
+                                child: Text(c.name),
+                              ),
+                            )
                             .toList(),
                         onChanged: (v) =>
                             setState(() => _selectedCategoryId = v),
                         validator: (v) => v == null
-                            ? Validators.required(null,
-                                fieldName: l10n.category)
+                            ? Validators.required(
+                                null,
+                                fieldName: l10n.category,
+                              )
                             : null,
                       ),
                     ),
@@ -254,8 +284,9 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                           height: 56,
                           child: Icon(
                             Icons.add,
-                            color:
-                                Theme.of(context).colorScheme.onPrimaryContainer,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onPrimaryContainer,
                           ),
                         ),
                       ),
@@ -285,8 +316,9 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                   prefixIcon: const Icon(Icons.currency_lira),
                   hintText: '0.00',
                 ),
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 validator: Validators.amount,
               ),
               const SizedBox(height: 16),
@@ -298,24 +330,26 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                 data: (currencies) =>
                     // ignore: deprecated_member_use
                     DropdownButtonFormField<String>(
-                  // ignore: deprecated_member_use
-                  value: _selectedCurrency,
-                  decoration: InputDecoration(
-                    labelText: l10n.currency,
-                    prefixIcon: const Icon(Icons.currency_lira),
-                  ),
-                  hint: Text(l10n.select),
-                  items: currencies
-                      .map((c) => DropdownMenuItem(
-                            value: c.code,
-                            child: Text('${c.code}  ${c.symbol}'),
-                          ))
-                      .toList(),
-                  onChanged: (v) => setState(() => _selectedCurrency = v),
-                  validator: (v) => v == null
-                      ? Validators.required(null, fieldName: l10n.currency)
-                      : null,
-                ),
+                      // ignore: deprecated_member_use
+                      value: _selectedCurrency,
+                      decoration: InputDecoration(
+                        labelText: l10n.currency,
+                        prefixIcon: const Icon(Icons.currency_lira),
+                      ),
+                      hint: Text(l10n.select),
+                      items: currencies
+                          .map(
+                            (c) => DropdownMenuItem(
+                              value: c.code,
+                              child: Text('${c.code}  ${c.symbol}'),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (v) => setState(() => _selectedCurrency = v),
+                      validator: (v) => v == null
+                          ? Validators.required(null, fieldName: l10n.currency)
+                          : null,
+                    ),
               ),
               const SizedBox(height: 16),
 
@@ -330,8 +364,12 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                 ),
                 hint: Text(l10n.select),
                 items: PaymentPeriodType.values
-                    .map((t) => DropdownMenuItem(
-                        value: t, child: Text(t.l10nLabel(l10n))))
+                    .map(
+                      (t) => DropdownMenuItem(
+                        value: t,
+                        child: Text(t.l10nLabel(l10n)),
+                      ),
+                    )
                     .toList(),
                 onChanged: (v) => setState(() => _periodType = v),
                 validator: (v) => v == null
@@ -450,7 +488,7 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                           if (v == true) {
                             _reminderChannels = [
                               ..._reminderChannels,
-                              'IN_APP'
+                              'IN_APP',
                             ];
                           } else {
                             _reminderChannels = _reminderChannels
@@ -483,7 +521,9 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                         child: InputDecorator(
                           decoration: InputDecoration(
                             labelText: l10n.reminderDate,
-                            prefixIcon: const Icon(Icons.calendar_month_outlined),
+                            prefixIcon: const Icon(
+                              Icons.calendar_month_outlined,
+                            ),
                           ),
                           child: Text(
                             _reminderDate != null
@@ -526,8 +566,7 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
 
               ElevatedButton(
                 onPressed: _submit,
-                child: Text(
-                    widget.debtId == null ? l10n.create : l10n.update),
+                child: Text(widget.debtId == null ? l10n.create : l10n.update),
               ),
             ],
           ),

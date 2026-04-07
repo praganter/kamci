@@ -52,14 +52,17 @@ class _CategoryManagementSheetState
     if (name.isEmpty) return;
     setState(() => _isLoading = true);
     try {
-      await ref.read(categoryRepositoryProvider).update(widget.categoryId, name);
+      await ref
+          .read(categoryRepositoryProvider)
+          .update(widget.categoryId, name);
       ref.invalidate(categoryListProvider);
       ref.invalidate(debtGroupedProvider);
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(e.toString())));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -84,8 +87,9 @@ class _CategoryManagementSheetState
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(e.toString())));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
         setState(() => _isLoading = false);
       }
     }
@@ -99,8 +103,9 @@ class _CategoryManagementSheetState
       ref.invalidate(debtGroupedProvider);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(e.toString())));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
       }
     }
   }
@@ -121,8 +126,9 @@ class _CategoryManagementSheetState
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(e.toString())));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
       }
     }
   }
@@ -132,7 +138,11 @@ class _CategoryManagementSheetState
     final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: EdgeInsets.fromLTRB(
-          24, 24, 24, MediaQuery.viewInsetsOf(context).bottom + 24),
+        24,
+        24,
+        24,
+        MediaQuery.viewInsetsOf(context).bottom + 24,
+      ),
       child: switch (_page) {
         _SheetPage.main => _buildMain(context, cs),
         _SheetPage.editName => _buildEditName(context),
@@ -149,8 +159,10 @@ class _CategoryManagementSheetState
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(widget.categoryName,
-            style: Theme.of(context).textTheme.titleLarge),
+        Text(
+          widget.categoryName,
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
         const SizedBox(height: 8),
         if (widget.owned) ...[
           ListTile(
@@ -184,21 +196,25 @@ class _CategoryManagementSheetState
                   child: Text(
                     l10n.memberCountTitle(category.members.length),
                     style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                          color: cs.onSurfaceVariant,
-                        ),
+                      color: cs.onSurfaceVariant,
+                    ),
                   ),
                 ),
                 ...category.members.map(
                   (m) => ListTile(
                     contentPadding: EdgeInsets.zero,
                     leading: const Icon(Icons.person_outline),
-                    title: Text(m.userId,
-                        style: Theme.of(context).textTheme.bodySmall),
+                    title: Text(
+                      m.userId,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
                     subtitle: Text(m.accessLevel.label),
                     trailing: widget.owned
                         ? IconButton(
-                            icon: const Icon(Icons.person_remove_outlined,
-                                color: Colors.red),
+                            icon: const Icon(
+                              Icons.person_remove_outlined,
+                              color: Colors.red,
+                            ),
                             onPressed: () => _removeMember(m.userId),
                           )
                         : null,
@@ -213,8 +229,10 @@ class _CategoryManagementSheetState
           TextButton.icon(
             onPressed: _delete,
             icon: const Icon(Icons.delete_outlined, color: Colors.red),
-            label: Text(l10n.deleteCategory,
-                style: const TextStyle(color: Colors.red)),
+            label: Text(
+              l10n.deleteCategory,
+              style: const TextStyle(color: Colors.red),
+            ),
             style: TextButton.styleFrom(alignment: Alignment.centerLeft),
           ),
         ],
@@ -234,8 +252,10 @@ class _CategoryManagementSheetState
               icon: const Icon(Icons.arrow_back),
               onPressed: () => setState(() => _page = _SheetPage.main),
             ),
-            Text(l10n.editCategory,
-                style: Theme.of(context).textTheme.titleLarge),
+            Text(
+              l10n.editCategory,
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
           ],
         ),
         const SizedBox(height: 16),
@@ -254,7 +274,8 @@ class _CategoryManagementSheetState
               ? const SizedBox(
                   height: 20,
                   width: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2))
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
               : Text(l10n.save),
         ),
       ],
@@ -273,8 +294,7 @@ class _CategoryManagementSheetState
               icon: const Icon(Icons.arrow_back),
               onPressed: () => setState(() => _page = _SheetPage.main),
             ),
-            Text(l10n.addMember,
-                style: Theme.of(context).textTheme.titleLarge),
+            Text(l10n.addMember, style: Theme.of(context).textTheme.titleLarge),
           ],
         ),
         const SizedBox(height: 16),
@@ -308,7 +328,8 @@ class _CategoryManagementSheetState
               ? const SizedBox(
                   height: 20,
                   width: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2))
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
               : Text(l10n.addMember),
         ),
       ],

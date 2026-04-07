@@ -22,9 +22,13 @@ class CompactDebtTile extends ConsumerWidget {
       data: (list) {
         final code = debt.currency ?? 'TRY';
         return list
-            .firstWhere((c) => c.code == code,
-                orElse: () => list.firstWhere((c) => c.code == 'TRY',
-                    orElse: () => list.first))
+            .firstWhere(
+              (c) => c.code == code,
+              orElse: () => list.firstWhere(
+                (c) => c.code == 'TRY',
+                orElse: () => list.first,
+              ),
+            )
             .symbol;
       },
       orElse: () => '₺',
@@ -39,22 +43,23 @@ class CompactDebtTile extends ConsumerWidget {
 
     final statusColor = switch (debt.status) {
       DebtStatus.active => AppColors.statusActive,
-      DebtStatus.passive => AppColors.statusInactive,
+      DebtStatus.completed => AppColors.statusInactive,
     };
     final statusLabel = switch (debt.status) {
       DebtStatus.active => l10n.statusActive,
-      DebtStatus.passive => l10n.statusInactive,
+      DebtStatus.completed => l10n.statusInactive,
     };
     final statusIcon = switch (debt.status) {
       DebtStatus.active => Icons.radio_button_checked_rounded,
-      DebtStatus.passive => Icons.pause_circle_outline_rounded,
+      DebtStatus.completed => Icons.pause_circle_outline_rounded,
     };
 
     final paymentDotColor = switch (debt.status) {
-      DebtStatus.passive => AppColors.statusInactive,
-      DebtStatus.active => debt.paidCurrentPeriod
-          ? AppColors.statusActive
-          : const Color(0xFFEF4444),
+      DebtStatus.completed => AppColors.statusInactive,
+      DebtStatus.active => switch (debt.paymentStatus) {
+        PaymentStatus.paid => AppColors.statusActive,
+        _ => const Color(0xFFEF4444),
+      },
     };
 
     return InkWell(
@@ -79,7 +84,7 @@ class CompactDebtTile extends ConsumerWidget {
                           color: paymentDotColor.withValues(alpha: 0.5),
                           blurRadius: 4,
                           spreadRadius: 1,
-                        )
+                        ),
                       ]
                     : null,
               ),
@@ -91,8 +96,8 @@ class CompactDebtTile extends ConsumerWidget {
                   Text(
                     debt.name,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   const SizedBox(height: 6),
                   Wrap(
@@ -102,12 +107,15 @@ class CompactDebtTile extends ConsumerWidget {
                     children: [
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 7, vertical: 3),
+                          horizontal: 7,
+                          vertical: 3,
+                        ),
                         decoration: BoxDecoration(
                           color: statusColor.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                              color: statusColor.withValues(alpha: 0.3)),
+                            color: statusColor.withValues(alpha: 0.3),
+                          ),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -116,9 +124,7 @@ class CompactDebtTile extends ConsumerWidget {
                             const SizedBox(width: 3),
                             Text(
                               statusLabel,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .labelSmall
+                              style: Theme.of(context).textTheme.labelSmall
                                   ?.copyWith(
                                     color: statusColor,
                                     fontWeight: FontWeight.w600,
@@ -129,16 +135,16 @@ class CompactDebtTile extends ConsumerWidget {
                       ),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 7, vertical: 3),
+                          horizontal: 7,
+                          vertical: 3,
+                        ),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(color: cs.outlineVariant),
                         ),
                         child: Text(
                           debt.paymentPeriodType.l10nLabel(l10n),
-                          style: Theme.of(context)
-                              .textTheme
-                              .labelSmall
+                          style: Theme.of(context).textTheme.labelSmall
                               ?.copyWith(
                                 color: cs.onSurfaceVariant,
                                 fontWeight: FontWeight.w500,
@@ -149,7 +155,9 @@ class CompactDebtTile extends ConsumerWidget {
                           debt.installmentCount! > 0)
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 7, vertical: 3),
+                            horizontal: 7,
+                            vertical: 3,
+                          ),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(color: cs.outlineVariant),
@@ -159,9 +167,7 @@ class CompactDebtTile extends ConsumerWidget {
                               debt.paidInstallmentCount ?? 0,
                               debt.installmentCount!,
                             ),
-                            style: Theme.of(context)
-                                .textTheme
-                                .labelSmall
+                            style: Theme.of(context).textTheme.labelSmall
                                 ?.copyWith(
                                   color: cs.onSurfaceVariant,
                                   fontWeight: FontWeight.w500,
@@ -177,9 +183,9 @@ class CompactDebtTile extends ConsumerWidget {
             Text(
               currencyFormat.format(debt.amount),
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    color: cs.primary,
-                    fontWeight: FontWeight.w700,
-                  ),
+                color: cs.primary,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ],
         ),

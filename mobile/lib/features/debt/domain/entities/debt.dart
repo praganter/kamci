@@ -4,30 +4,36 @@ import 'reminder_embedded.dart';
 enum PaymentPeriodType {
   daily,
   weekly,
+  biWeekly,
   monthly,
   quarterly,
+  halfYearly,
   yearly;
 
   String get label => switch (this) {
     PaymentPeriodType.daily => 'Günlük',
     PaymentPeriodType.weekly => 'Haftalık',
+    PaymentPeriodType.biWeekly => 'İki Haftalık',
     PaymentPeriodType.monthly => 'Aylık',
     PaymentPeriodType.quarterly => 'Üç Aylık',
+    PaymentPeriodType.halfYearly => 'Altı Aylık',
     PaymentPeriodType.yearly => 'Yıllık',
   };
 }
 
-enum DebtStatusFilter { all, active, passive }
+enum DebtStatusFilter { all, active, completed }
 
 enum DebtStatus {
   active,
-  passive;
+  completed;
 
   String get label => switch (this) {
     DebtStatus.active => 'Aktif',
-    DebtStatus.passive => 'Pasif',
+    DebtStatus.completed => 'Tamamlandı',
   };
 }
+
+enum PaymentStatus { paid, unpaid, overdue, partiallyPaid }
 
 class Debt {
   const Debt({
@@ -43,7 +49,7 @@ class Debt {
     required this.amount,
     required this.status,
     required this.autoPayment,
-    required this.paidCurrentPeriod,
+    required this.paymentStatus,
     required this.payments,
     this.currency,
     this.reminder,
@@ -65,7 +71,7 @@ class Debt {
   final String? currency;
   final DebtStatus status;
   final bool autoPayment;
-  final bool paidCurrentPeriod;
+  final PaymentStatus paymentStatus;
   final List<PaymentEmbedded> payments;
   final ReminderEmbedded? reminder;
   final DateTime? nextReminderDate;

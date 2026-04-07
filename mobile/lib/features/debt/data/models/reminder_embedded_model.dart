@@ -20,20 +20,20 @@ abstract class ReminderEmbeddedModel with _$ReminderEmbeddedModel {
 
 extension ReminderEmbeddedModelMapper on ReminderEmbeddedModel {
   ReminderEmbedded toDomain() => ReminderEmbedded(
-        enabled: enabled,
-        channels: channels.isEmpty ? null : channels,
-        reminderDate: DateFormatter.parseApiDate(reminderDate),
-        reminderTime: reminderTime,
-      );
+    enabled: enabled,
+    channels: channels.isEmpty ? null : channels,
+    reminderDate: DateFormatter.parseApiDate(reminderDate),
+    reminderTime: reminderTime,
+  );
 }
 
 extension ReminderEmbeddedFromDomain on ReminderEmbedded {
   ReminderEmbeddedModel toModel() => ReminderEmbeddedModel(
-        enabled: enabled,
-        channels: channels ?? [],
-        reminderDate: reminderDate != null
-            ? DateFormatter.toApiFormat(reminderDate!)
-            : null,
-        reminderTime: reminderTime,
-      );
+    enabled: enabled,
+    channels: channels ?? [],
+    reminderDate: reminderDate != null
+        ? DateFormatter.toApiFormat(reminderDate!)
+        : null,
+    reminderTime: reminderTime,
+  );
 }
