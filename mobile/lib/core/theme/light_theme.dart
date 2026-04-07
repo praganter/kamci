@@ -36,7 +36,10 @@ ThemeData buildLightTheme() {
     useMaterial3: true,
     colorScheme: colorScheme,
     scaffoldBackgroundColor: AppColors.backgroundLight,
-    textTheme: _buildTextTheme(AppColors.textPrimaryLight, AppColors.textSecondaryLight),
+    textTheme: _buildTextTheme(
+      AppColors.textPrimaryLight,
+      AppColors.textSecondaryLight,
+    ),
     appBarTheme: const AppBarTheme(
       backgroundColor: AppColors.surfaceLight,
       foregroundColor: AppColors.textPrimaryLight,
@@ -74,7 +77,10 @@ ThemeData buildLightTheme() {
         if (states.contains(WidgetState.selected)) {
           return const IconThemeData(color: AppColors.primary, size: 22);
         }
-        return const IconThemeData(color: AppColors.textSecondaryLight, size: 22);
+        return const IconThemeData(
+          color: AppColors.textSecondaryLight,
+          size: 22,
+        );
       }),
     ),
     tabBarTheme: TabBarThemeData(
@@ -83,7 +89,10 @@ ThemeData buildLightTheme() {
       labelColor: AppColors.primary,
       unselectedLabelColor: AppColors.textSecondaryLight,
       labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-      unselectedLabelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400),
+      unselectedLabelStyle: const TextStyle(
+        fontSize: 13,
+        fontWeight: FontWeight.w400,
+      ),
       dividerColor: Color(0xFFEDE9FE),
     ),
     inputDecorationTheme: _buildInputDecorationTheme(colorScheme),
@@ -123,7 +132,9 @@ ThemeData buildLightTheme() {
       backgroundColor: AppColors.primary,
       foregroundColor: Colors.white,
       elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(16))),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(16)),
+      ),
     ),
     snackBarTheme: SnackBarThemeData(
       backgroundColor: const Color(0xFF1A1025),
@@ -189,10 +200,11 @@ ElevatedButtonThemeData _buildElevatedButtonTheme(ColorScheme colorScheme) {
       disabledBackgroundColor: colorScheme.outlineVariant,
       disabledForegroundColor: colorScheme.onSurfaceVariant,
       minimumSize: const Size(double.infinity, 54),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      textStyle: AppTextStyles.labelLarge.copyWith(
+        fontSize: 16,
+        fontWeight: FontWeight.w600,
       ),
-      textStyle: AppTextStyles.labelLarge.copyWith(fontSize: 16, fontWeight: FontWeight.w600),
       elevation: 0,
     ),
   );

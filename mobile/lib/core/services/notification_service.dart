@@ -51,7 +51,8 @@ class NotificationService {
     );
     await _localNotifications
         .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
+          AndroidFlutterLocalNotificationsPlugin
+        >()
         ?.createNotificationChannel(channel);
 
     // Init flutter_local_notifications
@@ -109,10 +110,7 @@ class NotificationService {
       final dio = _ref.read(dioClientProvider);
       await dio.patch(
         ApiConstants.deviceToken,
-        data: {
-          'token': token,
-          if (email != null) 'email': email,
-        },
+        data: {'token': token, 'email': ?email},
       );
       debugPrint('FCM token registered successfully: $token');
     } catch (e) {

@@ -136,8 +136,10 @@
 
   "periodDaily": "Günlük",
   "periodWeekly": "Haftalık",
+  "periodBiWeekly": "İki Haftalık",
   "periodMonthly": "Aylık",
   "periodQuarterly": "Üç Aylık",
+  "periodHalfYearly": "Altı Aylık",
   "periodYearly": "Yıllık",
 
   "statusActive": "Aktif",
@@ -221,5 +223,28 @@
   "sharedPremiumDesc": "Paylaşılan borçları görmek ve arkadaşlarınla ortak borç yönetmek için Premium üye olmalısın.",
   "userId": "Kullanıcı ID",
   "userIdHint": "Kullanıcı ID'sini girin",
-  "accessLevel": "Erişim Seviyesi"
+  "accessLevel": "Erişim Seviyesi",
+
+  "skipPayment": "Ödemeyi Atla",
+  "skipPaymentConfirm": "Bu ödeme dönemini atlamak istediğinize emin misiniz?",
+  "paymentSkipped": "{name} ödeme dönemi atlandı.",
+  "@paymentSkipped": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+
+  "income": "Gelir",
+  "incomeHistory": "Gelir Geçmişi",
+  "addIncome": "Gelir Ekle",
+  "noIncomeYet": "Henüz gelir kaydı yok",
+  "incomeAmount": "Gelir Tutarı",
+  "incomeNote": "Not (İsteğe Bağlı)",
+  "effectiveFrom": "Geçerlilik Tarihi",
+  "deleteIncome": "Geliri Sil",
+  "deleteIncomeConfirm": "Bu gelir kaydını silmek istediğinize emin misiniz?",
+
+  "reminderChannelRequired": "En az bir bildirim kanalı seçilmelidir",
+  "reminderDateRequired": "Hatırlatma tarihi seçilmelidir",
+  "reminderTimeRequired": "Hatırlatma saati seçilmelidir"
 }

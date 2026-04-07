@@ -9,15 +9,15 @@ import 'interceptors/logging_interceptor.dart';
 part 'dio_client.g.dart';
 
 BaseOptions _baseOptions() => BaseOptions(
-      baseUrl: ApiConstants.baseUrl,
-      connectTimeout: const Duration(seconds: 30),
-      receiveTimeout: const Duration(seconds: 30),
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Accept-Language': 'tr',
-      },
-    );
+  baseUrl: ApiConstants.baseUrl,
+  connectTimeout: const Duration(seconds: 30),
+  receiveTimeout: const Duration(seconds: 30),
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    'Accept-Language': 'tr',
+  },
+);
 
 @riverpod
 Dio refreshDio(Ref ref) {

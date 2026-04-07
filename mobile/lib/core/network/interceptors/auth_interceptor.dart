@@ -12,7 +12,10 @@ class AuthInterceptor extends QueuedInterceptorsWrapper {
   final Ref _ref;
 
   @override
-  void onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
+  void onRequest(
+    RequestOptions options,
+    RequestInterceptorHandler handler,
+  ) async {
     final storage = _ref.read(secureStorageServiceProvider);
     final token = await storage.getAccessToken();
     if (token != null) {
@@ -65,7 +68,10 @@ class AuthInterceptor extends QueuedInterceptorsWrapper {
       final newAccessToken = data['token'] as String;
       final newRefreshToken = (data['refreshToken'] as String?) ?? refreshToken;
 
-      await storage.saveTokens(accessToken: newAccessToken, refreshToken: newRefreshToken);
+      await storage.saveTokens(
+        accessToken: newAccessToken,
+        refreshToken: newRefreshToken,
+      );
 
       final retryOptions = err.requestOptions;
       retryOptions.headers['Authorization'] = 'Bearer $newAccessToken';

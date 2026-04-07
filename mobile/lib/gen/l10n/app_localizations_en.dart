@@ -293,10 +293,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get periodWeekly => 'Weekly';
 
   @override
+  String get periodBiWeekly => 'Bi-weekly';
+
+  @override
   String get periodMonthly => 'Monthly';
 
   @override
   String get periodQuarterly => 'Quarterly';
+
+  @override
+  String get periodHalfYearly => 'Half-yearly';
 
   @override
   String get periodYearly => 'Yearly';
@@ -469,4 +475,54 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get accessLevel => 'Access Level';
+
+  @override
+  String get skipPayment => 'Skip Payment';
+
+  @override
+  String get skipPaymentConfirm =>
+      'Are you sure you want to skip this payment period?';
+
+  @override
+  String paymentSkipped(String name) {
+    return '$name payment period skipped.';
+  }
+
+  @override
+  String get income => 'Income';
+
+  @override
+  String get incomeHistory => 'Income History';
+
+  @override
+  String get addIncome => 'Add Income';
+
+  @override
+  String get noIncomeYet => 'No income records yet';
+
+  @override
+  String get incomeAmount => 'Income Amount';
+
+  @override
+  String get incomeNote => 'Note (Optional)';
+
+  @override
+  String get effectiveFrom => 'Effective From';
+
+  @override
+  String get deleteIncome => 'Delete Income';
+
+  @override
+  String get deleteIncomeConfirm =>
+      'Are you sure you want to delete this income record?';
+
+  @override
+  String get reminderChannelRequired =>
+      'At least one notification channel must be selected';
+
+  @override
+  String get reminderDateRequired => 'Reminder date is required';
+
+  @override
+  String get reminderTimeRequired => 'Reminder time is required';
 }

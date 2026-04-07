@@ -3,7 +3,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
 class LoggingInterceptor extends Interceptor {
-  static const _separator = '------------------------------------------------------------';
+  static const _separator =
+      '------------------------------------------------------------';
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
@@ -13,10 +14,7 @@ class LoggingInterceptor extends Interceptor {
       _separator,
       '  Headers:',
       ..._formatMap(options.headers),
-      if (options.data != null) ...[
-        '  Body:',
-        _formatBody(options.data),
-      ],
+      if (options.data != null) ...['  Body:', _formatBody(options.data)],
     ]);
     handler.next(options);
   }
@@ -56,9 +54,7 @@ class LoggingInterceptor extends Interceptor {
   }
 
   List<String> _formatMap(Map<String, Object?> map) {
-    return map.entries
-        .map((e) => '    ${e.key}: ${e.value}')
-        .toList();
+    return map.entries.map((e) => '    ${e.key}: ${e.value}').toList();
   }
 
   String _formatBody(dynamic data) {
@@ -66,10 +62,7 @@ class LoggingInterceptor extends Interceptor {
     try {
       const encoder = JsonEncoder.withIndent('  ');
       final jsonStr = data is String ? data : encoder.convert(data);
-      return jsonStr
-          .split('\n')
-          .map((line) => '    $line')
-          .join('\n');
+      return jsonStr.split('\n').map((line) => '    $line').join('\n');
     } catch (_) {
       return '    $data';
     }

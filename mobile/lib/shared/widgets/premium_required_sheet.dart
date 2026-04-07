@@ -6,7 +6,11 @@ import '../../core/theme/app_colors.dart';
 import '../../features/subscription/presentation/widgets/premium_card.dart';
 
 class PremiumRequiredSheet extends ConsumerWidget {
-  const PremiumRequiredSheet({super.key, required this.featureName, required this.limitCount});
+  const PremiumRequiredSheet({
+    super.key,
+    required this.featureName,
+    required this.limitCount,
+  });
 
   final String featureName;
   final int limitCount;
@@ -22,7 +26,10 @@ class PremiumRequiredSheet extends ConsumerWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (_) => PremiumRequiredSheet(featureName: featureName, limitCount: limitCount),
+      builder: (_) => PremiumRequiredSheet(
+        featureName: featureName,
+        limitCount: limitCount,
+      ),
     );
   }
 
@@ -33,7 +40,12 @@ class PremiumRequiredSheet extends ConsumerWidget {
     final tt = Theme.of(context).textTheme;
 
     return Padding(
-      padding: EdgeInsets.fromLTRB(20, 20, 20, MediaQuery.of(context).viewInsets.bottom + 32),
+      padding: EdgeInsets.fromLTRB(
+        20,
+        20,
+        20,
+        MediaQuery.of(context).viewInsets.bottom + 32,
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -46,7 +58,11 @@ class PremiumRequiredSheet extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 24),
-          const Icon(Icons.workspace_premium_rounded, size: 64, color: AppColors.warning),
+          const Icon(
+            Icons.workspace_premium_rounded,
+            size: 64,
+            color: AppColors.warning,
+          ),
           const SizedBox(height: 16),
           Text(
             l10n.premiumRequiredTitle,

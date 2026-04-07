@@ -18,14 +18,12 @@ class SettingsService {
     };
   }
 
-  Future<void> setThemeMode(ThemeMode mode) => _prefs.setString(
-        _keyTheme,
-        switch (mode) {
-          ThemeMode.light => 'light',
-          ThemeMode.dark => 'dark',
-          _ => 'system',
-        },
-      );
+  Future<void> setThemeMode(ThemeMode mode) =>
+      _prefs.setString(_keyTheme, switch (mode) {
+        ThemeMode.light => 'light',
+        ThemeMode.dark => 'dark',
+        _ => 'system',
+      });
 
   Locale? get locale {
     final v = _prefs.getString(_keyLocale);
@@ -42,18 +40,15 @@ class SettingsService {
   DebtStatusFilter get debtStatusFilter {
     return switch (_prefs.getString(_keyDebtStatusFilter)) {
       'active' => DebtStatusFilter.active,
-      'passive' => DebtStatusFilter.passive,
+      'completed' => DebtStatusFilter.completed,
       _ => DebtStatusFilter.all,
     };
   }
 
   Future<void> setDebtStatusFilter(DebtStatusFilter filter) =>
-      _prefs.setString(
-        _keyDebtStatusFilter,
-        switch (filter) {
-          DebtStatusFilter.active => 'active',
-          DebtStatusFilter.passive => 'passive',
-          DebtStatusFilter.all => 'all',
-        },
-      );
+      _prefs.setString(_keyDebtStatusFilter, switch (filter) {
+        DebtStatusFilter.active => 'active',
+        DebtStatusFilter.completed => 'completed',
+        DebtStatusFilter.all => 'all',
+      });
 }

@@ -24,8 +24,9 @@ class ThemeModeNotifier extends StateNotifier<ThemeMode> {
   }
 }
 
-final themeModeProvider =
-    StateNotifierProvider<ThemeModeNotifier, ThemeMode>((ref) {
+final themeModeProvider = StateNotifierProvider<ThemeModeNotifier, ThemeMode>((
+  ref,
+) {
   return ThemeModeNotifier(ref.watch(settingsServiceProvider));
 });
 
@@ -41,8 +42,7 @@ class LocaleNotifier extends StateNotifier<Locale?> {
   }
 }
 
-final localeProvider =
-    StateNotifierProvider<LocaleNotifier, Locale?>((ref) {
+final localeProvider = StateNotifierProvider<LocaleNotifier, Locale?>((ref) {
   return LocaleNotifier(ref.watch(settingsServiceProvider));
 });
 
@@ -64,5 +64,5 @@ class DebtStatusFilterNotifier extends StateNotifier<DebtStatusFilter> {
 
 final debtStatusFilterProvider =
     StateNotifierProvider<DebtStatusFilterNotifier, DebtStatusFilter>((ref) {
-  return DebtStatusFilterNotifier(ref.watch(settingsServiceProvider));
-});
+      return DebtStatusFilterNotifier(ref.watch(settingsServiceProvider));
+    });

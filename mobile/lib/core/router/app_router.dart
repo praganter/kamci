@@ -16,6 +16,7 @@ import '../../features/category/presentation/screens/category_list_screen.dart';
 import '../../features/debt/presentation/screens/debt_detail_screen.dart';
 import '../../features/debt/presentation/screens/debt_form_screen.dart';
 import '../../features/debt/presentation/screens/debt_list_screen.dart';
+import '../../features/income/presentation/screens/income_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../../shared/widgets/bottom_nav_bar.dart';
 import 'route_names.dart';
@@ -53,13 +54,16 @@ GoRouter appRouter(Ref ref) {
       ].any((path) => state.matchedLocation.startsWith(path));
 
       return switch (authState) {
-        AuthStateInitial() || AuthStateLoading() => isAuthRoute ? null : RoutePaths.splash,
+        AuthStateInitial() ||
+        AuthStateLoading() => isAuthRoute ? null : RoutePaths.splash,
         AuthStateAuthenticated() =>
           isAuthRoute && state.matchedLocation != RoutePaths.resetPassword
               ? RoutePaths.debts
               : null,
         AuthStateUnauthenticated() || AuthStateError() =>
-          (!isAuthRoute || state.matchedLocation == RoutePaths.splash) ? RoutePaths.login : null,
+          (!isAuthRoute || state.matchedLocation == RoutePaths.splash)
+              ? RoutePaths.login
+              : null,
       };
     },
     routes: [
@@ -91,6 +95,12 @@ GoRouter appRouter(Ref ref) {
         builder: (context, _) => const ChangePasswordScreen(),
       ),
       GoRoute(
+        path: RoutePaths.income,
+        name: RouteNames.income,
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, _) => const IncomeScreen(),
+      ),
+      GoRoute(
         path: RoutePaths.forgotPassword,
         name: RouteNames.forgotPassword,
         builder: (context, _) => const ForgotPasswordScreen(),
@@ -98,7 +108,8 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: RoutePaths.resetPassword,
         name: RouteNames.resetPassword,
-        builder: (_, state) => ResetPasswordScreen(token: state.uri.queryParameters['token']),
+        builder: (_, state) =>
+            ResetPasswordScreen(token: state.uri.queryParameters['token']),
       ),
       ShellRoute(
         navigatorKey: _shellNavigatorKey,
@@ -117,12 +128,14 @@ GoRouter appRouter(Ref ref) {
               GoRoute(
                 path: ':id',
                 name: RouteNames.debtDetail,
-                builder: (_, state) => DebtDetailScreen(id: state.pathParameters['id']!),
+                builder: (_, state) =>
+                    DebtDetailScreen(id: state.pathParameters['id']!),
                 routes: [
                   GoRoute(
                     path: 'edit',
                     name: RouteNames.debtEdit,
-                    builder: (_, state) => DebtFormScreen(debtId: state.pathParameters['id']),
+                    builder: (_, state) =>
+                        DebtFormScreen(debtId: state.pathParameters['id']),
                   ),
                 ],
               ),
@@ -136,7 +149,8 @@ GoRouter appRouter(Ref ref) {
               GoRoute(
                 path: ':id',
                 name: RouteNames.categoryDetail,
-                builder: (_, state) => CategoryDetailScreen(id: state.pathParameters['id']!),
+                builder: (_, state) =>
+                    CategoryDetailScreen(id: state.pathParameters['id']!),
               ),
             ],
           ),

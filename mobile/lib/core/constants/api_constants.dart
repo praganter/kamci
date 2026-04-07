@@ -15,17 +15,29 @@ abstract final class ApiConstants {
   static const String debtSave = '/debt/save';
   static const String debtUpdate = '/debt/update';
   static const String debtPay = '/debt/pay';
+  static const String debtSkip = '/debt/skip';
   static const String debtDelete = '/debt/delete';
   static const String debtGetById = '/debt';
   static const String debtGet = '/debt/get';
+  static const String debtPayments = '/debt';
+  static const String debtSummary = '/debt/summary';
+
   static const String categorySave = '/category/save';
   static const String categoryUpdate = '/category/update';
   static const String categoryDelete = '/category/delete';
   static const String categoryGetAll = '/category/getAll';
+  static const String categoryMemberAdd = '/category';
+  static const String categoryMemberRemove = '/category';
   static const String categoryMemberBulk = '/category/members/bulk';
+
+  static const String incomeSave = '/income/save';
+  static const String incomeHistory = '/income/history';
+  static const String incomeCurrent = '/income/current';
+  static const String incomeDelete = '/income/delete';
 
   static const String subscriptionVerify = '/subscription/verify';
   static const String subscriptionStatus = '/subscription/status';
 
   static const String deviceToken = '/notification/device-token';
+  static const String notificationTest = '/notification/test';
 }

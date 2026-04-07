@@ -632,6 +632,12 @@ abstract class AppLocalizations {
   /// **'Haftalık'**
   String get periodWeekly;
 
+  /// No description provided for @periodBiWeekly.
+  ///
+  /// In tr, this message translates to:
+  /// **'İki Haftalık'**
+  String get periodBiWeekly;
+
   /// No description provided for @periodMonthly.
   ///
   /// In tr, this message translates to:
@@ -643,6 +649,12 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Üç Aylık'**
   String get periodQuarterly;
+
+  /// No description provided for @periodHalfYearly.
+  ///
+  /// In tr, this message translates to:
+  /// **'Altı Aylık'**
+  String get periodHalfYearly;
 
   /// No description provided for @periodYearly.
   ///
@@ -967,6 +979,96 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Erişim Seviyesi'**
   String get accessLevel;
+
+  /// No description provided for @skipPayment.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ödemeyi Atla'**
+  String get skipPayment;
+
+  /// No description provided for @skipPaymentConfirm.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu ödeme dönemini atlamak istediğinize emin misiniz?'**
+  String get skipPaymentConfirm;
+
+  /// No description provided for @paymentSkipped.
+  ///
+  /// In tr, this message translates to:
+  /// **'{name} ödeme dönemi atlandı.'**
+  String paymentSkipped(String name);
+
+  /// No description provided for @income.
+  ///
+  /// In tr, this message translates to:
+  /// **'Gelir'**
+  String get income;
+
+  /// No description provided for @incomeHistory.
+  ///
+  /// In tr, this message translates to:
+  /// **'Gelir Geçmişi'**
+  String get incomeHistory;
+
+  /// No description provided for @addIncome.
+  ///
+  /// In tr, this message translates to:
+  /// **'Gelir Ekle'**
+  String get addIncome;
+
+  /// No description provided for @noIncomeYet.
+  ///
+  /// In tr, this message translates to:
+  /// **'Henüz gelir kaydı yok'**
+  String get noIncomeYet;
+
+  /// No description provided for @incomeAmount.
+  ///
+  /// In tr, this message translates to:
+  /// **'Gelir Tutarı'**
+  String get incomeAmount;
+
+  /// No description provided for @incomeNote.
+  ///
+  /// In tr, this message translates to:
+  /// **'Not (İsteğe Bağlı)'**
+  String get incomeNote;
+
+  /// No description provided for @effectiveFrom.
+  ///
+  /// In tr, this message translates to:
+  /// **'Geçerlilik Tarihi'**
+  String get effectiveFrom;
+
+  /// No description provided for @deleteIncome.
+  ///
+  /// In tr, this message translates to:
+  /// **'Geliri Sil'**
+  String get deleteIncome;
+
+  /// No description provided for @deleteIncomeConfirm.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu gelir kaydını silmek istediğinize emin misiniz?'**
+  String get deleteIncomeConfirm;
+
+  /// No description provided for @reminderChannelRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'En az bir bildirim kanalı seçilmelidir'**
+  String get reminderChannelRequired;
+
+  /// No description provided for @reminderDateRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hatırlatma tarihi seçilmelidir'**
+  String get reminderDateRequired;
+
+  /// No description provided for @reminderTimeRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hatırlatma saati seçilmelidir'**
+  String get reminderTimeRequired;
 }
 
 class _AppLocalizationsDelegate

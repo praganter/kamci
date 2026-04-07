@@ -293,10 +293,16 @@ class AppLocalizationsTr extends AppLocalizations {
   String get periodWeekly => 'Haftalık';
 
   @override
+  String get periodBiWeekly => 'İki Haftalık';
+
+  @override
   String get periodMonthly => 'Aylık';
 
   @override
   String get periodQuarterly => 'Üç Aylık';
+
+  @override
+  String get periodHalfYearly => 'Altı Aylık';
 
   @override
   String get periodYearly => 'Yıllık';
@@ -469,4 +475,54 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get accessLevel => 'Erişim Seviyesi';
+
+  @override
+  String get skipPayment => 'Ödemeyi Atla';
+
+  @override
+  String get skipPaymentConfirm =>
+      'Bu ödeme dönemini atlamak istediğinize emin misiniz?';
+
+  @override
+  String paymentSkipped(String name) {
+    return '$name ödeme dönemi atlandı.';
+  }
+
+  @override
+  String get income => 'Gelir';
+
+  @override
+  String get incomeHistory => 'Gelir Geçmişi';
+
+  @override
+  String get addIncome => 'Gelir Ekle';
+
+  @override
+  String get noIncomeYet => 'Henüz gelir kaydı yok';
+
+  @override
+  String get incomeAmount => 'Gelir Tutarı';
+
+  @override
+  String get incomeNote => 'Not (İsteğe Bağlı)';
+
+  @override
+  String get effectiveFrom => 'Geçerlilik Tarihi';
+
+  @override
+  String get deleteIncome => 'Geliri Sil';
+
+  @override
+  String get deleteIncomeConfirm =>
+      'Bu gelir kaydını silmek istediğinize emin misiniz?';
+
+  @override
+  String get reminderChannelRequired =>
+      'En az bir bildirim kanalı seçilmelidir';
+
+  @override
+  String get reminderDateRequired => 'Hatırlatma tarihi seçilmelidir';
+
+  @override
+  String get reminderTimeRequired => 'Hatırlatma saati seçilmelidir';
 }

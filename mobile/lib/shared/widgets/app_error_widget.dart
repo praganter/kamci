@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
 
 class AppErrorWidget extends StatelessWidget {
-  const AppErrorWidget({
-    super.key,
-    required this.message,
-    this.onRetry,
-  });
+  const AppErrorWidget({super.key, required this.message, this.onRetry});
 
   final String message;
   final VoidCallback? onRetry;
@@ -27,7 +23,10 @@ class AppErrorWidget extends StatelessWidget {
             ),
             if (onRetry != null) ...[
               const SizedBox(height: 16),
-              FilledButton(onPressed: onRetry, child: const Text('Tekrar Dene')),
+              FilledButton(
+                onPressed: onRetry,
+                child: const Text('Tekrar Dene'),
+              ),
             ],
           ],
         ),
