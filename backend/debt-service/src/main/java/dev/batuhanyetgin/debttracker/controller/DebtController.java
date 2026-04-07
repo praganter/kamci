@@ -104,8 +104,9 @@ public class DebtController {
     @Operation(summary = "Get all debts for the authenticated user, grouped by category")
     @ApiResponse(responseCode = "200", description = "Debts returned")
     @GetMapping("get")
-    ResponseEntity<GetDebtResponse> get() {
-        return ResponseEntity.ok(debtService.get());
+    ResponseEntity<GetDebtResponse> get(
+            @RequestParam(required = false) final String month) {
+        return ResponseEntity.ok(debtService.get(month));
     }
 
     @Operation(summary = "Get payment history for a specific debt filtered by date range")

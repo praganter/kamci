@@ -523,7 +523,7 @@ class DebtServiceTest {
                 when(debtRS.findByCategoryIdIn(List.of(CAT_ID, NEW_CAT_ID))).thenReturn(List.of(debt));
                 when(debtMapper.convert(debt)).thenReturn(buildDebtItemResponse());
 
-                final GetDebtResponse response = debtService.get();
+                final GetDebtResponse response = debtService.get(null);
 
                 assertThat(response.getCategories()).hasSize(2);
                 assertThat(response.getCategories()).anySatisfy(c ->
@@ -547,7 +547,7 @@ class DebtServiceTest {
                 when(categoryRS.findByMemberUserId(OWNER_ID)).thenReturn(List.of(shared));
                 when(debtRS.findByCategoryIdIn(anyList())).thenReturn(List.of());
 
-                final GetDebtResponse response = debtService.get();
+                final GetDebtResponse response = debtService.get(null);
 
                 response.getCategories().forEach(c -> {
                     if (CAT_ID.equals(c.getCategoryId())) {
@@ -573,7 +573,7 @@ class DebtServiceTest {
                 when(categoryRS.findByMemberUserId(OWNER_ID)).thenReturn(List.of());
                 when(debtRS.findByCategoryIdIn(List.of())).thenReturn(List.of());
 
-                final GetDebtResponse response = debtService.get();
+                final GetDebtResponse response = debtService.get(null);
                 assertThat(response.getCategories()).isEmpty();
             }
         }

@@ -244,7 +244,7 @@ public class DebtService {
         log.warn("Deleted debt: {}", id);
     }
 
-    public GetDebtResponse get() {
+    public GetDebtResponse get(final String month) {
         final String userId = RequestContextUtil.getUserId();
 
         log.info("Getting debts for user: {}", userId);
@@ -269,6 +269,17 @@ public class DebtService {
         final Set<String> ownedIds = owned.stream()
                 .map(BaseDocument::getId).collect(Collectors.toSet());
 
+        final LocalDateTime monthEnd;
+        final LocalDateTime referenceTime;
+        if (month != null) {
+            final YearMonth ym = YearMonth.parse(month);
+            monthEnd = ym.atEndOfMonth().atTime(23, 59, 59);
+            referenceTime = monthEnd;
+        } else {
+            monthEnd = null;
+            referenceTime = LocalDateTime.now();
+        }
+
         final List<CategoryDebtResponse> categories = all.stream()
                 .map(cat -> CategoryDebtResponse.builder()
                         .categoryId(cat.getId())
@@ -276,11 +287,15 @@ public class DebtService {
                         .owned(ownedIds.contains(cat.getId()))
                         .ownerUserId(ownedIds.contains(cat.getId()) ? null : cat.getOwnerId())
                         .debts(byCategory.getOrDefault(cat.getId(), List.of())
-                                .stream().map(debt -> {
+                                .stream()
+                                .filter(debt -> monthEnd == null
+                                        || (debt.getFirstPaymentDate() != null
+                                            && !debt.getFirstPaymentDate().isAfter(monthEnd)))
+                                .map(debt -> {
                                     final DebtItemResponse item = debtMapper.convert(debt);
-                                    final PaymentStatus currentPaymentStatus = calculateCurrentPaymentStatus(debt);
-                                    item.setPaymentStatus(currentPaymentStatus);
-                                    item.setPaidCurrentPeriod(currentPaymentStatus == PaymentStatus.PAID);
+                                    final PaymentStatus status = calculatePaymentStatusAt(debt, referenceTime);
+                                    item.setPaymentStatus(status);
+                                    item.setPaidCurrentPeriod(status == PaymentStatus.PAID);
                                     return item;
                                 }).toList())
                         .build())
@@ -326,7 +341,7 @@ public class DebtService {
         );
     }
 
-    private PaymentStatus calculateCurrentPaymentStatus(final DebtDocument debt) {
+    private PaymentStatus calculatePaymentStatusAt(final DebtDocument debt, final LocalDateTime referenceTime) {
         if (debt.getStatus() == DebtStatus.COMPLETED) {
             return PaymentStatus.PAID;
         }
@@ -336,9 +351,8 @@ public class DebtService {
             return debt.getPaymentStatus();
         }
 
-        final LocalDateTime now = LocalDateTime.now();
         final LocalDateTime periodStart = PaymentPeriodUtil.getPeriodStart(
-                debt.getFirstPaymentDate(), debt.getPaymentPeriodType(), now);
+                debt.getFirstPaymentDate(), debt.getPaymentPeriodType(), referenceTime);
 
         final List<PaymentEmbedded> currentPeriodPayments = debt.getPayments().stream()
                 .filter(p -> p.getPaidTime() != null && !p.getPaidTime().isBefore(periodStart))
