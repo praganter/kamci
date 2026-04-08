@@ -1,8 +1,6 @@
 package dev.batuhanyetgin.debttracker.controller;
 
-import dev.batuhanyetgin.debttracker.dto.request.CreateDebtRequest;
-import dev.batuhanyetgin.debttracker.dto.request.PayDebtRequest;
-import dev.batuhanyetgin.debttracker.dto.request.UpdateDebtRequest;
+import dev.batuhanyetgin.debttracker.dto.request.*;
 import dev.batuhanyetgin.debttracker.dto.response.*;
 import dev.batuhanyetgin.debttracker.service.DebtService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -78,16 +76,46 @@ public class DebtController {
         return ResponseEntity.ok(debtService.pay(id, request));
     }
 
-    @Operation(summary = "Mark current period as skipped (unpaid) for a debt")
+    @Operation(summary = "Mark a period as skipped (unpaid) for a debt — supports historical dates")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Period skipped"),
+            @ApiResponse(responseCode = "400", description = "Date before debt start"),
             @ApiResponse(responseCode = "403", description = "No write access"),
             @ApiResponse(responseCode = "404", description = "Debt not found"),
             @ApiResponse(responseCode = "409", description = "Debt completed, auto-payment enabled, or period already recorded")
     })
     @PostMapping("skip/{id}")
-    ResponseEntity<DebtResponse> skip(@PathVariable final String id) {
-        return ResponseEntity.ok(debtService.skip(id));
+    ResponseEntity<DebtResponse> skip(@PathVariable final String id,
+                                      @RequestBody(required = false) @Valid final SkipDebtRequest request) {
+        return ResponseEntity.ok(debtService.skip(id, request));
+    }
+
+    @Operation(summary = "Record multiple historical payments at once for a debt")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Payments recorded"),
+            @ApiResponse(responseCode = "400", description = "Date before debt start or future date"),
+            @ApiResponse(responseCode = "403", description = "No write access"),
+            @ApiResponse(responseCode = "404", description = "Debt not found"),
+            @ApiResponse(responseCode = "409", description = "Period already paid")
+    })
+    @PostMapping("pay/{id}/bulk")
+    ResponseEntity<DebtResponse> bulkPay(@PathVariable final String id,
+                                         @RequestBody final List<PayDebtRequest> requests) {
+        return ResponseEntity.ok(debtService.bulkPay(id, requests));
+    }
+
+    @Operation(summary = "Mark N installments as already paid — for migration from other apps")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Installments recorded"),
+            @ApiResponse(responseCode = "400", description = "Count exceeds installment total or missing period config"),
+            @ApiResponse(responseCode = "403", description = "No write access"),
+            @ApiResponse(responseCode = "404", description = "Debt not found"),
+            @ApiResponse(responseCode = "409", description = "Debt already completed or auto-payment enabled")
+    })
+    @PostMapping("{id}/set-paid-installments")
+    ResponseEntity<DebtResponse> setPaidInstallments(@PathVariable final String id,
+                                                     @RequestBody @Valid final SetPaidInstallmentsRequest request) {
+        return ResponseEntity.ok(debtService.setPaidInstallments(id, request));
     }
 
     @Operation(summary = "Get a single debt by ID with full payment history")
@@ -129,5 +157,4 @@ public class DebtController {
     ResponseEntity<MonthlySummaryResponse> getMonthlySummary(@RequestParam final String month) {
         return ResponseEntity.ok(debtService.getMonthlySummary(month));
     }
-
 }

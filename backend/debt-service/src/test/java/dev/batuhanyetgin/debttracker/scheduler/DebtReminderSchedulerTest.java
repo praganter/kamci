@@ -4,8 +4,8 @@ import dev.batuhanyetgin.commonmodule.event.ReminderChannelType;
 import dev.batuhanyetgin.debttracker.document.DebtDocument;
 import dev.batuhanyetgin.debttracker.document.embedded.ReminderEmbedded;
 import dev.batuhanyetgin.debttracker.enums.DebtStatus;
-import dev.batuhanyetgin.debttracker.enums.PaymentStatus;
 import dev.batuhanyetgin.debttracker.enums.PaymentPeriodType;
+import dev.batuhanyetgin.debttracker.enums.PaymentStatus;
 import dev.batuhanyetgin.debttracker.producer.DebtEventProducer;
 import dev.batuhanyetgin.debttracker.repositoryservice.DebtRepositoryService;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,32 +18,37 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.concurrent.Executor;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class DebtReminderSchedulerTest {
 
-    @Mock private DebtRepositoryService debtRS;
-    @Mock private DebtEventProducer debtEventProducer;
-
-    private final Executor taskExecutor = Runnable::run;
-
-    private DebtReminderScheduler scheduler;
-
     // April 1 2026 — day-of-month = 1, safe for all MONTHLY clamp tests
     private static final LocalDateTime BASE_TIME = LocalDateTime.of(2026, 4, 1, 10, 0);
     // Jan 31 — used for day-drift tests
     private static final LocalDateTime JAN_31 = LocalDateTime.of(2026, 1, 31, 10, 0);
+    // Fixed "now" for most tests — after all payment dates used in reset/overdue tests
+    private static final Clock BASE_CLOCK = Clock.fixed(
+            LocalDateTime.of(2026, 4, 8, 10, 0).toInstant(ZoneOffset.UTC), ZoneOffset.UTC);
+    private final Executor taskExecutor = Runnable::run;
+    @Mock
+    private DebtRepositoryService debtRS;
+    @Mock
+    private DebtEventProducer debtEventProducer;
+    private DebtReminderScheduler scheduler;
 
     @BeforeEach
     void setUp() {
-        scheduler = new DebtReminderScheduler(debtRS, debtEventProducer, taskExecutor);
+        scheduler = new DebtReminderScheduler(debtRS, debtEventProducer, taskExecutor, BASE_CLOCK);
     }
 
     private DebtDocument buildReminderDebt(final String id, final PaymentPeriodType periodType,
@@ -294,7 +299,7 @@ class DebtReminderSchedulerTest {
             final DebtDocument debt = buildReminderDebt("debt1", PaymentPeriodType.MONTHLY, BASE_TIME.minusDays(5), BASE_TIME);
             debt.setPaymentStatus(PaymentStatus.UNPAID);
             debt.setAutoPayment(false);
-            
+
             when(debtRS.findUnpaidManualDueDebts(any())).thenReturn(List.of(debt));
             final ArgumentCaptor<DebtDocument> captor = ArgumentCaptor.forClass(DebtDocument.class);
             when(debtRS.update(captor.capture())).thenReturn(debt);
@@ -344,8 +349,13 @@ class DebtReminderSchedulerTest {
     @DisplayName("advanceNextReminderDate")
     class AdvanceNextReminderDate {
 
+        // Use a clock before JAN_31 so the catch-up while-loop does exactly one advance
+        private static final Clock PAST_CLOCK = Clock.fixed(
+                LocalDateTime.of(2026, 1, 30, 10, 0).toInstant(ZoneOffset.UTC), ZoneOffset.UTC);
+
         @BeforeEach
         void stubBase() {
+            scheduler = new DebtReminderScheduler(debtRS, debtEventProducer, taskExecutor, PAST_CLOCK);
             lenient().when(debtRS.findDueAutoPayments(any())).thenReturn(List.of());
             lenient().when(debtRS.findActiveDebts()).thenReturn(List.of());
             lenient().when(debtRS.findUnpaidManualDueDebts(any())).thenReturn(List.of());

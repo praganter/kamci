@@ -5,17 +5,17 @@ import dev.batuhanyetgin.commonmodule.event.RabbitMQConstants;
 import dev.batuhanyetgin.debttracker.document.DebtDocument;
 import dev.batuhanyetgin.debttracker.enums.DebtStatus;
 import dev.batuhanyetgin.debttracker.enums.PaymentStatus;
-import dev.batuhanyetgin.debttracker.enums.PaymentPeriodType;
 import dev.batuhanyetgin.debttracker.producer.DebtEventProducer;
 import dev.batuhanyetgin.debttracker.repositoryservice.DebtRepositoryService;
 import dev.batuhanyetgin.debttracker.util.PaymentPeriodUtil;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -24,18 +24,34 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class DebtReminderScheduler {
 
     private final DebtRepositoryService debtRS;
     private final DebtEventProducer debtEventProducer;
-    @Qualifier("taskExecutor")
     private final Executor taskExecutor;
+    private final Clock clock;
+
+    @Autowired
+    public DebtReminderScheduler(final DebtRepositoryService debtRS,
+                                 final DebtEventProducer debtEventProducer,
+                                 @Qualifier("taskExecutor") final Executor taskExecutor) {
+        this(debtRS, debtEventProducer, taskExecutor, Clock.systemDefaultZone());
+    }
+
+    DebtReminderScheduler(final DebtRepositoryService debtRS,
+                          final DebtEventProducer debtEventProducer,
+                          final Executor taskExecutor,
+                          final Clock clock) {
+        this.debtRS = debtRS;
+        this.debtEventProducer = debtEventProducer;
+        this.taskExecutor = taskExecutor;
+        this.clock = clock;
+    }
 
     @Scheduled(cron = "0 0/15 * * * *")
     @SchedulerLock(name = "debtReminderScheduler", lockAtMostFor = "PT13M", lockAtLeastFor = "PT10M")
     public void processReminders() {
-        final LocalDateTime now = LocalDateTime.now();
+        final LocalDateTime now = LocalDateTime.now(clock);
         log.info("Processing debt reminders/auto-payments at: {}", now);
 
         processStatusResetBatch(debtRS.findActiveDebts(), now);
@@ -45,7 +61,9 @@ public class DebtReminderScheduler {
     }
 
     private void processStatusResetBatch(final List<DebtDocument> debts, final LocalDateTime now) {
-        if (debts.isEmpty()) return;
+        if (debts.isEmpty()) {
+            return;
+        }
 
         final AtomicInteger resetCount = new AtomicInteger();
         debts.forEach(debt -> {
@@ -65,7 +83,9 @@ public class DebtReminderScheduler {
     }
 
     private boolean shouldResetPaymentStatus(final DebtDocument debt, final LocalDateTime now) {
-        if (debt.getPaymentStatus() == PaymentStatus.UNPAID) return false;
+        if (debt.getPaymentStatus() == PaymentStatus.UNPAID) {
+            return false;
+        }
 
         final LocalDateTime periodStart = PaymentPeriodUtil.getPeriodStart(
                 debt.getFirstPaymentDate(), debt.getPaymentPeriodType(), now);
@@ -76,7 +96,9 @@ public class DebtReminderScheduler {
     }
 
     private void processReminderBatch(final List<DebtDocument> debts, final LocalDateTime now) {
-        if (debts.isEmpty()) return;
+        if (debts.isEmpty()) {
+            return;
+        }
 
         log.info("Found {} debt(s) with due reminders", debts.size());
 
@@ -85,17 +107,17 @@ public class DebtReminderScheduler {
 
         final List<CompletableFuture<Void>> futures = debts.stream()
                 .map(debt -> CompletableFuture.runAsync(
-                        () -> processReminderDebt(debt, success, failure), taskExecutor))
+                        () -> processReminderDebt(debt, now, success, failure), taskExecutor))
                 .toList();
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
 
         log.info("Reminder batch complete — success: {}, failed: {}", success.get(), failure.get());
     }
 
-    private void processReminderDebt(final DebtDocument debt,
+    private void processReminderDebt(final DebtDocument debt, final LocalDateTime now,
                                      final AtomicInteger success, final AtomicInteger failure) {
         final LocalDateTime reminderDate = debt.getNextReminderDate();
-        advanceNextReminderDate(debt);
+        advanceNextReminderDate(debt, now);
 
         try {
             debtRS.update(debt);
@@ -130,16 +152,21 @@ public class DebtReminderScheduler {
         );
     }
 
-    private void advanceNextReminderDate(final DebtDocument debt) {
+    private void advanceNextReminderDate(final DebtDocument debt, final LocalDateTime now) {
         final int originalDay = debt.getFirstPaymentDate().getDayOfMonth();
-        final LocalDateTime next = PaymentPeriodUtil.advanceDate(
+        LocalDateTime next = PaymentPeriodUtil.advanceDate(
                 debt.getNextReminderDate(), debt.getPaymentPeriodType(), originalDay);
+        while (!next.isAfter(now)) {
+            next = PaymentPeriodUtil.advanceDate(next, debt.getPaymentPeriodType(), originalDay);
+        }
         debt.setNextReminderDate(next);
         log.info("Advanced next reminder for debt {} to {}", debt.getId(), next);
     }
 
     private void processAutoPaymentBatch(final List<DebtDocument> debts, final LocalDateTime now) {
-        if (debts.isEmpty()) return;
+        if (debts.isEmpty()) {
+            return;
+        }
 
         log.info("Found {} debt(s) with due auto-payments", debts.size());
 
@@ -178,7 +205,9 @@ public class DebtReminderScheduler {
     }
 
     private void processOverdueBatch(final List<DebtDocument> debts, final LocalDateTime now) {
-        if (debts.isEmpty()) return;
+        if (debts.isEmpty()) {
+            return;
+        }
 
         final AtomicInteger marked = new AtomicInteger();
         final List<CompletableFuture<Void>> futures = debts.stream()

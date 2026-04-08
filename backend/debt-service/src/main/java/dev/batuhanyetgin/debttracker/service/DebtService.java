@@ -5,12 +5,11 @@ import dev.batuhanyetgin.commonmodule.exception.BaseException;
 import dev.batuhanyetgin.commonmodule.util.RequestContextUtil;
 import dev.batuhanyetgin.debttracker.document.CategoryDocument;
 import dev.batuhanyetgin.debttracker.document.DebtDocument;
-import dev.batuhanyetgin.debttracker.document.embedded.ReminderEmbedded;
-import dev.batuhanyetgin.debttracker.dto.request.CreateDebtRequest;
-import dev.batuhanyetgin.debttracker.dto.request.PayDebtRequest;
-import dev.batuhanyetgin.debttracker.dto.request.UpdateDebtRequest;
-import dev.batuhanyetgin.debttracker.dto.response.*;
+import dev.batuhanyetgin.debttracker.document.UserIncomeDocument;
 import dev.batuhanyetgin.debttracker.document.embedded.PaymentEmbedded;
+import dev.batuhanyetgin.debttracker.document.embedded.ReminderEmbedded;
+import dev.batuhanyetgin.debttracker.dto.request.*;
+import dev.batuhanyetgin.debttracker.dto.response.*;
 import dev.batuhanyetgin.debttracker.enums.AccessLevelType;
 import dev.batuhanyetgin.debttracker.enums.DebtStatus;
 import dev.batuhanyetgin.debttracker.enums.PaymentStatus;
@@ -28,11 +27,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
@@ -142,8 +137,17 @@ public class DebtService {
         }
 
         final LocalDateTime now = LocalDateTime.now();
+        final LocalDateTime effectiveTime = (request != null && request.getPaidTime() != null)
+                ? request.getPaidTime() : now;
+        final boolean isHistorical = effectiveTime.isBefore(now.minusSeconds(1));
+
+        if (existing.getFirstPaymentDate() != null
+                && effectiveTime.isBefore(existing.getFirstPaymentDate())) {
+            throw BaseException.badRequest("error.debt.payment_before_start");
+        }
+
         final LocalDateTime periodStart = PaymentPeriodUtil.getPeriodStart(
-                existing.getFirstPaymentDate(), existing.getPaymentPeriodType(), now);
+                existing.getFirstPaymentDate(), existing.getPaymentPeriodType(), effectiveTime);
         final boolean alreadyPaidThisPeriod = existing.getPayments().stream()
                 .anyMatch(p -> p.isPaid() && p.getPaidTime() != null
                         && !p.getPaidTime().isBefore(periodStart));
@@ -154,14 +158,16 @@ public class DebtService {
         final int originalDay = existing.getFirstPaymentDate() != null
                 ? existing.getFirstPaymentDate().getDayOfMonth() : 1;
         final LocalDateTime periodEnd = PaymentPeriodUtil.getPeriodEnd(
-                periodStart, existing.getPaymentPeriodType(), originalDay);
+                periodStart, existing.getPaymentPeriodType(), originalDay).minusDays(1);
         final BigDecimal amount = (request != null && request.getAmountPaid() != null)
                 ? request.getAmountPaid()
                 : existing.getAmount();
-        existing.addPayment(now, periodStart, periodEnd, amount);
+        existing.addPayment(effectiveTime, periodStart, periodEnd, amount);
 
         final boolean isFullPayment = amount.compareTo(existing.getAmount()) >= 0;
-        existing.setPaymentStatus(isFullPayment ? PaymentStatus.PAID : PaymentStatus.PARTIALLY_PAID);
+        if (!isHistorical) {
+            existing.setPaymentStatus(isFullPayment ? PaymentStatus.PAID : PaymentStatus.PARTIALLY_PAID);
+        }
 
         if (existing.getInstallmentCount() != null
                 && existing.getPayments().size() >= existing.getInstallmentCount()) {
@@ -176,7 +182,7 @@ public class DebtService {
         return DebtResponse.builder().debt(debtMapper.convert(updated)).build();
     }
 
-    public DebtResponse skip(final String id) {
+    public DebtResponse skip(final String id, final SkipDebtRequest request) {
         final String userId = RequestContextUtil.getUserId();
         final DebtDocument existing = debtRS.findById(id);
 
@@ -194,8 +200,17 @@ public class DebtService {
         }
 
         final LocalDateTime now = LocalDateTime.now();
+        final LocalDateTime effectiveTime = (request != null && request.getSkippedAt() != null)
+                ? request.getSkippedAt() : now;
+        final boolean isHistorical = effectiveTime.isBefore(now.minusSeconds(1));
+
+        if (existing.getFirstPaymentDate() != null
+                && effectiveTime.isBefore(existing.getFirstPaymentDate())) {
+            throw BaseException.badRequest("error.debt.payment_before_start");
+        }
+
         final LocalDateTime periodStart = PaymentPeriodUtil.getPeriodStart(
-                existing.getFirstPaymentDate(), existing.getPaymentPeriodType(), now);
+                existing.getFirstPaymentDate(), existing.getPaymentPeriodType(), effectiveTime);
         final boolean periodAlreadyRecorded = existing.getPayments().stream()
                 .anyMatch(p -> p.getPaidTime() != null && !p.getPaidTime().isBefore(periodStart));
         if (periodAlreadyRecorded) {
@@ -205,16 +220,127 @@ public class DebtService {
         final int originalDay = existing.getFirstPaymentDate() != null
                 ? existing.getFirstPaymentDate().getDayOfMonth() : 1;
         final LocalDateTime periodEnd = PaymentPeriodUtil.getPeriodEnd(
-                periodStart, existing.getPaymentPeriodType(), originalDay);
-        existing.skipPayment(now, periodStart, periodEnd);
+                periodStart, existing.getPaymentPeriodType(), originalDay).minusDays(1);
+        existing.skipPayment(effectiveTime, periodStart, periodEnd);
 
-        if (existing.getPaymentStatus() == PaymentStatus.OVERDUE) {
+        if (!isHistorical && existing.getPaymentStatus() == PaymentStatus.OVERDUE) {
             existing.setPaymentStatus(PaymentStatus.UNPAID);
             log.info("Debt {} payment status restored to UNPAID after skip acknowledgement", id);
         }
 
         final DebtDocument updated = debtRS.update(existing);
         log.info("Payment skipped for debt: {}", id);
+        return DebtResponse.builder().debt(debtMapper.convert(updated)).build();
+    }
+
+    public DebtResponse bulkPay(final String id, final List<PayDebtRequest> requests) {
+        final String userId = RequestContextUtil.getUserId();
+        final DebtDocument existing = debtRS.findById(id);
+
+        if (existing.getStatus() == DebtStatus.COMPLETED) {
+            throw BaseException.conflict("error.debt.already_completed");
+        }
+        if (existing.isAutoPayment()) {
+            throw BaseException.conflict("error.debt.auto_payment_enabled");
+        }
+
+        final CategoryDocument category = categoryRS.findById(existing.getCategoryId());
+        if (lacksWriteAccess(category, userId)) {
+            throw BaseException.forbidden("error.debt.permission_denied");
+        }
+
+        final LocalDateTime now = LocalDateTime.now();
+        final int originalDay = existing.getFirstPaymentDate() != null
+                ? existing.getFirstPaymentDate().getDayOfMonth() : 1;
+
+        final List<PayDebtRequest> sorted = requests.stream()
+                .sorted(Comparator.comparing(r -> r.getPaidTime() != null ? r.getPaidTime() : now))
+                .toList();
+
+        for (final PayDebtRequest req : sorted) {
+            final LocalDateTime effectiveTime = req.getPaidTime() != null ? req.getPaidTime() : now;
+
+            if (effectiveTime.isAfter(now)) {
+                throw BaseException.badRequest("error.validation.past_or_present");
+            }
+            if (existing.getFirstPaymentDate() != null
+                    && effectiveTime.isBefore(existing.getFirstPaymentDate())) {
+                throw BaseException.badRequest("error.debt.payment_before_start");
+            }
+
+            final LocalDateTime periodStart = PaymentPeriodUtil.getPeriodStart(
+                    existing.getFirstPaymentDate(), existing.getPaymentPeriodType(), effectiveTime);
+            final boolean alreadyPaid = existing.getPayments().stream()
+                    .anyMatch(p -> p.isPaid() && p.getPaidTime() != null
+                            && !p.getPaidTime().toLocalDate().isBefore(periodStart.toLocalDate()));
+            if (alreadyPaid) {
+                continue;
+            }
+
+            final LocalDateTime periodEnd = PaymentPeriodUtil.getPeriodEnd(
+                    periodStart, existing.getPaymentPeriodType(), originalDay).minusDays(1);
+            final BigDecimal amount = req.getAmountPaid() != null
+                    ? req.getAmountPaid() : existing.getAmount();
+            existing.addPayment(effectiveTime, periodStart, periodEnd, amount);
+        }
+
+        if (existing.getInstallmentCount() != null
+                && existing.getPayments().size() >= existing.getInstallmentCount()) {
+            existing.setStatus(DebtStatus.COMPLETED);
+            log.info("Debt {} marked as COMPLETED after bulk payment", id);
+        }
+
+        final DebtDocument updated = debtRS.update(existing);
+        log.info("Bulk payment ({} entries) recorded for debt: {}", sorted.size(), id);
+        return DebtResponse.builder().debt(debtMapper.convert(updated)).build();
+    }
+
+    public DebtResponse setPaidInstallments(final String id, final SetPaidInstallmentsRequest request) {
+        final String userId = RequestContextUtil.getUserId();
+        final DebtDocument existing = debtRS.findById(id);
+
+        if (existing.getStatus() == DebtStatus.COMPLETED) {
+            throw BaseException.conflict("error.debt.already_completed");
+        }
+        if (existing.isAutoPayment()) {
+            throw BaseException.conflict("error.debt.auto_payment_enabled");
+        }
+        if (existing.getFirstPaymentDate() == null || existing.getPaymentPeriodType() == null) {
+            throw BaseException.badRequest("error.debt.missing_period_config");
+        }
+        if (existing.getInstallmentCount() != null && request.getCount() > existing.getInstallmentCount()) {
+            throw BaseException.badRequest("error.debt.installment_count_exceeded");
+        }
+
+        final CategoryDocument category = categoryRS.findById(existing.getCategoryId());
+        if (lacksWriteAccess(category, userId)) {
+            throw BaseException.forbidden("error.debt.permission_denied");
+        }
+
+        final int originalDay = existing.getFirstPaymentDate().getDayOfMonth();
+        LocalDateTime periodStart = existing.getFirstPaymentDate();
+
+        for (int i = 0; i < request.getCount(); i++) {
+            final LocalDateTime ps = periodStart;
+            final boolean alreadyRecorded = existing.getPayments().stream()
+                    .anyMatch(p -> p.getPeriodStart() != null && p.getPeriodStart().equals(ps));
+
+            if (!alreadyRecorded) {
+                final LocalDateTime pe = PaymentPeriodUtil.getPeriodEnd(
+                        ps, existing.getPaymentPeriodType(), originalDay).minusDays(1);
+                existing.addPayment(ps, ps, pe, existing.getAmount());
+            }
+            periodStart = PaymentPeriodUtil.advanceDate(periodStart, existing.getPaymentPeriodType(), originalDay);
+        }
+
+        if (existing.getInstallmentCount() != null
+                && existing.getPayments().size() >= existing.getInstallmentCount()) {
+            existing.setStatus(DebtStatus.COMPLETED);
+            log.info("Debt {} marked as COMPLETED after setting {} paid installments", id, request.getCount());
+        }
+
+        final DebtDocument updated = debtRS.update(existing);
+        log.info("Set {} paid installments for debt: {}", request.getCount(), id);
         return DebtResponse.builder().debt(debtMapper.convert(updated)).build();
     }
 
@@ -290,7 +416,7 @@ public class DebtService {
                                 .stream()
                                 .filter(debt -> monthEnd == null
                                         || (debt.getFirstPaymentDate() != null
-                                            && !debt.getFirstPaymentDate().isAfter(monthEnd)))
+                                        && !debt.getFirstPaymentDate().isAfter(monthEnd)))
                                 .map(debt -> {
                                     final DebtItemResponse item = debtMapper.convert(debt);
                                     final PaymentStatus status = calculatePaymentStatusAt(debt, referenceTime);
@@ -451,7 +577,7 @@ public class DebtService {
         }
 
         final var incomeOpt = incomeRS.findByOwnerIdAsOf(userId, monthEnd);
-        final BigDecimal income = incomeOpt.map(i -> i.getAmount()).orElse(null);
+        final BigDecimal income = incomeOpt.map(UserIncomeDocument::getAmount).orElse(null);
         BigDecimal ratio = null;
         if (income != null && income.compareTo(BigDecimal.ZERO) > 0) {
             ratio = totalPaid.divide(income, 4, RoundingMode.HALF_UP)
