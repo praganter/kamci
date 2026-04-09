@@ -396,7 +396,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String installmentProgress(int paid, int total) {
-    return '$paid/$total taksit';
+    return '$paid / $total';
   }
 
   @override
@@ -404,7 +404,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String openEndedProgress(int count) {
-    return '$count ay';
+    return '$count';
   }
 
   @override

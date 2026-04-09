@@ -494,12 +494,12 @@ class _DebtInstanceTile extends ConsumerWidget {
                 ),
             ],
           ),
-          subtitle: debt.installmentCount != null
-              ? Text(
-                  '${debt.paidCount} / ${debt.installmentCount} taksit',
-                  style: Theme.of(context).textTheme.bodySmall,
-                )
-              : null,
+          subtitle: Text(
+            debt.installmentCount != null
+                ? '${debt.paidCount} / ${debt.installmentCount}'
+                : '${debt.paidCount}',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
           trailing: Text(
             '${debt.amount} ${debt.currency}',
             style: TextStyle(

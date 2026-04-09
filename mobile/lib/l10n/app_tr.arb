@@ -180,7 +180,7 @@
 
   "installmentCount": "Taksit Sayısı",
   "installmentCountOptional": "Taksit Sayısı (İsteğe Bağlı)",
-  "installmentProgress": "{paid}/{total} taksit",
+  "installmentProgress": "{paid} / {total}",
   "@installmentProgress": {
     "placeholders": {
       "paid": { "type": "int" },
@@ -188,7 +188,7 @@
     }
   },
   "openEnded": "Açık Uçlu",
-  "openEndedProgress": "{count} ay",
+  "openEndedProgress": "{count}",
   "@openEndedProgress": {
     "placeholders": {
       "count": { "type": "int" }

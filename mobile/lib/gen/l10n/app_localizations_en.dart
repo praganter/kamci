@@ -396,7 +396,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String installmentProgress(int paid, int total) {
-    return '$paid/$total installments';
+    return '$paid / $total';
   }
 
   @override
@@ -404,7 +404,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String openEndedProgress(int count) {
-    return '$count months';
+    return '$count';
   }
 
   @override

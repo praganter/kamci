@@ -150,7 +150,7 @@
 
   "installmentCount": "Installment Count",
   "installmentCountOptional": "Installment Count (Optional)",
-  "installmentProgress": "{paid}/{total} installments",
+  "installmentProgress": "{paid} / {total}",
   "@installmentProgress": {
     "placeholders": {
       "paid": { "type": "int" },
@@ -158,7 +158,7 @@
     }
   },
   "openEnded": "Open-Ended",
-  "openEndedProgress": "{count} months",
+  "openEndedProgress": "{count}",
   "@openEndedProgress": {
     "placeholders": {
       "count": { "type": "int" }

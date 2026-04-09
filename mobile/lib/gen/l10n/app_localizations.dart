@@ -833,7 +833,7 @@ abstract class AppLocalizations {
   /// No description provided for @installmentProgress.
   ///
   /// In tr, this message translates to:
-  /// **'{paid}/{total} taksit'**
+  /// **'{paid} / {total}'**
   String installmentProgress(int paid, int total);
 
   /// No description provided for @openEnded.
@@ -845,7 +845,7 @@ abstract class AppLocalizations {
   /// No description provided for @openEndedProgress.
   ///
   /// In tr, this message translates to:
-  /// **'{count} ay'**
+  /// **'{count}'**
   String openEndedProgress(int count);
 
   /// No description provided for @memberEmail.
