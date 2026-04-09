@@ -12,7 +12,9 @@ import dev.batuhanyetgin.debttracker.dto.request.AddMemberRequest;
 import dev.batuhanyetgin.debttracker.dto.request.BulkAddMemberRequest;
 import dev.batuhanyetgin.debttracker.dto.request.CreateCategoryRequest;
 import dev.batuhanyetgin.debttracker.dto.request.UpdateCategoryRequest;
+import dev.batuhanyetgin.debttracker.document.DebtDocument;
 import dev.batuhanyetgin.debttracker.dto.response.GetAllCategoryResponse;
+import dev.batuhanyetgin.debttracker.dto.response.MigrateCategoryResponse;
 import dev.batuhanyetgin.debttracker.dto.response.SaveCategoryResponse;
 import dev.batuhanyetgin.debttracker.dto.response.UpdateCategoryResponse;
 import dev.batuhanyetgin.debttracker.enums.AccessLevelType;
@@ -89,6 +91,33 @@ public class CategoryService {
         debtRS.deleteByCategoryId(id);
         categoryRS.delete(id);
         log.warn("Deleted category {} and all its debts for user: {}", id, userId);
+    }
+
+    public MigrateCategoryResponse deleteAndMigrate(final String sourceId, final String targetId) {
+        if (sourceId.equals(targetId)) {
+            throw BaseException.badRequest("error.category.migrate_same_category");
+        }
+
+        final String userId = RequestContextUtil.getUserId();
+
+        final CategoryDocument source = categoryRS.findById(sourceId);
+        checkOwner(source, userId);
+
+        final CategoryDocument target = categoryRS.findById(targetId);
+        checkOwner(target, userId);
+
+        final List<DebtDocument> debts = debtRS.findByCategoryId(sourceId);
+        for (final DebtDocument debt : debts) {
+            debt.setCategoryId(targetId);
+            debtRS.update(debt);
+        }
+
+        categoryRS.delete(sourceId);
+        log.info("Migrated {} debts from category {} to {} for user {}", debts.size(), sourceId, targetId, userId);
+
+        return MigrateCategoryResponse.builder()
+                .migratedDebtCount(debts.size())
+                .build();
     }
 
     public void addMember(final String categoryId, final AddMemberRequest request) {

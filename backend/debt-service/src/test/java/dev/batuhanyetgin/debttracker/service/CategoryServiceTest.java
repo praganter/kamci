@@ -8,7 +8,9 @@ import dev.batuhanyetgin.debttracker.dto.request.AddMemberRequest;
 import dev.batuhanyetgin.debttracker.dto.request.BulkAddMemberRequest;
 import dev.batuhanyetgin.debttracker.dto.request.CreateCategoryRequest;
 import dev.batuhanyetgin.debttracker.dto.request.UpdateCategoryRequest;
+import dev.batuhanyetgin.debttracker.document.DebtDocument;
 import dev.batuhanyetgin.debttracker.dto.response.GetAllCategoryResponse;
+import dev.batuhanyetgin.debttracker.dto.response.MigrateCategoryResponse;
 import dev.batuhanyetgin.debttracker.dto.response.SaveCategoryResponse;
 import dev.batuhanyetgin.debttracker.dto.response.UpdateCategoryResponse;
 import dev.batuhanyetgin.debttracker.enums.AccessLevelType;
@@ -216,6 +218,104 @@ class CategoryServiceTest {
                         .matches(e -> e.getStatus() == HttpStatus.FORBIDDEN);
 
                 verify(debtRS, never()).deleteByCategoryId(any());
+                verify(categoryRS, never()).delete(any());
+            }
+        }
+    }
+
+    // ─── deleteAndMigrate ─────────────────────────────────────────────────────
+
+    @Nested
+    @DisplayName("deleteAndMigrate")
+    class DeleteAndMigrate {
+
+        private static final String TARGET_ID = "catTarget";
+
+        private DebtDocument buildDebt(final String id, final String categoryId) {
+            return DebtDocument.builder()
+                    .categoryId(categoryId)
+                    .build();
+        }
+
+        @Test
+        @DisplayName("owner migrates debts → debts updated, source category deleted, count returned")
+        void ownerMigrates_debtsUpdatedAndCategoryDeleted() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+
+                when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
+                when(categoryRS.findById(TARGET_ID)).thenReturn(buildCategory(TARGET_ID, OWNER_ID));
+                final List<DebtDocument> debts = List.of(buildDebt("d1", CAT_ID), buildDebt("d2", CAT_ID));
+                when(debtRS.findByCategoryId(CAT_ID)).thenReturn(debts);
+
+                final MigrateCategoryResponse response = categoryService.deleteAndMigrate(CAT_ID, TARGET_ID);
+
+                assertThat(response.getMigratedDebtCount()).isEqualTo(2);
+                verify(debtRS, times(2)).update(any(DebtDocument.class));
+                verify(categoryRS).delete(CAT_ID);
+            }
+        }
+
+        @Test
+        @DisplayName("category has no debts → update never called, source category still deleted, count is 0")
+        void noDebts_updateNeverCalledCategoryDeleted() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+
+                when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
+                when(categoryRS.findById(TARGET_ID)).thenReturn(buildCategory(TARGET_ID, OWNER_ID));
+                when(debtRS.findByCategoryId(CAT_ID)).thenReturn(List.of());
+
+                final MigrateCategoryResponse response = categoryService.deleteAndMigrate(CAT_ID, TARGET_ID);
+
+                assertThat(response.getMigratedDebtCount()).isEqualTo(0);
+                verify(debtRS, never()).update(any());
+                verify(categoryRS).delete(CAT_ID);
+            }
+        }
+
+        @Test
+        @DisplayName("source equals target → throws BAD_REQUEST, no DB calls")
+        void sameId_throwsBadRequest() {
+            assertThatExceptionOfType(BaseException.class)
+                    .isThrownBy(() -> categoryService.deleteAndMigrate(CAT_ID, CAT_ID))
+                    .matches(e -> e.getStatus() == HttpStatus.BAD_REQUEST);
+
+            verify(categoryRS, never()).findById(any());
+            verify(debtRS, never()).findByCategoryId(any());
+        }
+
+        @Test
+        @DisplayName("non-owner of source → throws FORBIDDEN, target never queried")
+        void nonOwnerSource_throwsForbidden() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OTHER_ID);
+
+                when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
+
+                assertThatExceptionOfType(BaseException.class)
+                        .isThrownBy(() -> categoryService.deleteAndMigrate(CAT_ID, TARGET_ID))
+                        .matches(e -> e.getStatus() == HttpStatus.FORBIDDEN);
+
+                verify(categoryRS, never()).findById(TARGET_ID);
+                verify(debtRS, never()).findByCategoryId(any());
+            }
+        }
+
+        @Test
+        @DisplayName("non-owner of target → throws FORBIDDEN, debts never fetched")
+        void nonOwnerTarget_throwsForbidden() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+
+                when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
+                when(categoryRS.findById(TARGET_ID)).thenReturn(buildCategory(TARGET_ID, OTHER_ID));
+
+                assertThatExceptionOfType(BaseException.class)
+                        .isThrownBy(() -> categoryService.deleteAndMigrate(CAT_ID, TARGET_ID))
+                        .matches(e -> e.getStatus() == HttpStatus.FORBIDDEN);
+
+                verify(debtRS, never()).findByCategoryId(any());
                 verify(categoryRS, never()).delete(any());
             }
         }

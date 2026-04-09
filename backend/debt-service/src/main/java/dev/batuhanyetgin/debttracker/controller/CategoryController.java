@@ -2,6 +2,7 @@ package dev.batuhanyetgin.debttracker.controller;
 
 import dev.batuhanyetgin.debttracker.dto.request.AddMemberRequest;
 import dev.batuhanyetgin.debttracker.dto.response.GetAllCategoryResponse;
+import dev.batuhanyetgin.debttracker.dto.response.MigrateCategoryResponse;
 import dev.batuhanyetgin.debttracker.dto.response.SaveCategoryResponse;
 import dev.batuhanyetgin.debttracker.dto.response.UpdateCategoryResponse;
 import dev.batuhanyetgin.debttracker.dto.request.BulkAddMemberRequest;
@@ -60,6 +61,20 @@ public class CategoryController {
     ResponseEntity<Void> delete(@PathVariable final String id) {
         categoryService.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "Delete a category and migrate its debts to another category")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Debts migrated and source category deleted"),
+            @ApiResponse(responseCode = "400", description = "Source and target categories are the same"),
+            @ApiResponse(responseCode = "403", description = "Not the owner of source or target category"),
+            @ApiResponse(responseCode = "404", description = "Source or target category not found")
+    })
+    @DeleteMapping("{id}/migrate")
+    ResponseEntity<MigrateCategoryResponse> deleteAndMigrate(
+            @PathVariable final String id,
+            @RequestParam final String targetCategoryId) {
+        return ResponseEntity.ok(categoryService.deleteAndMigrate(id, targetCategoryId));
     }
 
     @Operation(summary = "Add a member to a category")
