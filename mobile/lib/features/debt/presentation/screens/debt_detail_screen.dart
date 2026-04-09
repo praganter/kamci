@@ -8,9 +8,7 @@ import '../../../../core/router/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../shared/widgets/app_error_widget.dart';
-import '../../../../shared/widgets/confirm_dialog.dart';
 import '../../../../shared/providers/current_user_provider.dart';
-import '../../domain/entities/debt.dart';
 import '../../domain/entities/payment_embedded.dart';
 import '../providers/debt_providers.dart';
 
@@ -73,31 +71,6 @@ class DebtDetailScreen extends ConsumerWidget {
                     ref.invalidate(debtGroupedProvider(false));
                   },
                 ),
-                if (debt.status == DebtStatus.active && !debt.autoPayment)
-                  IconButton(
-                    icon: const Icon(Icons.skip_next_outlined),
-                    tooltip: l10n.skipPayment,
-                    onPressed: () async {
-                      final confirmed = await showConfirmDialog(
-                        context,
-                        title: l10n.skipPayment,
-                        content: l10n.skipPaymentConfirm,
-                      );
-                      if (confirmed && context.mounted) {
-                        await ref
-                            .read(debtListProvider.notifier)
-                            .skipPayment(id);
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(l10n.paymentSkipped(debt.name)),
-                              behavior: SnackBarBehavior.floating,
-                            ),
-                          );
-                        }
-                      }
-                    },
-                  ),
               ],
             ],
           ),
