@@ -2,10 +2,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../domain/entities/debt.dart';
+import '../../domain/entities/debt_summary.dart';
 import '../../domain/repositories/debt_repository.dart';
 import '../datasources/debt_remote_datasource.dart';
 import '../models/create_debt_request.dart';
 import '../models/debt_model.dart';
+import '../models/debt_summary_model.dart';
 import '../models/reminder_embedded_model.dart';
 
 part 'debt_repository_impl.g.dart';
@@ -19,9 +21,15 @@ class DebtRepositoryImpl implements DebtRepository {
   final DebtRemoteDatasource _datasource;
 
   @override
-  Future<List<Debt>> getAll(String month) async {
-    final models = await _datasource.getAll(month);
-    return models.map((m) => m.toDomain()).toList();
+  Future<List<DebtSummary>> getAll(String month, bool isOwner) async {
+    final categories = await _datasource.getGrouped(
+      month: month,
+      isOwner: isOwner,
+    );
+    return [
+      for (final cat in categories)
+        for (final model in cat.debts) model.toDomain(),
+    ];
   }
 
   @override
@@ -53,6 +61,12 @@ class DebtRepositoryImpl implements DebtRepository {
   @override
   Future<Debt> skip(String id) async {
     final model = await _datasource.skip(id);
+    return model.toDomain();
+  }
+
+  @override
+  Future<Debt> bulkPay(String id, List<Map<String, dynamic>> payments) async {
+    final model = await _datasource.bulkPay(id, payments);
     return model.toDomain();
   }
 

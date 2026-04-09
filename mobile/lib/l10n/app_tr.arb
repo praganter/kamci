@@ -246,5 +246,19 @@
 
   "reminderChannelRequired": "En az bir bildirim kanalı seçilmelidir",
   "reminderDateRequired": "Hatırlatma tarihi seçilmelidir",
-  "reminderTimeRequired": "Hatırlatma saati seçilmelidir"
+  "reminderTimeRequired": "Hatırlatma saati seçilmelidir",
+
+  "paymentActions": "Ödeme İşlemleri",
+  "partialPayment": "Parçalı Ödeme",
+  "fullPayment": "Tam Ödeme",
+  "bulkPayment": "Toplu Ödeme",
+  "enterAmount": "Tutar Girin",
+  "partialPaymentHint": "Boş bırakılırsa tam tutar kullanılır",
+  "bulkPayTitle": "Toplu Ödeme Seç",
+  "bulkPayConfirm": "{count} ödeme kaydedildi.",
+  "@bulkPayConfirm": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  }
 }

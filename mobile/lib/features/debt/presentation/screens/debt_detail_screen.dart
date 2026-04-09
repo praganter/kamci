@@ -63,10 +63,15 @@ class DebtDetailScreen extends ConsumerWidget {
               if (isOwner) ...[
                 IconButton(
                   icon: const Icon(Icons.edit_outlined),
-                  onPressed: () => context.pushNamed(
-                    RouteNames.debtEdit,
-                    pathParameters: {'id': id},
-                  ),
+                  onPressed: () async {
+                    await context.pushNamed(
+                      RouteNames.debtEdit,
+                      pathParameters: {'id': id},
+                    );
+                    ref.invalidate(debtDetailProvider(id));
+                    ref.invalidate(debtGroupedProvider(true));
+                    ref.invalidate(debtGroupedProvider(false));
+                  },
                 ),
                 if (debt.status == DebtStatus.active && !debt.autoPayment)
                   IconButton(
@@ -93,23 +98,6 @@ class DebtDetailScreen extends ConsumerWidget {
                       }
                     },
                   ),
-                IconButton(
-                  icon: Icon(
-                    Icons.delete_outline,
-                    color: Theme.of(context).colorScheme.error,
-                  ),
-                  onPressed: () async {
-                    final confirmed = await showConfirmDialog(
-                      context,
-                      title: l10n.deleteDebt,
-                      content: l10n.deleteDebtConfirm(debt.name),
-                    );
-                    if (confirmed && context.mounted) {
-                      await ref.read(debtListProvider.notifier).deleteDebt(id);
-                      if (context.mounted) context.pop();
-                    }
-                  },
-                ),
               ],
             ],
           ),

@@ -1069,6 +1069,54 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Hatırlatma saati seçilmelidir'**
   String get reminderTimeRequired;
+
+  /// No description provided for @paymentActions.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ödeme İşlemleri'**
+  String get paymentActions;
+
+  /// No description provided for @partialPayment.
+  ///
+  /// In tr, this message translates to:
+  /// **'Parçalı Ödeme'**
+  String get partialPayment;
+
+  /// No description provided for @fullPayment.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tam Ödeme'**
+  String get fullPayment;
+
+  /// No description provided for @bulkPayment.
+  ///
+  /// In tr, this message translates to:
+  /// **'Toplu Ödeme'**
+  String get bulkPayment;
+
+  /// No description provided for @enterAmount.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tutar Girin'**
+  String get enterAmount;
+
+  /// No description provided for @partialPaymentHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Boş bırakılırsa tam tutar kullanılır'**
+  String get partialPaymentHint;
+
+  /// No description provided for @bulkPayTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Toplu Ödeme Seç'**
+  String get bulkPayTitle;
+
+  /// No description provided for @bulkPayConfirm.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} ödeme kaydedildi.'**
+  String bulkPayConfirm(int count);
 }
 
 class _AppLocalizationsDelegate

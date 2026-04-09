@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'core/l10n/l10n.dart';
 import 'core/providers/app_settings_provider.dart';
 import 'core/router/app_router.dart';
@@ -14,6 +15,8 @@ class App extends ConsumerWidget {
     final router = ref.watch(appRouterProvider);
     final themeMode = ref.watch(themeModeProvider);
     final locale = ref.watch(localeProvider);
+
+    Intl.defaultLocale = (locale ?? const Locale('tr')).toLanguageTag();
 
     return MaterialApp.router(
       title: AppConstants.appName,

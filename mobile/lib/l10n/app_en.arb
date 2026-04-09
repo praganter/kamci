@@ -216,5 +216,19 @@
 
   "reminderChannelRequired": "At least one notification channel must be selected",
   "reminderDateRequired": "Reminder date is required",
-  "reminderTimeRequired": "Reminder time is required"
+  "reminderTimeRequired": "Reminder time is required",
+
+  "paymentActions": "Payment Actions",
+  "partialPayment": "Partial Payment",
+  "fullPayment": "Full Payment",
+  "bulkPayment": "Bulk Payment",
+  "enterAmount": "Enter Amount",
+  "partialPaymentHint": "Leave empty to use full amount",
+  "bulkPayTitle": "Select Bulk Payments",
+  "bulkPayConfirm": "{count} payments recorded.",
+  "@bulkPayConfirm": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  }
 }

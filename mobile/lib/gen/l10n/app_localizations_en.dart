@@ -525,4 +525,30 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reminderTimeRequired => 'Reminder time is required';
+
+  @override
+  String get paymentActions => 'Payment Actions';
+
+  @override
+  String get partialPayment => 'Partial Payment';
+
+  @override
+  String get fullPayment => 'Full Payment';
+
+  @override
+  String get bulkPayment => 'Bulk Payment';
+
+  @override
+  String get enterAmount => 'Enter Amount';
+
+  @override
+  String get partialPaymentHint => 'Leave empty to use full amount';
+
+  @override
+  String get bulkPayTitle => 'Select Bulk Payments';
+
+  @override
+  String bulkPayConfirm(int count) {
+    return '$count payments recorded.';
+  }
 }

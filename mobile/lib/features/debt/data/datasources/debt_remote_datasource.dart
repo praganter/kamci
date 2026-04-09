@@ -6,6 +6,7 @@ import '../../../../core/network/api_exception.dart';
 import '../../../../core/network/dio_client.dart';
 import '../models/create_debt_request.dart';
 import '../models/debt_model.dart';
+import '../models/debt_summary_model.dart';
 
 part 'debt_remote_datasource.g.dart';
 
@@ -17,31 +18,23 @@ class DebtRemoteDatasource {
   const DebtRemoteDatasource(this._dio);
   final Dio _dio;
 
-  Future<List<DebtModel>> getAll(String month) async {
+  Future<
+    List<
+      ({
+        String categoryId,
+        String categoryName,
+        bool owned,
+        String? ownerUserId,
+        List<DebtSummaryModel> debts,
+      })
+    >
+  >
+  getGrouped({required String month, required bool isOwner}) async {
     try {
       final response = await _dio.get(
         ApiConstants.debtGet,
-        queryParameters: {'month': month},
+        queryParameters: {'month': month, 'isOwner': isOwner},
       );
-      final data = response.data as Map<String, dynamic>;
-      final categories = data['categories'] as List<dynamic>;
-      final debts = <DebtModel>[];
-      for (final category in categories) {
-        final categoryDebts = (category['debts'] as List<dynamic>?) ?? [];
-        for (final debt in categoryDebts) {
-          debts.add(DebtModel.fromJson(debt as Map<String, dynamic>));
-        }
-      }
-      return debts;
-    } on DioException catch (e) {
-      throw _mapException(e);
-    }
-  }
-
-  Future<List<({String categoryId, String categoryName, bool owned, List<DebtModel> debts})>>
-      getGrouped() async {
-    try {
-      final response = await _dio.get(ApiConstants.debtGet);
       final data = response.data as Map<String, dynamic>;
       final categories = data['categories'] as List<dynamic>;
       return categories.map((c) {
@@ -50,8 +43,9 @@ class DebtRemoteDatasource {
           categoryId: c['categoryId'] as String,
           categoryName: c['categoryName'] as String,
           owned: c['owned'] as bool? ?? true,
+          ownerUserId: c['ownerUserId'] as String?,
           debts: rawDebts
-              .map((d) => DebtModel.fromJson(d as Map<String, dynamic>))
+              .map((d) => DebtSummaryModel.fromJson(d as Map<String, dynamic>))
               .toList(),
         );
       }).toList();
@@ -103,6 +97,23 @@ class DebtRemoteDatasource {
     try {
       final response = await _dio.post('${ApiConstants.debtSkip}/$id');
       final debt = (response.data as Map<String, dynamic>)['debt'] as Map<String, dynamic>;
+      return DebtModel.fromJson(debt);
+    } on DioException catch (e) {
+      throw _mapException(e);
+    }
+  }
+
+  Future<DebtModel> bulkPay(
+    String id,
+    List<Map<String, dynamic>> payments,
+  ) async {
+    try {
+      final response = await _dio.post(
+        '${ApiConstants.debtBulkPay}/$id/bulk',
+        data: payments,
+      );
+      final debt =
+          (response.data as Map<String, dynamic>)['debt'] as Map<String, dynamic>;
       return DebtModel.fromJson(debt);
     } on DioException catch (e) {
       throw _mapException(e);

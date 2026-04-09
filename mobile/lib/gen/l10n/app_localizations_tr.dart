@@ -525,4 +525,30 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get reminderTimeRequired => 'Hatırlatma saati seçilmelidir';
+
+  @override
+  String get paymentActions => 'Ödeme İşlemleri';
+
+  @override
+  String get partialPayment => 'Parçalı Ödeme';
+
+  @override
+  String get fullPayment => 'Tam Ödeme';
+
+  @override
+  String get bulkPayment => 'Toplu Ödeme';
+
+  @override
+  String get enterAmount => 'Tutar Girin';
+
+  @override
+  String get partialPaymentHint => 'Boş bırakılırsa tam tutar kullanılır';
+
+  @override
+  String get bulkPayTitle => 'Toplu Ödeme Seç';
+
+  @override
+  String bulkPayConfirm(int count) {
+    return '$count ödeme kaydedildi.';
+  }
 }

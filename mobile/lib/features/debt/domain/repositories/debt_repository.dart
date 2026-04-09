@@ -1,13 +1,15 @@
 import '../entities/debt.dart';
+import '../entities/debt_summary.dart';
 import '../entities/reminder_embedded.dart';
 
 abstract interface class DebtRepository {
-  Future<List<Debt>> getAll(String month);
+  Future<List<DebtSummary>> getAll(String month, bool isOwner);
   Future<Debt> getById(String id);
   Future<Debt> create(CreateDebtParams params);
   Future<Debt> update(String id, CreateDebtParams params);
   Future<Debt> pay(String id, {double? amountPaid});
   Future<Debt> skip(String id);
+  Future<Debt> bulkPay(String id, List<Map<String, dynamic>> payments);
   Future<void> delete(String id);
   Future<Map<String, dynamic>> getSummary(String month);
   Future<List<Map<String, dynamic>>> getPaymentHistory(
