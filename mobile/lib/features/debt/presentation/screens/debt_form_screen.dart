@@ -168,6 +168,11 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
         await repo.create(params);
       }
       ref.invalidate(debtListProvider);
+      ref.invalidate(debtGroupedProvider(true));
+      ref.invalidate(debtGroupedProvider(false));
+      if (widget.debtId != null) {
+        ref.invalidate(debtDetailProvider(widget.debtId!));
+      }
       if (mounted) context.pop();
     } on PremiumLimitException {
       if (mounted) {
