@@ -403,6 +403,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get openEnded => 'Open-Ended';
 
   @override
+  String openEndedProgress(int count) {
+    return '$count months';
+  }
+
+  @override
   String get memberEmail => 'Member Email Address';
 
   @override

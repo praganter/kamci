@@ -158,6 +158,12 @@
     }
   },
   "openEnded": "Open-Ended",
+  "openEndedProgress": "{count} months",
+  "@openEndedProgress": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
   "memberEmail": "Member Email Address",
 
   "reminder": "Reminder",

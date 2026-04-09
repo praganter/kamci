@@ -842,6 +842,12 @@ abstract class AppLocalizations {
   /// **'Açık Uçlu'**
   String get openEnded;
 
+  /// No description provided for @openEndedProgress.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} ay'**
+  String openEndedProgress(int count);
+
   /// No description provided for @memberEmail.
   ///
   /// In tr, this message translates to:

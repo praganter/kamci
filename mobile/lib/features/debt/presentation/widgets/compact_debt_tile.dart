@@ -173,6 +173,26 @@ class CompactDebtTile extends ConsumerWidget {
                                   fontWeight: FontWeight.w500,
                                 ),
                           ),
+                        )
+                      else if (debt.paidInstallmentCount != null &&
+                          debt.paidInstallmentCount! > 0)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 7,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: cs.outlineVariant),
+                          ),
+                          child: Text(
+                            l10n.openEndedProgress(debt.paidInstallmentCount!),
+                            style: Theme.of(context).textTheme.labelSmall
+                                ?.copyWith(
+                                  color: cs.onSurfaceVariant,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                          ),
                         ),
                     ],
                   ),

@@ -120,12 +120,14 @@ class DebtDetailScreen extends ConsumerWidget {
                     ),
                     _InfoRow(
                       l10n.installmentCount,
-                      debt.installmentCount != null
+                      debt.installmentCount != null && debt.installmentCount! > 0
                           ? l10n.installmentProgress(
                               debt.paidInstallmentCount ?? 0,
                               debt.installmentCount!,
                             )
-                          : l10n.openEnded,
+                          : (debt.paidInstallmentCount != null && debt.paidInstallmentCount! > 0)
+                              ? l10n.openEndedProgress(debt.paidInstallmentCount!)
+                              : l10n.openEnded,
                     ),
                     _InfoRow(l10n.autoPayment, debt.autoPayment ? '✓' : '—'),
                     if (debt.description != null)

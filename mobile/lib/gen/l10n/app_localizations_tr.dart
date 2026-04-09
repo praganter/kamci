@@ -403,6 +403,11 @@ class AppLocalizationsTr extends AppLocalizations {
   String get openEnded => 'Açık Uçlu';
 
   @override
+  String openEndedProgress(int count) {
+    return '$count ay';
+  }
+
+  @override
   String get memberEmail => 'Üye E-posta Adresi';
 
   @override

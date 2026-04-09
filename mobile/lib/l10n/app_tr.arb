@@ -188,6 +188,12 @@
     }
   },
   "openEnded": "Açık Uçlu",
+  "openEndedProgress": "{count} ay",
+  "@openEndedProgress": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
   "memberEmail": "Üye E-posta Adresi",
 
   "reminder": "Hatırlatma",
