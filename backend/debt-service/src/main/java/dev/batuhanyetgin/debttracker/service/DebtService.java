@@ -72,6 +72,7 @@ public class DebtService {
 
         DebtDocument debtDocument = debtMapper.convert(request);
         setNextReminderDate(debtDocument);
+        backfillAutoPayments(debtDocument);
         setNextAutoPaymentDate(debtDocument);
         debtDocument = debtRS.save(debtDocument);
 
@@ -370,31 +371,20 @@ public class DebtService {
         log.warn("Deleted debt: {}", id);
     }
 
-    public GetDebtResponse get(final String month) {
+    public GetDebtResponse get(final String month, final boolean isOwner) {
         final String userId = RequestContextUtil.getUserId();
 
-        log.info("Getting debts for user: {}", userId);
+        log.info("Getting debts for user: {} isOwner: {}", userId, isOwner);
 
-        final CompletableFuture<List<CategoryDocument>> ownedFuture =
-                CompletableFuture.supplyAsync(() -> categoryRS.findByOwnerId(userId), taskExecutor);
-        final CompletableFuture<List<CategoryDocument>> sharedFuture =
-                CompletableFuture.supplyAsync(() -> categoryRS.findByMemberUserId(userId), taskExecutor);
-        CompletableFuture.allOf(ownedFuture, sharedFuture).join();
+        final List<CategoryDocument> cats = isOwner
+                ? categoryRS.findByOwnerId(userId)
+                : categoryRS.findByMemberUserId(userId);
 
-        final List<CategoryDocument> owned = ownedFuture.join();
-        final List<CategoryDocument> shared = sharedFuture.join();
-
-        final List<CategoryDocument> all = new ArrayList<>();
-        all.addAll(owned);
-        all.addAll(shared);
-
-        final List<String> categoryIds = all.stream().map(BaseDocument::getId).toList();
+        final List<String> categoryIds = cats.stream().map(BaseDocument::getId).toList();
         final Map<String, List<DebtDocument>> byCategory = debtRS.findByCategoryIdIn(categoryIds)
                 .stream().collect(Collectors.groupingBy(DebtDocument::getCategoryId));
 
-        final Set<String> ownedIds = owned.stream()
-                .map(BaseDocument::getId).collect(Collectors.toSet());
-
+        final LocalDateTime now = LocalDateTime.now();
         final LocalDateTime monthEnd;
         final LocalDateTime referenceTime;
         if (month != null) {
@@ -403,26 +393,41 @@ public class DebtService {
             referenceTime = monthEnd;
         } else {
             monthEnd = null;
-            referenceTime = LocalDateTime.now();
+            referenceTime = now;
         }
 
-        final List<CategoryDebtResponse> categories = all.stream()
+        final List<CategoryDebtResponse> categories = cats.stream()
                 .map(cat -> CategoryDebtResponse.builder()
                         .categoryId(cat.getId())
                         .categoryName(cat.getName())
-                        .owned(ownedIds.contains(cat.getId()))
-                        .ownerUserId(ownedIds.contains(cat.getId()) ? null : cat.getOwnerId())
+                        .owned(isOwner)
+                        .ownerUserId(isOwner ? null : cat.getOwnerId())
                         .debts(byCategory.getOrDefault(cat.getId(), List.of())
                                 .stream()
                                 .filter(debt -> monthEnd == null
                                         || (debt.getFirstPaymentDate() != null
                                         && !debt.getFirstPaymentDate().isAfter(monthEnd)))
                                 .map(debt -> {
-                                    final DebtItemResponse item = debtMapper.convert(debt);
                                     final PaymentStatus status = calculatePaymentStatusAt(debt, referenceTime);
-                                    item.setPaymentStatus(status);
-                                    item.setPaidCurrentPeriod(status == PaymentStatus.PAID);
-                                    return item;
+                                    final int paidCount = (int) debt.getPayments().stream()
+                                            .filter(PaymentEmbedded::isPaid).count();
+                                    final boolean hasReminder = debt.getNextReminderDate() != null
+                                            && debt.getNextReminderDate().isAfter(now);
+                                    return DebtSummaryResponse.builder()
+                                            .id(debt.getId())
+                                            .name(debt.getName())
+                                            .categoryId(debt.getCategoryId())
+                                            .installmentCount(debt.getInstallmentCount())
+                                            .paidCount(paidCount)
+                                            .paymentPeriodType(debt.getPaymentPeriodType())
+                                            .amount(debt.getAmount())
+                                            .currency(debt.getCurrency())
+                                            .status(debt.getStatus())
+                                            .paymentStatus(status)
+                                            .autoPayment(debt.isAutoPayment())
+                                            .paidCurrentPeriod(status == PaymentStatus.PAID)
+                                            .hasReminder(hasReminder)
+                                            .build();
                                 }).toList())
                         .build())
                 .toList();
@@ -593,6 +598,45 @@ public class DebtService {
                 .debtToIncomeRatio(ratio)
                 .debts(items)
                 .build();
+    }
+
+    private void backfillAutoPayments(final DebtDocument debt) {
+        if (!debt.isAutoPayment() || debt.getFirstPaymentDate() == null
+                || debt.getPaymentPeriodType() == null) {
+            return;
+        }
+
+        final LocalDateTime now = LocalDateTime.now();
+        if (debt.getFirstPaymentDate().isAfter(now)) {
+            return;
+        }
+
+        final int originalDay = debt.getFirstPaymentDate().getDayOfMonth();
+        LocalDateTime periodStart = debt.getFirstPaymentDate();
+
+        while (!periodStart.isAfter(now)) {
+            final LocalDateTime periodEnd = PaymentPeriodUtil.getPeriodEnd(
+                    periodStart, debt.getPaymentPeriodType(), originalDay).minusDays(1);
+            debt.addPayment(periodStart, periodStart, periodEnd, debt.getAmount());
+
+            if (debt.getInstallmentCount() != null
+                    && (long) debt.getPayments().stream().filter(PaymentEmbedded::isPaid).count()
+                            >= debt.getInstallmentCount()) {
+                debt.setStatus(DebtStatus.COMPLETED);
+                debt.setNextAutoPaymentDate(null);
+                log.info("Debt backfill: marked COMPLETED after {} installments",
+                        debt.getInstallmentCount());
+                return;
+            }
+
+            periodStart = PaymentPeriodUtil.advanceDate(
+                    periodStart, debt.getPaymentPeriodType(), originalDay);
+        }
+
+        debt.setNextAutoPaymentDate(periodStart);
+        debt.setPaymentStatus(PaymentStatus.PAID);
+        log.info("Debt backfill: {} payments generated, nextAutoPaymentDate={}",
+                debt.getPayments().size(), periodStart);
     }
 
     private void setNextAutoPaymentDate(final DebtDocument debtDocument) {

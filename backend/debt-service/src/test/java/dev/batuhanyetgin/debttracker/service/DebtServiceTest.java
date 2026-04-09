@@ -507,7 +507,7 @@ class DebtServiceTest {
     class Get {
 
         @Test
-        @DisplayName("returns owned and shared categories with grouped debts")
+        @DisplayName("isOwner=true returns owned categories with grouped debts")
         void get_returnsGroupedDebts() {
             try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
                 ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
@@ -515,26 +515,20 @@ class DebtServiceTest {
                 ctx.when(RequestContextUtil::getLocale).thenReturn("en");
 
                 final CategoryDocument owned = buildCategory(CAT_ID, OWNER_ID);
-                final CategoryDocument shared = buildCategory(NEW_CAT_ID, OTHER_ID);
                 when(categoryRS.findByOwnerId(OWNER_ID)).thenReturn(List.of(owned));
-                when(categoryRS.findByMemberUserId(OWNER_ID)).thenReturn(List.of(shared));
 
                 final DebtDocument debt = buildDebt(DEBT_ID, OWNER_ID, CAT_ID);
-                when(debtRS.findByCategoryIdIn(List.of(CAT_ID, NEW_CAT_ID))).thenReturn(List.of(debt));
-                when(debtMapper.convert(debt)).thenReturn(buildDebtItemResponse());
+                when(debtRS.findByCategoryIdIn(List.of(CAT_ID))).thenReturn(List.of(debt));
 
-                final GetDebtResponse response = debtService.get(null);
+                final GetDebtResponse response = debtService.get(null, true);
 
-                assertThat(response.getCategories()).hasSize(2);
-                assertThat(response.getCategories()).anySatisfy(c ->
-                        assertThat(c.getCategoryId()).isEqualTo(CAT_ID));
-                assertThat(response.getCategories()).anySatisfy(c ->
-                        assertThat(c.getCategoryId()).isEqualTo(NEW_CAT_ID));
+                assertThat(response.getCategories()).hasSize(1);
+                assertThat(response.getCategories().get(0).getCategoryId()).isEqualTo(CAT_ID);
             }
         }
 
         @Test
-        @DisplayName("owned flag is set correctly")
+        @DisplayName("owned flag is set correctly based on isOwner param")
         void get_ownedFlagSetCorrectly() {
             try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
                 ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
@@ -547,17 +541,15 @@ class DebtServiceTest {
                 when(categoryRS.findByMemberUserId(OWNER_ID)).thenReturn(List.of(shared));
                 when(debtRS.findByCategoryIdIn(anyList())).thenReturn(List.of());
 
-                final GetDebtResponse response = debtService.get(null);
+                final GetDebtResponse ownedResponse = debtService.get(null, true);
+                assertThat(ownedResponse.getCategories()).hasSize(1);
+                assertThat(ownedResponse.getCategories().get(0).isOwned()).isTrue();
+                assertThat(ownedResponse.getCategories().get(0).getOwnerUserId()).isNull();
 
-                response.getCategories().forEach(c -> {
-                    if (CAT_ID.equals(c.getCategoryId())) {
-                        assertThat(c.isOwned()).isTrue();
-                        assertThat(c.getOwnerUserId()).isNull();
-                    } else {
-                        assertThat(c.isOwned()).isFalse();
-                        assertThat(c.getOwnerUserId()).isEqualTo(OTHER_ID);
-                    }
-                });
+                final GetDebtResponse sharedResponse = debtService.get(null, false);
+                assertThat(sharedResponse.getCategories()).hasSize(1);
+                assertThat(sharedResponse.getCategories().get(0).isOwned()).isFalse();
+                assertThat(sharedResponse.getCategories().get(0).getOwnerUserId()).isEqualTo(OTHER_ID);
             }
         }
 
@@ -570,10 +562,9 @@ class DebtServiceTest {
                 ctx.when(RequestContextUtil::getLocale).thenReturn("en");
 
                 when(categoryRS.findByOwnerId(OWNER_ID)).thenReturn(List.of());
-                when(categoryRS.findByMemberUserId(OWNER_ID)).thenReturn(List.of());
                 when(debtRS.findByCategoryIdIn(List.of())).thenReturn(List.of());
 
-                final GetDebtResponse response = debtService.get(null);
+                final GetDebtResponse response = debtService.get(null, true);
                 assertThat(response.getCategories()).isEmpty();
             }
         }

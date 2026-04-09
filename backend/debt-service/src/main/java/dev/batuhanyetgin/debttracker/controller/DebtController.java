@@ -133,8 +133,9 @@ public class DebtController {
     @ApiResponse(responseCode = "200", description = "Debts returned")
     @GetMapping("get")
     ResponseEntity<GetDebtResponse> get(
-            @RequestParam(required = false) final String month) {
-        return ResponseEntity.ok(debtService.get(month));
+            @RequestParam(required = false) final String month,
+            @RequestParam final boolean isOwner) {
+        return ResponseEntity.ok(debtService.get(month, isOwner));
     }
 
     @Operation(summary = "Get payment history for a specific debt filtered by date range")

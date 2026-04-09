@@ -6,6 +6,7 @@ import lombok.Setter;
 
 import java.util.List;
 
+
 @Getter
 @Setter
 @Builder
@@ -19,5 +20,5 @@ public class CategoryDebtResponse {
 
     private String ownerUserId;
 
-    private List<DebtItemResponse> debts;
+    private List<DebtSummaryResponse> debts;
 }
