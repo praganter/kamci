@@ -37,3 +37,7 @@ build/
 firebase-adminsdk.json
 .vexp
 vexp.toml
+/.mcp.json
+/AGENTS.md
+/GEMINI.md
+/.opencode.json
