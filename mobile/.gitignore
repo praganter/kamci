@@ -60,3 +60,7 @@ app.*.map.json
 .vexp/
 vexp.toml
 android/app/google-services.json
+
+# Gemini
+gemini.md
+GEMINI.md
