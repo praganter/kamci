@@ -1,4 +1,4 @@
-package com.batuhanyetgin.debt_tracker
+package com.batuhanyetgin.kamci
 
 import io.flutter.embedding.android.FlutterActivity
 
