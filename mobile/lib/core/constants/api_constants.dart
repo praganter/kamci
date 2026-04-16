@@ -30,6 +30,8 @@ abstract final class ApiConstants {
   static const String categoryMemberAdd = '/category';
   static const String categoryMemberRemove = '/category';
   static const String categoryMemberBulk = '/category/members/bulk';
+  static const String categoryTransfer = '/category';
+  static const String categoryMigrate = '/category';
 
   static const String incomeSave = '/income/save';
   static const String incomeHistory = '/income/history';

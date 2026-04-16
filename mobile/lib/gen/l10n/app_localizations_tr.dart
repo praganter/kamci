@@ -284,6 +284,30 @@ class AppLocalizationsTr extends AppLocalizations {
   String get editCategory => 'Kategoriyi Düzenle';
 
   @override
+  String get transferAndDeleteCategory => 'Borçları Aktarıp Kategoriyi Sil';
+
+  @override
+  String get deleteWithDebts => 'Borçları ile Kategoriyi Sil';
+
+  @override
+  String get selectTargetCategory => 'Hedef Kategori Seç';
+
+  @override
+  String transferAndDeleteConfirm(String name) {
+    return '\"$name\" kategorisindeki borçlar seçilen kategoriye aktarılacak, ardından kategori silinecek.';
+  }
+
+  @override
+  String deleteWithDebtsConfirm(String name) {
+    return '\"$name\" kategorisi ve içindeki tüm borçlar silinecek. Bu işlem geri alınamaz.';
+  }
+
+  @override
+  String migratedDebtCount(int count) {
+    return '$count borç hedef kategoriye taşındı';
+  }
+
+  @override
   String get categoryName => 'Kategori Adı';
 
   @override

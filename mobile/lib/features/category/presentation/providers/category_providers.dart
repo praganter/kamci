@@ -16,6 +16,17 @@ class CategoryList extends _$CategoryList {
     await ref.read(categoryRepositoryProvider).delete(id);
     ref.invalidateSelf();
   }
+
+  Future<int> transferDebtsAndDelete(
+    String categoryId,
+    String targetCategoryId,
+  ) async {
+    final count = await ref
+        .read(categoryRepositoryProvider)
+        .migrateAndDelete(categoryId, targetCategoryId);
+    ref.invalidateSelf();
+    return count;
+  }
 }
 
 @riverpod

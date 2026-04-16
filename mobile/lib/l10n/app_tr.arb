@@ -132,6 +132,27 @@
 
   "newCategory": "Yeni Kategori",
   "editCategory": "Kategoriyi Düzenle",
+  "transferAndDeleteCategory": "Borçları Aktarıp Kategoriyi Sil",
+  "deleteWithDebts": "Borçları ile Kategoriyi Sil",
+  "selectTargetCategory": "Hedef Kategori Seç",
+  "transferAndDeleteConfirm": "\"{name}\" kategorisindeki borçlar seçilen kategoriye aktarılacak, ardından kategori silinecek.",
+  "@transferAndDeleteConfirm": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "deleteWithDebtsConfirm": "\"{name}\" kategorisi ve içindeki tüm borçlar silinecek. Bu işlem geri alınamaz.",
+  "@deleteWithDebtsConfirm": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "migratedDebtCount": "{count} borç hedef kategoriye taşındı",
+  "@migratedDebtCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
   "categoryName": "Kategori Adı",
 
   "periodDaily": "Günlük",

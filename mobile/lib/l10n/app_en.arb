@@ -102,6 +102,27 @@
 
   "newCategory": "New Category",
   "editCategory": "Edit Category",
+  "transferAndDeleteCategory": "Transfer Debts & Delete",
+  "deleteWithDebts": "Delete with Debts",
+  "selectTargetCategory": "Select Target Category",
+  "transferAndDeleteConfirm": "Debts in \"{name}\" will be moved to the selected category, then the category will be deleted.",
+  "@transferAndDeleteConfirm": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "deleteWithDebtsConfirm": "Category \"{name}\" and all its debts will be deleted. This cannot be undone.",
+  "@deleteWithDebtsConfirm": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "migratedDebtCount": "{count} debts migrated to target category",
+  "@migratedDebtCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
   "categoryName": "Category Name",
 
   "periodDaily": "Daily",

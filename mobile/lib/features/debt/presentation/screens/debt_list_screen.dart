@@ -11,7 +11,9 @@ import '../../../../core/utils/date_formatter.dart';
 import '../../../../shared/widgets/app_error_widget.dart';
 import '../../../../shared/widgets/confirm_dialog.dart';
 import '../../../../shared/widgets/premium_required_sheet.dart';
+import '../../../category/domain/entities/category.dart';
 import '../../../category/presentation/providers/category_providers.dart';
+import '../../../category/presentation/widgets/add_category_sheet.dart';
 import '../../../subscription/presentation/providers/subscription_providers.dart';
 import '../../../subscription/presentation/widgets/premium_card.dart';
 import '../../domain/entities/debt.dart';
@@ -318,7 +320,12 @@ class _CategoryPeriodSection extends ConsumerWidget {
     final totalCount = items.length;
     final completionRatio = totalCount > 0 ? paidCount / totalCount : 0.0;
 
-    return Container(
+    return GestureDetector(
+      onLongPressStart: owned
+          ? (details) =>
+              _showCategoryMenu(context, ref, details.globalPosition)
+          : null,
+      child: Container(
       margin: const EdgeInsets.fromLTRB(16, 4, 16, 4),
       decoration: BoxDecoration(
         color: cs.surface,
@@ -399,6 +406,213 @@ class _CategoryPeriodSection extends ConsumerWidget {
           ],
         ),
       ),
+    ),
+    );
+  }
+
+  Future<void> _showCategoryMenu(
+    BuildContext context,
+    WidgetRef ref,
+    Offset globalPosition,
+  ) async {
+    final l10n = context.l10n;
+    final overlay =
+        Overlay.of(context).context.findRenderObject()! as RenderBox;
+    final result = await showMenu<String>(
+      context: context,
+      position: RelativeRect.fromRect(
+        globalPosition & const Size(1, 1),
+        Offset.zero & overlay.size,
+      ),
+      items: [
+        PopupMenuItem(
+          value: 'edit',
+          child: Row(
+            children: [
+              const Icon(Icons.edit_outlined, size: 18),
+              const SizedBox(width: 10),
+              Text(l10n.editCategory),
+            ],
+          ),
+        ),
+        PopupMenuItem(
+          value: 'transfer',
+          child: Row(
+            children: [
+              const Icon(Icons.swap_horiz_rounded, size: 18),
+              const SizedBox(width: 10),
+              Text(l10n.transferAndDeleteCategory),
+            ],
+          ),
+        ),
+        PopupMenuItem(
+          value: 'delete',
+          child: Row(
+            children: [
+              Icon(Icons.delete_outline, size: 18, color: Colors.red.shade400),
+              const SizedBox(width: 10),
+              Text(
+                l10n.deleteWithDebts,
+                style: TextStyle(color: Colors.red.shade400),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+    if (result == null || !context.mounted) return;
+    switch (result) {
+      case 'edit':
+        showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          useSafeArea: true,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          builder: (_) =>
+              AddCategorySheet(categoryId: categoryId, initialName: categoryName),
+        );
+      case 'transfer':
+        if (context.mounted) _showTransferDialog(context, ref);
+      case 'delete':
+        if (context.mounted) _confirmDeleteWithDebts(context, ref);
+    }
+  }
+
+  Future<void> _showTransferDialog(BuildContext context, WidgetRef ref) async {
+    final categoriesAsync = ref.read(categoryListProvider);
+    final categories = categoriesAsync.valueOrNull ?? [];
+    final targets = categories
+        .where((c) => c.id != categoryId)
+        .toList();
+
+    if (targets.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.l10n.noCategoriesYet)),
+      );
+      return;
+    }
+
+    final targetId = await showDialog<String>(
+      context: context,
+      builder: (ctx) => _TransferCategoryDialog(
+        sourceName: categoryName,
+        targets: targets,
+      ),
+    );
+    if (targetId == null || !context.mounted) return;
+
+    try {
+      final count = await ref
+          .read(categoryListProvider.notifier)
+          .transferDebtsAndDelete(categoryId, targetId);
+      ref.invalidate(debtGroupedProvider(true));
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(context.l10n.migratedDebtCount(count))),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
+      }
+    }
+  }
+
+  Future<void> _confirmDeleteWithDebts(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
+    final l10n = context.l10n;
+    final confirmed = await showConfirmDialog(
+      context,
+      title: l10n.deleteWithDebts,
+      content: l10n.deleteWithDebtsConfirm(categoryName),
+    );
+    if (!confirmed || !context.mounted) return;
+    try {
+      await ref.read(categoryListProvider.notifier).deleteCategory(categoryId);
+      ref.invalidate(debtGroupedProvider(true));
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
+      }
+    }
+  }
+}
+
+class _TransferCategoryDialog extends StatefulWidget {
+  const _TransferCategoryDialog({
+    required this.sourceName,
+    required this.targets,
+  });
+
+  final String sourceName;
+  final List<Category> targets;
+
+  @override
+  State<_TransferCategoryDialog> createState() =>
+      _TransferCategoryDialogState();
+}
+
+class _TransferCategoryDialogState extends State<_TransferCategoryDialog> {
+  String? _selectedId;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedId = widget.targets.first.id;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return AlertDialog(
+      title: Text(l10n.transferAndDeleteCategory),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(l10n.transferAndDeleteConfirm(widget.sourceName)),
+          const SizedBox(height: 16),
+          Text(
+            l10n.selectTargetCategory,
+            style: Theme.of(context).textTheme.labelMedium,
+          ),
+          const SizedBox(height: 8),
+          DropdownButtonFormField<String>(
+            initialValue: _selectedId,
+            isExpanded: true,
+            decoration: const InputDecoration(
+              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              border: OutlineInputBorder(),
+            ),
+            items: widget.targets
+                .map(
+                  (c) => DropdownMenuItem(value: c.id, child: Text(c.name)),
+                )
+                .toList(),
+            onChanged: (v) => setState(() => _selectedId = v),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(l10n.cancel),
+        ),
+        FilledButton(
+          onPressed: _selectedId == null
+              ? null
+              : () => Navigator.of(context).pop(_selectedId),
+          child: Text(l10n.save),
+        ),
+      ],
     );
   }
 }

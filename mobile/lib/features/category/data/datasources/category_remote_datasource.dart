@@ -118,6 +118,18 @@ class CategoryRemoteDatasource {
     }
   }
 
+  Future<int> migrateAndDelete(String id, String targetCategoryId) async {
+    try {
+      final response = await _dio.delete(
+        '${ApiConstants.categoryMigrate}/$id/migrate',
+        queryParameters: {'targetCategoryId': targetCategoryId},
+      );
+      return (response.data as Map<String, dynamic>)['migratedDebtCount'] as int;
+    } on DioException catch (e) {
+      throw _mapException(e);
+    }
+  }
+
   ApiException _mapException(DioException e) =>
       ApiException.fromDioException(e);
 }

@@ -54,4 +54,8 @@ class CategoryRepositoryImpl implements CategoryRepository {
   @override
   Future<void> removeMember(String categoryId, String userId) =>
       _datasource.removeMember(categoryId, userId);
+
+  @override
+  Future<int> migrateAndDelete(String id, String targetCategoryId) =>
+      _datasource.migrateAndDelete(id, targetCategoryId);
 }

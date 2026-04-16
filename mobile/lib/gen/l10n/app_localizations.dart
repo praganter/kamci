@@ -614,6 +614,42 @@ abstract class AppLocalizations {
   /// **'Kategoriyi Düzenle'**
   String get editCategory;
 
+  /// No description provided for @transferAndDeleteCategory.
+  ///
+  /// In tr, this message translates to:
+  /// **'Borçları Aktarıp Kategoriyi Sil'**
+  String get transferAndDeleteCategory;
+
+  /// No description provided for @deleteWithDebts.
+  ///
+  /// In tr, this message translates to:
+  /// **'Borçları ile Kategoriyi Sil'**
+  String get deleteWithDebts;
+
+  /// No description provided for @selectTargetCategory.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hedef Kategori Seç'**
+  String get selectTargetCategory;
+
+  /// No description provided for @transferAndDeleteConfirm.
+  ///
+  /// In tr, this message translates to:
+  /// **'\"{name}\" kategorisindeki borçlar seçilen kategoriye aktarılacak, ardından kategori silinecek.'**
+  String transferAndDeleteConfirm(String name);
+
+  /// No description provided for @deleteWithDebtsConfirm.
+  ///
+  /// In tr, this message translates to:
+  /// **'\"{name}\" kategorisi ve içindeki tüm borçlar silinecek. Bu işlem geri alınamaz.'**
+  String deleteWithDebtsConfirm(String name);
+
+  /// No description provided for @migratedDebtCount.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} borç hedef kategoriye taşındı'**
+  String migratedDebtCount(int count);
+
   /// No description provided for @categoryName.
   ///
   /// In tr, this message translates to:

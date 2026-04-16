@@ -284,6 +284,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String get editCategory => 'Edit Category';
 
   @override
+  String get transferAndDeleteCategory => 'Transfer Debts & Delete';
+
+  @override
+  String get deleteWithDebts => 'Delete with Debts';
+
+  @override
+  String get selectTargetCategory => 'Select Target Category';
+
+  @override
+  String transferAndDeleteConfirm(String name) {
+    return 'Debts in \"$name\" will be moved to the selected category, then the category will be deleted.';
+  }
+
+  @override
+  String deleteWithDebtsConfirm(String name) {
+    return 'Category \"$name\" and all its debts will be deleted. This cannot be undone.';
+  }
+
+  @override
+  String migratedDebtCount(int count) {
+    return '$count debts migrated to target category';
+  }
+
+  @override
   String get categoryName => 'Category Name';
 
   @override

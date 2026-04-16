@@ -17,4 +17,5 @@ abstract interface class CategoryRepository {
     AccessLevel accessLevel,
   );
   Future<void> removeMember(String categoryId, String userId);
+  Future<int> migrateAndDelete(String id, String targetCategoryId);
 }
