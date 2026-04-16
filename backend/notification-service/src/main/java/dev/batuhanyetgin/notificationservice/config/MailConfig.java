@@ -14,7 +14,7 @@ public class MailConfig {
     @Bean
     public SimpleMailMessage templateMessage() {
         final SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom("Debt Tracker <" + fromAddress + ">");
+        message.setFrom("Kamci <" + fromAddress + ">");
         return message;
     }
 }
