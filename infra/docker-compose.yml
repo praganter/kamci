@@ -24,9 +24,6 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
-      # local için
-      #volumes:
-      # - C:/Users/byetg/Desktop/debtTracker/dt-config:/config
 
   eureka-server:
     build:
