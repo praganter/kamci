@@ -64,3 +64,6 @@ android/app/google-services.json
 # Gemini
 gemini.md
 GEMINI.md
+
+# Firebase
+lib/firebase_options.dart
