@@ -1,0 +1,6 @@
+.env
+*.env
+secret.yaml
+firebase-adminsdk.json
+kubeseal.exe
+pub-cert.pem
