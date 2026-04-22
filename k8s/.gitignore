@@ -8,3 +8,6 @@ pub-cert.pem
 .code-review-graph/
 .mcp.json
 .opencode.json
+ARCHITECTURE.txt
+CODE_REVIEW_GRAPH.md
+REVIEW_QUICK_REFERENCE.txt

@@ -39,6 +39,16 @@ spec:
                   key: RABBITMQ_DEFAULT_PASS
             - name: GOOGLE_APPLICATION_CREDENTIALS
               value: /app/firebase-adminsdk.json
+            - name: MAIL_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: MAIL_USERNAME
+            - name: MAIL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: MAIL_PASSWORD
           volumeMounts:
             - name: firebase-secret
               mountPath: /app/firebase-adminsdk.json
