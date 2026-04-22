@@ -4,3 +4,7 @@ secret.yaml
 firebase-adminsdk.json
 kubeseal.exe
 pub-cert.pem
+.claude
+.code-review-graph/
+.mcp.json
+.opencode.json
