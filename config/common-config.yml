@@ -26,10 +26,10 @@ spring:
     password: ${SPRING_RABBITMQ_PASSWORD}
   data:
     mongodb:
-      uri: ${MONGO_DB_URI:mongodb://dev:dev@mongodb:27017/debt-tracker?authSource=admin&retryWrites=false}
+      uri: ${MONGO_DB_URI:mongodb://dev:dev@mongodb:27017/kamci?authSource=admin&retryWrites=false}
       auto-index-creation: true
       authentication-database: admin
-      database: debt-tracker
+      database: kamci
       field-naming-strategy: org.springframework.data.mapping.model.SnakeCaseFieldNamingStrategy
 
 eureka:
