@@ -1,7 +1,7 @@
 abstract final class ApiConstants {
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://10.0.2.2:8080',
+    defaultValue: 'http://198.51.100.10:30080',
   );
 
   static const String register = '/auth/register';

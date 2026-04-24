@@ -67,3 +67,7 @@ GEMINI.md
 
 # Firebase
 lib/firebase_options.dart
+.code-review-graph
+.mcp.json
+.opencode.json
+ios/Runner
