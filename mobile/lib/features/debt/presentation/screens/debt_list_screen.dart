@@ -11,6 +11,7 @@ import '../../../../core/utils/date_formatter.dart';
 import '../../../../shared/widgets/app_error_widget.dart';
 import '../../../../shared/widgets/confirm_dialog.dart';
 import '../../../../shared/widgets/premium_required_sheet.dart';
+import '../../../../shared/widgets/pro_badge.dart';
 import '../../../category/domain/entities/category.dart';
 import '../../../category/presentation/providers/category_providers.dart';
 import '../../../category/presentation/widgets/add_category_sheet.dart';
@@ -859,35 +860,7 @@ Future<void> _showPaymentOptions(
                             limitCount: 0,
                           );
                         },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.amber.shade700,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.workspace_premium,
-                                color: Colors.white,
-                                size: 14,
-                              ),
-                              SizedBox(width: 3),
-                              Text(
-                                'PRO',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                        child: const ProBadge(),
                       ),
                 onTap: () async {
                   if (!isPremium) {

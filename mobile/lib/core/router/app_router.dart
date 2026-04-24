@@ -13,6 +13,7 @@ import '../../features/auth/presentation/screens/reset_password_screen.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
 import '../../features/category/presentation/screens/category_detail_screen.dart';
 import '../../features/category/presentation/screens/category_list_screen.dart';
+import '../../features/charts/presentation/screens/charts_screen.dart';
 import '../../features/debt/presentation/screens/debt_detail_screen.dart';
 import '../../features/debt/presentation/screens/debt_form_screen.dart';
 import '../../features/debt/presentation/screens/debt_list_screen.dart';
@@ -153,6 +154,11 @@ GoRouter appRouter(Ref ref) {
                     CategoryDetailScreen(id: state.pathParameters['id']!),
               ),
             ],
+          ),
+          GoRoute(
+            path: RoutePaths.charts,
+            name: RouteNames.charts,
+            builder: (context, _) => const ChartsScreen(),
           ),
         ],
       ),

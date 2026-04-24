@@ -10,15 +10,18 @@ class PremiumRequiredSheet extends ConsumerWidget {
     super.key,
     required this.featureName,
     required this.limitCount,
+    this.message,
   });
 
   final String featureName;
   final int limitCount;
+  final String? message;
 
   static Future<void> show(
     BuildContext context, {
     required String featureName,
     required int limitCount,
+    String? message,
   }) {
     return showModalBottomSheet(
       context: context,
@@ -29,6 +32,7 @@ class PremiumRequiredSheet extends ConsumerWidget {
       builder: (_) => PremiumRequiredSheet(
         featureName: featureName,
         limitCount: limitCount,
+        message: message,
       ),
     );
   }
@@ -71,7 +75,7 @@ class PremiumRequiredSheet extends ConsumerWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            l10n.premiumLimitReached(limitCount, featureName),
+            message ?? l10n.premiumLimitReached(limitCount, featureName),
             style: tt.bodyLarge?.copyWith(color: cs.onSurfaceVariant),
             textAlign: TextAlign.center,
           ),

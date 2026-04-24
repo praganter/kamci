@@ -9,7 +9,6 @@ import '../../../../core/router/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../auth/domain/entities/user_detail.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
-import '../../../debt/domain/entities/debt.dart';
 import '../../../subscription/presentation/widgets/premium_card.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -37,14 +36,6 @@ class SettingsScreen extends ConsumerWidget {
                 _ProfileCard(),
                 const SizedBox(height: 20),
 
-                // ── Borç Görünürlüğü ───────────────────────────────────────
-                _SectionHeader(label: l10n.visibility),
-                _SegmentCard(
-                  label: l10n.status,
-                  child: _StatusFilterSegmented(),
-                ),
-                const SizedBox(height: 20),
-
                 // ── Uygulama Ayarları ──────────────────────────────────────
                 _SectionHeader(label: l10n.appearance),
                 _SegmentCard(label: l10n.theme, child: _ThemeSegmented()),
@@ -59,16 +50,6 @@ class SettingsScreen extends ConsumerWidget {
                   title: l10n.changePassword,
                   subtitle: l10n.changePasswordDesc,
                   onTap: () => context.pushNamed(RouteNames.changePassword),
-                ),
-                const SizedBox(height: 20),
-
-                // ── Gelir ─────────────────────────────────────────────────
-                _SectionHeader(label: l10n.income),
-                _SettingsTile(
-                  icon: Icons.savings_outlined,
-                  title: l10n.income,
-                  subtitle: l10n.incomeHistory,
-                  onTap: () => context.pushNamed(RouteNames.income),
                 ),
                 const SizedBox(height: 20),
 
@@ -374,34 +355,6 @@ class _ThemeSegmented extends ConsumerWidget {
         ButtonSegment(value: ThemeMode.system, label: Text(l10n.themeSystem)),
         ButtonSegment(value: ThemeMode.light, label: Text(l10n.themeLight)),
         ButtonSegment(value: ThemeMode.dark, label: Text(l10n.themeDark)),
-      ],
-    );
-  }
-}
-
-// ── Status filter segmented ──────────────────────────────────────────────────
-
-class _StatusFilterSegmented extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = context.l10n;
-    final current = ref.watch(debtStatusFilterProvider);
-
-    return SegmentedButton<DebtStatusFilter>(
-      showSelectedIcon: false,
-      selected: {current},
-      onSelectionChanged: (v) =>
-          ref.read(debtStatusFilterProvider.notifier).set(v.first),
-      segments: [
-        ButtonSegment(value: DebtStatusFilter.all, label: Text(l10n.filterAll)),
-        ButtonSegment(
-          value: DebtStatusFilter.active,
-          label: Text(l10n.filterActive),
-        ),
-        ButtonSegment(
-          value: DebtStatusFilter.completed,
-          label: Text(l10n.filterInactive),
-        ),
       ],
     );
   }

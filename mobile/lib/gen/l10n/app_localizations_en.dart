@@ -176,6 +176,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get startDate => 'Start Date';
 
   @override
+  String get firstPaymentDate => 'First Payment Date';
+
+  @override
   String get endDate => 'End Date';
 
   @override
@@ -416,7 +419,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get installmentCount => 'Installment Count';
 
   @override
-  String get installmentCountOptional => 'Installment Count (Optional)';
+  String get installmentCountOptional => 'Total Installment Count (Optional)';
 
   @override
   String installmentProgress(int paid, int total) {
@@ -458,6 +461,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String premiumLimitReached(int limit, String feature) {
     return 'In the free version, you can add at most $limit $feature. Upgrade to Premium to continue.';
+  }
+
+  @override
+  String premiumFeatureRequired(String feature) {
+    return 'Upgrade to Premium to use the $feature feature.';
   }
 
   @override
@@ -580,4 +588,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String bulkPayConfirm(int count) {
     return '$count payments recorded.';
   }
+
+  @override
+  String get charts => 'Charts';
 }

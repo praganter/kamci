@@ -416,6 +416,12 @@ abstract class AppLocalizations {
   /// **'Başlangıç'**
   String get startDate;
 
+  /// No description provided for @firstPaymentDate.
+  ///
+  /// In tr, this message translates to:
+  /// **'İlk Ödeme Tarihi'**
+  String get firstPaymentDate;
+
   /// No description provided for @endDate.
   ///
   /// In tr, this message translates to:
@@ -863,7 +869,7 @@ abstract class AppLocalizations {
   /// No description provided for @installmentCountOptional.
   ///
   /// In tr, this message translates to:
-  /// **'Taksit Sayısı (İsteğe Bağlı)'**
+  /// **'Toplam Taksit Sayısı (İsteğe Bağlı)'**
   String get installmentCountOptional;
 
   /// No description provided for @installmentProgress.
@@ -937,6 +943,12 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Ücretsiz sürümde en fazla {limit} {feature} ekleyebilirsiniz. Devam etmek için Premium\'a geçin.'**
   String premiumLimitReached(int limit, String feature);
+
+  /// No description provided for @premiumFeatureRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'{feature} özelliğini kullanmak için Premium\'a geçin.'**
+  String premiumFeatureRequired(String feature);
 
   /// No description provided for @maybeLater.
   ///
@@ -1159,6 +1171,12 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'{count} ödeme kaydedildi.'**
   String bulkPayConfirm(int count);
+
+  /// No description provided for @charts.
+  ///
+  /// In tr, this message translates to:
+  /// **'Grafikler'**
+  String get charts;
 }
 
 class _AppLocalizationsDelegate

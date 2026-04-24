@@ -176,6 +176,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get startDate => 'Başlangıç';
 
   @override
+  String get firstPaymentDate => 'İlk Ödeme Tarihi';
+
+  @override
   String get endDate => 'Bitiş';
 
   @override
@@ -416,7 +419,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get installmentCount => 'Taksit Sayısı';
 
   @override
-  String get installmentCountOptional => 'Taksit Sayısı (İsteğe Bağlı)';
+  String get installmentCountOptional => 'Toplam Taksit Sayısı (İsteğe Bağlı)';
 
   @override
   String installmentProgress(int paid, int total) {
@@ -458,6 +461,11 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String premiumLimitReached(int limit, String feature) {
     return 'Ücretsiz sürümde en fazla $limit $feature ekleyebilirsiniz. Devam etmek için Premium\'a geçin.';
+  }
+
+  @override
+  String premiumFeatureRequired(String feature) {
+    return '$feature özelliğini kullanmak için Premium\'a geçin.';
   }
 
   @override
@@ -580,4 +588,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String bulkPayConfirm(int count) {
     return '$count ödeme kaydedildi.';
   }
+
+  @override
+  String get charts => 'Grafikler';
 }

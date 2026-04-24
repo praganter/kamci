@@ -5,11 +5,14 @@ import '../../domain/entities/reminder_embedded.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/l10n/enum_l10n.dart';
 import '../../../../core/network/api_exception.dart';
-import '../../../../core/utils/date_formatter.dart';
+import '../../../../shared/widgets/pro_badge.dart';
 import '../../../../core/utils/validators.dart';
 import '../../../../features/category/presentation/providers/category_providers.dart';
 import '../../../../features/category/presentation/widgets/add_category_sheet.dart';
 import '../../../../shared/providers/current_user_provider.dart';
+import '../../../../shared/widgets/platform_date_field.dart';
+import '../../../../shared/widgets/platform_select_field.dart';
+import '../../../../shared/widgets/platform_time_field.dart';
 import '../../../../shared/widgets/premium_required_sheet.dart';
 import '../../../subscription/presentation/providers/subscription_providers.dart';
 import '../../data/repositories/debt_repository_impl.dart';
@@ -41,7 +44,6 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
   DateTime? _reminderDate;
   TimeOfDay? _reminderTime;
   bool _initialized = false;
-  final _startDateKey = GlobalKey<FormFieldState<DateTime?>>();
 
   @override
   void initState() {
@@ -96,21 +98,6 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
     _descCtrl.dispose();
     _installmentCtrl.dispose();
     super.dispose();
-  }
-
-  Future<void> _pickDate() async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _firstPaymentDate ?? DateTime.now(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
-    );
-    if (picked != null) {
-      setState(() {
-        _firstPaymentDate = picked;
-        _startDateKey.currentState?.didChange(picked);
-      });
-    }
   }
 
   Future<void> _submit() async {
@@ -242,7 +229,7 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // ── Kategori (zorunlu) ──────────────────────────────────
+              // ── Kategori ────────────────────────────────────────────
               categoriesAsync.when(
                 loading: () => const LinearProgressIndicator(),
                 error: (e, _) => const SizedBox.shrink(),
@@ -250,20 +237,16 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
-                      // ignore: deprecated_member_use
-                      child: DropdownButtonFormField<String>(
-                        // ignore: deprecated_member_use
+                      child: PlatformSelectField<String>(
+                        label: l10n.category,
+                        prefixIcon: const Icon(Icons.folder_outlined),
                         value: _selectedCategoryId,
-                        decoration: InputDecoration(
-                          labelText: l10n.category,
-                          prefixIcon: const Icon(Icons.folder_outlined),
-                        ),
-                        hint: Text(l10n.select),
+                        hint: l10n.select,
                         items: categories
                             .map(
-                              (c) => DropdownMenuItem(
+                              (c) => PlatformSelectItem(
                                 value: c.id,
-                                child: Text(c.name),
+                                label: c.name,
                               ),
                             )
                             .toList(),
@@ -304,6 +287,7 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
               // ── Borç Adı ────────────────────────────────────────────
               TextFormField(
                 controller: _nameCtrl,
+                textCapitalization: TextCapitalization.words,
                 decoration: InputDecoration(
                   labelText: l10n.debtName,
                   prefixIcon: const Icon(Icons.label_outline),
@@ -318,7 +302,7 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                 controller: _amountCtrl,
                 decoration: InputDecoration(
                   labelText: l10n.amount,
-                  prefixIcon: const Icon(Icons.currency_lira),
+                  prefixIcon: const Icon(Icons.attach_money),
                   hintText: '0.00',
                 ),
                 keyboardType: const TextInputType.numberWithOptions(
@@ -332,47 +316,45 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
               currenciesAsync.when(
                 loading: () => const LinearProgressIndicator(),
                 error: (e, s) => const SizedBox.shrink(),
-                data: (currencies) =>
-                    // ignore: deprecated_member_use
-                    DropdownButtonFormField<String>(
-                      // ignore: deprecated_member_use
-                      value: _selectedCurrency,
-                      decoration: InputDecoration(
-                        labelText: l10n.currency,
-                        prefixIcon: const Icon(Icons.currency_lira),
-                      ),
-                      hint: Text(l10n.select),
-                      items: currencies
-                          .map(
-                            (c) => DropdownMenuItem(
-                              value: c.code,
-                              child: Text('${c.code}  ${c.symbol}'),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: (v) => setState(() => _selectedCurrency = v),
-                      validator: (v) => v == null
-                          ? Validators.required(null, fieldName: l10n.currency)
-                          : null,
-                    ),
+                data: (currencies) {
+                  final sorted = [...currencies]..sort((a, b) {
+                      if (a.code == 'TRY') return -1;
+                      if (b.code == 'TRY') return 1;
+                      return a.code.compareTo(b.code);
+                    });
+                  return PlatformSelectField<String>(
+                    label: l10n.currency,
+                    prefixIcon: const Icon(Icons.attach_money),
+                    value: _selectedCurrency,
+                    hint: l10n.select,
+                    items: sorted
+                        .map(
+                          (c) => PlatformSelectItem(
+                            value: c.code,
+                            label: '${c.code} ${c.symbol}',
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (v) => setState(() => _selectedCurrency = v),
+                    validator: (v) => v == null
+                        ? Validators.required(null, fieldName: l10n.currency)
+                        : null,
+                  );
+                },
               ),
               const SizedBox(height: 16),
 
               // ── Ödeme Periyodu ──────────────────────────────────────
-              // ignore: deprecated_member_use
-              DropdownButtonFormField<PaymentPeriodType>(
-                // ignore: deprecated_member_use
+              PlatformSelectField<PaymentPeriodType>(
+                label: l10n.paymentPeriod,
+                prefixIcon: const Icon(Icons.repeat),
                 value: _periodType,
-                decoration: InputDecoration(
-                  labelText: l10n.paymentPeriod,
-                  prefixIcon: const Icon(Icons.repeat),
-                ),
-                hint: Text(l10n.select),
+                hint: l10n.select,
                 items: PaymentPeriodType.values
                     .map(
-                      (t) => DropdownMenuItem(
+                      (t) => PlatformSelectItem(
                         value: t,
-                        child: Text(t.l10nLabel(l10n)),
+                        label: t.l10nLabel(l10n),
                       ),
                     )
                     .toList(),
@@ -383,58 +365,47 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
               ),
               const SizedBox(height: 16),
 
-              // ── Başlangıç Tarihi + Taksit Sayısı ────────────────────
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: FormField<DateTime?>(
-                      key: _startDateKey,
-                      initialValue: _firstPaymentDate,
-                      validator: (v) => v == null
-                          ? Validators.required(null, fieldName: l10n.startDate)
-                          : null,
-                      builder: (state) => InkWell(
-                        onTap: () => _pickDate(),
-                        child: InputDecorator(
-                          decoration: InputDecoration(
-                            labelText: l10n.startDate,
-                            prefixIcon: const Icon(Icons.calendar_today),
-                            errorText: state.errorText,
-                          ),
-                          child: Text(
-                            _firstPaymentDate != null
-                                ? DateFormatter.formatDate(_firstPaymentDate!)
-                                : l10n.select,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: TextFormField(
-                      controller: _installmentCtrl,
-                      decoration: InputDecoration(
-                        labelText: l10n.installmentCountOptional,
-                        prefixIcon: const Icon(Icons.format_list_numbered),
-                      ),
-                      keyboardType: TextInputType.number,
-                      validator: (v) {
-                        if (v == null || v.trim().isEmpty) return null;
-                        final n = int.tryParse(v.trim());
-                        if (n == null || n < 1) return '≥ 1';
-                        return null;
-                      },
-                    ),
-                  ),
-                ],
+              // ── İlk Ödeme Tarihi ────────────────────────────────────
+              PlatformDateField(
+                label: l10n.firstPaymentDate,
+                prefixIcon: const Icon(Icons.calendar_today),
+                value: _firstPaymentDate,
+                hint: l10n.select,
+                firstDate: DateTime(2000),
+                lastDate: DateTime(2100),
+                onChanged: (date) =>
+                    setState(() => _firstPaymentDate = date),
+                validator: (v) => v == null
+                    ? Validators.required(
+                        null,
+                        fieldName: l10n.firstPaymentDate,
+                      )
+                    : null,
               ),
               const SizedBox(height: 16),
+
+              // ── Taksit Sayısı ────────────────────────────────────────
+              TextFormField(
+                controller: _installmentCtrl,
+                decoration: InputDecoration(
+                  labelText: l10n.installmentCountOptional,
+                  prefixIcon: const Icon(Icons.format_list_numbered),
+                ),
+                keyboardType: TextInputType.number,
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty) return null;
+                  final n = int.tryParse(v.trim());
+                  if (n == null || n < 1) return '≥ 1';
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+
 
               // ── Açıklama ────────────────────────────────────────────
               TextFormField(
                 controller: _descCtrl,
+                textCapitalization: TextCapitalization.words,
                 decoration: InputDecoration(
                   labelText: l10n.descriptionOptional,
                   prefixIcon: const Icon(Icons.notes),
@@ -444,23 +415,56 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
               const SizedBox(height: 8),
 
               // ── Otomatik Ödeme ──────────────────────────────────────
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: Text(l10n.autoPayment),
-                value: _autoPayment,
-                onChanged: (v) => setState(() => _autoPayment = v),
+              Theme(
+                data: Theme.of(context).copyWith(
+                  splashFactory: NoSplash.splashFactory,
+                  highlightColor: Colors.transparent,
+                  hoverColor: Colors.transparent,
+                ),
+                child: CheckboxListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(l10n.autoPayment),
+                  value: _autoPayment,
+                  onChanged: (v) => setState(() => _autoPayment = v ?? false),
+                  controlAffinity: ListTileControlAffinity.trailing,
+                ),
               ),
 
               // ── Hatırlatma ──────────────────────────────────────────
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: Text(l10n.reminder),
-                value: _reminderEnabled,
-                onChanged: (v) => setState(() => _reminderEnabled = v),
+              Theme(
+                data: Theme.of(context).copyWith(
+                  splashFactory: NoSplash.splashFactory,
+                  highlightColor: Colors.transparent,
+                  hoverColor: Colors.transparent,
+                ),
+                child: CheckboxListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Row(
+                    children: [
+                      Text(l10n.reminder),
+                      const SizedBox(width: 6),
+                      const ProBadge(),
+                    ],
+                  ),
+                  value: _reminderEnabled,
+                  onChanged: (v) {
+                    final isPremium = ref.read(isPremiumProvider);
+                    if (!isPremium) {
+                      PremiumRequiredSheet.show(
+                        context,
+                        featureName: l10n.reminder.toLowerCase(),
+                        limitCount: 0,
+                        message: l10n.premiumFeatureRequired(l10n.reminder),
+                      );
+                      return;
+                    }
+                    setState(() => _reminderEnabled = v ?? false);
+                  },
+                  controlAffinity: ListTileControlAffinity.trailing,
+                ),
               ),
               if (_reminderEnabled) ...[
                 const SizedBox(height: 8),
-                // Kanallar
                 Text(
                   l10n.reminderChannels,
                   style: Theme.of(context).textTheme.labelMedium,
@@ -506,61 +510,30 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                   ],
                 ),
                 const SizedBox(height: 8),
-                // Tarih + Saat
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
-                      child: InkWell(
-                        onTap: () async {
-                          final picked = await showDatePicker(
-                            context: context,
-                            initialDate: _reminderDate ?? DateTime.now(),
-                            firstDate: DateTime.now(),
-                            lastDate: DateTime(2100),
-                          );
-                          if (picked != null) {
-                            setState(() => _reminderDate = picked);
-                          }
-                        },
-                        child: InputDecorator(
-                          decoration: InputDecoration(
-                            labelText: l10n.reminderDate,
-                            prefixIcon: const Icon(
-                              Icons.calendar_month_outlined,
-                            ),
-                          ),
-                          child: Text(
-                            _reminderDate != null
-                                ? DateFormatter.formatDate(_reminderDate!)
-                                : l10n.select,
-                          ),
-                        ),
+                      child: PlatformDateField(
+                        label: l10n.reminderDate,
+                        prefixIcon: const Icon(Icons.calendar_month_outlined),
+                        value: _reminderDate,
+                        hint: l10n.select,
+                        firstDate: DateTime.now(),
+                        lastDate: DateTime(2100),
+                        onChanged: (date) =>
+                            setState(() => _reminderDate = date),
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: InkWell(
-                        onTap: () async {
-                          final picked = await showTimePicker(
-                            context: context,
-                            initialTime: _reminderTime ?? TimeOfDay.now(),
-                          );
-                          if (picked != null) {
-                            setState(() => _reminderTime = picked);
-                          }
-                        },
-                        child: InputDecorator(
-                          decoration: InputDecoration(
-                            labelText: l10n.reminderTime,
-                            prefixIcon: const Icon(Icons.access_time),
-                          ),
-                          child: Text(
-                            _reminderTime != null
-                                ? _reminderTime!.format(context)
-                                : l10n.select,
-                          ),
-                        ),
+                      child: PlatformTimeField(
+                        label: l10n.reminderTime,
+                        prefixIcon: const Icon(Icons.access_time),
+                        value: _reminderTime,
+                        hint: l10n.select,
+                        onChanged: (time) =>
+                            setState(() => _reminderTime = time),
                       ),
                     ),
                   ],

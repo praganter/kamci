@@ -75,6 +75,7 @@
   "status": "Durum",
   "paymentPeriod": "Ödeme Periyodu",
   "startDate": "Başlangıç",
+  "firstPaymentDate": "İlk Ödeme Tarihi",
   "endDate": "Bitiş",
   "description": "Açıklama",
   "nextReminder": "Sonraki Hatırlatma",
@@ -200,7 +201,7 @@
   "currency": "Para Birimi",
 
   "installmentCount": "Taksit Sayısı",
-  "installmentCountOptional": "Taksit Sayısı (İsteğe Bağlı)",
+  "installmentCountOptional": "Toplam Taksit Sayısı (İsteğe Bağlı)",
   "installmentProgress": "{paid} / {total}",
   "@installmentProgress": {
     "placeholders": {
@@ -228,6 +229,12 @@
   "@premiumLimitReached": {
     "placeholders": {
       "limit": { "type": "int" },
+      "feature": { "type": "String" }
+    }
+  },
+  "premiumFeatureRequired": "{feature} özelliğini kullanmak için Premium'a geçin.",
+  "@premiumFeatureRequired": {
+    "placeholders": {
       "feature": { "type": "String" }
     }
   },
@@ -287,5 +294,7 @@
     "placeholders": {
       "count": { "type": "int" }
     }
-  }
+  },
+
+  "charts": "Grafikler"
 }

@@ -65,6 +65,7 @@
   "status": "Status",
   "paymentPeriod": "Payment Period",
   "startDate": "Start Date",
+  "firstPaymentDate": "First Payment Date",
   "endDate": "End Date",
   "description": "Description",
   "nextReminder": "Next Reminder",
@@ -170,7 +171,7 @@
   "currency": "Currency",
 
   "installmentCount": "Installment Count",
-  "installmentCountOptional": "Installment Count (Optional)",
+  "installmentCountOptional": "Total Installment Count (Optional)",
   "installmentProgress": "{paid} / {total}",
   "@installmentProgress": {
     "placeholders": {
@@ -198,6 +199,12 @@
   "@premiumLimitReached": {
     "placeholders": {
       "limit": { "type": "int" },
+      "feature": { "type": "String" }
+    }
+  },
+  "premiumFeatureRequired": "Upgrade to Premium to use the {feature} feature.",
+  "@premiumFeatureRequired": {
+    "placeholders": {
       "feature": { "type": "String" }
     }
   },
@@ -257,5 +264,7 @@
     "placeholders": {
       "count": { "type": "int" }
     }
-  }
+  },
+
+  "charts": "Charts"
 }
