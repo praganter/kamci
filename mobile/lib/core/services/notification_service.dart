@@ -21,7 +21,7 @@ Future<void> firebaseBackgroundHandler(RemoteMessage message) async {
   debugPrint('FCM background message: ${message.messageId}');
 }
 
-@riverpod
+@Riverpod(keepAlive: true)
 NotificationService notificationService(Ref ref) => NotificationService(ref);
 
 class NotificationService {
@@ -55,14 +55,25 @@ class NotificationService {
         >()
         ?.createNotificationChannel(channel);
 
-    // Init flutter_local_notifications
+    // Init flutter_local_notifications (Android only — iOS uses setForegroundNotificationPresentationOptions)
     const initSettings = InitializationSettings(
       android: AndroidInitializationSettings('@mipmap/ic_launcher'),
-      iOS: DarwinInitializationSettings(),
+      iOS: DarwinInitializationSettings(
+        requestAlertPermission: false,
+        requestBadgePermission: false,
+        requestSoundPermission: false,
+      ),
     );
     await _localNotifications.initialize(initSettings);
 
-    // Show local notification when app is in foreground
+    // iOS: show notification banner even when app is in foreground
+    await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+
+    // Show local notification when app is in foreground (Android)
     FirebaseMessaging.onMessage.listen(_showForegroundNotification);
 
     // Handle notification clicks when app is in background
@@ -96,7 +107,11 @@ class NotificationService {
           priority: Priority.high,
           icon: '@mipmap/ic_launcher',
         ),
-        iOS: DarwinNotificationDetails(),
+        iOS: DarwinNotificationDetails(
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+        ),
       ),
     );
   }
@@ -104,6 +119,20 @@ class NotificationService {
   /// Get FCM token and register it with the backend.
   Future<void> registerToken({String? email}) async {
     try {
+      // iOS requires APNs token before FCM token is available
+      if (defaultTargetPlatform == TargetPlatform.iOS) {
+        String? apns;
+        for (var i = 0; i < 5; i++) {
+          apns = await FirebaseMessaging.instance.getAPNSToken();
+          if (apns != null) break;
+          await Future.delayed(const Duration(seconds: 2));
+        }
+        if (apns == null) {
+          debugPrint('APNs token not ready after retries');
+          return;
+        }
+      }
+
       final token = await FirebaseMessaging.instance.getToken();
       if (token == null) return;
 

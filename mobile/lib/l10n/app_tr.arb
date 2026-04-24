@@ -156,6 +156,7 @@
   },
   "categoryName": "Kategori Adı",
 
+  "periodOneTime": "Tek Seferlik",
   "periodDaily": "Günlük",
   "periodWeekly": "Haftalık",
   "periodBiWeekly": "İki Haftalık",

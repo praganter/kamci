@@ -8,6 +8,8 @@ part 'debt_model.g.dart';
 
 @JsonEnum(alwaysCreate: true)
 enum PaymentPeriodTypeJson {
+  @JsonValue('ONE_TIME')
+  oneTime,
   @JsonValue('DAILY')
   daily,
   @JsonValue('WEEKLY')
@@ -24,6 +26,7 @@ enum PaymentPeriodTypeJson {
   yearly;
 
   PaymentPeriodType toDomain() => switch (this) {
+    PaymentPeriodTypeJson.oneTime => PaymentPeriodType.oneTime,
     PaymentPeriodTypeJson.daily => PaymentPeriodType.daily,
     PaymentPeriodTypeJson.weekly => PaymentPeriodType.weekly,
     PaymentPeriodTypeJson.biWeekly => PaymentPeriodType.biWeekly,
@@ -34,6 +37,7 @@ enum PaymentPeriodTypeJson {
   };
 
   static PaymentPeriodTypeJson fromDomain(PaymentPeriodType t) => switch (t) {
+    PaymentPeriodType.oneTime => PaymentPeriodTypeJson.oneTime,
     PaymentPeriodType.daily => PaymentPeriodTypeJson.daily,
     PaymentPeriodType.weekly => PaymentPeriodTypeJson.weekly,
     PaymentPeriodType.biWeekly => PaymentPeriodTypeJson.biWeekly,

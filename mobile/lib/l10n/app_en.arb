@@ -126,6 +126,7 @@
   },
   "categoryName": "Category Name",
 
+  "periodOneTime": "One-Time",
   "periodDaily": "Daily",
   "periodWeekly": "Weekly",
   "periodBiWeekly": "Bi-weekly",

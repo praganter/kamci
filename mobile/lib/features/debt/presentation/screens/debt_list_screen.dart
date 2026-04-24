@@ -1141,6 +1141,7 @@ class _BulkPayDialogState extends ConsumerState<_BulkPayDialog> {
     int index,
   ) =>
       switch (period) {
+        PaymentPeriodType.oneTime => start,
         PaymentPeriodType.daily => start.add(Duration(days: index)),
         PaymentPeriodType.weekly => start.add(Duration(days: index * 7)),
         PaymentPeriodType.biWeekly => start.add(Duration(days: index * 14)),

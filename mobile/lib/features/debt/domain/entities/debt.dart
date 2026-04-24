@@ -2,6 +2,7 @@ import 'payment_embedded.dart';
 import 'reminder_embedded.dart';
 
 enum PaymentPeriodType {
+  oneTime,
   daily,
   weekly,
   biWeekly,
@@ -11,6 +12,7 @@ enum PaymentPeriodType {
   yearly;
 
   String get label => switch (this) {
+    PaymentPeriodType.oneTime => 'Tek Seferlik',
     PaymentPeriodType.daily => 'Günlük',
     PaymentPeriodType.weekly => 'Haftalık',
     PaymentPeriodType.biWeekly => 'İki Haftalık',

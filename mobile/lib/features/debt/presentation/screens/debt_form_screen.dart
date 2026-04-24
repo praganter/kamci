@@ -130,7 +130,9 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
       categoryId: _selectedCategoryId,
       description: _descCtrl.text.trim().isEmpty ? null : _descCtrl.text.trim(),
       firstPaymentDate: _firstPaymentDate!,
-      installmentCount: int.tryParse(_installmentCtrl.text.trim()),
+      installmentCount: _periodType == PaymentPeriodType.oneTime
+          ? 1
+          : int.tryParse(_installmentCtrl.text.trim()),
       paymentPeriodType: _periodType!,
       amount: double.parse(_amountCtrl.text.replaceAll(',', '.')),
       autoPayment: _autoPayment,
@@ -385,21 +387,23 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
               const SizedBox(height: 16),
 
               // ── Taksit Sayısı ────────────────────────────────────────
-              TextFormField(
-                controller: _installmentCtrl,
-                decoration: InputDecoration(
-                  labelText: l10n.installmentCountOptional,
-                  prefixIcon: const Icon(Icons.format_list_numbered),
+              if (_periodType != PaymentPeriodType.oneTime) ...[
+                TextFormField(
+                  controller: _installmentCtrl,
+                  decoration: InputDecoration(
+                    labelText: l10n.installmentCountOptional,
+                    prefixIcon: const Icon(Icons.format_list_numbered),
+                  ),
+                  keyboardType: TextInputType.number,
+                  validator: (v) {
+                    if (v == null || v.trim().isEmpty) return null;
+                    final n = int.tryParse(v.trim());
+                    if (n == null || n < 1) return '≥ 1';
+                    return null;
+                  },
                 ),
-                keyboardType: TextInputType.number,
-                validator: (v) {
-                  if (v == null || v.trim().isEmpty) return null;
-                  final n = int.tryParse(v.trim());
-                  if (n == null || n < 1) return '≥ 1';
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
+                const SizedBox(height: 16),
+              ],
 
 
               // ── Açıklama ────────────────────────────────────────────

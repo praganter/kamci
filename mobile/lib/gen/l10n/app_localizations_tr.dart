@@ -314,6 +314,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get categoryName => 'Kategori Adı';
 
   @override
+  String get periodOneTime => 'Tek Seferlik';
+
+  @override
   String get periodDaily => 'Günlük';
 
   @override

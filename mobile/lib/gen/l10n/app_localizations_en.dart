@@ -314,6 +314,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get categoryName => 'Category Name';
 
   @override
+  String get periodOneTime => 'One-Time';
+
+  @override
   String get periodDaily => 'Daily';
 
   @override

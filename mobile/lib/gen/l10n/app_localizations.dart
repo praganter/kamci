@@ -662,6 +662,12 @@ abstract class AppLocalizations {
   /// **'Kategori Adı'**
   String get categoryName;
 
+  /// No description provided for @periodOneTime.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tek Seferlik'**
+  String get periodOneTime;
+
   /// No description provided for @periodDaily.
   ///
   /// In tr, this message translates to:

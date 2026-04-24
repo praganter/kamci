@@ -38,7 +38,6 @@ class AuthNotifier extends _$AuthNotifier {
       if (!tokens.isAccessTokenExpired) {
         await _saveUserIdFromToken(tokens);
         state = AuthState.authenticated(tokens);
-        // Register token for push notifications
         ref.read(notificationServiceProvider).registerToken();
         return;
       }
@@ -51,7 +50,6 @@ class AuthNotifier extends _$AuthNotifier {
       );
       await _saveUserIdFromToken(newTokens);
       state = AuthState.authenticated(newTokens);
-      // Register token for push notifications
       ref.read(notificationServiceProvider).registerToken();
     } on UnauthorizedException {
       final storage = ref.read(secureStorageServiceProvider);
