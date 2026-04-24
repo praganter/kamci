@@ -12,6 +12,7 @@ import dev.batuhanyetgin.kamci.dto.request.*;
 import dev.batuhanyetgin.kamci.dto.response.*;
 import dev.batuhanyetgin.kamci.enums.AccessLevelType;
 import dev.batuhanyetgin.kamci.enums.DebtStatus;
+import dev.batuhanyetgin.kamci.enums.PaymentPeriodType;
 import dev.batuhanyetgin.kamci.enums.PaymentStatus;
 import dev.batuhanyetgin.kamci.mapper.DebtMapper;
 import dev.batuhanyetgin.kamci.repositoryservice.CategoryRepositoryService;
@@ -327,11 +328,13 @@ public class DebtService {
                     .anyMatch(p -> p.getPeriodStart() != null && p.getPeriodStart().equals(ps));
 
             if (!alreadyRecorded) {
-                final LocalDateTime pe = PaymentPeriodUtil.getPeriodEnd(
-                        ps, existing.getPaymentPeriodType(), originalDay).minusDays(1);
+                final LocalDateTime rawEnd = PaymentPeriodUtil.getPeriodEnd(
+                        ps, existing.getPaymentPeriodType(), originalDay);
+                final LocalDateTime pe = rawEnd != null ? rawEnd.minusDays(1) : null;
                 existing.addPayment(ps, ps, pe, existing.getAmount());
             }
             periodStart = PaymentPeriodUtil.advanceDate(periodStart, existing.getPaymentPeriodType(), originalDay);
+            if (periodStart == null) break;
         }
 
         if (existing.getInstallmentCount() != null
@@ -385,13 +388,16 @@ public class DebtService {
                 .stream().collect(Collectors.groupingBy(DebtDocument::getCategoryId));
 
         final LocalDateTime now = LocalDateTime.now();
+        final LocalDateTime monthStart;
         final LocalDateTime monthEnd;
         final LocalDateTime referenceTime;
         if (month != null) {
             final YearMonth ym = YearMonth.parse(month);
+            monthStart = ym.atDay(1).atStartOfDay();
             monthEnd = ym.atEndOfMonth().atTime(23, 59, 59);
             referenceTime = monthEnd;
         } else {
+            monthStart = null;
             monthEnd = null;
             referenceTime = now;
         }
@@ -406,7 +412,8 @@ public class DebtService {
                                 .stream()
                                 .filter(debt -> monthEnd == null
                                         || (debt.getFirstPaymentDate() != null
-                                        && !debt.getFirstPaymentDate().isAfter(monthEnd)))
+                                        && !debt.getFirstPaymentDate().isAfter(monthEnd)
+                                        && isPaymentDueInMonth(debt, monthStart, monthEnd)))
                                 .map(debt -> {
                                     final PaymentStatus status = calculatePaymentStatusAt(debt, referenceTime);
                                     final int paidCount = (int) debt.getPayments().stream()
@@ -433,6 +440,18 @@ public class DebtService {
                 .toList();
 
         return GetDebtResponse.builder().categories(categories).build();
+    }
+
+    private boolean isPaymentDueInMonth(final DebtDocument debt,
+                                        final LocalDateTime monthStart,
+                                        final LocalDateTime monthEnd) {
+        if (debt.getPaymentPeriodType() == null
+                || debt.getPaymentPeriodType() == PaymentPeriodType.ONE_TIME) {
+            return true;
+        }
+        final LocalDateTime periodStart = PaymentPeriodUtil.getPeriodStart(
+                debt.getFirstPaymentDate(), debt.getPaymentPeriodType(), monthEnd);
+        return !periodStart.isBefore(monthStart) && !periodStart.isAfter(monthEnd);
     }
 
     private boolean lacksReadAccess(final CategoryDocument category, final String userId) {
@@ -615,8 +634,9 @@ public class DebtService {
         LocalDateTime periodStart = debt.getFirstPaymentDate();
 
         while (!periodStart.isAfter(now)) {
-            final LocalDateTime periodEnd = PaymentPeriodUtil.getPeriodEnd(
-                    periodStart, debt.getPaymentPeriodType(), originalDay).minusDays(1);
+            final LocalDateTime rawEnd = PaymentPeriodUtil.getPeriodEnd(
+                    periodStart, debt.getPaymentPeriodType(), originalDay);
+            final LocalDateTime periodEnd = rawEnd != null ? rawEnd.minusDays(1) : null;
             debt.addPayment(periodStart, periodStart, periodEnd, debt.getAmount());
 
             if (debt.getInstallmentCount() != null
@@ -631,6 +651,7 @@ public class DebtService {
 
             periodStart = PaymentPeriodUtil.advanceDate(
                     periodStart, debt.getPaymentPeriodType(), originalDay);
+            if (periodStart == null) break;
         }
 
         debt.setNextAutoPaymentDate(periodStart);

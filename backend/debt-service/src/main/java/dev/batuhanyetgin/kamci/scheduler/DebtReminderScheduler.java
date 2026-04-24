@@ -156,10 +156,16 @@ public class DebtReminderScheduler {
         final int originalDay = debt.getFirstPaymentDate().getDayOfMonth();
         LocalDateTime next = PaymentPeriodUtil.advanceDate(
                 debt.getNextReminderDate(), debt.getPaymentPeriodType(), originalDay);
+        if (next == null) {
+            debt.setNextReminderDate(null);
+            log.info("No next reminder for ONE_TIME debt {}", debt.getId());
+            return;
+        }
         while (!next.isAfter(now)) {
             next = PaymentPeriodUtil.advanceDate(next, debt.getPaymentPeriodType(), originalDay);
+            if (next == null) break;
         }
-        debt.setNextReminderDate(next);
+        if (next != null) debt.setNextReminderDate(next);
         log.info("Advanced next reminder for debt {} to {}", debt.getId(), next);
     }
 
@@ -253,6 +259,11 @@ public class DebtReminderScheduler {
         final int originalDay = debt.getFirstPaymentDate().getDayOfMonth();
         final LocalDateTime next = PaymentPeriodUtil.advanceDate(
                 debt.getNextAutoPaymentDate(), debt.getPaymentPeriodType(), originalDay);
+        if (next == null) {
+            debt.setNextAutoPaymentDate(null);
+            log.info("No next auto-payment for ONE_TIME debt {}", debt.getId());
+            return;
+        }
         debt.setNextAutoPaymentDate(next);
         log.info("Advanced next auto-payment for debt {} to {}", debt.getId(), next);
     }

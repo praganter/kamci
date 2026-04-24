@@ -41,3 +41,4 @@ vexp.toml
 /AGENTS.md
 /GEMINI.md
 /.opencode.json
+.code-review-graph/

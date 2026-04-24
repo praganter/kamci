@@ -16,6 +16,7 @@ public final class PaymentPeriodUtil {
             return now;
         }
         return switch (periodType) {
+            case ONE_TIME -> firstPaymentDate;
             case DAILY -> {
                 final long days = ChronoUnit.DAYS.between(firstPaymentDate, now);
                 yield firstPaymentDate.plusDays(days);
@@ -57,6 +58,7 @@ public final class PaymentPeriodUtil {
                                             final PaymentPeriodType type,
                                             final int originalDay) {
         return switch (type) {
+            case ONE_TIME -> null;
             case DAILY -> current.plusDays(1);
             case WEEKLY -> current.plusWeeks(1);
             case BI_WEEKLY -> current.plusWeeks(2);

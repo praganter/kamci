@@ -6,6 +6,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum PaymentPeriodType {
+    ONE_TIME('O'),
     DAILY('D'),
     WEEKLY('W'),
     BI_WEEKLY('B'),
