@@ -6,7 +6,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import java.util.List;
 import java.util.Optional;
 
-public interface DeviceTokenRepository extends MongoRepository<DeviceTokenDocument, String> {
+public interface DeviceTokenRepository extends MongoRepository<DeviceTokenDocument, String>, DeviceTokenRepositoryCustom {
 
     Optional<DeviceTokenDocument> findByUserId(String userId);
 

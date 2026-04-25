@@ -48,22 +48,7 @@ public class DeviceTokenController {
         final String userId = RequestContextUtil.getUserId();
         final String locale = RequestContextUtil.getLocale();
         log.info("Registering device token for userId: {}", userId);
-        deviceTokenRepository.findByUserId(userId)
-                .ifPresentOrElse(
-                        doc -> {
-                            doc.setFcmToken(request.getToken());
-                            doc.setLocale(locale);
-                            if (request.getEmail() != null) doc.setEmail(request.getEmail());
-                            deviceTokenRepository.save(doc);
-                        },
-                        () -> deviceTokenRepository.save(
-                                DeviceTokenDocument.builder()
-                                        .userId(userId)
-                                        .fcmToken(request.getToken())
-                                        .locale(locale)
-                                        .email(request.getEmail())
-                                        .build())
-                );
+        deviceTokenRepository.upsertByUserId(userId, request.getToken(), locale, request.getEmail());
         return ResponseEntity.noContent().build();
     }
 
