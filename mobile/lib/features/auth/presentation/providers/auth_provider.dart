@@ -38,7 +38,8 @@ class AuthNotifier extends _$AuthNotifier {
       if (!tokens.isAccessTokenExpired) {
         await _saveUserIdFromToken(tokens);
         state = AuthState.authenticated(tokens);
-        ref.read(notificationServiceProvider).registerToken();
+        final email = await storage.getEmail();
+        ref.read(notificationServiceProvider).registerToken(email: email);
         return;
       }
 
@@ -50,7 +51,8 @@ class AuthNotifier extends _$AuthNotifier {
       );
       await _saveUserIdFromToken(newTokens);
       state = AuthState.authenticated(newTokens);
-      ref.read(notificationServiceProvider).registerToken();
+      final email = await storage.getEmail();
+      ref.read(notificationServiceProvider).registerToken(email: email);
     } on UnauthorizedException {
       final storage = ref.read(secureStorageServiceProvider);
       await storage.clearAll();
@@ -74,6 +76,7 @@ class AuthNotifier extends _$AuthNotifier {
         accessToken: tokens.accessToken,
         refreshToken: tokens.refreshToken,
       );
+      await storage.saveEmail(email);
       await _saveUserIdFromToken(tokens);
       await ref.read(notificationServiceProvider).registerToken(email: email);
       state = AuthState.authenticated(tokens);
@@ -102,6 +105,7 @@ class AuthNotifier extends _$AuthNotifier {
         accessToken: tokens.accessToken,
         refreshToken: tokens.refreshToken,
       );
+      await storage.saveEmail(email);
       await _saveUserIdFromToken(tokens);
       await ref.read(notificationServiceProvider).registerToken(email: email);
       state = AuthState.authenticated(tokens);

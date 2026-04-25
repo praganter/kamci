@@ -43,5 +43,10 @@ class SecureStorageService {
 
   Future<String?> getUserId() => _storage.read(key: StorageKeys.userId);
 
+  Future<void> saveEmail(String email) =>
+      _storage.write(key: StorageKeys.email, value: email);
+
+  Future<String?> getEmail() => _storage.read(key: StorageKeys.email);
+
   Future<void> clearAll() => _storage.deleteAll();
 }

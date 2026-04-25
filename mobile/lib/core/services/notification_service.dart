@@ -26,10 +26,7 @@ NotificationService notificationService(Ref ref) => NotificationService(ref);
 
 class NotificationService {
   NotificationService(this._ref) {
-    // Listen for token refreshes
-    FirebaseMessaging.instance.onTokenRefresh.listen((token) {
-      registerToken();
-    });
+    FirebaseMessaging.instance.onTokenRefresh.listen((_) => registerToken());
   }
 
   final Ref _ref;
