@@ -41,7 +41,7 @@ spec:
         - name: registry-credentials
       containers:
         - name: prometheus
-          image: 198.51.100.10:3000/kamci/prometheus:latest
+          image: 203.0.113.10:3000/kamci/prometheus:latest
           args:
             - --config.file=/etc/prometheus/prometheus.yml
           ports:
@@ -78,7 +78,7 @@ spec:
         - name: registry-credentials
       containers:
         - name: tempo
-          image: 198.51.100.10:3000/kamci/tempo:latest
+          image: 203.0.113.10:3000/kamci/tempo:latest
           args:
             - -config.file=/etc/tempo.yaml
           ports:
@@ -127,7 +127,7 @@ spec:
         - name: registry-credentials
       containers:
         - name: loki
-          image: 198.51.100.10:3000/kamci/loki:latest
+          image: 203.0.113.10:3000/kamci/loki:latest
           args:
             - -config.file=/etc/loki/local-config.yaml
           ports:
@@ -199,7 +199,7 @@ spec:
         - name: registry-credentials
       containers:
         - name: promtail
-          image: 198.51.100.10:3000/kamci/promtail:latest
+          image: 203.0.113.10:3000/kamci/promtail:latest
           args:
             - -config.file=/etc/promtail/config.yml
           volumeMounts:
@@ -242,7 +242,7 @@ spec:
         - name: registry-credentials
       containers:
         - name: grafana
-          image: 198.51.100.10:3000/kamci/grafana:latest
+          image: 203.0.113.10:3000/kamci/grafana:latest
           ports:
             - containerPort: 3000
           env:
