@@ -26,7 +26,7 @@
         "label": "Prometheus"
       },
       {
-        "current": {},
+        "current": {"selected": true, "text": "kamci", "value": "kamci"},
         "datasource": {"type": "prometheus", "uid": "${datasource}"},
         "definition": "label_values(container_cpu_usage_seconds_total{container!=\"\",pod!=\"\"}, namespace)",
         "hide": 0,
