@@ -54,6 +54,10 @@ public class DebtRepositoryService {
         return debtRepository.countByOwnerId(ownerId);
     }
 
+    public long countByOwnerIdAndCategoryIdIn(final String ownerId, final List<String> categoryIds) {
+        return debtRepository.countByOwnerIdAndCategoryIdIn(ownerId, categoryIds);
+    }
+
     public List<DebtDocument> findDueReminders(final LocalDateTime now) {
         return debtRepository.findByStatusAndPaymentStatusInAndReminderEnabledTrueAndNextReminderDateLessThanEqual(
                 DebtStatus.ACTIVE, List.of(PaymentStatus.UNPAID, PaymentStatus.OVERDUE, PaymentStatus.PARTIALLY_PAID), now);

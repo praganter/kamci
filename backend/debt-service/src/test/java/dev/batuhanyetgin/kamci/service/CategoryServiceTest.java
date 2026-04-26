@@ -78,7 +78,11 @@ class CategoryServiceTest {
     private CategoryDocument buildCategoryWithMember(final String id, final String ownerId,
                                                       final String memberId, final AccessLevelType level) {
         final List<MemberEmbedded> members = new ArrayList<>();
-        members.add(MemberEmbedded.builder().userId(memberId).accessLevel(level).build());
+        members.add(MemberEmbedded.builder()
+                .userId(memberId)
+                .email(MEMBER_EMAIL)
+                .accessLevel(level)
+                .build());
         return CategoryDocument.builder()
                 .id(id).ownerId(ownerId).name("Category")
                 .members(members)
@@ -431,8 +435,9 @@ class CategoryServiceTest {
                 ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
                 ctx.when(RequestContextUtil::isPremium).thenReturn(true);
 
-                when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
-                when(categoryRS.findById(CAT_ID_2)).thenReturn(buildCategory(CAT_ID_2, OWNER_ID));
+                final CategoryDocument cat1 = buildCategory(CAT_ID, OWNER_ID);
+                final CategoryDocument cat2 = buildCategory(CAT_ID_2, OWNER_ID);
+                when(categoryRS.findByIdIn(List.of(CAT_ID, CAT_ID_2))).thenReturn(List.of(cat1, cat2));
                 when(authClient.getUserIdByEmail(MEMBER_EMAIL)).thenReturn(MEMBER_ID);
                 when(categoryRS.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
@@ -453,10 +458,10 @@ class CategoryServiceTest {
                 ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
                 ctx.when(RequestContextUtil::isPremium).thenReturn(true);
 
-                when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
-                when(categoryRS.findById(CAT_ID_2)).thenReturn(buildCategory(CAT_ID_2, OTHER_ID));
+                final CategoryDocument cat1 = buildCategory(CAT_ID, OWNER_ID);
+                final CategoryDocument cat2 = buildCategory(CAT_ID_2, OTHER_ID);
+                when(categoryRS.findByIdIn(List.of(CAT_ID, CAT_ID_2))).thenReturn(List.of(cat1, cat2));
                 when(authClient.getUserIdByEmail(MEMBER_EMAIL)).thenReturn(MEMBER_ID);
-                when(categoryRS.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
                 final BulkAddMemberRequest request = new BulkAddMemberRequest();
                 request.setCategoryIds(List.of(CAT_ID, CAT_ID_2));

@@ -53,18 +53,25 @@ public class DebtService {
         final String userId = RequestContextUtil.getUserId();
         final String locale = RequestContextUtil.getLocale();
 
-        final CompletableFuture<Long> countFuture =
-                CompletableFuture.supplyAsync(() -> debtRS.countByOwnerId(userId), taskExecutor);
+        final CompletableFuture<Long> countFuture = CompletableFuture.supplyAsync(() -> {
+            final List<String> ownedCategoryIds = categoryRS.findByOwnerId(userId).stream()
+                    .map(BaseDocument::getId)
+                    .toList();
+            return debtRS.countByOwnerIdAndCategoryIdIn(userId, ownedCategoryIds);
+        }, taskExecutor);
         final CompletableFuture<CategoryDocument> categoryFuture =
                 CompletableFuture.supplyAsync(() -> categoryRS.findById(request.getCategoryId()), taskExecutor);
         CompletableFuture.allOf(countFuture, categoryFuture).join();
 
-        final int maxDebts = RequestContextUtil.isPremium() ? PREMIUM_MAX_DEBTS : FREE_MAX_DEBTS;
-        if (countFuture.join() >= maxDebts) {
-            throw BaseException.badRequest("error.debt.limit_exceeded");
+        final CategoryDocument category = categoryFuture.join();
+
+        if (category.getOwnerId().equals(userId)) {
+            final int maxDebts = RequestContextUtil.isPremium() ? PREMIUM_MAX_DEBTS : FREE_MAX_DEBTS;
+            if (countFuture.join() >= maxDebts) {
+                throw BaseException.badRequest("error.debt.limit_exceeded");
+            }
         }
 
-        final CategoryDocument category = categoryFuture.join();
         if (lacksWriteAccess(category, userId)) {
             throw BaseException.forbidden("error.debt.permission_denied");
         }
@@ -92,13 +99,13 @@ public class DebtService {
         }
 
         final CategoryDocument currentCategory = categoryRS.findById(existing.getCategoryId());
-        if (lacksWriteAccess(currentCategory, userId)) {
+        if (lacksEditAccess(currentCategory, userId)) {
             throw BaseException.forbidden("error.debt.permission_denied");
         }
 
         if (!existing.getCategoryId().equals(request.getCategoryId())) {
             final CategoryDocument newCategory = categoryRS.findById(request.getCategoryId());
-            if (lacksWriteAccess(newCategory, userId)) {
+            if (lacksEditAccess(newCategory, userId)) {
                 throw BaseException.forbidden("error.debt.permission_denied");
             }
         }
@@ -366,7 +373,7 @@ public class DebtService {
         final DebtDocument debtDocument = debtRS.findById(id);
 
         final CategoryDocument category = categoryRS.findById(debtDocument.getCategoryId());
-        if (lacksWriteAccess(category, userId)) {
+        if (lacksDeleteAccess(category, userId)) {
             throw BaseException.forbidden("error.debt.permission_denied");
         }
 
@@ -468,7 +475,28 @@ public class DebtService {
         }
         return category.getMembers().stream()
                 .noneMatch(m -> m.getUserId().equals(userId)
-                        && m.getAccessLevel() == AccessLevelType.WRITE);
+                        && (m.getAccessLevel() == AccessLevelType.WRITE
+                        || m.getAccessLevel() == AccessLevelType.EDIT
+                        || m.getAccessLevel() == AccessLevelType.DELETE));
+    }
+
+    private boolean lacksEditAccess(final CategoryDocument category, final String userId) {
+        if (category.getOwnerId().equals(userId)) {
+            return false;
+        }
+        return category.getMembers().stream()
+                .noneMatch(m -> m.getUserId().equals(userId)
+                        && (m.getAccessLevel() == AccessLevelType.EDIT
+                        || m.getAccessLevel() == AccessLevelType.DELETE));
+    }
+
+    private boolean lacksDeleteAccess(final CategoryDocument category, final String userId) {
+        if (category.getOwnerId().equals(userId)) {
+            return false;
+        }
+        return category.getMembers().stream()
+                .noneMatch(m -> m.getUserId().equals(userId)
+                        && m.getAccessLevel() == AccessLevelType.DELETE);
     }
 
     private void setNextReminderDate(final DebtDocument debtDocument) {

@@ -132,11 +132,10 @@ class DebtServiceTest {
                 ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
                 ctx.when(RequestContextUtil::isPremium).thenReturn(true);
                 ctx.when(RequestContextUtil::getLocale).thenReturn("en");
-                ctx.when(RequestContextUtil::isPremium).thenReturn(true);
-                ctx.when(RequestContextUtil::getLocale).thenReturn("en");
 
-                when(debtRS.countByOwnerId(OWNER_ID)).thenReturn(0L);
                 final CategoryDocument cat = buildCategory(CAT_ID, OWNER_ID);
+                when(categoryRS.findByOwnerId(OWNER_ID)).thenReturn(List.of(cat));
+                when(debtRS.countByOwnerIdAndCategoryIdIn(eq(OWNER_ID), anyList())).thenReturn(0L);
                 when(categoryRS.findById(CAT_ID)).thenReturn(cat);
 
                 final DebtDocument saved = buildDebt(DEBT_ID, OWNER_ID, CAT_ID);
@@ -166,7 +165,8 @@ class DebtServiceTest {
                 ctx.when(RequestContextUtil::isPremium).thenReturn(true);
                 ctx.when(RequestContextUtil::getLocale).thenReturn("en");
 
-                when(debtRS.countByOwnerId(OTHER_ID)).thenReturn(0L);
+                when(categoryRS.findByOwnerId(OTHER_ID)).thenReturn(List.of());
+                when(debtRS.countByOwnerIdAndCategoryIdIn(eq(OTHER_ID), anyList())).thenReturn(0L);
                 final CategoryDocument cat = buildCategoryWithWriteMember(CAT_ID, OWNER_ID, OTHER_ID);
                 when(categoryRS.findById(CAT_ID)).thenReturn(cat);
 
@@ -191,11 +191,11 @@ class DebtServiceTest {
                 ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
                 ctx.when(RequestContextUtil::isPremium).thenReturn(true);
                 ctx.when(RequestContextUtil::getLocale).thenReturn("en");
-                ctx.when(RequestContextUtil::isPremium).thenReturn(true);
-                ctx.when(RequestContextUtil::getLocale).thenReturn("en");
 
-                when(debtRS.countByOwnerId(OWNER_ID)).thenReturn(200L);
-                when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
+                final CategoryDocument cat = buildCategory(CAT_ID, OWNER_ID);
+                when(categoryRS.findByOwnerId(OWNER_ID)).thenReturn(List.of(cat));
+                when(debtRS.countByOwnerIdAndCategoryIdIn(eq(OWNER_ID), anyList())).thenReturn(200L);
+                when(categoryRS.findById(CAT_ID)).thenReturn(cat);
 
                 final CreateDebtRequest request = CreateDebtRequest.builder()
                         .name("Test Debt").categoryId(CAT_ID)
@@ -218,7 +218,8 @@ class DebtServiceTest {
                 ctx.when(RequestContextUtil::isPremium).thenReturn(true);
                 ctx.when(RequestContextUtil::getLocale).thenReturn("en");
 
-                when(debtRS.countByOwnerId(OTHER_ID)).thenReturn(0L);
+                when(categoryRS.findByOwnerId(OTHER_ID)).thenReturn(List.of());
+                when(debtRS.countByOwnerIdAndCategoryIdIn(eq(OTHER_ID), anyList())).thenReturn(0L);
                 final CategoryDocument cat = buildCategoryWithReadMember(CAT_ID, OWNER_ID, OTHER_ID);
                 when(categoryRS.findById(CAT_ID)).thenReturn(cat);
 
@@ -241,7 +242,8 @@ class DebtServiceTest {
                 ctx.when(RequestContextUtil::isPremium).thenReturn(true);
                 ctx.when(RequestContextUtil::getLocale).thenReturn("en");
 
-                when(debtRS.countByOwnerId(OTHER_ID)).thenReturn(0L);
+                when(categoryRS.findByOwnerId(OTHER_ID)).thenReturn(List.of());
+                when(debtRS.countByOwnerIdAndCategoryIdIn(eq(OTHER_ID), anyList())).thenReturn(0L);
                 // Category owned by OWNER_ID, OTHER_ID not a member
                 when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
 
@@ -255,6 +257,7 @@ class DebtServiceTest {
                         .matches(e -> e.getStatus() == HttpStatus.FORBIDDEN);
             }
         }
+
     }
 
     // ─── update ───────────────────────────────────────────────────────────────

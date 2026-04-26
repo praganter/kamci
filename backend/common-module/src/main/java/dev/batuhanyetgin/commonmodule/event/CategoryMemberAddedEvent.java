@@ -16,4 +16,5 @@ public class CategoryMemberAddedEvent extends BaseEvent {
     private String categoryName;
     private String addedByUserId;
     private String memberUserId;
+    private String memberEmail;
 }

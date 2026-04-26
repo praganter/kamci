@@ -14,4 +14,6 @@ public interface CategoryRepository extends MongoRepository<CategoryDocument, St
     List<CategoryDocument> findByMembersUserId(final String userId);
 
     long countByOwnerId(final String ownerId);
+
+    List<CategoryDocument> findByIdIn(List<String> ids);
 }

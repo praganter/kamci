@@ -16,5 +16,7 @@ public class MemberEmbedded {
 
     private String userId;
 
+    private String email;
+
     private AccessLevelType accessLevel;
 }

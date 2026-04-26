@@ -51,7 +51,10 @@ public class CategoryMemberAddedConsumer implements EventConsumer<CategoryMember
                         log.info("FCM category member added notification sent to userId: {}", event.getMemberUserId());
                     }
 
-                    if (StringUtils.hasText(tokenDoc.getEmail())) {
+                    final String destinationEmail = StringUtils.hasText(tokenDoc.getEmail())
+                            ? tokenDoc.getEmail() : event.getMemberEmail();
+
+                    if (StringUtils.hasText(destinationEmail)) {
                         final String subject = messageSource.getMessage(
                                 "mail.category_member_added.subject",
                                 new Object[]{event.getCategoryName()},
@@ -61,15 +64,35 @@ public class CategoryMemberAddedConsumer implements EventConsumer<CategoryMember
                                 new Object[]{event.getCategoryName()},
                                 locale);
                         try {
-                            mailService.send(tokenDoc.getEmail(), subject, emailBody);
-                            log.info("Email category member added notification sent to: {}", tokenDoc.getEmail());
+                            mailService.send(destinationEmail, subject, emailBody);
+                            log.info("Email category member added notification sent to: {}", destinationEmail);
                         } catch (Exception e) {
                             log.error("Failed to send category member added email to: {}: {}",
-                                    tokenDoc.getEmail(), e.getMessage());
+                                    destinationEmail, e.getMessage());
                         }
                     }
                 },
-                () -> log.warn("No device token record found for memberUserId: {}", event.getMemberUserId())
+                () -> {
+                    log.warn("No device token record found for memberUserId: {}", event.getMemberUserId());
+                    if (StringUtils.hasText(event.getMemberEmail())) {
+                        final Locale locale = Locale.forLanguageTag(CommonConstants.DEFAULT_LOCALE);
+                        final String subject = messageSource.getMessage(
+                                "mail.category_member_added.subject",
+                                new Object[]{event.getCategoryName()},
+                                locale);
+                        final String emailBody = messageSource.getMessage(
+                                "mail.category_member_added.body",
+                                new Object[]{event.getCategoryName()},
+                                locale);
+                        try {
+                            mailService.send(event.getMemberEmail(), subject, emailBody);
+                            log.info("Email category member added notification sent to fallback email: {}", event.getMemberEmail());
+                        } catch (Exception e) {
+                            log.error("Failed to send category member added fallback email to: {}: {}",
+                                    event.getMemberEmail(), e.getMessage());
+                        }
+                    }
+                }
         );
     }
 }

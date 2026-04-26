@@ -19,6 +19,10 @@ public class CategoryRepositoryService {
                 .orElseThrow(() -> BaseException.notFound("error.category.not_found", id));
     }
 
+    public List<CategoryDocument> findByIdIn(final List<String> ids) {
+        return categoryRepository.findByIdIn(ids);
+    }
+
     public CategoryDocument save(final CategoryDocument document) {
         return categoryRepository.save(document);
     }

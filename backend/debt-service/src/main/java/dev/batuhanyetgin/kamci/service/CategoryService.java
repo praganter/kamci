@@ -5,20 +5,20 @@ import dev.batuhanyetgin.commonmodule.event.RabbitMQConstants;
 import dev.batuhanyetgin.commonmodule.exception.BaseException;
 import dev.batuhanyetgin.commonmodule.util.RequestContextUtil;
 import dev.batuhanyetgin.kamci.client.AuthClient;
-import dev.batuhanyetgin.kamci.producer.DebtEventProducer;
 import dev.batuhanyetgin.kamci.document.CategoryDocument;
+import dev.batuhanyetgin.kamci.document.DebtDocument;
 import dev.batuhanyetgin.kamci.document.embedded.MemberEmbedded;
 import dev.batuhanyetgin.kamci.dto.request.AddMemberRequest;
 import dev.batuhanyetgin.kamci.dto.request.BulkAddMemberRequest;
 import dev.batuhanyetgin.kamci.dto.request.CreateCategoryRequest;
 import dev.batuhanyetgin.kamci.dto.request.UpdateCategoryRequest;
-import dev.batuhanyetgin.kamci.document.DebtDocument;
 import dev.batuhanyetgin.kamci.dto.response.GetAllCategoryResponse;
 import dev.batuhanyetgin.kamci.dto.response.MigrateCategoryResponse;
 import dev.batuhanyetgin.kamci.dto.response.SaveCategoryResponse;
 import dev.batuhanyetgin.kamci.dto.response.UpdateCategoryResponse;
 import dev.batuhanyetgin.kamci.enums.AccessLevelType;
 import dev.batuhanyetgin.kamci.mapper.CategoryMapper;
+import dev.batuhanyetgin.kamci.producer.DebtEventProducer;
 import dev.batuhanyetgin.kamci.repositoryservice.CategoryRepositoryService;
 import dev.batuhanyetgin.kamci.repositoryservice.DebtRepositoryService;
 import lombok.RequiredArgsConstructor;
@@ -28,8 +28,11 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -138,8 +141,12 @@ public class CategoryService {
         }
         final String userId = RequestContextUtil.getUserId();
 
+        final List<CategoryDocument> categoryDocumentList = categoryRS.findByIdIn(request.getCategoryIds());
+        Map<String, CategoryDocument> categoryDocumentMap = categoryDocumentList.stream()
+                .collect(Collectors.toMap(CategoryDocument::getId, Function.identity()));
+
         for (final String categoryId : request.getCategoryIds()) {
-            final CategoryDocument category = categoryRS.findById(categoryId);
+            final CategoryDocument category = categoryDocumentMap.get(categoryId);
             checkOwner(category, userId);
             addMemberToCategory(category, request.getEmail(), request.getAccessLevel());
             log.info("Bulk added member {} to category {} with access {}", request.getEmail(), categoryId, request.getAccessLevel());
@@ -164,6 +171,7 @@ public class CategoryService {
         final List<MemberEmbedded> updated = new ArrayList<>(category.getMembers());
         updated.add(MemberEmbedded.builder()
                 .userId(memberUserId)
+                .email(email)
                 .accessLevel(accessLevel)
                 .build());
         category.setMembers(updated);
@@ -177,6 +185,7 @@ public class CategoryService {
                         .categoryName(category.getName())
                         .addedByUserId(category.getOwnerId())
                         .memberUserId(memberUserId)
+                        .memberEmail(email)
                         .locale(RequestContextUtil.getLocale())
                         .build()
         );

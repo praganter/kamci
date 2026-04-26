@@ -22,6 +22,8 @@ public interface DebtRepository extends MongoRepository<DebtDocument, String> {
 
     long countByOwnerId(final String ownerId);
 
+    long countByOwnerIdAndCategoryIdIn(final String ownerId, final List<String> categoryIds);
+
     List<DebtDocument> findByStatusAndPaymentStatusInAndReminderEnabledTrueAndNextReminderDateLessThanEqual(
             final DebtStatus status, final List<PaymentStatus> paymentStatuses, final LocalDateTime dateTime);
 
