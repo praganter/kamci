@@ -1,0 +1,105 @@
+---
+# RBAC: Promtail needs API access to read pod labels for log correlation
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: promtail
+  namespace: kamci
+  labels:
+    app: promtail
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: promtail
+  labels:
+    app: promtail
+rules:
+  - apiGroups: [""]
+    resources: [nodes, nodes/proxy, services, endpoints, pods]
+    verbs: [get, watch, list]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: promtail
+  labels:
+    app: promtail
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: promtail
+subjects:
+  - kind: ServiceAccount
+    name: promtail
+    namespace: kamci
+---
+# Replaces the minimal promtail-config in infra/monitoring.yaml.
+# Adds namespace / pod / container / app labels — required for cascade
+# variables in Logs Explorer and log↔trace correlation in Request Tracing.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: promtail-config
+  namespace: kamci
+  labels:
+    app: promtail
+data:
+  promtail.yaml: |
+    server:
+      http_listen_port: 9080
+      grpc_listen_port: 0
+
+    positions:
+      filename: /tmp/positions.yaml
+
+    clients:
+      - url: http://loki:3100/loki/api/v1/push
+        tenant_id: kamci
+
+    scrape_configs:
+      - job_name: kubernetes-pods
+        kubernetes_sd_configs:
+          - role: pod
+            namespaces:
+              names:
+                - kamci
+
+        pipeline_stages:
+          - cri: {}
+          # Extract log level from Spring Boot pattern: INFO / WARN / ERROR / DEBUG
+          - regex:
+              expression: '^\S+\s+(?P<level>TRACE|DEBUG|INFO|WARN|ERROR|FATAL)'
+          - labels:
+              level:
+
+        relabel_configs:
+          # Keep only pods that have app label (matches the repo's label convention)
+          - source_labels: [__meta_kubernetes_pod_label_app]
+            action: keep
+            regex: .+
+
+          - source_labels: [__meta_kubernetes_namespace]
+            target_label: namespace
+
+          - source_labels: [__meta_kubernetes_pod_name]
+            target_label: pod
+
+          - source_labels: [__meta_kubernetes_pod_container_name]
+            target_label: container
+
+          # app label maps directly to the service name (repo convention: app: <service-name>)
+          - source_labels: [__meta_kubernetes_pod_label_app]
+            target_label: app
+
+          - source_labels: [__meta_kubernetes_pod_node_name]
+            target_label: node
+
+          # Build the log path from pod UID and container name
+          - source_labels: [__meta_kubernetes_pod_uid, __meta_kubernetes_pod_container_name]
+            separator: /
+            target_label: __path__
+            replacement: /var/log/pods/*$1*/*/$2/*.log
+
+          - replacement: kubernetes-pods
+            target_label: job

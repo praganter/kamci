@@ -1,0 +1,14 @@
+apiVersion: 1
+
+providers:
+  - name: kamci
+    orgId: 1
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards/kamci
+      foldersFromFilesStructure: false
+    folder: Kamci
+    folderUid: kamci-folder

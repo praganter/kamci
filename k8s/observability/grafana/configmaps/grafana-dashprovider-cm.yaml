@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-provider
+  namespace: kamci
+  labels:
+    app: grafana
+data:
+  dashboard-provider.yaml: |
+    apiVersion: 1
+    providers:
+      - name: kamci
+        orgId: 1
+        type: file
+        disableDeletion: false
+        updateIntervalSeconds: 30
+        allowUiUpdates: true
+        options:
+          path: /var/lib/grafana/dashboards/kamci
+          foldersFromFilesStructure: false
+        folder: Kamci
+        folderUid: kamci-folder

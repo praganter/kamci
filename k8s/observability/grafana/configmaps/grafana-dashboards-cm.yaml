@@ -1,0 +1,24 @@
+---
+# Dashboard ConfigMap 1: cluster-overview, service-health, logs-explorer
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards
+  namespace: kamci
+  labels:
+    app: grafana
+  annotations:
+    # Regenerate from source files:
+    # kubectl create configmap grafana-dashboards -n kamci \
+    #   --from-file=cluster-node-overview.json=observability/grafana/dashboards/cluster-node-overview.json \
+    #   --from-file=service-health-red.json=observability/grafana/dashboards/service-health-red.json \
+    #   --from-file=logs-explorer.json=observability/grafana/dashboards/logs-explorer.json \
+    #   --from-file=request-tracing.json=observability/grafana/dashboards/request-tracing.json \
+    #   --from-file=ingress-traefik.json=observability/grafana/dashboards/ingress-traefik.json \
+    #   --dry-run=client -o yaml | kubectl apply -f -
+binaryData: {}
+data:
+  # Populated via the script above or manually.
+  # For GitOps: use the --dry-run approach above after editing any dashboard JSON,
+  # then commit the resulting YAML.
+  _placeholder: "see annotation for generation command"
