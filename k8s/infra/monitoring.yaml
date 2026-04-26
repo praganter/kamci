@@ -195,6 +195,7 @@ spec:
       labels:
         app: promtail
     spec:
+      serviceAccountName: promtail
       imagePullSecrets:
         - name: registry-credentials
       containers:
