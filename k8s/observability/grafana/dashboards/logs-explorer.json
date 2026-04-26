@@ -26,7 +26,7 @@
         "label": "Loki"
       },
       {
-        "current": {},
+        "current": {"selected": true, "text": "kamci", "value": "kamci"},
         "datasource": {"type": "loki", "uid": "${loki_datasource}"},
         "definition": "label_values(namespace)",
         "hide": 0,

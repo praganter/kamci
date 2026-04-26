@@ -54,6 +54,7 @@ data:
         url: http://tempo:3200
         access: proxy
         jsonData:
+          httpProtocol: "http/1.1"
           tracesToLogsV2:
             datasourceUid: loki
             spanStartTimeShift: "-5m"
@@ -64,12 +65,8 @@ data:
             tags:
               - key: "service.name"
                 value: "container"
-          serviceMap:
-            datasourceUid: prometheus
           lokiSearch:
             datasourceUid: loki
-          nodeGraph:
-            enabled: true
           search:
             hide: false
           traceQuery:

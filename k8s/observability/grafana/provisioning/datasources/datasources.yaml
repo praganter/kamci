@@ -47,6 +47,8 @@ datasources:
     url: http://tempo:3200
     access: proxy
     jsonData:
+      # gRPC disabled: k3s Tempo only exposes HTTP on 3200, no gRPC port
+      httpProtocol: "http/1.1"
       tracesToLogsV2:
         datasourceUid: loki
         spanStartTimeShift: "-5m"
@@ -57,12 +59,8 @@ datasources:
         tags:
           - key: "service.name"
             value: "container"
-      serviceMap:
-        datasourceUid: prometheus
       lokiSearch:
         datasourceUid: loki
-      nodeGraph:
-        enabled: true
       search:
         hide: false
       traceQuery:
