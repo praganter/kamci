@@ -48,6 +48,7 @@ services:
     env_file:
       - .env
     environment:
+      - TZ=Europe/Istanbul
       - MONGO_DB_URI=${MONGO_DB_URI}
       - SPRING_DATA_MONGODB_DATABASE=${MONGO_DATABASE}
       - SPRING_DATA_MONGODB_AUTO_INDEX_CREATION=true
@@ -76,6 +77,7 @@ services:
     env_file:
       - .env
     environment:
+      - TZ=Europe/Istanbul
       - MONGO_DB_URI=${MONGO_DB_URI}
       - SPRING_DATA_MONGODB_DATABASE=${MONGO_DATABASE}
       - SPRING_DATA_MONGODB_AUTO_INDEX_CREATION=true
@@ -102,6 +104,7 @@ services:
     env_file:
       - .env
     environment:
+      - TZ=Europe/Istanbul
       - CONFIG_SERVER_URL=http://config-server:8888
       - SPRING_RABBITMQ_HOST=rabbitmq
       - SPRING_RABBITMQ_PORT=5672

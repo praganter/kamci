@@ -281,7 +281,7 @@ public class DebtService {
                     existing.getFirstPaymentDate(), existing.getPaymentPeriodType(), effectiveTime);
             final boolean alreadyPaid = existing.getPayments().stream()
                     .anyMatch(p -> p.isPaid() && p.getPaidTime() != null
-                            && !p.getPaidTime().toLocalDate().isBefore(periodStart.toLocalDate()));
+                            && !p.getPaidTime().isBefore(periodStart));
             if (alreadyPaid) {
                 continue;
             }
@@ -297,6 +297,17 @@ public class DebtService {
                 && existing.getPayments().size() >= existing.getInstallmentCount()) {
             existing.setStatus(DebtStatus.COMPLETED);
             log.info("Debt {} marked as COMPLETED after bulk payment", id);
+        } else {
+            final LocalDateTime latestEffective = sorted.stream()
+                    .map(r -> r.getPaidTime() != null ? r.getPaidTime() : now)
+                    .max(Comparator.naturalOrder()).orElse(now);
+            final boolean isHistorical = latestEffective.isBefore(now.minusSeconds(1));
+            if (!isHistorical) {
+                final boolean anyPartial = existing.getPayments().stream()
+                        .anyMatch(p -> p.isPaid() && p.getAmountPaid() != null
+                                && p.getAmountPaid().compareTo(existing.getAmount()) < 0);
+                existing.setPaymentStatus(anyPartial ? PaymentStatus.PARTIALLY_PAID : PaymentStatus.PAID);
+            }
         }
 
         final DebtDocument updated = debtRS.update(existing);
@@ -608,10 +619,18 @@ public class DebtService {
                 continue;
             }
 
-            final PaymentEmbedded entry = monthPayments.get(0);
-            final BigDecimal paidAmount = entry.isPaid() && entry.getAmountPaid() != null
-                    ? entry.getAmountPaid() : BigDecimal.ZERO;
-            if (entry.isPaid()) {
+            final boolean isPaid = monthPayments.stream().anyMatch(PaymentEmbedded::isPaid);
+            final BigDecimal paidAmount = monthPayments.stream()
+                    .filter(PaymentEmbedded::isPaid)
+                    .map(p -> p.getAmountPaid() != null ? p.getAmountPaid() : BigDecimal.ZERO)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            final LocalDateTime lastPaidTime = monthPayments.stream()
+                    .filter(PaymentEmbedded::isPaid)
+                    .map(PaymentEmbedded::getPaidTime)
+                    .filter(Objects::nonNull)
+                    .max(Comparator.naturalOrder()).orElse(null);
+
+            if (isPaid) {
                 totalPaid = totalPaid.add(paidAmount);
                 paidCount++;
             } else {
@@ -621,10 +640,10 @@ public class DebtService {
             items.add(DebtMonthlySummaryItem.builder()
                     .debtId(debt.getId())
                     .debtName(debt.getName())
-                    .amountPaid(entry.isPaid() ? paidAmount : null)
-                    .paid(entry.isPaid())
-                    .skipped(!entry.isPaid())
-                    .paidTime(entry.getPaidTime())
+                    .amountPaid(isPaid ? paidAmount : null)
+                    .paid(isPaid)
+                    .skipped(!isPaid)
+                    .paidTime(lastPaidTime)
                     .build());
         }
 
