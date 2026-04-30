@@ -90,7 +90,7 @@ public class SubscriptionService {
         subscription.setStatus(SubscriptionStatus.ACTIVE);
         subscription.setProductId(request.getProductId());
         if (isNew) {
-            subscription.setStartDate(LocalDateTime.now());
+            subscription.setStartDate(LocalDateTime.now(ZoneOffset.UTC));
         }
         subscription.setExpiryDate(expiryDate);
 
@@ -246,8 +246,8 @@ public class SubscriptionService {
         subscription.setStatus(SubscriptionStatus.ACTIVE);
         subscription.setPlan(SubscriptionPlan.YEARLY);
         subscription.setPlatform(SubscriptionPlatform.ANDROID);
-        subscription.setStartDate(LocalDateTime.now());
-        subscription.setExpiryDate(LocalDateTime.now().plusYears(100));
+        subscription.setStartDate(LocalDateTime.now(ZoneOffset.UTC));
+        subscription.setExpiryDate(LocalDateTime.now(ZoneOffset.UTC).plusYears(100));
         subscription.setOriginalTransactionId("ADMIN_GRANT_" + userId);
         subscription.setPurchaseToken("ADMIN_GRANT_" + userId);
 

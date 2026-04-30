@@ -147,6 +147,9 @@ public class CategoryService {
 
         for (final String categoryId : request.getCategoryIds()) {
             final CategoryDocument category = categoryDocumentMap.get(categoryId);
+            if (category == null) {
+                throw BaseException.notFound("error.category.not_found");
+            }
             checkOwner(category, userId);
             addMemberToCategory(category, request.getEmail(), request.getAccessLevel());
             log.info("Bulk added member {} to category {} with access {}", request.getEmail(), categoryId, request.getAccessLevel());
