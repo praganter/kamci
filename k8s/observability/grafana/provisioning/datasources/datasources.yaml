@@ -59,8 +59,12 @@ datasources:
         tags:
           - key: "service.name"
             value: "container"
+      serviceMap:
+        datasourceUid: prometheus
       lokiSearch:
         datasourceUid: loki
+      nodeGraph:
+        enabled: true
       search:
         hide: false
       traceQuery:
