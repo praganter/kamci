@@ -1,31 +1,43 @@
 package dev.batuhanyetgin.gatewayserver.config;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
+import org.springframework.cloud.gateway.support.ipresolver.RemoteAddressResolver;
+import org.springframework.cloud.gateway.support.ipresolver.XForwardedRemoteAddressResolver;
 import org.springframework.core.Ordered;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import java.net.InetSocketAddress;
 import java.time.Duration;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 @Component
 @RequiredArgsConstructor
 public class RateLimitFilter implements GlobalFilter, Ordered {
 
     private final RateLimitProperties properties;
-    private final Map<String, Bucket> buckets = new ConcurrentHashMap<>();
+
+    private final RemoteAddressResolver addressResolver =
+            XForwardedRemoteAddressResolver.maxTrustedIndex(1);
+
+    private final AntPathMatcher pathMatcher = new AntPathMatcher();
+
+    private final Cache<String, Bucket> buckets = Caffeine.newBuilder()
+            .maximumSize(10_000)
+            .expireAfterAccess(1, TimeUnit.HOURS)
+            .build();
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
@@ -33,10 +45,10 @@ public class RateLimitFilter implements GlobalFilter, Ordered {
         List<RateLimitProperties.Rule> rules = properties.getRules();
 
         for (RateLimitProperties.Rule rule : rules) {
-            if (path.equals(rule.getPath())) {
+            if (pathMatcher.match(rule.getPath(), path)) {
                 String ip = resolveIp(exchange);
                 String key = ip + ":" + rule.getPath();
-                Bucket bucket = buckets.computeIfAbsent(key, k -> buildBucket(rule));
+                Bucket bucket = buckets.get(key, k -> buildBucket(rule));
 
                 if (bucket.tryConsume(1)) {
                     return chain.filter(exchange);
@@ -58,13 +70,8 @@ public class RateLimitFilter implements GlobalFilter, Ordered {
     }
 
     private String resolveIp(ServerWebExchange exchange) {
-        String forwarded = exchange.getRequest().getHeaders().getFirst("X-Forwarded-For");
-        if (forwarded != null && !forwarded.isBlank()) {
-            return forwarded.split(",")[0].trim();
-        }
-        return Optional.ofNullable(exchange.getRequest().getRemoteAddress())
-                .map(InetSocketAddress::getHostString)
-                .orElse("unknown");
+        InetSocketAddress address = addressResolver.resolve(exchange);
+        return address != null ? address.getHostString() : "unknown";
     }
 
     private Mono<Void> onRateLimitExceeded(ServerWebExchange exchange) {

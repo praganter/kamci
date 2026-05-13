@@ -36,26 +36,32 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
             final String authHeader = request.getHeaders().get(HttpHeaders.AUTHORIZATION).get(0);
             String token = jwtUtil.getAuthHeader(authHeader);
 
-            if (token == null || jwtUtil.isInvalid(token)) {
+            if (token == null) {
+                return this.onError(exchange, "Authorization header is invalid", HttpStatus.UNAUTHORIZED);
+            }
+
+            Claims claims;
+            try {
+                claims = jwtUtil.getAllClaimsFromToken(token);
+            } catch (Exception e) {
+                return this.onError(exchange, "Authorization header is invalid", HttpStatus.UNAUTHORIZED);
+            }
+
+            if (jwtUtil.isInvalid(claims)) {
                 return this.onError(exchange, "JWT is invalid or expired", HttpStatus.FORBIDDEN);
             }
 
-            try {
-                Claims claims = jwtUtil.getAllClaimsFromToken(token);
-                final String userId = claims.getSubject();
-                final boolean isPremium = Boolean.TRUE.equals(claims.get("premium", Boolean.class));
-                exchange = exchange.mutate()
-                        .request(r -> r.headers(headers -> {
-                            headers.remove("user-id");
-                            headers.remove("User-ID");
-                            headers.add("user-id", userId);
-                            headers.remove("user-premium");
-                            headers.add("user-premium", String.valueOf(isPremium));
-                        }))
-                        .build();
-            } catch (Exception e) {
-                return this.onError(exchange, "Failed to extract user info from token: " + e.getMessage(), HttpStatus.UNAUTHORIZED);
-            }
+            final String userId = claims.getSubject();
+            final boolean isPremium = Boolean.TRUE.equals(claims.get("premium", Boolean.class));
+            exchange = exchange.mutate()
+                    .request(r -> r.headers(headers -> {
+                        headers.remove("user-id");
+                        headers.remove("User-ID");
+                        headers.add("user-id", userId);
+                        headers.remove("user-premium");
+                        headers.add("user-premium", String.valueOf(isPremium));
+                    }))
+                    .build();
         }
 
         return chain.filter(exchange);

@@ -32,18 +32,12 @@ public class JwtUtil {
                 .getPayload();
     }
 
-    public boolean isInvalid(String token) {
-        try {
-            if (isTokenExpired(token)) return true;
-            String type = getAllClaimsFromToken(token).get("type", String.class);
-            return !"ACCESS".equals(type);
-        } catch (Exception e) {
-            return true;
-        }
+    public boolean isInvalid(Claims claims) {
+        return isTokenExpired(claims) || !"ACCESS".equals(claims.get("type", String.class));
     }
 
-    private boolean isTokenExpired(String token) {
-        return getAllClaimsFromToken(token).getExpiration().before(new Date());
+    private boolean isTokenExpired(Claims claims) {
+        return claims.getExpiration().before(new Date());
     }
 
     public String getAuthHeader(String authHeader) {
