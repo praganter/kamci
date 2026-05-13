@@ -102,7 +102,7 @@ class CategoryServiceTest {
                 ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
                 ctx.when(RequestContextUtil::isPremium).thenReturn(true);
 
-                when(categoryRS.countByOwnerId(OWNER_ID)).thenReturn(0L);
+                when(categoryRS.countByOwnerIdAndMembersIsEmpty(OWNER_ID)).thenReturn(0L);
                 final CategoryDocument saved = buildCategory(CAT_ID, OWNER_ID);
                 when(categoryRS.save(any(CategoryDocument.class))).thenReturn(saved);
 
@@ -122,7 +122,7 @@ class CategoryServiceTest {
             try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
                 ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
                 ctx.when(RequestContextUtil::isPremium).thenReturn(true);
-                when(categoryRS.countByOwnerId(OWNER_ID)).thenReturn(200L);
+                when(categoryRS.countByOwnerIdAndMembersIsEmpty(OWNER_ID)).thenReturn(100L);
 
                 final CreateCategoryRequest request = new CreateCategoryRequest();
                 request.setName("New Category");

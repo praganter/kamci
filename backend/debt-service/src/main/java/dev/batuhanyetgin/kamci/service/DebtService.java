@@ -21,11 +21,15 @@ import dev.batuhanyetgin.kamci.repositoryservice.UserIncomeRepositoryService;
 import dev.batuhanyetgin.kamci.util.PaymentPeriodUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.javacrumbs.shedlock.core.LockConfiguration;
+import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.*;
@@ -39,38 +43,25 @@ import java.util.stream.Collectors;
 public class DebtService {
 
     private static final int FREE_MAX_DEBTS = 5;
-    private static final int PREMIUM_MAX_DEBTS = 200;
+    private static final int PREMIUM_MAX_DEBTS = 500;
 
     private final DebtRepositoryService debtRS;
     private final CategoryRepositoryService categoryRS;
     private final DebtMapper debtMapper;
     private final DebtEventAsyncPublisher debtEventAsyncPublisher;
     private final UserIncomeRepositoryService incomeRS;
+    private final LockingTaskExecutor lockingTaskExecutor;
     @Qualifier("taskExecutor")
     private final Executor taskExecutor;
 
     public DebtResponse create(final CreateDebtRequest request) {
         final String userId = RequestContextUtil.getUserId();
         final String locale = RequestContextUtil.getLocale();
+        final boolean isPremium = RequestContextUtil.isPremium();
 
-        final CompletableFuture<Long> countFuture = CompletableFuture.supplyAsync(() -> {
-            final List<String> ownedCategoryIds = categoryRS.findByOwnerId(userId).stream()
-                    .map(BaseDocument::getId)
-                    .toList();
-            return debtRS.countByOwnerIdAndCategoryIdIn(userId, ownedCategoryIds);
-        }, taskExecutor);
-        final CompletableFuture<CategoryDocument> categoryFuture =
-                CompletableFuture.supplyAsync(() -> categoryRS.findById(request.getCategoryId()), taskExecutor);
-        CompletableFuture.allOf(countFuture, categoryFuture).join();
-
-        final CategoryDocument category = categoryFuture.join();
-
-        if (category.getOwnerId().equals(userId)) {
-            final int maxDebts = RequestContextUtil.isPremium() ? PREMIUM_MAX_DEBTS : FREE_MAX_DEBTS;
-            if (countFuture.join() >= maxDebts) {
-                throw BaseException.badRequest("error.debt.limit_exceeded");
-            }
-        }
+        final CategoryDocument category = CompletableFuture
+                .supplyAsync(() -> categoryRS.findById(request.getCategoryId()), taskExecutor)
+                .join();
 
         if (lacksWriteAccess(category, userId)) {
             throw BaseException.forbidden("error.debt.permission_denied");
@@ -82,7 +73,35 @@ public class DebtService {
         setNextReminderDate(debtDocument);
         backfillAutoPayments(debtDocument);
         setNextAutoPaymentDate(debtDocument);
-        debtDocument = debtRS.save(debtDocument);
+
+        final DebtDocument preparedDebt = debtDocument;
+        if (category.getOwnerId().equals(userId)) {
+            final int maxDebts = isPremium ? PREMIUM_MAX_DEBTS : FREE_MAX_DEBTS;
+            final LockConfiguration lockConfig = new LockConfiguration(
+                    Instant.now(), "debt-create:" + userId, Duration.ofSeconds(10), Duration.ZERO);
+            try {
+                final LockingTaskExecutor.TaskResult<DebtDocument> result = lockingTaskExecutor.executeWithLock(
+                        () -> {
+                            final List<String> nonSharedCategoryIds = categoryRS.findByOwnerId(userId).stream()
+                                    .filter(cat -> cat.getMembers().isEmpty())
+                                    .map(BaseDocument::getId).toList();
+                            if (debtRS.countByOwnerIdAndCategoryIdIn(userId, nonSharedCategoryIds) >= maxDebts) {
+                                throw BaseException.badRequest("error.debt.limit_exceeded");
+                            }
+                            return debtRS.save(preparedDebt);
+                        }, lockConfig);
+                if (!result.wasExecuted()) {
+                    throw BaseException.conflict("error.debt.concurrent_request");
+                }
+                debtDocument = result.getResult();
+            } catch (RuntimeException e) {
+                throw e;
+            } catch (Throwable e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            debtDocument = debtRS.save(preparedDebt);
+        }
 
         log.info("Debt created with id: {} for user: {}", debtDocument.getId(), userId);
         debtEventAsyncPublisher.publishDebtAddedEvent(debtDocument, category, userId, locale);

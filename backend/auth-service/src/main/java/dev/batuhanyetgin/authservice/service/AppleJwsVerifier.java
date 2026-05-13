@@ -73,6 +73,8 @@ public class AppleJwsVerifier {
     }
 
     private void verifyChain(final X509Certificate leaf, final X509Certificate intermediate) throws Exception {
+        leaf.checkValidity();
+        intermediate.checkValidity();
         leaf.verify(intermediate.getPublicKey());
         intermediate.verify(appleRootCa.getPublicKey());
     }

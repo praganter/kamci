@@ -42,4 +42,8 @@ public class CategoryRepositoryService {
     public long countByOwnerId(final String ownerId) {
         return categoryRepository.countByOwnerId(ownerId);
     }
+
+    public long countByOwnerIdAndMembersIsEmpty(final String ownerId) {
+        return categoryRepository.countByOwnerIdAndMembersIsEmpty(ownerId);
+    }
 }

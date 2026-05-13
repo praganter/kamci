@@ -21,6 +21,10 @@ import dev.batuhanyetgin.kamci.mapper.DebtMapper;
 import dev.batuhanyetgin.kamci.repositoryservice.CategoryRepositoryService;
 import dev.batuhanyetgin.kamci.repositoryservice.DebtRepositoryService;
 import dev.batuhanyetgin.kamci.repositoryservice.UserIncomeRepositoryService;
+import net.javacrumbs.shedlock.core.DefaultLockingTaskExecutor;
+import net.javacrumbs.shedlock.core.LockProvider;
+import net.javacrumbs.shedlock.core.LockingTaskExecutor;
+import net.javacrumbs.shedlock.core.SimpleLock;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -50,6 +54,8 @@ class DebtServiceTest {
     @Mock private DebtMapper debtMapper;
     @Mock private DebtEventAsyncPublisher debtEventAsyncPublisher;
     @Mock private UserIncomeRepositoryService incomeRS;
+    @Mock private LockProvider lockProvider;
+    @Mock private SimpleLock simpleLock;
 
     // Synchronous executor — runs tasks on the calling thread
     private final Executor taskExecutor = Runnable::run;
@@ -63,8 +69,10 @@ class DebtServiceTest {
     private static final String DEBT_ID   = "debt789";
 
     @BeforeEach
-    void setUp() {
-        debtService = new DebtService(debtRS, categoryRS, debtMapper, debtEventAsyncPublisher, incomeRS, taskExecutor);
+    void setUp() throws Throwable {
+        lenient().when(lockProvider.lock(any())).thenReturn(java.util.Optional.of(simpleLock));
+        final LockingTaskExecutor lockingTaskExecutor = new DefaultLockingTaskExecutor(lockProvider);
+        debtService = new DebtService(debtRS, categoryRS, debtMapper, debtEventAsyncPublisher, incomeRS, lockingTaskExecutor, taskExecutor);
     }
 
     private DebtDocument buildDebt(final String id, final String ownerId, final String catId) {
@@ -165,8 +173,6 @@ class DebtServiceTest {
                 ctx.when(RequestContextUtil::isPremium).thenReturn(true);
                 ctx.when(RequestContextUtil::getLocale).thenReturn("en");
 
-                when(categoryRS.findByOwnerId(OTHER_ID)).thenReturn(List.of());
-                when(debtRS.countByOwnerIdAndCategoryIdIn(eq(OTHER_ID), anyList())).thenReturn(0L);
                 final CategoryDocument cat = buildCategoryWithWriteMember(CAT_ID, OWNER_ID, OTHER_ID);
                 when(categoryRS.findById(CAT_ID)).thenReturn(cat);
 
@@ -194,8 +200,9 @@ class DebtServiceTest {
 
                 final CategoryDocument cat = buildCategory(CAT_ID, OWNER_ID);
                 when(categoryRS.findByOwnerId(OWNER_ID)).thenReturn(List.of(cat));
-                when(debtRS.countByOwnerIdAndCategoryIdIn(eq(OWNER_ID), anyList())).thenReturn(200L);
+                when(debtRS.countByOwnerIdAndCategoryIdIn(eq(OWNER_ID), anyList())).thenReturn(500L);
                 when(categoryRS.findById(CAT_ID)).thenReturn(cat);
+                when(debtMapper.convert(any(CreateDebtRequest.class))).thenReturn(buildDebt(DEBT_ID, OWNER_ID, CAT_ID));
 
                 final CreateDebtRequest request = CreateDebtRequest.builder()
                         .name("Test Debt").categoryId(CAT_ID)
@@ -218,8 +225,6 @@ class DebtServiceTest {
                 ctx.when(RequestContextUtil::isPremium).thenReturn(true);
                 ctx.when(RequestContextUtil::getLocale).thenReturn("en");
 
-                when(categoryRS.findByOwnerId(OTHER_ID)).thenReturn(List.of());
-                when(debtRS.countByOwnerIdAndCategoryIdIn(eq(OTHER_ID), anyList())).thenReturn(0L);
                 final CategoryDocument cat = buildCategoryWithReadMember(CAT_ID, OWNER_ID, OTHER_ID);
                 when(categoryRS.findById(CAT_ID)).thenReturn(cat);
 
@@ -242,8 +247,6 @@ class DebtServiceTest {
                 ctx.when(RequestContextUtil::isPremium).thenReturn(true);
                 ctx.when(RequestContextUtil::getLocale).thenReturn("en");
 
-                when(categoryRS.findByOwnerId(OTHER_ID)).thenReturn(List.of());
-                when(debtRS.countByOwnerIdAndCategoryIdIn(eq(OTHER_ID), anyList())).thenReturn(0L);
                 // Category owned by OWNER_ID, OTHER_ID not a member
                 when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
 

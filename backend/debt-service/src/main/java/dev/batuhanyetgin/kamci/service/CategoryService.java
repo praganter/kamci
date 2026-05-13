@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
 public class CategoryService {
 
     private static final int FREE_MAX_CATEGORIES = 2;
-    private static final int PREMIUM_MAX_CATEGORIES = 200;
+    private static final int PREMIUM_MAX_CATEGORIES = 100;
 
     private final CategoryRepositoryService categoryRS;
     private final DebtRepositoryService debtRS;
@@ -54,7 +54,7 @@ public class CategoryService {
         final String userId = RequestContextUtil.getUserId();
 
         final int maxCategories = RequestContextUtil.isPremium() ? PREMIUM_MAX_CATEGORIES : FREE_MAX_CATEGORIES;
-        if (categoryRS.countByOwnerId(userId) >= maxCategories) {
+        if (categoryRS.countByOwnerIdAndMembersIsEmpty(userId) >= maxCategories) {
             throw BaseException.badRequest("error.category.limit_exceeded");
         }
 

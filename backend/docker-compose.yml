@@ -121,6 +121,32 @@ services:
     networks:
       - dt-network
 
+  redis:
+    image: redis:7.2-alpine
+    container_name: redis
+    ports:
+      - "127.0.0.1:6379:6379"
+    command: >
+      redis-server
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+      --requirepass ${REDIS_PASSWORD:-}
+    volumes:
+      - redis-data:/data
+    networks:
+      - dt-network
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
   cache-service:
     build:
       context: .
@@ -133,9 +159,12 @@ services:
     environment:
       - TZ=Europe/Istanbul
       - CONFIG_SERVER_URL=http://config-server:8888
-      - REDIS_HOST=${REDIS_HOST:redis}
-      - REDIS_PORT=${REDIS_PORT:6379}
-      - REDIS_PASSWORD=${REDIS_PASSWORD:}
+      - REDIS_HOST=${REDIS_HOST:-redis}
+      - REDIS_PORT=${REDIS_PORT:-6379}
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+    depends_on:
+      redis:
+        condition: service_healthy
     networks:
       - dt-network
 
@@ -145,4 +174,6 @@ networks:
 
 volumes:
   mongo-data:
+    driver: local
+  redis-data:
     driver: local

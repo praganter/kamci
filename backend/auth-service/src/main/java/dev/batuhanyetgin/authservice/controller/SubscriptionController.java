@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.MessageDigest;
 import java.util.Map;
 
 @RestController
@@ -100,7 +101,9 @@ public class SubscriptionController {
     }
 
     private void validateAdminKey(final String adminKey) {
-        if (adminSecretKey.isBlank() || !adminSecretKey.equals(adminKey)) {
+        if (adminSecretKey.isBlank() || !MessageDigest.isEqual(
+                adminSecretKey.getBytes(),
+                adminKey.getBytes())) {
             throw BaseException.forbidden("error.admin.unauthorized");
         }
     }

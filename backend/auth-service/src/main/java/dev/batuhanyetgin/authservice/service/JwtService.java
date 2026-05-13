@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -25,6 +26,16 @@ public class JwtService {
 
     @Value("${jwt.expirationRefresh}")
     private long jwtExpirationRefreshMs;
+
+    private SecretKey signingKey;
+
+    @PostConstruct
+    void init() {
+        if (!StringUtils.hasText(jwtSecret)) {
+            throw new IllegalStateException("JWT secret is not configured");
+        }
+        signingKey = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
+    }
 
     public Claims validateToken(final String token) {
         if (!StringUtils.hasText(token)) {
@@ -107,11 +118,6 @@ public class JwtService {
     }
 
     private SecretKey getSigningKey() {
-        if (!StringUtils.hasText(jwtSecret)) {
-            throw new IllegalStateException("JWT secret is not configured");
-        }
-
-        final byte[] keyBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
-        return Keys.hmacShaKeyFor(keyBytes);
+        return signingKey;
     }
 }
