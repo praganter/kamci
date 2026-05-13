@@ -26,6 +26,7 @@ class JwtServiceTest {
         ReflectionTestUtils.setField(jwtService, "jwtSecret", SECRET);
         ReflectionTestUtils.setField(jwtService, "jwtExpirationMs", EXPIRATION_MS);
         ReflectionTestUtils.setField(jwtService, "jwtExpirationRefreshMs", REFRESH_EXPIRATION_MS);
+        jwtService.init();
     }
 
     // ─── generateToken ────────────────────────────────────────────────────────
