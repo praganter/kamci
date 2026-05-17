@@ -36,6 +36,8 @@ class AuthServiceTest {
     @Mock private BCryptPasswordEncoder passwordEncoder;
     @Mock private AuthRepositoryService authRS;
     @Mock private AuthEventProducer authEventProducer;
+    @Mock private TokenBlacklistService tokenBlacklistService;
+    @Mock private RateLimiterService rateLimiterService;
 
     @InjectMocks
     private AuthService authService;
@@ -136,7 +138,7 @@ class AuthServiceTest {
         }
 
         @Test
-        @DisplayName("wrong password → throws UNAUTHORIZED")
+        @DisplayName("wrong password → throws UNAUTHORIZED and increments rate limit counter")
         void wrongPassword_throwsUnauthorized() {
             final AuthDocument doc = buildAuthDoc();
             when(authRS.findByEMail(EMAIL)).thenReturn(doc);
@@ -148,6 +150,38 @@ class AuthServiceTest {
             assertThatExceptionOfType(BaseException.class)
                     .isThrownBy(() -> authService.login(request))
                     .matches(e -> e.getStatus() == HttpStatus.UNAUTHORIZED);
+
+            verify(rateLimiterService).check(eq("login:" + EMAIL), eq(5), eq(900L), any());
+        }
+
+        @Test
+        @DisplayName("rate limit exceeded → throws TOO_MANY_REQUESTS")
+        void rateLimitExceeded_throwsTooManyRequests() {
+            final AuthDocument doc = buildAuthDoc();
+            when(authRS.findByEMail(EMAIL)).thenReturn(doc);
+            when(passwordEncoder.matches(PASSWORD, HASH)).thenReturn(false);
+            doThrow(BaseException.tooManyRequests("error.auth.too_many_login_attempts"))
+                    .when(rateLimiterService).check(eq("login:" + EMAIL), eq(5), eq(900L), any());
+
+            final LoginRequest request = LoginRequest.builder()
+                    .email(EMAIL).password(PASSWORD).build();
+
+            assertThatExceptionOfType(BaseException.class)
+                    .isThrownBy(() -> authService.login(request))
+                    .matches(e -> e.getStatus() == HttpStatus.TOO_MANY_REQUESTS);
+        }
+
+        @Test
+        @DisplayName("successful login → resets rate limit counter")
+        void successfulLogin_resetsRateLimit() {
+            final AuthDocument doc = buildAuthDocWithId();
+            when(authRS.findByEMail(EMAIL)).thenReturn(doc);
+            when(passwordEncoder.matches(PASSWORD, HASH)).thenReturn(true);
+            when(jwtService.generateToken(any(), anyBoolean(), anyBoolean())).thenReturn(ACCESS_TOKEN);
+
+            authService.login(LoginRequest.builder().email(EMAIL).password(PASSWORD).build());
+
+            verify(rateLimiterService).reset("login:" + EMAIL);
         }
     }
 
@@ -160,6 +194,7 @@ class AuthServiceTest {
         @Test
         @DisplayName("valid Bearer header → returns new token pair")
         void validHeader_returnsTokenResponse() {
+            when(tokenBlacklistService.isBlacklisted(REFRESH_TOKEN)).thenReturn(false);
             when(jwtService.validateRefreshToken(REFRESH_TOKEN)).thenReturn(USER_ID);
             when(authRS.findById(USER_ID)).thenReturn(buildAuthDocWithId());
             when(jwtService.generateToken(USER_ID, false, false)).thenReturn(ACCESS_TOKEN);
@@ -240,6 +275,22 @@ class AuthServiceTest {
             assertThatNoException().isThrownBy(() -> authService.forgetPassword(request));
             verify(authEventProducer, never()).produce(any(), any(), any());
         }
+
+        @Test
+        @DisplayName("rate limit exceeded → throws TOO_MANY_REQUESTS")
+        void rateLimitExceeded_throwsTooManyRequests() {
+            doThrow(BaseException.tooManyRequests("error.auth.too_many_password_reset_attempts"))
+                    .when(rateLimiterService).check(eq("forget_pwd:" + EMAIL), eq(3), eq(3600L), any());
+
+            final ForgetPasswordRequest request = new ForgetPasswordRequest();
+            request.setEmail(EMAIL);
+
+            assertThatExceptionOfType(BaseException.class)
+                    .isThrownBy(() -> authService.forgetPassword(request))
+                    .matches(e -> e.getStatus() == HttpStatus.TOO_MANY_REQUESTS);
+
+            verify(authEventProducer, never()).produce(any(), any(), any());
+        }
     }
 
     // ─── changePassword ───────────────────────────────────────────────────────
@@ -302,12 +353,14 @@ class AuthServiceTest {
         @Test
         @DisplayName("valid reset token → updates and saves password")
         void validResetToken_updatesPassword() {
+            when(tokenBlacklistService.isBlacklisted(RESET_TOKEN)).thenReturn(false);
             when(jwtService.validatePasswordResetToken(RESET_TOKEN)).thenReturn(USER_ID);
 
             final AuthDocument doc = buildAuthDoc();
             when(authRS.findById(USER_ID)).thenReturn(doc);
             when(passwordEncoder.encode("newPass")).thenReturn("$2a$newHash");
             when(authRS.save(doc)).thenReturn(doc);
+            when(jwtService.getRemainingTtlSeconds(RESET_TOKEN)).thenReturn(300L);
 
             final ResetPasswordRequest request = new ResetPasswordRequest();
             request.setToken(RESET_TOKEN);
@@ -315,7 +368,57 @@ class AuthServiceTest {
 
             assertThatNoException().isThrownBy(() -> authService.resetPassword(request));
             verify(authRS).save(doc);
+            verify(tokenBlacklistService).blacklist(RESET_TOKEN, 300L);
             assertThat(doc.getPassword()).isEqualTo("$2a$newHash");
+        }
+
+        @Test
+        @DisplayName("already used reset token → throws UNAUTHORIZED")
+        void alreadyUsedToken_throwsUnauthorized() {
+            when(tokenBlacklistService.isBlacklisted(RESET_TOKEN)).thenReturn(true);
+
+            final ResetPasswordRequest request = new ResetPasswordRequest();
+            request.setToken(RESET_TOKEN);
+            request.setNewPassword("newPass");
+
+            assertThatExceptionOfType(BaseException.class)
+                    .isThrownBy(() -> authService.resetPassword(request))
+                    .matches(e -> e.getStatus() == HttpStatus.UNAUTHORIZED);
+
+            verify(authRS, never()).save(any());
+        }
+    }
+
+    // ─── logout ───────────────────────────────────────────────────────────────
+
+    @Nested
+    @DisplayName("logout")
+    class Logout {
+
+        @Test
+        @DisplayName("valid Bearer refresh token → blacklists token")
+        void validRefreshToken_blacklistsToken() {
+            when(jwtService.getRemainingTtlSeconds(REFRESH_TOKEN)).thenReturn(3600L);
+
+            assertThatNoException().isThrownBy(() -> authService.logout("Bearer " + REFRESH_TOKEN));
+
+            verify(tokenBlacklistService).blacklist(REFRESH_TOKEN, 3600L);
+        }
+
+        @Test
+        @DisplayName("null header → throws BAD_REQUEST")
+        void nullHeader_throwsBadRequest() {
+            assertThatExceptionOfType(BaseException.class)
+                    .isThrownBy(() -> authService.logout(null))
+                    .matches(e -> e.getStatus() == HttpStatus.BAD_REQUEST);
+        }
+
+        @Test
+        @DisplayName("missing Bearer prefix → throws BAD_REQUEST")
+        void missingBearerPrefix_throwsBadRequest() {
+            assertThatExceptionOfType(BaseException.class)
+                    .isThrownBy(() -> authService.logout(REFRESH_TOKEN))
+                    .matches(e -> e.getStatus() == HttpStatus.BAD_REQUEST);
         }
     }
 

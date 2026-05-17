@@ -20,9 +20,21 @@ public class MonthlySummaryResponse {
 
     private int skippedCount;
 
+    private BigDecimal skippedAmount;
+
+    private int pendingCount;
+
+    private BigDecimal pendingAmount;
+
     private BigDecimal incomeAtMonth;
 
     private BigDecimal debtToIncomeRatio;
 
     private List<DebtMonthlySummaryItem> debts;
+
+    private List<MonthlyTrendItem> trend;
+
+    private List<CategoryBreakdownItem> categoryBreakdown;
+
+    private List<DebtProgressItem> debtProgress;
 }

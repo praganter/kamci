@@ -52,6 +52,10 @@ public class BaseException extends RuntimeException {
         return new BaseException(code, HttpStatus.FORBIDDEN, args);
     }
 
+    public static BaseException tooManyRequests(final String code, final Object... args) {
+        return new BaseException(code, HttpStatus.TOO_MANY_REQUESTS, args);
+    }
+
     public static BaseException serviceUnavailable(final String code, final Object... args) {
         return new BaseException(code, HttpStatus.SERVICE_UNAVAILABLE, args);
     }

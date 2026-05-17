@@ -618,13 +618,19 @@ public class DebtService {
         all.addAll(owned);
         all.addAll(shared);
 
-        final List<String> categoryIds = all.stream().map(BaseDocument::getId).toList();
-        final List<DebtDocument> debts = debtRS.findByCategoryIdIn(categoryIds);
+        final Map<String, CategoryDocument> categoryById = all.stream()
+                .collect(Collectors.toMap(BaseDocument::getId, c -> c));
+        final List<DebtDocument> debts = debtRS.findByCategoryIdIn(new ArrayList<>(categoryById.keySet()));
 
         BigDecimal totalPaid = BigDecimal.ZERO;
         int paidCount = 0;
         int skippedCount = 0;
+        BigDecimal skippedAmount = BigDecimal.ZERO;
+        int pendingCount = 0;
+        BigDecimal pendingAmount = BigDecimal.ZERO;
         final List<DebtMonthlySummaryItem> items = new ArrayList<>();
+        final Map<String, BigDecimal> categoryPaidMap = new HashMap<>();
+        final Map<String, Integer> categoryDebtCountMap = new HashMap<>();
 
         for (final DebtDocument debt : debts) {
             final List<PaymentEmbedded> monthPayments = debt.getPayments().stream()
@@ -635,6 +641,20 @@ public class DebtService {
                     .toList();
 
             if (monthPayments.isEmpty()) {
+                if (debt.getStatus() == DebtStatus.ACTIVE
+                        && debt.getFirstPaymentDate() != null
+                        && !debt.getFirstPaymentDate().isAfter(monthEnd)) {
+                    pendingCount++;
+                    pendingAmount = pendingAmount.add(debt.getAmount() != null ? debt.getAmount() : BigDecimal.ZERO);
+                    items.add(DebtMonthlySummaryItem.builder()
+                            .debtId(debt.getId())
+                            .debtName(debt.getName())
+                            .currency(debt.getCurrency())
+                            .paid(false)
+                            .skipped(false)
+                            .pending(true)
+                            .build());
+                }
                 continue;
             }
 
@@ -652,16 +672,21 @@ public class DebtService {
             if (isPaid) {
                 totalPaid = totalPaid.add(paidAmount);
                 paidCount++;
+                categoryPaidMap.merge(debt.getCategoryId(), paidAmount, BigDecimal::add);
+                categoryDebtCountMap.merge(debt.getCategoryId(), 1, Integer::sum);
             } else {
                 skippedCount++;
+                skippedAmount = skippedAmount.add(debt.getAmount() != null ? debt.getAmount() : BigDecimal.ZERO);
             }
 
             items.add(DebtMonthlySummaryItem.builder()
                     .debtId(debt.getId())
                     .debtName(debt.getName())
+                    .currency(debt.getCurrency())
                     .amountPaid(isPaid ? paidAmount : null)
                     .paid(isPaid)
                     .skipped(!isPaid)
+                    .pending(false)
                     .paidTime(lastPaidTime)
                     .build());
         }
@@ -674,14 +699,138 @@ public class DebtService {
                     .multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP);
         }
 
+        final BigDecimal finalTotalPaid = totalPaid;
+        final List<CategoryBreakdownItem> categoryBreakdown = categoryPaidMap.entrySet().stream()
+                .map(e -> {
+                    final CategoryDocument cat = categoryById.get(e.getKey());
+                    final BigDecimal catTotal = e.getValue();
+                    final BigDecimal pct = finalTotalPaid.compareTo(BigDecimal.ZERO) > 0
+                            ? catTotal.divide(finalTotalPaid, 4, RoundingMode.HALF_UP)
+                                    .multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP)
+                            : BigDecimal.ZERO;
+                    return CategoryBreakdownItem.builder()
+                            .categoryId(e.getKey())
+                            .categoryName(cat != null ? cat.getName() : null)
+                            .totalPaid(catTotal)
+                            .debtCount(categoryDebtCountMap.getOrDefault(e.getKey(), 0))
+                            .percentage(pct)
+                            .build();
+                })
+                .sorted(Comparator.comparing(CategoryBreakdownItem::getTotalPaid).reversed())
+                .toList();
+
+        final List<DebtProgressItem> debtProgress = debts.stream()
+                .map(d -> {
+                    final long paidInstallments = d.getPayments().stream().filter(PaymentEmbedded::isPaid).count();
+                    final BigDecimal allTimePaid = d.getPayments().stream()
+                            .filter(PaymentEmbedded::isPaid)
+                            .map(p -> p.getAmountPaid() != null ? p.getAmountPaid() : BigDecimal.ZERO)
+                            .reduce(BigDecimal.ZERO, BigDecimal::add);
+                    final BigDecimal debtAmount = d.getAmount() != null ? d.getAmount() : BigDecimal.ZERO;
+                    final Integer totalInstallments = d.getInstallmentCount();
+                    BigDecimal completionPct = null;
+                    if (totalInstallments != null && totalInstallments > 0) {
+                        completionPct = BigDecimal.valueOf(paidInstallments)
+                                .divide(BigDecimal.valueOf(totalInstallments), 4, RoundingMode.HALF_UP)
+                                .multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP);
+                    }
+                    final BigDecimal remaining = totalInstallments != null
+                            ? debtAmount.multiply(BigDecimal.valueOf(
+                                    Math.max(0, totalInstallments - paidInstallments)))
+                            : null;
+                    return DebtProgressItem.builder()
+                            .debtId(d.getId())
+                            .debtName(d.getName())
+                            .currency(d.getCurrency())
+                            .totalAmount(debtAmount)
+                            .totalPaid(allTimePaid)
+                            .remainingAmount(remaining)
+                            .paidInstallments((int) paidInstallments)
+                            .totalInstallments(totalInstallments)
+                            .completionPercentage(completionPct)
+                            .status(d.getStatus())
+                            .build();
+                })
+                .toList();
+
+        final List<MonthlyTrendItem> trend = new ArrayList<>();
+        for (int i = 5; i >= 0; i--) {
+            trend.add(computeTrendMonth(debts, yearMonth.minusMonths(i), userId));
+        }
+
         return MonthlySummaryResponse.builder()
                 .month(month)
                 .totalPaid(totalPaid)
                 .paidCount(paidCount)
                 .skippedCount(skippedCount)
+                .skippedAmount(skippedAmount)
+                .pendingCount(pendingCount)
+                .pendingAmount(pendingAmount)
                 .incomeAtMonth(income)
                 .debtToIncomeRatio(ratio)
                 .debts(items)
+                .trend(trend)
+                .categoryBreakdown(categoryBreakdown)
+                .debtProgress(debtProgress)
+                .build();
+    }
+
+    private MonthlyTrendItem computeTrendMonth(final List<DebtDocument> debts,
+                                               final YearMonth yearMonth,
+                                               final String userId) {
+        final LocalDateTime monthStart = yearMonth.atDay(1).atStartOfDay();
+        final LocalDateTime monthEnd = yearMonth.atEndOfMonth().atTime(23, 59, 59);
+
+        BigDecimal totalPaid = BigDecimal.ZERO;
+        int paidCount = 0;
+        int skippedCount = 0;
+        int pendingCount = 0;
+
+        for (final DebtDocument debt : debts) {
+            final List<PaymentEmbedded> monthPayments = debt.getPayments().stream()
+                    .filter(p -> {
+                        final LocalDateTime ts = p.getPeriodStart() != null ? p.getPeriodStart() : p.getPaidTime();
+                        return ts != null && !ts.isBefore(monthStart) && !ts.isAfter(monthEnd);
+                    })
+                    .toList();
+
+            if (monthPayments.isEmpty()) {
+                if (debt.getStatus() == DebtStatus.ACTIVE
+                        && debt.getFirstPaymentDate() != null
+                        && !debt.getFirstPaymentDate().isAfter(monthEnd)) {
+                    pendingCount++;
+                }
+                continue;
+            }
+
+            final boolean isPaid = monthPayments.stream().anyMatch(PaymentEmbedded::isPaid);
+            if (isPaid) {
+                final BigDecimal paidAmount = monthPayments.stream()
+                        .filter(PaymentEmbedded::isPaid)
+                        .map(p -> p.getAmountPaid() != null ? p.getAmountPaid() : BigDecimal.ZERO)
+                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+                totalPaid = totalPaid.add(paidAmount);
+                paidCount++;
+            } else {
+                skippedCount++;
+            }
+        }
+
+        final var incomeOpt = incomeRS.findByOwnerIdAsOf(userId, monthEnd);
+        final BigDecimal income = incomeOpt.map(UserIncomeDocument::getAmount).orElse(null);
+        BigDecimal ratio = null;
+        if (income != null && income.compareTo(BigDecimal.ZERO) > 0) {
+            ratio = totalPaid.divide(income, 4, RoundingMode.HALF_UP)
+                    .multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP);
+        }
+
+        return MonthlyTrendItem.builder()
+                .month(yearMonth.toString())
+                .totalPaid(totalPaid)
+                .paidCount(paidCount)
+                .skippedCount(skippedCount)
+                .pendingCount(pendingCount)
+                .debtToIncomeRatio(ratio)
                 .build();
     }
 

@@ -15,6 +15,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class JwtService {
@@ -115,6 +116,16 @@ public class JwtService {
         }
 
         return claims.getSubject();
+    }
+
+    public long getRemainingTtlSeconds(final String token) {
+        try {
+            final Claims claims = validateToken(token);
+            final long remainingMs = claims.getExpiration().getTime() - System.currentTimeMillis();
+            return TimeUnit.MILLISECONDS.toSeconds(Math.max(remainingMs, 0));
+        } catch (JwtException | IllegalArgumentException e) {
+            return 0;
+        }
     }
 
     private SecretKey getSigningKey() {

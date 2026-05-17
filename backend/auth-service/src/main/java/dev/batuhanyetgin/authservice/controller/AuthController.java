@@ -95,6 +95,17 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
+    @Operation(summary = "Logout — invalidates the provided refresh token")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Logged out successfully"),
+            @ApiResponse(responseCode = "400", description = "Missing or malformed Authorization header")
+    })
+    @PostMapping("logout")
+    ResponseEntity<Void> logout(@RequestHeader("Authorization") final String refreshToken) {
+        authService.logout(refreshToken);
+        return ResponseEntity.noContent().build();
+    }
+
     @Operation(summary = "Get the authenticated user's profile")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "User profile returned"),
