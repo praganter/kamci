@@ -59,6 +59,9 @@ services:
       - SPRING_RABBITMQ_USERNAME=${RABBITMQ_DEFAULT_USER}
       - SPRING_RABBITMQ_PASSWORD=${RABBITMQ_DEFAULT_PASS}
       - ADMIN_SECRET_KEY=${ADMIN_SECRET_KEY}
+      - APP_REDIS_HOST=${APP_REDIS_HOST}
+      - APP_REDIS_PORT=${APP_REDIS_PORT}
+      - APP_REDIS_PASSWORD=${APP_REDIS_PASSWORD}
     depends_on:
       mongodb:
         condition: service_healthy
@@ -159,9 +162,9 @@ services:
     environment:
       - TZ=Europe/Istanbul
       - CONFIG_SERVER_URL=http://config-server:8888
-      - REDIS_HOST=${REDIS_HOST:-redis}
-      - REDIS_PORT=${REDIS_PORT:-6379}
-      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+      - APP_REDIS_HOST=${APP_REDIS_HOST}
+      - APP_REDIS_PORT=${APP_REDIS_PORT}
+      - APP_REDIS_PASSWORD=${APP_REDIS_PASSWORD}
     depends_on:
       redis:
         condition: service_healthy
