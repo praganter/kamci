@@ -59,6 +59,15 @@ spec:
                 secretKeyRef:
                   name: app-secrets
                   key: ADMIN_SECRET_KEY
+            - name: APP_REDIS_HOST
+              value: redis
+            - name: APP_REDIS_PORT
+              value: "6379"
+            - name: APP_REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: REDIS_PASSWORD
 ---
 apiVersion: v1
 kind: Service

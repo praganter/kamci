@@ -23,11 +23,11 @@ spec:
           env:
             - name: CONFIG_SERVER_URL
               value: http://config-server:8888
-            - name: REDIS_HOST
+            - name: APP_REDIS_HOST
               value: redis
-            - name: REDIS_PORT
+            - name: APP_REDIS_PORT
               value: "6379"
-            - name: REDIS_PASSWORD
+            - name: APP_REDIS_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: app-secrets
