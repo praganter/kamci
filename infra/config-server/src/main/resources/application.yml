@@ -14,7 +14,7 @@ spring:
         native:
           search-locations: file:/config
         git:
-          uri: http://198.51.100.10:3000/kamci/kamci-config.git
+          uri: http://203.0.113.10:3000/kamci/kamci-config.git
           default-label: master
 
 eureka:
