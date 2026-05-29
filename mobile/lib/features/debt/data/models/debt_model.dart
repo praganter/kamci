@@ -86,7 +86,7 @@ enum PaymentStatusJson {
 }
 
 @freezed
-abstract class DebtModel with _$DebtModel {
+sealed class DebtModel with _$DebtModel {
   const factory DebtModel({
     required String id,
     required String name,

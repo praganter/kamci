@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import '../../../../core/storage/secure_storage_service.dart';
 import '../../domain/entities/category.dart';
 import '../../domain/entities/member_embedded.dart';
 import '../../domain/repositories/category_repository.dart';
@@ -9,12 +10,15 @@ import '../models/category_model.dart';
 part 'category_repository_impl.g.dart';
 
 @riverpod
-CategoryRepository categoryRepository(Ref ref) =>
-    CategoryRepositoryImpl(ref.watch(categoryRemoteDatasourceProvider));
+CategoryRepository categoryRepository(Ref ref) => CategoryRepositoryImpl(
+  ref.watch(categoryRemoteDatasourceProvider),
+  ref.watch(secureStorageServiceProvider),
+);
 
 class CategoryRepositoryImpl implements CategoryRepository {
-  const CategoryRepositoryImpl(this._datasource);
+  const CategoryRepositoryImpl(this._datasource, this._storage);
   final CategoryRemoteDatasource _datasource;
+  final SecureStorageService _storage;
 
   @override
   Future<List<Category>> getAll() async {
@@ -25,7 +29,16 @@ class CategoryRepositoryImpl implements CategoryRepository {
   @override
   Future<Category> create(String name) async {
     final model = await _datasource.create(name);
-    return model.toDomain();
+    final ownerId = await _storage.getUserId() ?? '';
+    final domain = model.toDomain();
+    return Category(
+      id: domain.id,
+      ownerId: ownerId,
+      name: domain.name,
+      members: domain.members,
+      createdAt: domain.createdAt,
+      updatedAt: domain.updatedAt,
+    );
   }
 
   @override

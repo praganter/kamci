@@ -17,6 +17,7 @@ abstract final class RouteNames {
   static const String changePassword = 'change-password';
   static const String income = 'income';
   static const String charts = 'charts';
+  static const String premium = 'premium';
 }
 
 abstract final class RoutePaths {
@@ -38,4 +39,5 @@ abstract final class RoutePaths {
   static const String changePassword = '/change-password';
   static const String income = '/income';
   static const String charts = '/charts';
+  static const String premium = '/premium';
 }

@@ -11,7 +11,9 @@ class AppShell extends ConsumerWidget {
 
   int _selectedIndex(BuildContext context, WidgetRef ref) {
     final location = GoRouterState.of(context).matchedLocation;
+    if (location.startsWith(RoutePaths.categories)) return 1;
     if (location.startsWith(RoutePaths.charts)) return 2;
+    if (location.startsWith(RoutePaths.settings)) return 3;
     return ref.watch(debtTabProvider);
   }
 
@@ -21,8 +23,7 @@ class AppShell extends ConsumerWidget {
         ref.read(debtTabProvider.notifier).state = 0;
         context.goNamed(RouteNames.debts);
       case 1:
-        ref.read(debtTabProvider.notifier).state = 1;
-        context.goNamed(RouteNames.debts);
+        context.goNamed(RouteNames.categories);
       case 2:
         context.goNamed(RouteNames.charts);
       case 3:
@@ -37,8 +38,12 @@ class AppShell extends ConsumerWidget {
     final selectedIndex = _selectedIndex(context, ref);
 
     final items = [
-      (Icons.account_balance_wallet_outlined, Icons.account_balance_wallet_rounded, l10n.myDebts),
-      (Icons.people_outline, Icons.people_rounded, l10n.sharedDebts),
+      (
+        Icons.account_balance_wallet_outlined,
+        Icons.account_balance_wallet_rounded,
+        l10n.debts,
+      ),
+      (Icons.folder_outlined, Icons.folder_rounded, l10n.categories),
       (Icons.bar_chart_outlined, Icons.bar_chart_rounded, l10n.charts),
       (Icons.settings_outlined, Icons.settings_rounded, l10n.settings),
     ];
@@ -94,27 +99,45 @@ class AppShell extends ConsumerWidget {
                                   ]
                                 : [],
                           ),
-                          child: Icon(
-                            isSelected ? selectedIcon : icon,
-                            size: 22,
-                            color: isSelected
-                                ? cs.onPrimaryContainer
-                                : cs.onSurfaceVariant,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                isSelected ? selectedIcon : icon,
+                                size: 22,
+                                color: isSelected
+                                    ? cs.onPrimaryContainer
+                                    : cs.onSurfaceVariant,
+                              ),
+                              if (isSelected) ...[
+                                const SizedBox(height: 3),
+                                Text(
+                                  label,
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w600,
+                                    color: cs.onPrimaryContainer,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 3),
-                        Text(
-                          label,
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: isSelected
-                                ? FontWeight.w600
-                                : FontWeight.w400,
-                            color: isSelected ? cs.primary : cs.onSurfaceVariant,
+                        if (!isSelected) ...[
+                          const SizedBox(height: 3),
+                          Text(
+                            label,
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w400,
+                              color: cs.onSurfaceVariant,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                        ],
                       ],
                     ),
                   ),

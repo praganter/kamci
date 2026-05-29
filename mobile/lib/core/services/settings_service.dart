@@ -9,6 +9,7 @@ class SettingsService {
   static const _keyTheme = 'theme_mode';
   static const _keyLocale = 'locale';
   static const _keyDebtStatusFilter = 'debt_status_filter';
+  static const _keyBaseCurrency = 'base_currency';
 
   ThemeMode get themeMode {
     return switch (_prefs.getString(_keyTheme)) {
@@ -51,4 +52,9 @@ class SettingsService {
         DebtStatusFilter.completed => 'completed',
         DebtStatusFilter.all => 'all',
       });
+
+  String get baseCurrency => _prefs.getString(_keyBaseCurrency) ?? 'TRY';
+
+  Future<void> setBaseCurrency(String code) =>
+      _prefs.setString(_keyBaseCurrency, code);
 }

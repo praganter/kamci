@@ -9,6 +9,8 @@ import '../../../../core/router/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../auth/domain/entities/user_detail.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../debt/data/models/currency_model.dart';
+import '../../../debt/presentation/providers/debt_providers.dart';
 import '../../../subscription/presentation/widgets/premium_card.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -41,6 +43,11 @@ class SettingsScreen extends ConsumerWidget {
                 _SegmentCard(label: l10n.theme, child: _ThemeSegmented()),
                 const SizedBox(height: 10),
                 _SegmentCard(label: l10n.language, child: _LocaleSegmented()),
+                const SizedBox(height: 10),
+                _SegmentCard(
+                  label: l10n.baseCurrency,
+                  child: _BaseCurrencyPicker(),
+                ),
                 const SizedBox(height: 20),
 
                 // ── Hesap ──────────────────────────────────────────────────
@@ -356,6 +363,120 @@ class _ThemeSegmented extends ConsumerWidget {
         ButtonSegment(value: ThemeMode.light, label: Text(l10n.themeLight)),
         ButtonSegment(value: ThemeMode.dark, label: Text(l10n.themeDark)),
       ],
+    );
+  }
+}
+
+// ── Base currency picker ──────────────────────────────────────────────────────
+
+class _BaseCurrencyPicker extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final current = ref.watch(baseCurrencyProvider);
+    final currenciesAsync = ref.watch(currencyListProvider);
+    final cs = Theme.of(context).colorScheme;
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
+      onTap: () async {
+        final currencies = currenciesAsync.valueOrNull ?? [];
+        final selected = await showModalBottomSheet<String>(
+          context: context,
+          builder: (_) =>
+              _CurrencySheet(currencies: currencies, current: current),
+        );
+        if (selected != null) {
+          ref.read(baseCurrencyProvider.notifier).set(selected);
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: cs.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              _label(current, currenciesAsync.valueOrNull),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            Icon(Icons.arrow_drop_down_rounded, color: cs.onSurfaceVariant),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _label(String code, List<CurrencyModel>? list) {
+    final c = list?.where((x) => x.code == code).firstOrNull;
+    return c != null ? '${c.symbol} $code' : code;
+  }
+}
+
+class _CurrencySheet extends StatelessWidget {
+  const _CurrencySheet({required this.currencies, required this.current});
+
+  final List<CurrencyModel> currencies;
+  final String current;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
+    return SafeArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(height: 12),
+          Container(
+            width: 36,
+            height: 4,
+            decoration: BoxDecoration(
+              color: cs.outlineVariant,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: Text(
+              context.l10n.baseCurrency,
+              style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+            ),
+          ),
+          Flexible(
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: currencies.length,
+              itemBuilder: (_, i) {
+                final c = currencies[i];
+                final selected = c.code == current;
+                return ListTile(
+                  leading: SizedBox(
+                    width: 32,
+                    child: Text(
+                      c.symbol,
+                      style: tt.titleMedium,
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  title: Text(c.code, style: tt.bodyMedium),
+                  trailing: selected
+                      ? Icon(Icons.check_circle_rounded, color: cs.primary)
+                      : null,
+                  selected: selected,
+                  onTap: () => Navigator.of(context).pop(c.code),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 8),
+        ],
+      ),
     );
   }
 }

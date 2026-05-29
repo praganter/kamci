@@ -35,10 +35,12 @@ class SubscriptionNotifier extends _$SubscriptionNotifier {
           .read(subscriptionRepositoryProvider)
           .verifyReceipt(request);
       if (sub.accessToken != null && sub.refreshToken != null) {
-        await ref.read(secureStorageServiceProvider).saveTokens(
-          accessToken: sub.accessToken!,
-          refreshToken: sub.refreshToken!,
-        );
+        await ref
+            .read(secureStorageServiceProvider)
+            .saveTokens(
+              accessToken: sub.accessToken!,
+              refreshToken: sub.refreshToken!,
+            );
       }
       ref.invalidate(userDetailProvider);
       ref.invalidate(subscriptionStatusProvider);

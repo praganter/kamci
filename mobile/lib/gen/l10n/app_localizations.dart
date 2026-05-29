@@ -533,7 +533,7 @@ abstract class AppLocalizations {
   /// No description provided for @joinedCategories.
   ///
   /// In tr, this message translates to:
-  /// **'Üye Olduklarım'**
+  /// **'Paylaşılanlar'**
   String get joinedCategories;
 
   /// No description provided for @noCategoriesYet.
@@ -545,7 +545,7 @@ abstract class AppLocalizations {
   /// No description provided for @noJoinedCategories.
   ///
   /// In tr, this message translates to:
-  /// **'Üye olduğun kategori yok'**
+  /// **'Paylaşılan kategori yok'**
   String get noJoinedCategories;
 
   /// No description provided for @addCategoryHint.
@@ -1016,6 +1016,48 @@ abstract class AppLocalizations {
   /// **'Otomatik yenilenir. İstediğinizde iptal edin.'**
   String get autoRenewInfo;
 
+  /// No description provided for @restorePurchases.
+  ///
+  /// In tr, this message translates to:
+  /// **'Satın Alımları Geri Yükle'**
+  String get restorePurchases;
+
+  /// No description provided for @featureUnlimitedDebts.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sınırsız borç'**
+  String get featureUnlimitedDebts;
+
+  /// No description provided for @featureUnlimitedCategories.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sınırsız kategori'**
+  String get featureUnlimitedCategories;
+
+  /// No description provided for @featureReminders.
+  ///
+  /// In tr, this message translates to:
+  /// **'Borç hatırlatıcıları ve bildirimler'**
+  String get featureReminders;
+
+  /// No description provided for @featureCategorySharing.
+  ///
+  /// In tr, this message translates to:
+  /// **'Arkadaşlarla kategori paylaşımı'**
+  String get featureCategorySharing;
+
+  /// No description provided for @perMonth.
+  ///
+  /// In tr, this message translates to:
+  /// **'/ ay'**
+  String get perMonth;
+
+  /// No description provided for @perYear.
+  ///
+  /// In tr, this message translates to:
+  /// **'/ yıl'**
+  String get perYear;
+
   /// No description provided for @sharedPremiumDesc.
   ///
   /// In tr, this message translates to:
@@ -1183,6 +1225,258 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Grafikler'**
   String get charts;
+
+  /// No description provided for @manageMembers.
+  ///
+  /// In tr, this message translates to:
+  /// **'Üyeleri Yönet'**
+  String get manageMembers;
+
+  /// No description provided for @leaveCategory.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu Kategoriden Ayrıl'**
+  String get leaveCategory;
+
+  /// No description provided for @leaveCategoryConfirm.
+  ///
+  /// In tr, this message translates to:
+  /// **'\"{name}\" kategorisinden ayrılmak istediğinize emin misiniz?'**
+  String leaveCategoryConfirm(String name);
+
+  /// No description provided for @bulkShare.
+  ///
+  /// In tr, this message translates to:
+  /// **'Toplu Paylaş'**
+  String get bulkShare;
+
+  /// No description provided for @shareCategory.
+  ///
+  /// In tr, this message translates to:
+  /// **'Paylaş'**
+  String get shareCategory;
+
+  /// No description provided for @shareAllSelected.
+  ///
+  /// In tr, this message translates to:
+  /// **'Seçilenleri Paylaş ({count})'**
+  String shareAllSelected(int count);
+
+  /// No description provided for @selectCategoriesToShare.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kategorileri Seç'**
+  String get selectCategoriesToShare;
+
+  /// No description provided for @addToCategories.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} kategoriye ekle'**
+  String addToCategories(int count);
+
+  /// No description provided for @shareAccessLevel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Erişim Seviyesi'**
+  String get shareAccessLevel;
+
+  /// No description provided for @selectAccessLevel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Erişim seviyesi seçin'**
+  String get selectAccessLevel;
+
+  /// No description provided for @categoriesSelected.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} kategori seçildi'**
+  String categoriesSelected(int count);
+
+  /// No description provided for @clearSelection.
+  ///
+  /// In tr, this message translates to:
+  /// **'Seçimi Temizle'**
+  String get clearSelection;
+
+  /// No description provided for @memberAddedSuccess.
+  ///
+  /// In tr, this message translates to:
+  /// **'{email} üye olarak eklendi.'**
+  String memberAddedSuccess(String email);
+
+  /// No description provided for @memberRemovedSuccess.
+  ///
+  /// In tr, this message translates to:
+  /// **'Üye kaldırıldı.'**
+  String get memberRemovedSuccess;
+
+  /// No description provided for @bulkShareSuccess.
+  ///
+  /// In tr, this message translates to:
+  /// **'{email} {count} kategoriye eklendi.'**
+  String bulkShareSuccess(String email, int count);
+
+  /// No description provided for @memberLeftCategory.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kategoriden ayrıldınız.'**
+  String get memberLeftCategory;
+
+  /// No description provided for @changeAccessLevel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Erişim Seviyesini Değiştir'**
+  String get changeAccessLevel;
+
+  /// No description provided for @membersList.
+  ///
+  /// In tr, this message translates to:
+  /// **'Üyeler Listesi'**
+  String get membersList;
+
+  /// No description provided for @accessRead.
+  ///
+  /// In tr, this message translates to:
+  /// **'Okuma'**
+  String get accessRead;
+
+  /// No description provided for @accessReadDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sadece görüntüleyebilir'**
+  String get accessReadDesc;
+
+  /// No description provided for @accessWrite.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yazma'**
+  String get accessWrite;
+
+  /// No description provided for @accessWriteDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Görüntüleyebilir ve ödeme yapabilir'**
+  String get accessWriteDesc;
+
+  /// No description provided for @accessEdit.
+  ///
+  /// In tr, this message translates to:
+  /// **'Düzenleme'**
+  String get accessEdit;
+
+  /// No description provided for @accessEditDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Görüntüleyebilir, ödeme yapabilir ve düzenleyebilir'**
+  String get accessEditDesc;
+
+  /// No description provided for @accessDelete.
+  ///
+  /// In tr, this message translates to:
+  /// **'Admin'**
+  String get accessDelete;
+
+  /// No description provided for @accessDeleteDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tam yetki: görüntüleme, ödeme, düzenleme ve silme'**
+  String get accessDeleteDesc;
+
+  /// No description provided for @noPermission.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu operasyon için yetkiniz yok.'**
+  String get noPermission;
+
+  /// No description provided for @errorWithMessage.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hata: {message}'**
+  String errorWithMessage(String message);
+
+  /// No description provided for @personCount.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} kişi'**
+  String personCount(int count);
+
+  /// No description provided for @baseCurrency.
+  ///
+  /// In tr, this message translates to:
+  /// **'Baz Para Birimi'**
+  String get baseCurrency;
+
+  /// No description provided for @monthlySummary.
+  ///
+  /// In tr, this message translates to:
+  /// **'Aylık Özet'**
+  String get monthlySummary;
+
+  /// No description provided for @totalPaidAmount.
+  ///
+  /// In tr, this message translates to:
+  /// **'Toplam Ödendi'**
+  String get totalPaidAmount;
+
+  /// No description provided for @trendLast6Months.
+  ///
+  /// In tr, this message translates to:
+  /// **'Son 6 Ay Trendi'**
+  String get trendLast6Months;
+
+  /// No description provided for @categoryBreakdown.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kategori Dağılımı'**
+  String get categoryBreakdown;
+
+  /// No description provided for @debtProgressTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Borç İlerlemesi'**
+  String get debtProgressTitle;
+
+  /// No description provided for @noDataForMonth.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu ay için veri yok'**
+  String get noDataForMonth;
+
+  /// No description provided for @debtToIncomeRatioLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Borç/Gelir Oranı'**
+  String get debtToIncomeRatioLabel;
+
+  /// No description provided for @pendingLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bekleyen'**
+  String get pendingLabel;
+
+  /// No description provided for @skippedLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Atlanan'**
+  String get skippedLabel;
+
+  /// No description provided for @noIncomeSet.
+  ///
+  /// In tr, this message translates to:
+  /// **'Gelir tanımlanmamış'**
+  String get noIncomeSet;
+
+  /// No description provided for @installmentsLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'{paid} / {total} taksit'**
+  String installmentsLabel(int paid, int total);
+
+  /// No description provided for @openEndedInstallments.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} taksit (açık uçlu)'**
+  String openEndedInstallments(int count);
 }
 
 class _AppLocalizationsDelegate

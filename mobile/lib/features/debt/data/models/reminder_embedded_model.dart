@@ -6,7 +6,7 @@ part 'reminder_embedded_model.freezed.dart';
 part 'reminder_embedded_model.g.dart';
 
 @freezed
-abstract class ReminderEmbeddedModel with _$ReminderEmbeddedModel {
+sealed class ReminderEmbeddedModel with _$ReminderEmbeddedModel {
   const factory ReminderEmbeddedModel({
     @Default(false) bool enabled,
     @Default([]) List<String> channels,

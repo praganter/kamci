@@ -4,7 +4,7 @@ part 'verify_receipt_request.freezed.dart';
 part 'verify_receipt_request.g.dart';
 
 @freezed
-abstract class VerifyReceiptRequest with _$VerifyReceiptRequest {
+sealed class VerifyReceiptRequest with _$VerifyReceiptRequest {
   const factory VerifyReceiptRequest({
     required String receipt,
     required String platform,

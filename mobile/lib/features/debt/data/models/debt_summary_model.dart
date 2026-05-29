@@ -6,7 +6,7 @@ part 'debt_summary_model.freezed.dart';
 part 'debt_summary_model.g.dart';
 
 @freezed
-abstract class DebtSummaryModel with _$DebtSummaryModel {
+sealed class DebtSummaryModel with _$DebtSummaryModel {
   const factory DebtSummaryModel({
     required String id,
     required String name,

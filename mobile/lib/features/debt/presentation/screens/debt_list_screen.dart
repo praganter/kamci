@@ -4,30 +4,116 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/l10n/enum_l10n.dart';
-import '../../../../core/providers/app_settings_provider.dart';
 import '../../../../core/router/route_names.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/permission_utils.dart';
 import '../../../../core/utils/date_formatter.dart';
+import '../../../category/presentation/providers/category_providers.dart';
+import '../../../category/domain/entities/member_embedded.dart';
 import '../../../../shared/widgets/app_error_widget.dart';
 import '../../../../shared/widgets/confirm_dialog.dart';
 import '../../../../shared/widgets/premium_required_sheet.dart';
 import '../../../../shared/widgets/pro_badge.dart';
 import '../../../category/domain/entities/category.dart';
-import '../../../category/presentation/providers/category_providers.dart';
 import '../../../category/presentation/widgets/add_category_sheet.dart';
 import '../../../subscription/presentation/providers/subscription_providers.dart';
 import '../../../subscription/presentation/widgets/premium_card.dart';
+import '../../../../core/providers/app_settings_provider.dart';
 import '../../domain/entities/debt.dart';
 import '../providers/debt_providers.dart';
 
-class DebtListScreen extends ConsumerWidget {
+class DebtListScreen extends ConsumerStatefulWidget {
   const DebtListScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final tabIndex = ref.watch(debtTabProvider);
-    final owned = tabIndex == 0;
-    return _DebtTabView(owned: owned);
+  ConsumerState<DebtListScreen> createState() => _DebtListScreenState();
+}
+
+class _DebtListScreenState extends ConsumerState<DebtListScreen>
+    with SingleTickerProviderStateMixin {
+  late final TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(() => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final l10n = context.l10n;
+    final isOwnedTab = _tabController.index == 0;
+    final isPremium = ref.watch(isPremiumProvider);
+
+    return Scaffold(
+      appBar: AppBar(
+        toolbarHeight: 0,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(56),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+            child: Container(
+              height: 40,
+              decoration: BoxDecoration(
+                color: cs.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: TabBar(
+                controller: _tabController,
+                indicatorSize: TabBarIndicatorSize.tab,
+                indicator: BoxDecoration(
+                  color: cs.primaryContainer,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                dividerColor: Colors.transparent,
+                labelColor: cs.primary,
+                unselectedLabelColor: cs.onSurfaceVariant,
+                labelStyle: const TextStyle(fontWeight: FontWeight.w600),
+                overlayColor: WidgetStateProperty.all(Colors.transparent),
+                tabs: [
+                  Tab(text: l10n.myDebts),
+                  Tab(text: l10n.sharedDebts),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+      body: TabBarView(
+        controller: _tabController,
+        children: const [_DebtTabView(owned: true), _DebtTabView(owned: false)],
+      ),
+      floatingActionButton: isOwnedTab
+          ? FloatingActionButton(
+              onPressed: () async {
+                if (!isPremium) {
+                  final debts = ref.read(debtListProvider).valueOrNull ?? [];
+                  if (debts.length >= 5) {
+                    PremiumRequiredSheet.show(
+                      context,
+                      featureName: l10n.debts.toLowerCase(),
+                      limitCount: 5,
+                    );
+                    return;
+                  }
+                }
+                ref.invalidate(categoryListProvider);
+                ref.invalidate(currencyListProvider);
+                ref.read(currencyListProvider.future).ignore();
+                await context.pushNamed(RouteNames.debtNew);
+                ref.invalidate(debtGroupedProvider(true));
+              },
+              child: const Icon(Icons.add),
+            )
+          : null,
+    );
   }
 }
 
@@ -38,77 +124,32 @@ class _DebtTabView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final groupedAsync = ref.watch(groupedDebtInstancesProvider);
+    final groupedAsync = ref.watch(groupedDebtInstancesByOwnerProvider(owned));
     final isPremium = ref.watch(isPremiumProvider);
     final selectedMonth = ref.watch(selectedMonthProvider);
     final cs = Theme.of(context).colorScheme;
 
-    if (!owned && !isPremium) {
-      return Scaffold(
-        body: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(
-                  Icons.people_outline,
-                  size: 64,
-                  color: AppColors.statusActive,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  context.l10n.noSharedDebts,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  context.l10n.sharedPremiumDesc,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 32),
-                const PremiumCard(),
-              ],
-            ),
-          ),
-        ),
-      );
-    }
-
-    return Scaffold(
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            // ── Month Selector ───────────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.fromLTRB(4, 12, 4, 8),
+    return SafeArea(
+      bottom: false,
+      child: Column(
+        children: [
+          // ── Month Selector ───────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+            child: Container(
+              decoration: BoxDecoration(
+                color: cs.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(20),
+              ),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Material(
-                    color: Theme.of(context).colorScheme.surfaceContainerHigh,
-                    elevation: 4,
-                    shadowColor: Colors.black38,
-                    shape: const CircleBorder(),
-                    child: IconButton(
-                      onPressed: () =>
-                          ref.read(selectedMonthProvider.notifier).previous(),
-                      icon: const Icon(Icons.chevron_left),
-                    ),
+                  IconButton(
+                    onPressed: () =>
+                        ref.read(selectedMonthProvider.notifier).previous(),
+                    icon: Icon(Icons.chevron_left, color: cs.onSurfaceVariant),
                   ),
-                  Material(
-                    color: Theme.of(context).colorScheme.surfaceContainerHigh,
-                    elevation: 4,
-                    shadowColor: Colors.black38,
-                    borderRadius: BorderRadius.circular(40),
-                    child: GestureDetector(
+                  Expanded(
+                    child: InkWell(
                       onTap: () async {
                         final picked = await showDialog<DateTime>(
                           context: context,
@@ -121,153 +162,153 @@ class _DebtTabView extends ConsumerWidget {
                               .setMonth(picked);
                         }
                       },
+                      borderRadius: BorderRadius.circular(12),
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 10,
-                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
                         child: Row(
-                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
                               DateFormat(
                                 'MMMM yyyy',
                                 Localizations.localeOf(context).languageCode,
                               ).format(selectedMonth),
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleSmall
+                              style: Theme.of(context).textTheme.titleSmall
                                   ?.copyWith(fontWeight: FontWeight.bold),
                             ),
                             const SizedBox(width: 4),
-                            const Icon(Icons.arrow_drop_down, size: 18),
+                            Icon(
+                              Icons.keyboard_arrow_down_rounded,
+                              size: 18,
+                              color: cs.onSurfaceVariant,
+                            ),
                           ],
                         ),
                       ),
                     ),
                   ),
-                  Material(
-                    color: Theme.of(context).colorScheme.surfaceContainerHigh,
-                    elevation: 4,
-                    shadowColor: Colors.black38,
-                    shape: const CircleBorder(),
-                    child: IconButton(
-                      onPressed: () =>
-                          ref.read(selectedMonthProvider.notifier).next(),
-                      icon: const Icon(Icons.chevron_right),
-                    ),
+                  IconButton(
+                    onPressed: () =>
+                        ref.read(selectedMonthProvider.notifier).next(),
+                    icon: Icon(Icons.chevron_right, color: cs.onSurfaceVariant),
                   ),
                 ],
               ),
             ),
+          ),
 
-            Expanded(
-              child: groupedAsync.when(
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (e, _) => AppErrorWidget(
-                  message: e.toString(),
-                  onRetry: () {
-                    ref.invalidate(debtGroupedProvider(true));
-                    ref.invalidate(debtGroupedProvider(false));
-                  },
-                ),
-                data: (groupedByPeriod) {
-                  final List<Widget> slivers = [];
-
-                  bool hasAny = false;
-                  for (final period in PaymentPeriodType.values) {
-                    final categories = groupedByPeriod[period]!;
-                    final filteredCategories = categories.entries
-                        .where((e) => e.value.owned == owned)
-                        .toList();
-
-                    if (filteredCategories.isEmpty) continue;
-                    hasAny = true;
-
-                    slivers.add(
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                        child: Text(
-                          period.l10nLabel(context.l10n).toUpperCase(),
-                          style: Theme.of(context).textTheme.labelLarge
-                              ?.copyWith(
-                                color: cs.primary,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 1.2,
-                              ),
-                        ),
+          Expanded(
+            child: (!owned && !isPremium)
+                ? Center(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.people_outline,
+                            size: 64,
+                            color: cs.primary,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            context.l10n.noSharedDebts,
+                            style: Theme.of(context).textTheme.titleLarge
+                                ?.copyWith(fontWeight: FontWeight.bold),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            context.l10n.sharedPremiumDesc,
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(color: cs.onSurfaceVariant),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 32),
+                          const PremiumCard(),
+                        ],
                       ),
-                    );
-
-                    for (final entry in filteredCategories) {
-                      slivers.add(
-                        _CategoryPeriodSection(
-                          categoryId: entry.key,
-                          categoryName: entry.value.categoryName,
-                          owned: entry.value.owned,
-                          items: entry.value.items,
-                        ),
-                      );
-                    }
-                  }
-
-                  if (!hasAny) {
-                    return RefreshIndicator(
-                      onRefresh: () async {
+                    ),
+                  )
+                : groupedAsync.when(
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
+                    error: (e, _) => AppErrorWidget(
+                      message: e.toString(),
+                      onRetry: () {
                         ref.invalidate(debtGroupedProvider(true));
                         ref.invalidate(debtGroupedProvider(false));
                       },
-                      child: SingleChildScrollView(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        child: SizedBox(
-                          height: MediaQuery.of(context).size.height * 0.6,
-                          child: _EmptyState(owned: owned),
-                        ),
-                      ),
-                    );
-                  }
-
-                  return RefreshIndicator(
-                    onRefresh: () async {
-                      ref.invalidate(debtGroupedProvider(true));
-                      ref.invalidate(debtGroupedProvider(false));
-                    },
-                    child: ListView(
-                      padding: const EdgeInsets.only(bottom: 88),
-                      children: slivers,
                     ),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: owned
-          ? FloatingActionButton(
-              onPressed: () async {
-                final isPremium = ref.read(isPremiumProvider);
-                if (!isPremium) {
-                  final debts = ref.read(debtListProvider).valueOrNull ?? [];
-                  if (debts.length >= 5) {
-                    PremiumRequiredSheet.show(
-                      context,
-                      featureName: context.l10n.debts.toLowerCase(),
-                      limitCount: 5,
-                    );
-                    return;
-                  }
-                }
+                    data: (groupedByPeriod) {
+                      final List<Widget> slivers = [];
 
-                ref.invalidate(categoryListProvider);
-                ref.invalidate(currencyListProvider);
-                ref.read(currencyListProvider.future).ignore();
-                await context.pushNamed(RouteNames.debtNew);
-                ref.invalidate(debtGroupedProvider(true));
-              },
-              child: const Icon(Icons.add),
-            )
-          : null,
+                      bool hasAny = false;
+                      for (final period in PaymentPeriodType.values) {
+                        final categories = groupedByPeriod[period]!;
+                        final entries = categories.entries.toList();
+
+                        if (entries.isEmpty) continue;
+                        hasAny = true;
+
+                        slivers.add(
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                            child: Text(
+                              period.l10nLabel(context.l10n).toUpperCase(),
+                              style: Theme.of(context).textTheme.labelLarge
+                                  ?.copyWith(
+                                    color: cs.primary,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 1.2,
+                                  ),
+                            ),
+                          ),
+                        );
+
+                        for (final entry in entries) {
+                          slivers.add(
+                            _CategoryPeriodSection(
+                              categoryId: entry.key,
+                              categoryName: entry.value.categoryName,
+                              owned: entry.value.owned,
+                              items: entry.value.items,
+                            ),
+                          );
+                        }
+                      }
+
+                      if (!hasAny) {
+                        return RefreshIndicator(
+                          onRefresh: () async {
+                            ref.invalidate(debtGroupedProvider(true));
+                            ref.invalidate(debtGroupedProvider(false));
+                          },
+                          child: SingleChildScrollView(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            child: SizedBox(
+                              height: MediaQuery.of(context).size.height * 0.6,
+                              child: _EmptyState(owned: owned),
+                            ),
+                          ),
+                        );
+                      }
+
+                      return RefreshIndicator(
+                        onRefresh: () async {
+                          ref.invalidate(debtGroupedProvider(true));
+                          ref.invalidate(debtGroupedProvider(false));
+                        },
+                        child: ListView(
+                          padding: const EdgeInsets.only(bottom: 88),
+                          children: slivers,
+                        ),
+                      );
+                    },
+                  ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -295,6 +336,9 @@ class _CategoryPeriodSection extends ConsumerWidget {
       orElse: () => <String, String>{},
     );
 
+    final baseCurrency = ref.watch(baseCurrencyProvider);
+    final ratesAsync = ref.watch(exchangeRatesProvider);
+
     final Map<String, double> totals = {};
     for (final item in items) {
       final code = item.debt.currency;
@@ -317,97 +361,131 @@ class _CategoryPeriodSection extends ConsumerWidget {
         })
         .join('  •  ');
 
+    String? convertedTotal;
+    final rates = ratesAsync.valueOrNull;
+    if (rates != null && totals.length > 1) {
+      double total = 0;
+      bool canConvert = true;
+      for (final e in totals.entries) {
+        if (e.key == baseCurrency) {
+          total += e.value;
+        } else {
+          final rate = rates[e.key];
+          if (rate != null && rate > 0) {
+            total += e.value / rate;
+          } else {
+            canConvert = false;
+            break;
+          }
+        }
+      }
+      if (canConvert) {
+        final baseSymbol = currencySymbols[baseCurrency] ?? baseCurrency;
+        final fmt = NumberFormat.currency(
+          locale: 'tr_TR',
+          symbol: baseSymbol,
+          decimalDigits: 0,
+        );
+        convertedTotal = '≈ ${fmt.format(total)}';
+      }
+    }
+
     final paidCount = items.where((i) => i.debt.paidCurrentPeriod).length;
     final totalCount = items.length;
     final completionRatio = totalCount > 0 ? paidCount / totalCount : 0.0;
 
     return GestureDetector(
-      onLongPressStart: owned
-          ? (details) =>
-              _showCategoryMenu(context, ref, details.globalPosition)
-          : null,
+      onLongPressStart: (details) =>
+          _showCategoryMenu(context, ref, details.globalPosition),
       child: Container(
-      margin: const EdgeInsets.fromLTRB(16, 4, 16, 4),
-      decoration: BoxDecoration(
-        color: cs.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: cs.primary.withValues(alpha: 0.5),
-          width: 1.5,
-        ),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(15),
-        child: ExpansionTile(
-          tilePadding: const EdgeInsets.fromLTRB(12, 4, 12, 4),
-          backgroundColor: cs.primary.withValues(alpha: 0.04),
-          title: Text(
-            categoryName,
-            style: Theme.of(
-              context,
-            ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+        margin: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+        decoration: BoxDecoration(
+          color: cs.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: cs.primary.withValues(alpha: 0.5),
+            width: 1.5,
           ),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(15),
+          child: ExpansionTile(
+            tilePadding: const EdgeInsets.fromLTRB(12, 4, 12, 4),
+            backgroundColor: cs.primary.withValues(alpha: 0.04),
+            title: Text(
+              categoryName,
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+            ),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  amountSummary,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: cs.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                if (convertedTotal != null)
+                  Text(
+                    convertedTotal,
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: cs.onSurfaceVariant,
+                    ),
+                  ),
+                const SizedBox(height: 4),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(2),
+                  child: LinearProgressIndicator(
+                    value: completionRatio,
+                    minHeight: 3,
+                    backgroundColor: cs.surfaceContainerHighest,
+                    valueColor: AlwaysStoppedAnimation(cs.primary),
+                  ),
+                ),
+              ],
+            ),
+            trailing: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+              decoration: BoxDecoration(
+                color: cs.primaryContainer,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                '$totalCount',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: cs.onPrimaryContainer,
+                ),
+              ),
+            ),
             children: [
-              Text(
-                amountSummary,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: cs.primary,
-                  fontWeight: FontWeight.w600,
-                ),
+              Divider(
+                height: 1,
+                thickness: 1,
+                color: cs.primary.withValues(alpha: 0.2),
               ),
-              const SizedBox(height: 4),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(2),
-                child: LinearProgressIndicator(
-                  value: completionRatio,
-                  minHeight: 3,
-                  backgroundColor: cs.surfaceContainerHighest,
-                  valueColor: AlwaysStoppedAnimation(cs.primary),
+              for (int i = 0; i < items.length; i++) ...[
+                _DebtInstanceTile(
+                  item: items[i],
+                  isLast: i == items.length - 1,
                 ),
-              ),
+                if (i < items.length - 1)
+                  Divider(
+                    height: 1,
+                    thickness: 0.5,
+                    indent: 52,
+                    endIndent: 16,
+                    color: cs.outlineVariant.withValues(alpha: 0.5),
+                  ),
+              ],
             ],
           ),
-          trailing: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
-            decoration: BoxDecoration(
-              color: cs.primaryContainer,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              '$totalCount',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                color: cs.onPrimaryContainer,
-              ),
-            ),
-          ),
-          children: [
-            Divider(
-              height: 1,
-              thickness: 1,
-              color: cs.primary.withValues(alpha: 0.2),
-            ),
-            for (int i = 0; i < items.length; i++) ...[
-              _DebtInstanceTile(
-                item: items[i],
-                isLast: i == items.length - 1,
-              ),
-              if (i < items.length - 1)
-                Divider(
-                  height: 1,
-                  thickness: 0.5,
-                  indent: 52,
-                  endIndent: 16,
-                  color: cs.outlineVariant.withValues(alpha: 0.5),
-                ),
-            ],
-          ],
         ),
       ),
-    ),
     );
   }
 
@@ -462,8 +540,20 @@ class _CategoryPeriodSection extends ConsumerWidget {
       ],
     );
     if (result == null || !context.mounted) return;
+
+    final accessLevels = ref.read(categoryAccessLevelsProvider).valueOrNull;
+    final level = accessLevels?[categoryId];
+
     switch (result) {
       case 'edit':
+        final hasEdit = PermissionUtils.check(
+          context,
+          isOwner: owned,
+          level: level,
+          action: (l) => l.canEdit,
+        );
+        if (!hasEdit) return;
+
         showModalBottomSheet(
           context: context,
           isScrollControlled: true,
@@ -471,12 +561,30 @@ class _CategoryPeriodSection extends ConsumerWidget {
           shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
           ),
-          builder: (_) =>
-              AddCategorySheet(categoryId: categoryId, initialName: categoryName),
+          builder: (_) => AddCategorySheet(
+            categoryId: categoryId,
+            initialName: categoryName,
+          ),
         );
       case 'transfer':
+        final hasDelete = PermissionUtils.check(
+          context,
+          isOwner: owned,
+          level: level,
+          action: (l) => l.canDelete,
+        );
+        if (!hasDelete) return;
+
         if (context.mounted) _showTransferDialog(context, ref);
       case 'delete':
+        final hasDelete = PermissionUtils.check(
+          context,
+          isOwner: owned,
+          level: level,
+          action: (l) => l.canDelete,
+        );
+        if (!hasDelete) return;
+
         if (context.mounted) _confirmDeleteWithDebts(context, ref);
     }
   }
@@ -484,23 +592,19 @@ class _CategoryPeriodSection extends ConsumerWidget {
   Future<void> _showTransferDialog(BuildContext context, WidgetRef ref) async {
     final categoriesAsync = ref.read(categoryListProvider);
     final categories = categoriesAsync.valueOrNull ?? [];
-    final targets = categories
-        .where((c) => c.id != categoryId)
-        .toList();
+    final targets = categories.where((c) => c.id != categoryId).toList();
 
     if (targets.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.noCategoriesYet)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(context.l10n.noCategoriesYet)));
       return;
     }
 
     final targetId = await showDialog<String>(
       context: context,
-      builder: (ctx) => _TransferCategoryDialog(
-        sourceName: categoryName,
-        targets: targets,
-      ),
+      builder: (ctx) =>
+          _TransferCategoryDialog(sourceName: categoryName, targets: targets),
     );
     if (targetId == null || !context.mounted) return;
 
@@ -594,9 +698,7 @@ class _TransferCategoryDialogState extends State<_TransferCategoryDialog> {
               border: OutlineInputBorder(),
             ),
             items: widget.targets
-                .map(
-                  (c) => DropdownMenuItem(value: c.id, child: Text(c.name)),
-                )
+                .map((c) => DropdownMenuItem(value: c.id, child: Text(c.name)))
                 .toList(),
             onChanged: (v) => setState(() => _selectedId = v),
           ),
@@ -633,10 +735,29 @@ class _DebtInstanceTile extends ConsumerWidget {
       key: Key(debt.id),
       direction: DismissDirection.horizontal,
       confirmDismiss: (direction) async {
+        final accessLevels = ref.read(categoryAccessLevelsProvider).valueOrNull;
+        final level = accessLevels?[debt.categoryId];
+
         if (direction == DismissDirection.startToEnd) {
+          final hasWrite = PermissionUtils.check(
+            context,
+            isOwner: item.owned,
+            level: level,
+            action: (l) => l.canWrite,
+          );
+          if (!hasWrite) return false;
           await _showPaymentOptions(context, ref, item);
           return false;
         }
+
+        final hasDelete = PermissionUtils.check(
+          context,
+          isOwner: item.owned,
+          level: level,
+          action: (l) => l.canDelete,
+        );
+        if (!hasDelete) return false;
+
         final confirmed = await showConfirmDialog(
           context,
           title: context.l10n.deleteDebt,
@@ -651,7 +772,11 @@ class _DebtInstanceTile extends ConsumerWidget {
         color: Colors.green,
         alignment: Alignment.centerLeft,
         padding: const EdgeInsets.only(left: 20),
-        child: const Icon(Icons.payments_outlined, color: Colors.white, size: 26),
+        child: const Icon(
+          Icons.payments_outlined,
+          color: Colors.white,
+          size: 26,
+        ),
       ),
       secondaryBackground: Container(
         color: const Color(0xFFEF4444),
@@ -663,7 +788,9 @@ class _DebtInstanceTile extends ConsumerWidget {
         decoration: BoxDecoration(
           border: Border(
             left: BorderSide(
-              color: (isPaid ? Colors.green : cs.primary).withValues(alpha: 0.45),
+              color: (isPaid ? Colors.green : cs.primary).withValues(
+                alpha: 0.45,
+              ),
               width: 3,
             ),
           ),
@@ -677,7 +804,9 @@ class _DebtInstanceTile extends ConsumerWidget {
           leading: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: (isPaid ? Colors.green : cs.primary).withValues(alpha: 0.1),
+              color: (isPaid ? Colors.green : cs.primary).withValues(
+                alpha: 0.1,
+              ),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -762,9 +891,9 @@ Future<void> _showPaymentOptions(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             child: Text(
               l10n.paymentActions,
-              style: Theme.of(ctx).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(
+                ctx,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
           ),
           const Divider(height: 1),
@@ -783,9 +912,9 @@ Future<void> _showPaymentOptions(
                 }
               } catch (e) {
                 if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(e.toString())),
-                  );
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text(e.toString())));
                 }
               }
             },
@@ -810,16 +939,19 @@ Future<void> _showPaymentOptions(
                 }
               } catch (e) {
                 if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(e.toString())),
-                  );
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text(e.toString())));
                 }
               }
             },
           ),
           // ── Tam Ödeme ─────────────────────────────────────────────────
           ListTile(
-            leading: const Icon(Icons.check_circle_outline, color: Colors.green),
+            leading: const Icon(
+              Icons.check_circle_outline,
+              color: Colors.green,
+            ),
             title: Text(l10n.fullPayment),
             onTap: () async {
               Navigator.of(ctx).pop();
@@ -832,9 +964,9 @@ Future<void> _showPaymentOptions(
                 }
               } catch (e) {
                 if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(e.toString())),
-                  );
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text(e.toString())));
                 }
               }
             },
@@ -892,9 +1024,9 @@ Future<void> _showPaymentOptions(
                     }
                   } catch (e) {
                     if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(e.toString())),
-                      );
+                      ScaffoldMessenger.of(
+                        context,
+                      ).showSnackBar(SnackBar(content: Text(e.toString())));
                     }
                   }
                 },
@@ -1053,7 +1185,8 @@ class _MonthPickerDialogState extends State<_MonthPickerDialog> {
                   child: Container(
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: isCurrentSelection &&
+                      color:
+                          isCurrentSelection &&
                               _year == widget.initialMonth.year
                           ? cs.primary
                           : cs.surfaceContainerHighest,
@@ -1063,7 +1196,8 @@ class _MonthPickerDialogState extends State<_MonthPickerDialog> {
                       label,
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
-                        color: isCurrentSelection &&
+                        color:
+                            isCurrentSelection &&
                                 _year == widget.initialMonth.year
                             ? cs.onPrimary
                             : cs.onSurface,
@@ -1117,11 +1251,13 @@ class _BulkPayDialogState extends ConsumerState<_BulkPayDialog> {
       final alreadyPaid =
           index < debt.payments.length && debt.payments[index].paid;
       if (!alreadyPaid) {
-        _entries.add(_BulkEntry(
-          date: date,
-          controller: TextEditingController(text: amountStr),
-          selected: true,
-        ));
+        _entries.add(
+          _BulkEntry(
+            date: date,
+            controller: TextEditingController(text: amountStr),
+            selected: true,
+          ),
+        );
       }
       index++;
     }
@@ -1139,21 +1275,32 @@ class _BulkPayDialogState extends ConsumerState<_BulkPayDialog> {
     DateTime start,
     PaymentPeriodType period,
     int index,
-  ) =>
-      switch (period) {
-        PaymentPeriodType.oneTime => start,
-        PaymentPeriodType.daily => start.add(Duration(days: index)),
-        PaymentPeriodType.weekly => start.add(Duration(days: index * 7)),
-        PaymentPeriodType.biWeekly => start.add(Duration(days: index * 14)),
-        PaymentPeriodType.monthly =>
-          DateTime(start.year, start.month + index, start.day),
-        PaymentPeriodType.quarterly =>
-          DateTime(start.year, start.month + index * 3, start.day),
-        PaymentPeriodType.halfYearly =>
-          DateTime(start.year, start.month + index * 6, start.day),
-        PaymentPeriodType.yearly =>
-          DateTime(start.year + index, start.month, start.day),
-      };
+  ) => switch (period) {
+    PaymentPeriodType.oneTime => start,
+    PaymentPeriodType.daily => start.add(Duration(days: index)),
+    PaymentPeriodType.weekly => start.add(Duration(days: index * 7)),
+    PaymentPeriodType.biWeekly => start.add(Duration(days: index * 14)),
+    PaymentPeriodType.monthly => DateTime(
+      start.year,
+      start.month + index,
+      start.day,
+    ),
+    PaymentPeriodType.quarterly => DateTime(
+      start.year,
+      start.month + index * 3,
+      start.day,
+    ),
+    PaymentPeriodType.halfYearly => DateTime(
+      start.year,
+      start.month + index * 6,
+      start.day,
+    ),
+    PaymentPeriodType.yearly => DateTime(
+      start.year + index,
+      start.month,
+      start.day,
+    ),
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -1183,10 +1330,9 @@ class _BulkPayDialogState extends ConsumerState<_BulkPayDialog> {
               children: [
                 Text(
                   l10n.bulkPayTitle,
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium
-                      ?.copyWith(fontWeight: FontWeight.bold),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 if (_entries.isEmpty)
@@ -1215,8 +1361,9 @@ class _BulkPayDialogState extends ConsumerState<_BulkPayDialog> {
                                 Expanded(
                                   child: Text(
                                     DateFormatter.formatDate(entry.date),
-                                    style:
-                                        Theme.of(context).textTheme.bodyMedium,
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.bodyMedium,
                                   ),
                                 ),
                                 SizedBox(
@@ -1225,18 +1372,17 @@ class _BulkPayDialogState extends ConsumerState<_BulkPayDialog> {
                                     controller: entry.controller,
                                     keyboardType:
                                         const TextInputType.numberWithOptions(
-                                      decimal: true,
-                                    ),
+                                          decimal: true,
+                                        ),
                                     decoration: InputDecoration(
                                       isDense: true,
                                       contentPadding:
                                           const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 6,
-                                      ),
+                                            horizontal: 8,
+                                            vertical: 6,
+                                          ),
                                       border: OutlineInputBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(8),
+                                        borderRadius: BorderRadius.circular(8),
                                       ),
                                     ),
                                     style: Theme.of(context)
@@ -1267,17 +1413,19 @@ class _BulkPayDialogState extends ConsumerState<_BulkPayDialog> {
                       onPressed: selectedCount == 0
                           ? null
                           : () {
-                              final now = DateTime.now().toIso8601String();
                               final result = _entries
                                   .where((e) => e.selected)
                                   .map(
                                     (e) => {
-                                      'amountPaid': double.tryParse(
-                                            e.controller.text
-                                                .replaceAll(',', '.'),
+                                      'amountPaid':
+                                          double.tryParse(
+                                            e.controller.text.replaceAll(
+                                              ',',
+                                              '.',
+                                            ),
                                           ) ??
                                           widget.defaultAmount,
-                                      'paidTime': now,
+                                      'paidTime': e.date.toIso8601String(),
                                     },
                                   )
                                   .toList();
@@ -1298,7 +1446,11 @@ class _BulkPayDialogState extends ConsumerState<_BulkPayDialog> {
 }
 
 class _BulkEntry {
-  _BulkEntry({required this.date, required this.controller, this.selected = false});
+  _BulkEntry({
+    required this.date,
+    required this.controller,
+    this.selected = false,
+  });
   final DateTime date;
   final TextEditingController controller;
   bool selected;

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/l10n/enum_l10n.dart';
+import '../../../../core/providers/app_settings_provider.dart';
 import '../../../../core/router/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/debt.dart';
@@ -39,6 +40,36 @@ class CompactDebtTile extends ConsumerWidget {
       symbol: currencySymbol,
       decimalDigits: decimalDigits,
     );
+
+    final baseCurrency = ref.watch(baseCurrencyProvider);
+    final ratesAsync = ref.watch(exchangeRatesProvider);
+    final debtCurrency = debt.currency ?? 'TRY';
+    String? convertedLabel;
+    if (debtCurrency != baseCurrency) {
+      final rate = ratesAsync.maybeWhen(
+        data: (rates) => rates[debtCurrency],
+        orElse: () => null,
+      );
+      if (rate != null && rate > 0) {
+        final converted = debt.amount / rate;
+        final baseSymbol = currenciesAsync.maybeWhen(
+          data: (list) => list
+              .firstWhere(
+                (c) => c.code == baseCurrency,
+                orElse: () => list.first,
+              )
+              .symbol,
+          orElse: () => baseCurrency,
+        );
+        final baseFmt = NumberFormat.currency(
+          locale: 'tr_TR',
+          symbol: baseSymbol,
+          decimalDigits: 0,
+        );
+        convertedLabel = '≈ ${baseFmt.format(converted)}';
+      }
+    }
+
     final cs = Theme.of(context).colorScheme;
 
     final statusColor = switch (debt.status) {
@@ -200,12 +231,25 @@ class CompactDebtTile extends ConsumerWidget {
               ),
             ),
             const SizedBox(width: 8),
-            Text(
-              currencyFormat.format(debt.amount),
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                color: cs.primary,
-                fontWeight: FontWeight.w700,
-              ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  currencyFormat.format(debt.amount),
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    color: cs.primary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                if (convertedLabel != null)
+                  Text(
+                    convertedLabel,
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: cs.onSurfaceVariant,
+                    ),
+                  ),
+              ],
             ),
           ],
         ),

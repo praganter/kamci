@@ -36,7 +36,9 @@ class IncomeScreen extends ConsumerWidget {
                   Icon(
                     Icons.savings_outlined,
                     size: 64,
-                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.4),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.primary.withValues(alpha: 0.4),
                   ),
                   const SizedBox(height: 16),
                   Text(
@@ -52,8 +54,7 @@ class IncomeScreen extends ConsumerWidget {
             child: ListView.builder(
               padding: const EdgeInsets.only(bottom: 88),
               itemCount: incomes.length,
-              itemBuilder: (context, i) =>
-                  _IncomeTile(income: incomes[i]),
+              itemBuilder: (context, i) => _IncomeTile(income: incomes[i]),
             ),
           );
         },
@@ -117,8 +118,7 @@ class _IncomeTile extends ConsumerWidget {
               ),
               TextButton(
                 onPressed: () => Navigator.pop(ctx, true),
-                child: Text(l10n.delete,
-                    style: TextStyle(color: cs.error)),
+                child: Text(l10n.delete, style: TextStyle(color: cs.error)),
               ),
             ],
           ),
@@ -131,9 +131,9 @@ class _IncomeTile extends ConsumerWidget {
           ref.invalidate(currentIncomeProvider);
         } catch (e) {
           if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(e.toString())),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(e.toString())));
           }
         }
       },
@@ -145,7 +145,11 @@ class _IncomeTile extends ConsumerWidget {
             color: cs.primaryContainer,
             shape: BoxShape.circle,
           ),
-          child: Icon(Icons.trending_up, color: cs.onPrimaryContainer, size: 22),
+          child: Icon(
+            Icons.trending_up,
+            color: cs.onPrimaryContainer,
+            size: 22,
+          ),
         ),
         title: Text(
           NumberFormat.currency(
@@ -162,9 +166,9 @@ class _IncomeTile extends ConsumerWidget {
             if (income.note != null && income.note!.isNotEmpty)
               Text(
                 income.note!,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: cs.onSurfaceVariant,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant),
               ),
           ],
         ),
@@ -198,9 +202,9 @@ class _AddIncomeSheetState extends ConsumerState<_AddIncomeSheet> {
     if (!_formKey.currentState!.validate()) return;
     final l10n = context.l10n;
     if (_effectiveFrom == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.effectiveFrom)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.effectiveFrom)));
       return;
     }
 
@@ -217,9 +221,9 @@ class _AddIncomeSheetState extends ConsumerState<_AddIncomeSheet> {
       if (mounted) Navigator.pop(context);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
       }
     }
   }
@@ -244,9 +248,9 @@ class _AddIncomeSheetState extends ConsumerState<_AddIncomeSheet> {
           children: [
             Text(
               l10n.addIncome,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
 
@@ -257,7 +261,9 @@ class _AddIncomeSheetState extends ConsumerState<_AddIncomeSheet> {
                 labelText: l10n.incomeAmount,
                 prefixIcon: const Icon(Icons.savings_outlined),
               ),
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               validator: Validators.amount,
               autofocus: true,
             ),
@@ -275,10 +281,12 @@ class _AddIncomeSheetState extends ConsumerState<_AddIncomeSheet> {
                 ),
                 hint: Text(l10n.select),
                 items: currencies
-                    .map((c) => DropdownMenuItem(
-                          value: c.code,
-                          child: Text('${c.code}  ${c.symbol}'),
-                        ))
+                    .map(
+                      (c) => DropdownMenuItem(
+                        value: c.code,
+                        child: Text('${c.code}  ${c.symbol}'),
+                      ),
+                    )
                     .toList(),
                 onChanged: (v) => setState(() => _selectedCurrency = v),
                 validator: (v) => v == null
@@ -324,10 +332,7 @@ class _AddIncomeSheetState extends ConsumerState<_AddIncomeSheet> {
             ),
             const SizedBox(height: 24),
 
-            ElevatedButton(
-              onPressed: _submit,
-              child: Text(l10n.save),
-            ),
+            ElevatedButton(onPressed: _submit, child: Text(l10n.save)),
           ],
         ),
       ),

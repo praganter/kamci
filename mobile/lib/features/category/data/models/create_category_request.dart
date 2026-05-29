@@ -5,7 +5,7 @@ part 'create_category_request.freezed.dart';
 part 'create_category_request.g.dart';
 
 @freezed
-abstract class CreateCategoryRequest with _$CreateCategoryRequest {
+sealed class CreateCategoryRequest with _$CreateCategoryRequest {
   const factory CreateCategoryRequest({
     required String id,
     required String name,
@@ -16,7 +16,7 @@ abstract class CreateCategoryRequest with _$CreateCategoryRequest {
 }
 
 @freezed
-abstract class AddMemberRequest with _$AddMemberRequest {
+sealed class AddMemberRequest with _$AddMemberRequest {
   const factory AddMemberRequest({
     required String email,
     required AccessLevelJson accessLevel,
@@ -27,7 +27,7 @@ abstract class AddMemberRequest with _$AddMemberRequest {
 }
 
 @freezed
-abstract class AddMembersBulkRequest with _$AddMembersBulkRequest {
+sealed class AddMembersBulkRequest with _$AddMembersBulkRequest {
   const factory AddMembersBulkRequest({
     required List<String> categoryIds,
     required String email,

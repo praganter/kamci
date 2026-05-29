@@ -41,6 +41,7 @@ sealed class ApiException implements Exception {
     }
 
     if (statusCode == 404) return const NotFoundException();
+    if (statusCode == 429) return const RateLimitException();
 
     if (statusCode != null && statusCode >= 500) {
       final msg =
@@ -93,4 +94,10 @@ class PremiumLimitException extends ApiException {
 
 class BusinessException extends ApiException {
   const BusinessException(super.message);
+}
+
+class RateLimitException extends ApiException {
+  const RateLimitException([
+    super.message = 'Çok fazla istek gönderildi. Lütfen bekleyin.',
+  ]);
 }

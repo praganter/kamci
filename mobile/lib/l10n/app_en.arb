@@ -86,9 +86,9 @@
   "descriptionOptional": "Description (Optional)",
 
   "myCategories": "My Categories",
-  "joinedCategories": "Joined",
+  "joinedCategories": "Shared",
   "noCategoriesYet": "No categories yet",
-  "noJoinedCategories": "No joined categories",
+  "noJoinedCategories": "No shared categories",
   "addCategoryHint": "Press + to create a new category",
   "waitingInvitation": "Waiting for a category invitation",
   "memberCount": "{count} member(s)",
@@ -225,6 +225,13 @@
   },
   "bestValue": "Best Value",
   "autoRenewInfo": "Renews automatically. Cancel anytime.",
+  "restorePurchases": "Restore Purchases",
+  "featureUnlimitedDebts": "Unlimited debts",
+  "featureUnlimitedCategories": "Unlimited categories",
+  "featureReminders": "Debt reminders & notifications",
+  "featureCategorySharing": "Category sharing with friends",
+  "perMonth": "/ month",
+  "perYear": "/ year",
   "sharedPremiumDesc": "You need to be a Premium member to view shared debts and manage debts with friends.",
   "userId": "User ID",
   "userIdHint": "Enter User ID",
@@ -267,5 +274,103 @@
     }
   },
 
-  "charts": "Charts"
+  "charts": "Charts",
+
+  "manageMembers": "Manage Members",
+  "leaveCategory": "Leave Category",
+  "leaveCategoryConfirm": "Are you sure you want to leave \"{name}\"?",
+  "@leaveCategoryConfirm": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "bulkShare": "Bulk Share",
+  "shareCategory": "Share",
+  "shareAllSelected": "Share All Selected ({count})",
+  "@shareAllSelected": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "selectCategoriesToShare": "Select Categories",
+  "addToCategories": "Add to {count} categories",
+  "@addToCategories": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "shareAccessLevel": "Access Level",
+  "selectAccessLevel": "Select access level",
+  "categoriesSelected": "{count} categories selected",
+  "@categoriesSelected": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "clearSelection": "Clear Selection",
+  "memberAddedSuccess": "{email} added as member.",
+  "@memberAddedSuccess": {
+    "placeholders": {
+      "email": { "type": "String" }
+    }
+  },
+  "memberRemovedSuccess": "Member removed.",
+  "bulkShareSuccess": "{email} added to {count} categories.",
+  "@bulkShareSuccess": {
+    "placeholders": {
+      "email": { "type": "String" },
+      "count": { "type": "int" }
+    }
+  },
+  "memberLeftCategory": "You have left the category.",
+  "changeAccessLevel": "Change Access Level",
+  "membersList": "Members List",
+  "accessRead": "Read",
+  "accessReadDesc": "View only",
+  "accessWrite": "Write",
+  "accessWriteDesc": "Can view and make payments",
+  "accessEdit": "Edit",
+  "accessEditDesc": "Can view, make payments and edit",
+  "accessDelete": "Admin",
+  "accessDeleteDesc": "Full access: view, pay, edit and delete",
+  "noPermission": "You don't have permission for this operation.",
+
+  "errorWithMessage": "Error: {message}",
+  "@errorWithMessage": {
+    "placeholders": {
+      "message": { "type": "String" }
+    }
+  },
+  "personCount": "{count} people",
+  "@personCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "baseCurrency": "Base Currency",
+
+  "monthlySummary": "Monthly Summary",
+  "totalPaidAmount": "Total Paid",
+  "trendLast6Months": "Last 6 Months Trend",
+  "categoryBreakdown": "Category Breakdown",
+  "debtProgressTitle": "Debt Progress",
+  "noDataForMonth": "No data for this month",
+  "debtToIncomeRatioLabel": "Debt/Income Ratio",
+  "pendingLabel": "Pending",
+  "skippedLabel": "Skipped",
+  "noIncomeSet": "No income set",
+  "installmentsLabel": "{paid} / {total} installments",
+  "@installmentsLabel": {
+    "placeholders": {
+      "paid": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "openEndedInstallments": "{count} installments (open-ended)",
+  "@openEndedInstallments": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  }
 }

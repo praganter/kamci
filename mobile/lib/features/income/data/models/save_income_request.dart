@@ -4,7 +4,7 @@ part 'save_income_request.freezed.dart';
 part 'save_income_request.g.dart';
 
 @freezed
-abstract class SaveIncomeRequest with _$SaveIncomeRequest {
+sealed class SaveIncomeRequest with _$SaveIncomeRequest {
   const factory SaveIncomeRequest({
     required double amount,
     required String currency,

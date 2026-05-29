@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/l10n/l10n.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/app_error_widget.dart';
 import '../../../../shared/widgets/confirm_dialog.dart';
 import '../../../../shared/providers/current_user_provider.dart';
 import '../providers/category_providers.dart';
-import '../widgets/access_level_badge.dart';
+import '../../domain/entities/member_embedded.dart';
 import '../widgets/add_category_sheet.dart';
 import '../widgets/add_member_dialog.dart';
 
@@ -32,6 +33,14 @@ class CategoryDetailScreen extends ConsumerWidget {
       ),
       data: (category) {
         final isOwner = currentUserId == category.ownerId;
+
+        // Group members by access level
+        final grouped = <AccessLevel, List<MemberEmbedded>>{};
+        for (final level in AccessLevel.values) {
+          final members =
+              category.members.where((m) => m.accessLevel == level).toList();
+          if (members.isNotEmpty) grouped[level] = members;
+        }
 
         return Scaffold(
           appBar: AppBar(
@@ -62,7 +71,7 @@ class CategoryDetailScreen extends ConsumerWidget {
                   onPressed: () async {
                     final result =
                         await showDialog<
-                          ({String userId, dynamic accessLevel})
+                          ({String email, AccessLevel accessLevel})
                         >(
                           context: context,
                           builder: (_) => const AddMemberDialog(),
@@ -70,84 +79,182 @@ class CategoryDetailScreen extends ConsumerWidget {
                     if (result != null && context.mounted) {
                       await ref
                           .read(categoryDetailProvider(id).notifier)
-                          .addMember(result.userId, result.accessLevel);
+                          .addMember(result.email, result.accessLevel);
                     }
                   },
                   icon: const Icon(Icons.person_add_outlined),
                   label: Text(l10n.addMember),
                 )
               : null,
-          body: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          body: category.members.isEmpty
+              ? Center(child: Text(l10n.noMembersYet))
+              : ListView(
+                  padding: const EdgeInsets.only(bottom: 88),
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                      child: Text(
+                        l10n.memberCountTitle(category.members.length),
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                    ),
+                    for (final level in AccessLevel.values) ...[
+                      if (grouped[level] != null) ...[
+                        _LevelSection(
+                          level: level,
+                          members: grouped[level]!,
+                          isOwner: isOwner,
+                          onRemove: (member) async {
+                            final confirmed = await showConfirmDialog(
+                              context,
+                              title: l10n.removeMember,
+                              content: l10n.removeMemberConfirm,
+                              confirmText: l10n.remove,
+                            );
+                            if (confirmed && context.mounted) {
+                              await ref
+                                  .read(categoryDetailProvider(id).notifier)
+                                  .removeMember(member.userId ?? member.email ?? '');
+                            }
+                          },
+                        ),
+                      ],
+                    ],
+                  ],
+                ),
+        );
+      },
+    );
+  }
+}
+
+class _LevelSection extends StatelessWidget {
+  const _LevelSection({
+    required this.level,
+    required this.members,
+    required this.isOwner,
+    required this.onRemove,
+  });
+
+  final AccessLevel level;
+  final List<MemberEmbedded> members;
+  final bool isOwner;
+  final void Function(MemberEmbedded) onRemove;
+
+  Color _levelColor() => switch (level) {
+    AccessLevel.read => AppColors.accessRead,
+    AccessLevel.write => AppColors.accessWrite,
+    AccessLevel.edit => AppColors.accessEdit,
+    AccessLevel.admin => AppColors.accessDelete,
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final cs = Theme.of(context).colorScheme;
+    final color = _levelColor();
+
+    final levelName = switch (level) {
+      AccessLevel.read => l10n.accessRead,
+      AccessLevel.write => l10n.accessWrite,
+      AccessLevel.edit => l10n.accessEdit,
+      AccessLevel.admin => l10n.accessDelete,
+    };
+    final levelDesc = switch (level) {
+      AccessLevel.read => l10n.accessReadDesc,
+      AccessLevel.write => l10n.accessWriteDesc,
+      AccessLevel.edit => l10n.accessEditDesc,
+      AccessLevel.admin => l10n.accessDeleteDesc,
+    };
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+          padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(12),
+            border: Border(left: BorderSide(color: color, width: 3)),
+          ),
+          child: Row(
             children: [
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Text(
-                  l10n.memberCountTitle(category.members.length),
-                  style: Theme.of(context).textTheme.titleMedium,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      levelName.toUpperCase(),
+                      style: TextStyle(
+                        color: color,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 12,
+                        letterSpacing: 0.8,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      levelDesc,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: cs.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              Expanded(
-                child: category.members.isEmpty
-                    ? Center(child: Text(l10n.noMembersYet))
-                    : ListView.builder(
-                        itemCount: category.members.length,
-                        itemBuilder: (context, index) {
-                          final member = category.members[index];
-                          return ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor: Theme.of(
-                                context,
-                              ).colorScheme.primaryContainer,
-                              child: Icon(
-                                Icons.person_outline,
-                                color: Theme.of(context).colorScheme.primary,
-                                size: 20,
-                              ),
-                            ),
-                            title: Text(member.userId),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                AccessLevelBadge(level: member.accessLevel),
-                                if (isOwner) ...[
-                                  const SizedBox(width: 8),
-                                  IconButton(
-                                    icon: Icon(
-                                      Icons.remove_circle_outline,
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.error,
-                                    ),
-                                    onPressed: () async {
-                                      final confirmed = await showConfirmDialog(
-                                        context,
-                                        title: l10n.removeMember,
-                                        content: l10n.removeMemberConfirm,
-                                        confirmText: l10n.remove,
-                                      );
-                                      if (confirmed && context.mounted) {
-                                        await ref
-                                            .read(
-                                              categoryDetailProvider(
-                                                id,
-                                              ).notifier,
-                                            )
-                                            .removeMember(member.userId);
-                                      }
-                                    },
-                                  ),
-                                ],
-                              ],
-                            ),
-                          );
-                        },
-                      ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  '${members.length}',
+                  style: TextStyle(
+                    color: color,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12,
+                  ),
+                ),
               ),
             ],
           ),
-        );
-      },
+        ),
+        for (final member in members)
+          ListTile(
+            contentPadding: const EdgeInsets.fromLTRB(28, 0, 8, 0),
+            leading: CircleAvatar(
+              radius: 18,
+              backgroundColor: color.withValues(alpha: 0.12),
+              child: Text(
+                (member.email ?? member.userId ?? '').isNotEmpty
+                    ? (member.email ?? member.userId ?? '')[0].toUpperCase()
+                    : '?',
+                style: TextStyle(
+                  color: color,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+            title: Text(
+              member.email ?? member.userId ?? '',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            trailing: isOwner
+                ? IconButton(
+                    icon: Icon(
+                      Icons.person_remove_outlined,
+                      color: cs.error,
+                      size: 20,
+                    ),
+                    onPressed: () => onRemove(member),
+                  )
+                : null,
+          ),
+        const Divider(height: 1, indent: 16, endIndent: 16),
+      ],
     );
   }
 }

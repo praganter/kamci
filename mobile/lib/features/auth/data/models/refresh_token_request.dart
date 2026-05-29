@@ -4,7 +4,7 @@ part 'refresh_token_request.freezed.dart';
 part 'refresh_token_request.g.dart';
 
 @freezed
-abstract class RefreshTokenRequest with _$RefreshTokenRequest {
+sealed class RefreshTokenRequest with _$RefreshTokenRequest {
   const factory RefreshTokenRequest({required String refreshToken}) =
       _RefreshTokenRequest;
 

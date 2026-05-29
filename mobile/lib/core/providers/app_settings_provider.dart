@@ -46,6 +46,23 @@ final localeProvider = StateNotifierProvider<LocaleNotifier, Locale?>((ref) {
   return LocaleNotifier(ref.watch(settingsServiceProvider));
 });
 
+// ── Base currency ──────────────────────────────────────────────────────────
+
+class BaseCurrencyNotifier extends StateNotifier<String> {
+  BaseCurrencyNotifier(this._service) : super(_service.baseCurrency);
+  final SettingsService _service;
+
+  Future<void> set(String code) async {
+    await _service.setBaseCurrency(code);
+    state = code;
+  }
+}
+
+final baseCurrencyProvider =
+    StateNotifierProvider<BaseCurrencyNotifier, String>((ref) {
+  return BaseCurrencyNotifier(ref.watch(settingsServiceProvider));
+});
+
 // ── Debt tab (0 = owned, 1 = shared) ───────────────────────────────────────
 
 final debtTabProvider = StateProvider<int>((ref) => 0);

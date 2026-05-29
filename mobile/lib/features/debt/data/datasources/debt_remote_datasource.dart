@@ -40,8 +40,8 @@ class DebtRemoteDatasource {
       return categories.map((c) {
         final rawDebts = (c['debts'] as List<dynamic>?) ?? [];
         return (
-          categoryId: c['categoryId'] as String,
-          categoryName: c['categoryName'] as String,
+          categoryId: c['categoryId'] as String? ?? '',
+          categoryName: c['categoryName'] as String? ?? '',
           owned: c['owned'] as bool? ?? true,
           ownerUserId: c['ownerUserId'] as String?,
           debts: rawDebts
@@ -60,7 +60,9 @@ class DebtRemoteDatasource {
         ApiConstants.debtSave,
         data: request.toJson(),
       );
-      final debt = (response.data as Map<String, dynamic>)['debt'] as Map<String, dynamic>;
+      final debt =
+          (response.data as Map<String, dynamic>)['debt']
+              as Map<String, dynamic>;
       return DebtModel.fromJson(debt);
     } on DioException catch (e) {
       throw _mapException(e);
@@ -73,7 +75,9 @@ class DebtRemoteDatasource {
         ApiConstants.debtUpdate,
         data: request.toJson(),
       );
-      final debt = (response.data as Map<String, dynamic>)['debt'] as Map<String, dynamic>;
+      final debt =
+          (response.data as Map<String, dynamic>)['debt']
+              as Map<String, dynamic>;
       return DebtModel.fromJson(debt);
     } on DioException catch (e) {
       throw _mapException(e);
@@ -86,7 +90,9 @@ class DebtRemoteDatasource {
         '${ApiConstants.debtPay}/$id',
         data: amountPaid != null ? {'paidAmount': amountPaid} : null,
       );
-      final debt = (response.data as Map<String, dynamic>)['debt'] as Map<String, dynamic>;
+      final debt =
+          (response.data as Map<String, dynamic>)['debt']
+              as Map<String, dynamic>;
       return DebtModel.fromJson(debt);
     } on DioException catch (e) {
       throw _mapException(e);
@@ -96,7 +102,9 @@ class DebtRemoteDatasource {
   Future<DebtModel> skip(String id) async {
     try {
       final response = await _dio.post('${ApiConstants.debtSkip}/$id');
-      final debt = (response.data as Map<String, dynamic>)['debt'] as Map<String, dynamic>;
+      final debt =
+          (response.data as Map<String, dynamic>)['debt']
+              as Map<String, dynamic>;
       return DebtModel.fromJson(debt);
     } on DioException catch (e) {
       throw _mapException(e);
@@ -113,7 +121,8 @@ class DebtRemoteDatasource {
         data: payments,
       );
       final debt =
-          (response.data as Map<String, dynamic>)['debt'] as Map<String, dynamic>;
+          (response.data as Map<String, dynamic>)['debt']
+              as Map<String, dynamic>;
       return DebtModel.fromJson(debt);
     } on DioException catch (e) {
       throw _mapException(e);
@@ -169,5 +178,6 @@ class DebtRemoteDatasource {
     }
   }
 
-  ApiException _mapException(DioException e) => ApiException.fromDioException(e);
+  ApiException _mapException(DioException e) =>
+      ApiException.fromDioException(e);
 }

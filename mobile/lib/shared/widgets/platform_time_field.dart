@@ -64,7 +64,8 @@ class PlatformTimeField extends StatelessWidget {
       triggerMode: TooltipTriggerMode.longPress,
       preferBelow: false,
       child: InkWell(
-        onTap: () => isIOS ? _showIOSPicker(context) : _showMaterialPicker(context),
+        onTap: () =>
+            isIOS ? _showIOSPicker(context) : _showMaterialPicker(context),
         borderRadius: BorderRadius.circular(4),
         hoverColor: Colors.transparent,
         highlightColor: Colors.transparent,
@@ -194,10 +195,7 @@ class _TimePickerSheetState extends State<_TimePickerSheet> {
             },
             child: Text(
               widget.confirmLabel,
-              style: TextStyle(
-                color: cs.primary,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(color: cs.primary, fontWeight: FontWeight.bold),
             ),
           ),
         ],

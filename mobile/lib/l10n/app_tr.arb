@@ -101,9 +101,9 @@
   "descriptionOptional": "Açıklama (İsteğe Bağlı)",
 
   "myCategories": "Sahip Olduklarım",
-  "joinedCategories": "Üye Olduklarım",
+  "joinedCategories": "Paylaşılanlar",
   "noCategoriesYet": "Henüz kategori yok",
-  "noJoinedCategories": "Üye olduğun kategori yok",
+  "noJoinedCategories": "Paylaşılan kategori yok",
   "addCategoryHint": "Yeni kategori oluşturmak için + düğmesine bas",
   "waitingInvitation": "Bir kategoriye davet bekleniyor",
   "memberCount": "{count} üye",
@@ -255,6 +255,13 @@
   },
   "bestValue": "En İyi Değer",
   "autoRenewInfo": "Otomatik yenilenir. İstediğinizde iptal edin.",
+  "restorePurchases": "Satın Alımları Geri Yükle",
+  "featureUnlimitedDebts": "Sınırsız borç",
+  "featureUnlimitedCategories": "Sınırsız kategori",
+  "featureReminders": "Borç hatırlatıcıları ve bildirimler",
+  "featureCategorySharing": "Arkadaşlarla kategori paylaşımı",
+  "perMonth": "/ ay",
+  "perYear": "/ yıl",
   "sharedPremiumDesc": "Paylaşılan borçları görmek ve arkadaşlarınla ortak borç yönetmek için Premium üye olmalısın.",
   "userId": "Kullanıcı ID",
   "userIdHint": "Kullanıcı ID'sini girin",
@@ -297,5 +304,103 @@
     }
   },
 
-  "charts": "Grafikler"
+  "charts": "Grafikler",
+
+  "manageMembers": "Üyeleri Yönet",
+  "leaveCategory": "Bu Kategoriden Ayrıl",
+  "leaveCategoryConfirm": "\"{name}\" kategorisinden ayrılmak istediğinize emin misiniz?",
+  "@leaveCategoryConfirm": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "bulkShare": "Toplu Paylaş",
+  "shareCategory": "Paylaş",
+  "shareAllSelected": "Seçilenleri Paylaş ({count})",
+  "@shareAllSelected": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "selectCategoriesToShare": "Kategorileri Seç",
+  "addToCategories": "{count} kategoriye ekle",
+  "@addToCategories": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "shareAccessLevel": "Erişim Seviyesi",
+  "selectAccessLevel": "Erişim seviyesi seçin",
+  "categoriesSelected": "{count} kategori seçildi",
+  "@categoriesSelected": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "clearSelection": "Seçimi Temizle",
+  "memberAddedSuccess": "{email} üye olarak eklendi.",
+  "@memberAddedSuccess": {
+    "placeholders": {
+      "email": { "type": "String" }
+    }
+  },
+  "memberRemovedSuccess": "Üye kaldırıldı.",
+  "bulkShareSuccess": "{email} {count} kategoriye eklendi.",
+  "@bulkShareSuccess": {
+    "placeholders": {
+      "email": { "type": "String" },
+      "count": { "type": "int" }
+    }
+  },
+  "memberLeftCategory": "Kategoriden ayrıldınız.",
+  "changeAccessLevel": "Erişim Seviyesini Değiştir",
+  "membersList": "Üyeler Listesi",
+  "accessRead": "Okuma",
+  "accessReadDesc": "Sadece görüntüleyebilir",
+  "accessWrite": "Yazma",
+  "accessWriteDesc": "Görüntüleyebilir ve ödeme yapabilir",
+  "accessEdit": "Düzenleme",
+  "accessEditDesc": "Görüntüleyebilir, ödeme yapabilir ve düzenleyebilir",
+  "accessDelete": "Admin",
+  "accessDeleteDesc": "Tam yetki: görüntüleme, ödeme, düzenleme ve silme",
+  "noPermission": "Bu operasyon için yetkiniz yok.",
+
+  "errorWithMessage": "Hata: {message}",
+  "@errorWithMessage": {
+    "placeholders": {
+      "message": { "type": "String" }
+    }
+  },
+  "personCount": "{count} kişi",
+  "@personCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "baseCurrency": "Baz Para Birimi",
+
+  "monthlySummary": "Aylık Özet",
+  "totalPaidAmount": "Toplam Ödendi",
+  "trendLast6Months": "Son 6 Ay Trendi",
+  "categoryBreakdown": "Kategori Dağılımı",
+  "debtProgressTitle": "Borç İlerlemesi",
+  "noDataForMonth": "Bu ay için veri yok",
+  "debtToIncomeRatioLabel": "Borç/Gelir Oranı",
+  "pendingLabel": "Bekleyen",
+  "skippedLabel": "Atlanan",
+  "noIncomeSet": "Gelir tanımlanmamış",
+  "installmentsLabel": "{paid} / {total} taksit",
+  "@installmentsLabel": {
+    "placeholders": {
+      "paid": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "openEndedInstallments": "{count} taksit (açık uçlu)",
+  "@openEndedInstallments": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  }
 }

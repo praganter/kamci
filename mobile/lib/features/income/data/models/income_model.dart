@@ -5,7 +5,7 @@ part 'income_model.freezed.dart';
 part 'income_model.g.dart';
 
 @freezed
-abstract class IncomeModel with _$IncomeModel {
+sealed class IncomeModel with _$IncomeModel {
   const factory IncomeModel({
     required String id,
     @JsonKey(fromJson: _amountFromJson) required double amount,

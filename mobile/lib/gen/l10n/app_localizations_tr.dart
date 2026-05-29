@@ -235,13 +235,13 @@ class AppLocalizationsTr extends AppLocalizations {
   String get myCategories => 'Sahip Olduklarım';
 
   @override
-  String get joinedCategories => 'Üye Olduklarım';
+  String get joinedCategories => 'Paylaşılanlar';
 
   @override
   String get noCategoriesYet => 'Henüz kategori yok';
 
   @override
-  String get noJoinedCategories => 'Üye olduğun kategori yok';
+  String get noJoinedCategories => 'Paylaşılan kategori yok';
 
   @override
   String get addCategoryHint => 'Yeni kategori oluşturmak için + düğmesine bas';
@@ -504,6 +504,27 @@ class AppLocalizationsTr extends AppLocalizations {
   String get autoRenewInfo => 'Otomatik yenilenir. İstediğinizde iptal edin.';
 
   @override
+  String get restorePurchases => 'Satın Alımları Geri Yükle';
+
+  @override
+  String get featureUnlimitedDebts => 'Sınırsız borç';
+
+  @override
+  String get featureUnlimitedCategories => 'Sınırsız kategori';
+
+  @override
+  String get featureReminders => 'Borç hatırlatıcıları ve bildirimler';
+
+  @override
+  String get featureCategorySharing => 'Arkadaşlarla kategori paylaşımı';
+
+  @override
+  String get perMonth => '/ ay';
+
+  @override
+  String get perYear => '/ yıl';
+
+  @override
   String get sharedPremiumDesc =>
       'Paylaşılan borçları görmek ve arkadaşlarınla ortak borç yönetmek için Premium üye olmalısın.';
 
@@ -594,4 +615,152 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get charts => 'Grafikler';
+
+  @override
+  String get manageMembers => 'Üyeleri Yönet';
+
+  @override
+  String get leaveCategory => 'Bu Kategoriden Ayrıl';
+
+  @override
+  String leaveCategoryConfirm(String name) {
+    return '\"$name\" kategorisinden ayrılmak istediğinize emin misiniz?';
+  }
+
+  @override
+  String get bulkShare => 'Toplu Paylaş';
+
+  @override
+  String get shareCategory => 'Paylaş';
+
+  @override
+  String shareAllSelected(int count) {
+    return 'Seçilenleri Paylaş ($count)';
+  }
+
+  @override
+  String get selectCategoriesToShare => 'Kategorileri Seç';
+
+  @override
+  String addToCategories(int count) {
+    return '$count kategoriye ekle';
+  }
+
+  @override
+  String get shareAccessLevel => 'Erişim Seviyesi';
+
+  @override
+  String get selectAccessLevel => 'Erişim seviyesi seçin';
+
+  @override
+  String categoriesSelected(int count) {
+    return '$count kategori seçildi';
+  }
+
+  @override
+  String get clearSelection => 'Seçimi Temizle';
+
+  @override
+  String memberAddedSuccess(String email) {
+    return '$email üye olarak eklendi.';
+  }
+
+  @override
+  String get memberRemovedSuccess => 'Üye kaldırıldı.';
+
+  @override
+  String bulkShareSuccess(String email, int count) {
+    return '$email $count kategoriye eklendi.';
+  }
+
+  @override
+  String get memberLeftCategory => 'Kategoriden ayrıldınız.';
+
+  @override
+  String get changeAccessLevel => 'Erişim Seviyesini Değiştir';
+
+  @override
+  String get membersList => 'Üyeler Listesi';
+
+  @override
+  String get accessRead => 'Okuma';
+
+  @override
+  String get accessReadDesc => 'Sadece görüntüleyebilir';
+
+  @override
+  String get accessWrite => 'Yazma';
+
+  @override
+  String get accessWriteDesc => 'Görüntüleyebilir ve ödeme yapabilir';
+
+  @override
+  String get accessEdit => 'Düzenleme';
+
+  @override
+  String get accessEditDesc =>
+      'Görüntüleyebilir, ödeme yapabilir ve düzenleyebilir';
+
+  @override
+  String get accessDelete => 'Admin';
+
+  @override
+  String get accessDeleteDesc =>
+      'Tam yetki: görüntüleme, ödeme, düzenleme ve silme';
+
+  @override
+  String get noPermission => 'Bu operasyon için yetkiniz yok.';
+
+  @override
+  String errorWithMessage(String message) {
+    return 'Hata: $message';
+  }
+
+  @override
+  String personCount(int count) {
+    return '$count kişi';
+  }
+
+  @override
+  String get baseCurrency => 'Baz Para Birimi';
+
+  @override
+  String get monthlySummary => 'Aylık Özet';
+
+  @override
+  String get totalPaidAmount => 'Toplam Ödendi';
+
+  @override
+  String get trendLast6Months => 'Son 6 Ay Trendi';
+
+  @override
+  String get categoryBreakdown => 'Kategori Dağılımı';
+
+  @override
+  String get debtProgressTitle => 'Borç İlerlemesi';
+
+  @override
+  String get noDataForMonth => 'Bu ay için veri yok';
+
+  @override
+  String get debtToIncomeRatioLabel => 'Borç/Gelir Oranı';
+
+  @override
+  String get pendingLabel => 'Bekleyen';
+
+  @override
+  String get skippedLabel => 'Atlanan';
+
+  @override
+  String get noIncomeSet => 'Gelir tanımlanmamış';
+
+  @override
+  String installmentsLabel(int paid, int total) {
+    return '$paid / $total taksit';
+  }
+
+  @override
+  String openEndedInstallments(int count) {
+    return '$count taksit (açık uçlu)';
+  }
 }

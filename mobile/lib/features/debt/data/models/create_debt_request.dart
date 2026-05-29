@@ -6,7 +6,7 @@ part 'create_debt_request.freezed.dart';
 part 'create_debt_request.g.dart';
 
 @freezed
-abstract class CreateDebtRequest with _$CreateDebtRequest {
+sealed class CreateDebtRequest with _$CreateDebtRequest {
   const factory CreateDebtRequest({
     String? id,
     required String name,

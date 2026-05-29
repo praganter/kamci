@@ -43,4 +43,6 @@ abstract final class ApiConstants {
 
   static const String deviceToken = '/notification/device-token';
   static const String notificationTest = '/notification/test';
+
+  static const String exchangeRates = '/rates';
 }

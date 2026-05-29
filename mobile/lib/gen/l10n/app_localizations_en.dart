@@ -235,13 +235,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get myCategories => 'My Categories';
 
   @override
-  String get joinedCategories => 'Joined';
+  String get joinedCategories => 'Shared';
 
   @override
   String get noCategoriesYet => 'No categories yet';
 
   @override
-  String get noJoinedCategories => 'No joined categories';
+  String get noJoinedCategories => 'No shared categories';
 
   @override
   String get addCategoryHint => 'Press + to create a new category';
@@ -504,6 +504,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get autoRenewInfo => 'Renews automatically. Cancel anytime.';
 
   @override
+  String get restorePurchases => 'Restore Purchases';
+
+  @override
+  String get featureUnlimitedDebts => 'Unlimited debts';
+
+  @override
+  String get featureUnlimitedCategories => 'Unlimited categories';
+
+  @override
+  String get featureReminders => 'Debt reminders & notifications';
+
+  @override
+  String get featureCategorySharing => 'Category sharing with friends';
+
+  @override
+  String get perMonth => '/ month';
+
+  @override
+  String get perYear => '/ year';
+
+  @override
   String get sharedPremiumDesc =>
       'You need to be a Premium member to view shared debts and manage debts with friends.';
 
@@ -594,4 +615,150 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get charts => 'Charts';
+
+  @override
+  String get manageMembers => 'Manage Members';
+
+  @override
+  String get leaveCategory => 'Leave Category';
+
+  @override
+  String leaveCategoryConfirm(String name) {
+    return 'Are you sure you want to leave \"$name\"?';
+  }
+
+  @override
+  String get bulkShare => 'Bulk Share';
+
+  @override
+  String get shareCategory => 'Share';
+
+  @override
+  String shareAllSelected(int count) {
+    return 'Share All Selected ($count)';
+  }
+
+  @override
+  String get selectCategoriesToShare => 'Select Categories';
+
+  @override
+  String addToCategories(int count) {
+    return 'Add to $count categories';
+  }
+
+  @override
+  String get shareAccessLevel => 'Access Level';
+
+  @override
+  String get selectAccessLevel => 'Select access level';
+
+  @override
+  String categoriesSelected(int count) {
+    return '$count categories selected';
+  }
+
+  @override
+  String get clearSelection => 'Clear Selection';
+
+  @override
+  String memberAddedSuccess(String email) {
+    return '$email added as member.';
+  }
+
+  @override
+  String get memberRemovedSuccess => 'Member removed.';
+
+  @override
+  String bulkShareSuccess(String email, int count) {
+    return '$email added to $count categories.';
+  }
+
+  @override
+  String get memberLeftCategory => 'You have left the category.';
+
+  @override
+  String get changeAccessLevel => 'Change Access Level';
+
+  @override
+  String get membersList => 'Members List';
+
+  @override
+  String get accessRead => 'Read';
+
+  @override
+  String get accessReadDesc => 'View only';
+
+  @override
+  String get accessWrite => 'Write';
+
+  @override
+  String get accessWriteDesc => 'Can view and make payments';
+
+  @override
+  String get accessEdit => 'Edit';
+
+  @override
+  String get accessEditDesc => 'Can view, make payments and edit';
+
+  @override
+  String get accessDelete => 'Admin';
+
+  @override
+  String get accessDeleteDesc => 'Full access: view, pay, edit and delete';
+
+  @override
+  String get noPermission => 'You don\'t have permission for this operation.';
+
+  @override
+  String errorWithMessage(String message) {
+    return 'Error: $message';
+  }
+
+  @override
+  String personCount(int count) {
+    return '$count people';
+  }
+
+  @override
+  String get baseCurrency => 'Base Currency';
+
+  @override
+  String get monthlySummary => 'Monthly Summary';
+
+  @override
+  String get totalPaidAmount => 'Total Paid';
+
+  @override
+  String get trendLast6Months => 'Last 6 Months Trend';
+
+  @override
+  String get categoryBreakdown => 'Category Breakdown';
+
+  @override
+  String get debtProgressTitle => 'Debt Progress';
+
+  @override
+  String get noDataForMonth => 'No data for this month';
+
+  @override
+  String get debtToIncomeRatioLabel => 'Debt/Income Ratio';
+
+  @override
+  String get pendingLabel => 'Pending';
+
+  @override
+  String get skippedLabel => 'Skipped';
+
+  @override
+  String get noIncomeSet => 'No income set';
+
+  @override
+  String installmentsLabel(int paid, int total) {
+    return '$paid / $total installments';
+  }
+
+  @override
+  String openEndedInstallments(int count) {
+    return '$count installments (open-ended)';
+  }
 }

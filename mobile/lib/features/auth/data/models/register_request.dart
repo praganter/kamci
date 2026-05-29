@@ -4,7 +4,7 @@ part 'register_request.freezed.dart';
 part 'register_request.g.dart';
 
 @freezed
-abstract class RegisterRequest with _$RegisterRequest {
+sealed class RegisterRequest with _$RegisterRequest {
   const factory RegisterRequest({
     required String email,
     required String password,

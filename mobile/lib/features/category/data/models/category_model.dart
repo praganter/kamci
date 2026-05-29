@@ -6,7 +6,7 @@ part 'category_model.freezed.dart';
 part 'category_model.g.dart';
 
 @freezed
-abstract class CategoryModel with _$CategoryModel {
+sealed class CategoryModel with _$CategoryModel {
   const factory CategoryModel({
     required String id,
     required String ownerId,

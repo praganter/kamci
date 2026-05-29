@@ -64,11 +64,12 @@ class NotificationService {
     await _localNotifications.initialize(initSettings);
 
     // iOS: show notification banner even when app is in foreground
-    await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
+    await FirebaseMessaging.instance
+        .setForegroundNotificationPresentationOptions(
+          alert: true,
+          badge: true,
+          sound: true,
+        );
 
     // Show local notification when app is in foreground (Android)
     FirebaseMessaging.onMessage.listen(_showForegroundNotification);

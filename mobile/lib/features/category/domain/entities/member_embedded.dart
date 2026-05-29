@@ -1,17 +1,22 @@
 enum AccessLevel {
   read,
   write,
+  edit,
   admin;
+}
 
-  String get label => switch (this) {
-    AccessLevel.read => 'Okuma',
-    AccessLevel.write => 'Yazma',
-    AccessLevel.admin => 'Admin',
-  };
+extension AccessLevelPermissions on AccessLevel {
+  bool get canWrite =>
+      this == AccessLevel.write ||
+      this == AccessLevel.edit ||
+      this == AccessLevel.admin;
+  bool get canEdit => this == AccessLevel.edit || this == AccessLevel.admin;
+  bool get canDelete => this == AccessLevel.admin;
 }
 
 class MemberEmbedded {
-  const MemberEmbedded({required this.userId, required this.accessLevel});
-  final String userId;
+  const MemberEmbedded({this.userId, required this.accessLevel, this.email});
+  final String? userId;
   final AccessLevel accessLevel;
+  final String? email;
 }

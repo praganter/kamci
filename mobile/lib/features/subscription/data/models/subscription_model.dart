@@ -5,7 +5,7 @@ part 'subscription_model.freezed.dart';
 part 'subscription_model.g.dart';
 
 @freezed
-abstract class SubscriptionModel with _$SubscriptionModel {
+sealed class SubscriptionModel with _$SubscriptionModel {
   const factory SubscriptionModel({
     required String plan,
     required String status,

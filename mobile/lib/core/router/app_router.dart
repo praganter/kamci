@@ -19,6 +19,7 @@ import '../../features/debt/presentation/screens/debt_form_screen.dart';
 import '../../features/debt/presentation/screens/debt_list_screen.dart';
 import '../../features/income/presentation/screens/income_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
+import '../../features/subscription/presentation/screens/premium_screen.dart';
 import '../../shared/widgets/bottom_nav_bar.dart';
 import 'route_names.dart';
 
@@ -100,6 +101,12 @@ GoRouter appRouter(Ref ref) {
         name: RouteNames.income,
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, _) => const IncomeScreen(),
+      ),
+      GoRoute(
+        path: RoutePaths.premium,
+        name: RouteNames.premium,
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, _) => const PremiumScreen(),
       ),
       GoRoute(
         path: RoutePaths.forgotPassword,

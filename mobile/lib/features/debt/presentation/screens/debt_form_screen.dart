@@ -106,21 +106,21 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
     final l10n = context.l10n;
     if (_reminderEnabled) {
       if (_reminderChannels.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.reminderChannelRequired)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.reminderChannelRequired)));
         return;
       }
       if (_reminderDate == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.reminderDateRequired)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.reminderDateRequired)));
         return;
       }
       if (_reminderTime == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.reminderTimeRequired)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.reminderTimeRequired)));
         return;
       }
     }
@@ -232,57 +232,54 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // ── Kategori ────────────────────────────────────────────
-              categoriesAsync.when(
-                loading: () => const LinearProgressIndicator(),
-                error: (e, _) => const SizedBox.shrink(),
-                data: (categories) => Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: PlatformSelectField<String>(
-                        label: l10n.category,
-                        prefixIcon: const Icon(Icons.folder_outlined),
-                        value: _selectedCategoryId,
-                        hint: l10n.select,
-                        items: categories
-                            .map(
-                              (c) => PlatformSelectItem(
-                                value: c.id,
-                                label: c.name,
-                              ),
-                            )
-                            .toList(),
-                        onChanged: (v) =>
-                            setState(() => _selectedCategoryId = v),
-                        validator: (v) => v == null
-                            ? Validators.required(
-                                null,
-                                fieldName: l10n.category,
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: PlatformSelectField<String>(
+                      label: l10n.category,
+                      prefixIcon: const Icon(Icons.folder_outlined),
+                      value: _selectedCategoryId,
+                      hint: l10n.select,
+                      items: categoriesAsync.valueOrNull
+                              ?.map(
+                                (c) => PlatformSelectItem(
+                                  value: c.id,
+                                  label: c.name,
+                                ),
                               )
-                            : null,
-                      ),
+                              .toList() ??
+                          [],
+                      onChanged: (v) =>
+                          setState(() => _selectedCategoryId = v),
+                      validator: (v) => v == null
+                          ? Validators.required(
+                              null,
+                              fieldName: l10n.category,
+                            )
+                          : null,
                     ),
-                    const SizedBox(width: 12),
-                    Material(
-                      color: Theme.of(context).colorScheme.primaryContainer,
+                  ),
+                  const SizedBox(width: 12),
+                  Material(
+                    color: Theme.of(context).colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(16),
+                    child: InkWell(
+                      onTap: _openAddCategorySheet,
                       borderRadius: BorderRadius.circular(16),
-                      child: InkWell(
-                        onTap: _openAddCategorySheet,
-                        borderRadius: BorderRadius.circular(16),
-                        child: SizedBox(
-                          width: 56,
-                          height: 56,
-                          child: Icon(
-                            Icons.add,
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onPrimaryContainer,
-                          ),
+                      child: SizedBox(
+                        width: 56,
+                        height: 56,
+                        child: Icon(
+                          Icons.add,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onPrimaryContainer,
                         ),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
               const SizedBox(height: 16),
 
@@ -319,7 +316,8 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                 loading: () => const LinearProgressIndicator(),
                 error: (e, s) => const SizedBox.shrink(),
                 data: (currencies) {
-                  final sorted = [...currencies]..sort((a, b) {
+                  final sorted = [...currencies]
+                    ..sort((a, b) {
                       if (a.code == 'TRY') return -1;
                       if (b.code == 'TRY') return 1;
                       return a.code.compareTo(b.code);
@@ -375,8 +373,7 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                 hint: l10n.select,
                 firstDate: DateTime(2000),
                 lastDate: DateTime(2100),
-                onChanged: (date) =>
-                    setState(() => _firstPaymentDate = date),
+                onChanged: (date) => setState(() => _firstPaymentDate = date),
                 validator: (v) => v == null
                     ? Validators.required(
                         null,
@@ -404,7 +401,6 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                 ),
                 const SizedBox(height: 16),
               ],
-
 
               // ── Açıklama ────────────────────────────────────────────
               TextFormField(

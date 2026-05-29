@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/l10n/l10n.dart';
+import '../../core/router/route_names.dart';
 import '../../core/theme/app_colors.dart';
-import '../../features/subscription/presentation/widgets/premium_card.dart';
 
-class PremiumRequiredSheet extends ConsumerWidget {
+class PremiumRequiredSheet extends StatelessWidget {
   const PremiumRequiredSheet({
     super.key,
     required this.featureName,
@@ -38,7 +38,7 @@ class PremiumRequiredSheet extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final l10n = context.l10n;
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
@@ -80,8 +80,30 @@ class PremiumRequiredSheet extends ConsumerWidget {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 32),
-          const PremiumCard(), // Mevcut satın alma bileşenini buraya gömüyoruz
-          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            height: 52,
+            child: FilledButton(
+              onPressed: () {
+                Navigator.pop(context);
+                context.pushNamed(RouteNames.premium);
+              },
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+              child: Text(
+                l10n.getPremium,
+                style: tt.titleSmall?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text(

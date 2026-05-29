@@ -5,7 +5,7 @@ part 'payment_embedded_model.freezed.dart';
 part 'payment_embedded_model.g.dart';
 
 @freezed
-abstract class PaymentEmbeddedModel with _$PaymentEmbeddedModel {
+sealed class PaymentEmbeddedModel with _$PaymentEmbeddedModel {
   const factory PaymentEmbeddedModel({required bool paid, String? paidTime}) =
       _PaymentEmbeddedModel;
 

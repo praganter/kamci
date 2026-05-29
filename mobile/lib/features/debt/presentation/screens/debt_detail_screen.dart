@@ -7,8 +7,11 @@ import '../../../../core/l10n/enum_l10n.dart';
 import '../../../../core/router/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/date_formatter.dart';
+import '../../../../core/utils/permission_utils.dart';
 import '../../../../shared/widgets/app_error_widget.dart';
 import '../../../../shared/providers/current_user_provider.dart';
+import '../../../category/presentation/providers/category_providers.dart';
+import '../../../category/domain/entities/member_embedded.dart';
 import '../../domain/entities/payment_embedded.dart';
 import '../providers/debt_providers.dart';
 
@@ -34,6 +37,11 @@ class DebtDetailScreen extends ConsumerWidget {
       ),
       data: (debt) {
         final isOwner = currentUserId == debt.ownerId;
+        final accessLevels = ref
+            .watch(categoryAccessLevelsProvider)
+            .valueOrNull;
+        final level = accessLevels?[debt.categoryId];
+
         final currenciesAsync = ref.watch(currencyListProvider);
         final currencySymbol = currenciesAsync.maybeWhen(
           data: (list) => list
@@ -58,20 +66,26 @@ class DebtDetailScreen extends ConsumerWidget {
           appBar: AppBar(
             title: Text(debt.name),
             actions: [
-              if (isOwner) ...[
-                IconButton(
-                  icon: const Icon(Icons.edit_outlined),
-                  onPressed: () async {
-                    await context.pushNamed(
-                      RouteNames.debtEdit,
-                      pathParameters: {'id': id},
-                    );
-                    ref.invalidate(debtDetailProvider(id));
-                    ref.invalidate(debtGroupedProvider(true));
-                    ref.invalidate(debtGroupedProvider(false));
-                  },
-                ),
-              ],
+              IconButton(
+                icon: const Icon(Icons.edit_outlined),
+                onPressed: () async {
+                  final hasEdit = PermissionUtils.check(
+                    context,
+                    isOwner: isOwner,
+                    level: level,
+                    action: (l) => l.canEdit,
+                  );
+                  if (!hasEdit) return;
+
+                  await context.pushNamed(
+                    RouteNames.debtEdit,
+                    pathParameters: {'id': id},
+                  );
+                  ref.invalidate(debtDetailProvider(id));
+                  ref.invalidate(debtGroupedProvider(true));
+                  ref.invalidate(debtGroupedProvider(false));
+                },
+              ),
             ],
           ),
           body: SingleChildScrollView(
@@ -93,14 +107,16 @@ class DebtDetailScreen extends ConsumerWidget {
                     ),
                     _InfoRow(
                       l10n.installmentCount,
-                      debt.installmentCount != null && debt.installmentCount! > 0
+                      debt.installmentCount != null &&
+                              debt.installmentCount! > 0
                           ? l10n.installmentProgress(
                               debt.paidInstallmentCount ?? 0,
                               debt.installmentCount!,
                             )
-                          : (debt.paidInstallmentCount != null && debt.paidInstallmentCount! > 0)
-                              ? l10n.openEndedProgress(debt.paidInstallmentCount!)
-                              : l10n.openEnded,
+                          : (debt.paidInstallmentCount != null &&
+                                debt.paidInstallmentCount! > 0)
+                          ? l10n.openEndedProgress(debt.paidInstallmentCount!)
+                          : l10n.openEnded,
                     ),
                     _InfoRow(l10n.autoPayment, debt.autoPayment ? '✓' : '—'),
                     if (debt.description != null)

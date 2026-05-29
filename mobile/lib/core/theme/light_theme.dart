@@ -7,7 +7,7 @@ ThemeData buildLightTheme() {
     brightness: Brightness.light,
     primary: AppColors.primary,
     onPrimary: Colors.white,
-    primaryContainer: Color(0xFFEDE9FE),
+    primaryContainer: Color(0xFFC4B5FD),
     onPrimaryContainer: Color(0xFF3B0764),
     secondary: AppColors.secondary,
     onSecondary: Colors.white,

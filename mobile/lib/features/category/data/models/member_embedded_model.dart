@@ -10,27 +10,32 @@ enum AccessLevelJson {
   read,
   @JsonValue('WRITE')
   write,
-  @JsonValue('ADMIN')
-  admin;
+  @JsonValue('EDIT')
+  edit,
+  @JsonValue('DELETE')
+  delete;
 
   AccessLevel toDomain() => switch (this) {
     AccessLevelJson.read => AccessLevel.read,
     AccessLevelJson.write => AccessLevel.write,
-    AccessLevelJson.admin => AccessLevel.admin,
+    AccessLevelJson.edit => AccessLevel.edit,
+    AccessLevelJson.delete => AccessLevel.admin,
   };
 
   static AccessLevelJson fromDomain(AccessLevel level) => switch (level) {
     AccessLevel.read => AccessLevelJson.read,
     AccessLevel.write => AccessLevelJson.write,
-    AccessLevel.admin => AccessLevelJson.admin,
+    AccessLevel.edit => AccessLevelJson.edit,
+    AccessLevel.admin => AccessLevelJson.delete,
   };
 }
 
 @freezed
-abstract class MemberEmbeddedModel with _$MemberEmbeddedModel {
+sealed class MemberEmbeddedModel with _$MemberEmbeddedModel {
   const factory MemberEmbeddedModel({
-    required String userId,
+    String? userId,
     required AccessLevelJson accessLevel,
+    String? email,
   }) = _MemberEmbeddedModel;
 
   factory MemberEmbeddedModel.fromJson(Map<String, dynamic> json) =>
@@ -38,6 +43,9 @@ abstract class MemberEmbeddedModel with _$MemberEmbeddedModel {
 }
 
 extension MemberEmbeddedModelMapper on MemberEmbeddedModel {
-  MemberEmbedded toDomain() =>
-      MemberEmbedded(userId: userId, accessLevel: accessLevel.toDomain());
+  MemberEmbedded toDomain() => MemberEmbedded(
+    userId: userId,
+    accessLevel: accessLevel.toDomain(),
+    email: email,
+  );
 }

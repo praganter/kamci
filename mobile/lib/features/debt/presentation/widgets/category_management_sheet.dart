@@ -205,17 +205,22 @@ class _CategoryManagementSheetState
                     contentPadding: EdgeInsets.zero,
                     leading: const Icon(Icons.person_outline),
                     title: Text(
-                      m.userId,
+                      m.email ?? m.userId ?? '',
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
-                    subtitle: Text(m.accessLevel.label),
+                    subtitle: Text(switch (m.accessLevel) {
+                      AccessLevel.read => '${l10n.accessRead} — ${l10n.accessReadDesc}',
+                      AccessLevel.write => '${l10n.accessWrite} — ${l10n.accessWriteDesc}',
+                      AccessLevel.edit => '${l10n.accessEdit} — ${l10n.accessEditDesc}',
+                      AccessLevel.admin => '${l10n.accessDelete} — ${l10n.accessDeleteDesc}',
+                    }),
                     trailing: widget.owned
                         ? IconButton(
                             icon: const Icon(
                               Icons.person_remove_outlined,
                               color: Colors.red,
                             ),
-                            onPressed: () => _removeMember(m.userId),
+                            onPressed: () => _removeMember(m.userId ?? m.email ?? ''),
                           )
                         : null,
                   ),
@@ -308,17 +313,46 @@ class _CategoryManagementSheetState
           ),
         ),
         const SizedBox(height: 12),
-        // ignore: deprecated_member_use
         DropdownButtonFormField<AccessLevel>(
-          // ignore: deprecated_member_use
-          value: _accessLevel,
-          decoration: const InputDecoration(
-            labelText: 'Erişim Seviyesi',
-            prefixIcon: Icon(Icons.security_outlined),
+          initialValue: _accessLevel,
+          decoration: InputDecoration(
+            labelText: l10n.accessLevel,
+            prefixIcon: const Icon(Icons.security_outlined),
           ),
-          items: AccessLevel.values
-              .map((a) => DropdownMenuItem(value: a, child: Text(a.label)))
-              .toList(),
+          items: AccessLevel.values.map((a) {
+            final label = switch (a) {
+              AccessLevel.read => l10n.accessRead,
+              AccessLevel.write => l10n.accessWrite,
+              AccessLevel.edit => l10n.accessEdit,
+              AccessLevel.admin => l10n.accessDelete,
+            };
+            final desc = switch (a) {
+              AccessLevel.read => l10n.accessReadDesc,
+              AccessLevel.write => l10n.accessWriteDesc,
+              AccessLevel.edit => l10n.accessEditDesc,
+              AccessLevel.admin => l10n.accessDeleteDesc,
+            };
+            return DropdownMenuItem(
+              value: a,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  Text(
+                    desc,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
           onChanged: (v) => setState(() => _accessLevel = v!),
         ),
         const SizedBox(height: 20),

@@ -54,7 +54,11 @@ class _PlatformDateFieldState extends State<PlatformDateField> {
   ) async {
     final firstDate = widget.firstDate ?? DateTime(2000);
     final lastDate = widget.lastDate ?? DateTime(2100);
-    final initDate = _clampDate(widget.value ?? DateTime.now(), firstDate, lastDate);
+    final initDate = _clampDate(
+      widget.value ?? DateTime.now(),
+      firstDate,
+      lastDate,
+    );
 
     final mloc = MaterialLocalizations.of(context);
     final cs = Theme.of(context).colorScheme;
@@ -249,10 +253,7 @@ class _DatePickerSheetState extends State<_DatePickerSheet> {
             },
             child: Text(
               widget.confirmLabel,
-              style: TextStyle(
-                color: cs.primary,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(color: cs.primary, fontWeight: FontWeight.bold),
             ),
           ),
         ],

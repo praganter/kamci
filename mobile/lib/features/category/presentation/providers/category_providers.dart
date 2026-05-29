@@ -1,9 +1,32 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import '../../../../shared/providers/current_user_provider.dart';
 import '../../data/repositories/category_repository_impl.dart';
 import '../../domain/entities/category.dart';
 import '../../domain/entities/member_embedded.dart';
 
 part 'category_providers.g.dart';
+
+@riverpod
+Future<Map<String, AccessLevel>> categoryAccessLevels(Ref ref) async {
+  final categories = await ref.watch(categoryListProvider.future);
+  final currentUserId = ref.watch(currentUserIdProvider).valueOrNull;
+
+  return {
+    for (final c in categories)
+      c.id: (c.ownerId == currentUserId)
+          ? AccessLevel.admin
+          : c.members
+                .firstWhere(
+                  (m) => m.userId == currentUserId,
+                  orElse: () => const MemberEmbedded(
+                    userId: '',
+                    accessLevel: AccessLevel.read,
+                  ),
+                )
+                .accessLevel,
+  };
+}
 
 @riverpod
 class CategoryList extends _$CategoryList {
@@ -36,7 +59,7 @@ class CategoryDetail extends _$CategoryDetail {
     final categories = await ref.watch(categoryListProvider.future);
     return categories.firstWhere(
       (c) => c.id == id,
-      orElse: () => throw Exception('Kategori bulunamadı'),
+      orElse: () => throw Exception('Category not found: $id'),
     );
   }
 

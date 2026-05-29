@@ -44,13 +44,18 @@ class _PlatformSelectFieldState<T> extends State<PlatformSelectField<T>> {
     }
   }
 
-  Future<void> _showPicker(BuildContext context, FormFieldState<T> state) async {
+  Future<void> _showPicker(
+    BuildContext context,
+    FormFieldState<T> state,
+  ) async {
     final items = widget.items;
     if (items.isEmpty) return;
 
     final currentIdx = state.value == null
         ? 0
-        : items.indexWhere((i) => i.value == state.value).clamp(0, items.length - 1);
+        : items
+              .indexWhere((i) => i.value == state.value)
+              .clamp(0, items.length - 1);
 
     final mloc = MaterialLocalizations.of(context);
     final cs = Theme.of(context).colorScheme;
@@ -85,12 +90,12 @@ class _PlatformSelectFieldState<T> extends State<PlatformSelectField<T>> {
           final selectedLabel = state.value == null
               ? null
               : widget.items
-                  .cast<PlatformSelectItem<T>?>()
-                  .firstWhere(
-                    (i) => i!.value == state.value,
-                    orElse: () => null,
-                  )
-                  ?.label;
+                    .cast<PlatformSelectItem<T>?>()
+                    .firstWhere(
+                      (i) => i!.value == state.value,
+                      orElse: () => null,
+                    )
+                    ?.label;
 
           return Tooltip(
             message: selectedLabel != null ? widget.label : '',
@@ -132,10 +137,8 @@ class _PlatformSelectFieldState<T> extends State<PlatformSelectField<T>> {
       hint: widget.hint != null ? Text(widget.hint!) : null,
       items: widget.items
           .map(
-            (item) => DropdownMenuItem<T>(
-              value: item.value,
-              child: Text(item.label),
-            ),
+            (item) =>
+                DropdownMenuItem<T>(value: item.value, child: Text(item.label)),
           )
           .toList(),
       onChanged: widget.onChanged,
@@ -259,10 +262,7 @@ class _SelectPickerSheetState extends State<_SelectPickerSheet> {
             },
             child: Text(
               widget.confirmLabel,
-              style: TextStyle(
-                color: cs.primary,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(color: cs.primary, fontWeight: FontWeight.bold),
             ),
           ),
         ],

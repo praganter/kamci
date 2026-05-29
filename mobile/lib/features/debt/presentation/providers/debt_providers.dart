@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import '../../../../core/constants/api_constants.dart';
+import '../../../../core/network/dio_client.dart';
 import '../../../../core/providers/app_settings_provider.dart';
 import '../../../../core/storage/secure_storage_service.dart';
 import '../../../category/presentation/providers/category_providers.dart';
@@ -18,10 +20,7 @@ part 'debt_providers.g.dart';
 // ── Grouped categories provider (family: isOwner) ────────────────────────────
 
 @riverpod
-Future<List<CategoryWithDebts>> debtGrouped(
-  Ref ref,
-  bool isOwner,
-) async {
+Future<List<CategoryWithDebts>> debtGrouped(Ref ref, bool isOwner) async {
   final month = ref.watch(selectedMonthProvider);
   final monthStr = '${month.year}-${month.month.toString().padLeft(2, '0')}';
 
@@ -49,9 +48,7 @@ Future<List<CategoryWithDebts>> debtGrouped(
         .getUserId();
     final groupedIds = grouped.map((g) => g.categoryId).toSet();
     final emptyGroups = allCategories
-        .where(
-          (c) => c.ownerId == currentUserId && !groupedIds.contains(c.id),
-        )
+        .where((c) => c.ownerId == currentUserId && !groupedIds.contains(c.id))
         .map(
           (c) => CategoryWithDebts(
             categoryId: c.id,
@@ -207,6 +204,47 @@ Future<GroupedDebtsByPeriod> groupedDebtInstances(Ref ref) async {
   return grouped;
 }
 
+// ── GroupedDebtInstances (parameterized by owner, for independent tabs) ──────
+
+@riverpod
+Future<GroupedDebtsByPeriod> groupedDebtInstancesByOwner(
+  Ref ref,
+  bool isOwner,
+) async {
+  final categories = await ref.watch(debtGroupedProvider(isOwner).future);
+
+  final GroupedDebtsByPeriod grouped = {
+    for (final period in PaymentPeriodType.values) period: {},
+  };
+
+  for (final cat in categories) {
+    for (final debt in cat.debts) {
+      final period = debt.paymentPeriodType;
+      final catId = cat.categoryId;
+
+      if (!grouped[period]!.containsKey(catId)) {
+        grouped[period]![catId] = (
+          categoryName: cat.categoryName,
+          owned: cat.owned,
+          ownerUserId: cat.ownerUserId,
+          items: [],
+        );
+      }
+
+      grouped[period]![catId]!.items.add(
+        DebtListItem(
+          debt: debt,
+          categoryName: cat.categoryName,
+          owned: cat.owned,
+          ownerUserId: cat.ownerUserId,
+        ),
+      );
+    }
+  }
+
+  return grouped;
+}
+
 // ── Currency list ────────────────────────────────────────────────────────────
 
 @riverpod
@@ -216,4 +254,16 @@ Future<List<CurrencyModel>> currencyList(Ref ref) async {
   return list
       .map((e) => CurrencyModel.fromJson(e as Map<String, dynamic>))
       .toList();
+}
+
+// ── Exchange rates ────────────────────────────────────────────────────────────
+
+@riverpod
+Future<Map<String, double>> exchangeRates(Ref ref) async {
+  final base = ref.watch(baseCurrencyProvider);
+  final dio = ref.watch(dioClientProvider);
+  final resp = await dio.get('${ApiConstants.exchangeRates}/$base');
+  final body = resp.data as Map<String, dynamic>;
+  final rates = (body['rates'] ?? body) as Map<String, dynamic>;
+  return {for (final e in rates.entries) e.key: (e.value as num).toDouble()};
 }

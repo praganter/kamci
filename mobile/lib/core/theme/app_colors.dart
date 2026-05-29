@@ -21,8 +21,9 @@ abstract final class AppColors {
   static const Color textSecondaryDark = Color(0xFF9B96B8);
 
   static const Color accessRead = Color(0xFF9B96B8);
-  static const Color accessWrite = Color(0xFF7C3AED);
-  static const Color accessAdmin = Color(0xFFF59E0B);
+  static const Color accessWrite = Color(0xFF22C55E);
+  static const Color accessEdit = Color(0xFFF59E0B);
+  static const Color accessDelete = Color(0xFFEF4444);
 
   static const Color statusActive = Color(0xFF22C55E);
   static const Color statusInactive = Color(0xFF9B96B8);

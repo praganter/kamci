@@ -80,6 +80,8 @@ class AuthNotifier extends _$AuthNotifier {
       await _saveUserIdFromToken(tokens);
       await ref.read(notificationServiceProvider).registerToken(email: email);
       state = AuthState.authenticated(tokens);
+    } on UnauthorizedException {
+      state = const AuthState.error('E-posta veya şifre hatalı.');
     } on ApiException catch (e) {
       state = AuthState.error(e.message);
     } catch (_) {

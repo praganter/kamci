@@ -40,6 +40,8 @@ class CategoryRemoteDatasource {
       final data = Map<String, dynamic>.from(
         response.data as Map<String, dynamic>,
       );
+      // API create response doesn't include ownerId; placeholder satisfies
+      // CategoryModel's required field. Repository layer fills the real value.
       data.putIfAbsent('ownerId', () => '');
       return CategoryModel.fromJson(data);
     } on DioException catch (e) {
@@ -56,6 +58,7 @@ class CategoryRemoteDatasource {
       final data = Map<String, dynamic>.from(
         response.data as Map<String, dynamic>,
       );
+      // Same as create: ownerId missing from API response.
       data.putIfAbsent('ownerId', () => '');
       return CategoryModel.fromJson(data);
     } on DioException catch (e) {
@@ -124,7 +127,8 @@ class CategoryRemoteDatasource {
         '${ApiConstants.categoryMigrate}/$id/migrate',
         queryParameters: {'targetCategoryId': targetCategoryId},
       );
-      return (response.data as Map<String, dynamic>)['migratedDebtCount'] as int;
+      return (response.data as Map<String, dynamic>)['migratedDebtCount']
+          as int;
     } on DioException catch (e) {
       throw _mapException(e);
     }
