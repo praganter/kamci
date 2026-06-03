@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/l10n/l10n.dart';
 import '../../core/router/route_names.dart';
 import '../../core/theme/app_colors.dart';
+import '../../features/subscription/presentation/providers/subscription_providers.dart';
 
 class PremiumRequiredSheet extends StatelessWidget {
   const PremiumRequiredSheet({
@@ -114,5 +116,26 @@ class PremiumRequiredSheet extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+extension PremiumGuardRef on WidgetRef {
+  /// Returns true if the user is premium; otherwise shows [PremiumRequiredSheet]
+  /// and returns false. Use in callbacks to gate premium features:
+  ///   if (!ref.requirePremium(context, featureName: l10n.reminder)) return;
+  bool requirePremium(
+    BuildContext context, {
+    required String featureName,
+    int limitCount = 0,
+    String? message,
+  }) {
+    if (read(isPremiumProvider)) return true;
+    PremiumRequiredSheet.show(
+      context,
+      featureName: featureName,
+      limitCount: limitCount,
+      message: message,
+    );
+    return false;
   }
 }

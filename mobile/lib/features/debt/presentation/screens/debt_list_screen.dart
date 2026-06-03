@@ -7,6 +7,7 @@ import '../../../../core/l10n/enum_l10n.dart';
 import '../../../../core/router/route_names.dart';
 import '../../../../core/utils/permission_utils.dart';
 import '../../../../core/utils/date_formatter.dart';
+import '../../../../core/utils/snackbar_utils.dart';
 import '../../../category/presentation/providers/category_providers.dart';
 import '../../../category/domain/entities/member_embedded.dart';
 import '../../../../shared/widgets/app_error_widget.dart';
@@ -16,6 +17,7 @@ import '../../../../shared/widgets/pro_badge.dart';
 import '../../../category/domain/entities/category.dart';
 import '../../../category/presentation/widgets/add_category_sheet.dart';
 import '../../../subscription/presentation/providers/subscription_providers.dart';
+import '../../../subscription/subscription_constants.dart';
 import '../../../subscription/presentation/widgets/premium_card.dart';
 import '../../../../core/providers/app_settings_provider.dart';
 import '../../domain/entities/debt.dart';
@@ -36,7 +38,6 @@ class _DebtListScreenState extends ConsumerState<DebtListScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _tabController.addListener(() => setState(() {}));
   }
 
   @override
@@ -49,7 +50,6 @@ class _DebtListScreenState extends ConsumerState<DebtListScreen>
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final l10n = context.l10n;
-    final isOwnedTab = _tabController.index == 0;
     final isPremium = ref.watch(isPremiumProvider);
 
     return Scaffold(
@@ -90,40 +90,55 @@ class _DebtListScreenState extends ConsumerState<DebtListScreen>
         controller: _tabController,
         children: const [_DebtTabView(owned: true), _DebtTabView(owned: false)],
       ),
-      floatingActionButton: isOwnedTab
-          ? FloatingActionButton(
-              onPressed: () async {
-                if (!isPremium) {
-                  final debts = ref.read(debtListProvider).valueOrNull ?? [];
-                  if (debts.length >= 5) {
-                    PremiumRequiredSheet.show(
-                      context,
-                      featureName: l10n.debts.toLowerCase(),
-                      limitCount: 5,
-                    );
-                    return;
-                  }
+      floatingActionButton: AnimatedBuilder(
+        animation: _tabController,
+        builder: (context, _) {
+          if (_tabController.index != 0) return const SizedBox.shrink();
+          return FloatingActionButton(
+            onPressed: () async {
+              if (!isPremium) {
+                final debts = ref.read(debtListProvider).valueOrNull ?? [];
+                if (debts.length >= SubscriptionConstants.freeDebtLimit) {
+                  PremiumRequiredSheet.show(
+                    context,
+                    featureName: l10n.debts.toLowerCase(),
+                    limitCount: SubscriptionConstants.freeDebtLimit,
+                  );
+                  return;
                 }
-                ref.invalidate(categoryListProvider);
-                ref.invalidate(currencyListProvider);
-                ref.read(currencyListProvider.future).ignore();
-                await context.pushNamed(RouteNames.debtNew);
-                ref.invalidate(debtGroupedProvider(true));
-              },
-              child: const Icon(Icons.add),
-            )
-          : null,
+              }
+              ref.invalidate(categoryListProvider);
+              ref.invalidate(currencyListProvider);
+              ref.read(currencyListProvider.future).ignore();
+              await context.pushNamed(RouteNames.debtNew);
+              ref.invalidate(debtGroupedProvider(true));
+            },
+            child: const Icon(Icons.add),
+          );
+        },
+      ),
     );
   }
 }
 
-class _DebtTabView extends ConsumerWidget {
+class _DebtTabView extends ConsumerStatefulWidget {
   const _DebtTabView({required this.owned});
 
   final bool owned;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_DebtTabView> createState() => _DebtTabViewState();
+}
+
+class _DebtTabViewState extends ConsumerState<_DebtTabView>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    final owned = widget.owned;
     final groupedAsync = ref.watch(groupedDebtInstancesByOwnerProvider(owned));
     final isPremium = ref.watch(isPremiumProvider);
     final selectedMonth = ref.watch(selectedMonthProvider);
@@ -619,11 +634,7 @@ class _CategoryPeriodSection extends ConsumerWidget {
         );
       }
     } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(e.toString())));
-      }
+      if (context.mounted) showErrorSnackBar(context, e.toString());
     }
   }
 
@@ -642,11 +653,7 @@ class _CategoryPeriodSection extends ConsumerWidget {
       await ref.read(categoryListProvider.notifier).deleteCategory(categoryId);
       ref.invalidate(debtGroupedProvider(true));
     } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(e.toString())));
-      }
+      if (context.mounted) showErrorSnackBar(context, e.toString());
     }
   }
 }
@@ -911,11 +918,7 @@ Future<void> _showPaymentOptions(
                   );
                 }
               } catch (e) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(SnackBar(content: Text(e.toString())));
-                }
+                if (context.mounted) showErrorSnackBar(context, e.toString());
               }
             },
           ),
@@ -938,11 +941,7 @@ Future<void> _showPaymentOptions(
                   );
                 }
               } catch (e) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(SnackBar(content: Text(e.toString())));
-                }
+                if (context.mounted) showErrorSnackBar(context, e.toString());
               }
             },
           ),
@@ -963,11 +962,7 @@ Future<void> _showPaymentOptions(
                   );
                 }
               } catch (e) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(SnackBar(content: Text(e.toString())));
-                }
+                if (context.mounted) showErrorSnackBar(context, e.toString());
               }
             },
           ),
@@ -981,19 +976,7 @@ Future<void> _showPaymentOptions(
                   color: Colors.purple,
                 ),
                 title: Text(l10n.bulkPayment),
-                trailing: isPremium
-                    ? null
-                    : GestureDetector(
-                        onTap: () {
-                          Navigator.of(ctx).pop();
-                          PremiumRequiredSheet.show(
-                            context,
-                            featureName: l10n.bulkPayment.toLowerCase(),
-                            limitCount: 0,
-                          );
-                        },
-                        child: const ProBadge(),
-                      ),
+                trailing: isPremium ? null : const ProBadge(),
                 onTap: () async {
                   if (!isPremium) {
                     Navigator.of(ctx).pop();
@@ -1001,6 +984,7 @@ Future<void> _showPaymentOptions(
                       context,
                       featureName: l10n.bulkPayment.toLowerCase(),
                       limitCount: 0,
+                      message: l10n.premiumFeatureRequired(l10n.bulkPayment),
                     );
                     return;
                   }
@@ -1023,11 +1007,7 @@ Future<void> _showPaymentOptions(
                       );
                     }
                   } catch (e) {
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(
-                        context,
-                      ).showSnackBar(SnackBar(content: Text(e.toString())));
-                    }
+                    if (context.mounted) showErrorSnackBar(context, e.toString());
                   }
                 },
               );

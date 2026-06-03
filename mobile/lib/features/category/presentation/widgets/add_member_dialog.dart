@@ -87,7 +87,7 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
         FilledButton(
           onPressed: () {
             final email = _emailCtrl.text.trim();
-            if (Validators.email(email) == null) {
+            if (Validators.isValidEmail(email)) {
               Navigator.pop(context, (
                 email: email,
                 accessLevel: _selectedLevel,

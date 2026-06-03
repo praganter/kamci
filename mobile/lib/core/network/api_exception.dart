@@ -11,32 +11,27 @@ sealed class ApiException implements Exception {
     final statusCode = e.response?.statusCode;
     final data = e.response?.data;
 
-    // Handle business errors (status 400, 403, 409 etc.)
     if (data is Map<String, dynamic>) {
       final message = data['message'] as String?;
 
       if (statusCode == 400) {
-        return BusinessException(message ?? 'Geçersiz istek.');
+        return BusinessException(message ?? 'Invalid request.');
       }
       if (statusCode == 401) {
-        return const UnauthorizedException();
+        return UnauthorizedException(message ?? const UnauthorizedException().message);
       }
       if (statusCode == 403) {
-        return PremiumLimitException(
-          message ?? 'Bu özellik premium üyeler içindir.',
-        );
+        return PremiumLimitException(message ?? const PremiumLimitException().message);
       }
       if (statusCode == 409) {
-        return BusinessException(
-          message ?? 'Bu işlem şu an gerçekleştirilemiyor.',
-        );
+        return BusinessException(message ?? 'This operation cannot be completed right now.');
       }
       if (statusCode == 422) {
         final errors = data['errors'] as List?;
         final errorMsg = errors != null && errors.isNotEmpty
             ? (errors.first['message'] as String?)
             : message;
-        return BusinessException(errorMsg ?? 'Doğrulama hatası.');
+        return BusinessException(errorMsg ?? 'Validation error.');
       }
     }
 
@@ -46,7 +41,7 @@ sealed class ApiException implements Exception {
     if (statusCode != null && statusCode >= 500) {
       final msg =
           (data is Map ? data['message'] as String? : null) ??
-          'Sunucu hatası oluştu.';
+          const ServerException().message;
       return ServerException(msg);
     }
 
@@ -62,33 +57,33 @@ sealed class ApiException implements Exception {
 
 class NetworkException extends ApiException {
   const NetworkException([
-    super.message = 'İnternet bağlantısı yok veya sunucuya ulaşılamıyor.',
+    super.message = 'No internet connection or server unreachable.',
   ]);
 }
 
 class UnauthorizedException extends ApiException {
   const UnauthorizedException([
-    super.message = 'Oturum süresi doldu. Lütfen tekrar giriş yapın.',
+    super.message = 'Session expired. Please sign in again.',
   ]);
 }
 
 class NotFoundException extends ApiException {
-  const NotFoundException([super.message = 'İstenen kaynak bulunamadı.']);
+  const NotFoundException([super.message = 'The requested resource was not found.']);
 }
 
 class ServerException extends ApiException {
   const ServerException([
-    super.message = 'Sunucu hatası oluştu. Lütfen tekrar deneyin.',
+    super.message = 'A server error occurred. Please try again.',
   ]);
 }
 
 class UnknownException extends ApiException {
-  const UnknownException([super.message = 'Beklenmeyen bir hata oluştu.']);
+  const UnknownException([super.message = 'An unexpected error occurred.']);
 }
 
 class PremiumLimitException extends ApiException {
   const PremiumLimitException([
-    super.message = 'Bu özellik premium üyeler içindir.',
+    super.message = 'This feature is available to premium members only.',
   ]);
 }
 
@@ -98,6 +93,6 @@ class BusinessException extends ApiException {
 
 class RateLimitException extends ApiException {
   const RateLimitException([
-    super.message = 'Çok fazla istek gönderildi. Lütfen bekleyin.',
+    super.message = 'Too many requests. Please wait a moment.',
   ]);
 }

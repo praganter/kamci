@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/l10n/l10n.dart';
+import '../../../../core/utils/snackbar_utils.dart';
 import '../../../../core/utils/validators.dart';
 import '../providers/auth_provider.dart';
 import '../providers/auth_state.dart';
@@ -45,9 +46,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     final l10n = context.l10n;
     ref.listen<AuthState>(authNotifierProvider, (_, state) {
       if (state is AuthStateError) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(state.message)));
+        showErrorSnackBar(context, state.message);
       }
     });
 
@@ -70,7 +69,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   prefixIcon: Icons.email_outlined,
                   keyboardType: TextInputType.emailAddress,
                   textInputAction: TextInputAction.next,
-                  validator: Validators.email,
+                  validator: Validators.email(l10n),
                 ),
                 const SizedBox(height: 16),
                 AuthTextField(
@@ -79,7 +78,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   prefixIcon: Icons.lock_outline_rounded,
                   isPassword: true,
                   textInputAction: TextInputAction.next,
-                  validator: Validators.password,
+                  validator: Validators.password(l10n),
                 ),
                 const SizedBox(height: 16),
                 AuthTextField(
@@ -90,7 +89,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   textInputAction: TextInputAction.done,
                   onFieldSubmitted: (_) => _submit(),
                   validator: (v) =>
-                      Validators.confirmPassword(v, _passwordCtrl.text),
+                      Validators.confirmPassword(l10n, v, _passwordCtrl.text),
                 ),
                 const SizedBox(height: 16),
                 SwitchListTile(

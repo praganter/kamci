@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../domain/entities/reminder_channel.dart';
 import '../../domain/entities/reminder_embedded.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/l10n/enum_l10n.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../shared/widgets/pro_badge.dart';
+import '../../../../core/utils/snackbar_utils.dart';
 import '../../../../core/utils/validators.dart';
 import '../../../../features/category/presentation/providers/category_providers.dart';
 import '../../../../features/category/presentation/widgets/add_category_sheet.dart';
@@ -15,7 +17,7 @@ import '../../../../shared/widgets/platform_select_field.dart';
 import '../../../../shared/widgets/platform_time_field.dart';
 import '../../../../shared/widgets/premium_required_sheet.dart';
 import '../../../subscription/presentation/providers/subscription_providers.dart';
-import '../../data/repositories/debt_repository_impl.dart';
+import '../../../subscription/subscription_constants.dart';
 import '../../domain/entities/debt.dart';
 import '../../domain/repositories/debt_repository.dart';
 import '../providers/debt_providers.dart';
@@ -40,10 +42,12 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
   String? _selectedCurrency;
   bool _autoPayment = false;
   bool _reminderEnabled = false;
-  List<String> _reminderChannels = [];
+  List<ReminderChannel> _reminderChannels = [];
   DateTime? _reminderDate;
   TimeOfDay? _reminderTime;
   bool _initialized = false;
+  bool _isSubmitting = false;
+  ProviderSubscription<AsyncValue<Debt>>? _debtSubscription;
 
   @override
   void initState() {
@@ -51,12 +55,10 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
     if (widget.debtId != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
-        final current = ref.read(debtDetailProvider(widget.debtId!));
-        current.whenData(_prefillFields);
-
-        ref.listenManual<AsyncValue<Debt>>(
+        _debtSubscription = ref.listenManual<AsyncValue<Debt>>(
           debtDetailProvider(widget.debtId!),
           (_, next) => next.whenData(_prefillFields),
+          fireImmediately: true,
         );
       });
     }
@@ -93,6 +95,7 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
 
   @override
   void dispose() {
+    _debtSubscription?.close();
     _nameCtrl.dispose();
     _amountCtrl.dispose();
     _descCtrl.dispose();
@@ -101,26 +104,24 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
   }
 
   Future<void> _submit() async {
+    if (_isSubmitting) return;
     if (!_formKey.currentState!.validate()) return;
 
     final l10n = context.l10n;
     if (_reminderEnabled) {
       if (_reminderChannels.isEmpty) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(l10n.reminderChannelRequired)));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l10n.reminderChannelRequired)));
         return;
       }
       if (_reminderDate == null) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(l10n.reminderDateRequired)));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l10n.reminderDateRequired)));
         return;
       }
       if (_reminderTime == null) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(l10n.reminderTimeRequired)));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l10n.reminderTimeRequired)));
         return;
       }
     }
@@ -149,34 +150,22 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
           : null,
     );
 
-    final repo = ref.read(debtRepositoryProvider);
+    setState(() => _isSubmitting = true);
     try {
-      if (widget.debtId != null) {
-        await repo.update(widget.debtId!, params);
-      } else {
-        await repo.create(params);
-      }
-      ref.invalidate(debtListProvider);
-      ref.invalidate(debtGroupedProvider(true));
-      ref.invalidate(debtGroupedProvider(false));
-      if (widget.debtId != null) {
-        ref.invalidate(debtDetailProvider(widget.debtId!));
-      }
+      await ref.read(debtListProvider.notifier).saveDebt(widget.debtId, params);
       if (mounted) context.pop();
     } on PremiumLimitException {
       if (mounted) {
         PremiumRequiredSheet.show(
           context,
           featureName: context.l10n.debts.toLowerCase(),
-          limitCount: 5,
+          limitCount: SubscriptionConstants.freeDebtLimit,
         );
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(e.toString())));
-      }
+      if (mounted) showErrorSnackBar(context, e.toString());
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
     }
   }
 
@@ -189,11 +178,11 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
           .where((c) => c.ownerId == currentUserId)
           .length;
 
-      if (ownedCategories >= 2) {
+      if (ownedCategories >= SubscriptionConstants.freeCategoryLimit) {
         PremiumRequiredSheet.show(
           context,
           featureName: context.l10n.categories.toLowerCase(),
-          limitCount: 2,
+          limitCount: SubscriptionConstants.freeCategoryLimit,
         );
         return;
       }
@@ -254,6 +243,7 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                           setState(() => _selectedCategoryId = v),
                       validator: (v) => v == null
                           ? Validators.required(
+                              l10n,
                               null,
                               fieldName: l10n.category,
                             )
@@ -292,7 +282,7 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                   prefixIcon: const Icon(Icons.label_outline),
                 ),
                 validator: (v) =>
-                    Validators.required(v, fieldName: l10n.debtName),
+                    Validators.required(l10n, v, fieldName: l10n.debtName),
               ),
               const SizedBox(height: 16),
 
@@ -307,14 +297,20 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
-                validator: Validators.amount,
+                validator: Validators.amount(l10n),
               ),
               const SizedBox(height: 16),
 
               // ── Para Birimi ─────────────────────────────────────────
               currenciesAsync.when(
                 loading: () => const LinearProgressIndicator(),
-                error: (e, s) => const SizedBox.shrink(),
+                error: (e, _) => Text(
+                  e.toString(),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.error,
+                    fontSize: 12,
+                  ),
+                ),
                 data: (currencies) {
                   final sorted = [...currencies]
                     ..sort((a, b) {
@@ -337,7 +333,7 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                         .toList(),
                     onChanged: (v) => setState(() => _selectedCurrency = v),
                     validator: (v) => v == null
-                        ? Validators.required(null, fieldName: l10n.currency)
+                        ? Validators.required(l10n, null, fieldName: l10n.currency)
                         : null,
                   );
                 },
@@ -360,7 +356,7 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                     .toList(),
                 onChanged: (v) => setState(() => _periodType = v),
                 validator: (v) => v == null
-                    ? Validators.required(null, fieldName: l10n.paymentPeriod)
+                    ? Validators.required(l10n, null, fieldName: l10n.paymentPeriod)
                     : null,
               ),
               const SizedBox(height: 16),
@@ -376,6 +372,7 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                 onChanged: (date) => setState(() => _firstPaymentDate = date),
                 validator: (v) => v == null
                     ? Validators.required(
+                        l10n,
                         null,
                         fieldName: l10n.firstPaymentDate,
                       )
@@ -448,16 +445,11 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                   ),
                   value: _reminderEnabled,
                   onChanged: (v) {
-                    final isPremium = ref.read(isPremiumProvider);
-                    if (!isPremium) {
-                      PremiumRequiredSheet.show(
-                        context,
-                        featureName: l10n.reminder.toLowerCase(),
-                        limitCount: 0,
-                        message: l10n.premiumFeatureRequired(l10n.reminder),
-                      );
-                      return;
-                    }
+                    if (!ref.requirePremium(
+                      context,
+                      featureName: l10n.reminder.toLowerCase(),
+                      message: l10n.premiumFeatureRequired(l10n.reminder),
+                    )) { return; }
                     setState(() => _reminderEnabled = v ?? false);
                   },
                   controlAffinity: ListTileControlAffinity.trailing,
@@ -476,13 +468,13 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                       child: CheckboxListTile(
                         contentPadding: EdgeInsets.zero,
                         title: Text(l10n.channelEmail),
-                        value: _reminderChannels.contains('EMAIL'),
+                        value: _reminderChannels.contains(ReminderChannel.email),
                         onChanged: (v) => setState(() {
                           if (v == true) {
-                            _reminderChannels = [..._reminderChannels, 'EMAIL'];
+                            _reminderChannels = [..._reminderChannels, ReminderChannel.email];
                           } else {
                             _reminderChannels = _reminderChannels
-                                .where((c) => c != 'EMAIL')
+                                .where((c) => c != ReminderChannel.email)
                                 .toList();
                           }
                         }),
@@ -492,16 +484,16 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                       child: CheckboxListTile(
                         contentPadding: EdgeInsets.zero,
                         title: Text(l10n.channelInApp),
-                        value: _reminderChannels.contains('IN_APP'),
+                        value: _reminderChannels.contains(ReminderChannel.inApp),
                         onChanged: (v) => setState(() {
                           if (v == true) {
                             _reminderChannels = [
                               ..._reminderChannels,
-                              'IN_APP',
+                              ReminderChannel.inApp,
                             ];
                           } else {
                             _reminderChannels = _reminderChannels
-                                .where((c) => c != 'IN_APP')
+                                .where((c) => c != ReminderChannel.inApp)
                                 .toList();
                           }
                         }),
@@ -543,8 +535,14 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
               const SizedBox(height: 24),
 
               ElevatedButton(
-                onPressed: _submit,
-                child: Text(widget.debtId == null ? l10n.create : l10n.update),
+                onPressed: _isSubmitting ? null : _submit,
+                child: _isSubmitting
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Text(widget.debtId == null ? l10n.create : l10n.update),
               ),
             ],
           ),

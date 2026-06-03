@@ -1,7 +1,7 @@
 name: dt_mobile
 description: "Kamci mobile application."
 publish_to: 'none'
-version: 0.2.0+2
+version: 0.2.0+5
 
 environment:
   sdk: ^3.10.3
@@ -28,6 +28,9 @@ dependencies:
   # Code Generation - Models
   freezed_annotation: ^3.0.0
   json_annotation: ^4.9.0
+
+  # Deep links
+  app_links: ^6.3.4
 
   # Utilities
   intl: ^0.20.2

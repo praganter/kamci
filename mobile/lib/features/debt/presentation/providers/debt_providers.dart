@@ -7,13 +7,12 @@ import '../../../../core/network/dio_client.dart';
 import '../../../../core/providers/app_settings_provider.dart';
 import '../../../../core/storage/secure_storage_service.dart';
 import '../../../category/presentation/providers/category_providers.dart';
-import '../../data/datasources/debt_remote_datasource.dart';
 import '../../data/models/currency_model.dart';
-import '../../data/models/debt_summary_model.dart';
 import '../../data/repositories/debt_repository_impl.dart';
 import '../../domain/entities/category_with_debts.dart';
 import '../../domain/entities/debt.dart';
 import '../../domain/entities/debt_summary.dart';
+import '../../domain/repositories/debt_repository.dart';
 
 part 'debt_providers.g.dart';
 
@@ -24,21 +23,9 @@ Future<List<CategoryWithDebts>> debtGrouped(Ref ref, bool isOwner) async {
   final month = ref.watch(selectedMonthProvider);
   final monthStr = '${month.year}-${month.month.toString().padLeft(2, '0')}';
 
-  final raw = await ref
-      .watch(debtRemoteDatasourceProvider)
-      .getGrouped(month: monthStr, isOwner: isOwner);
-
-  final grouped = raw
-      .map(
-        (r) => CategoryWithDebts(
-          categoryId: r.categoryId,
-          categoryName: r.categoryName,
-          owned: r.owned,
-          ownerUserId: r.ownerUserId,
-          debts: r.debts.map((d) => d.toDomain()).toList(),
-        ),
-      )
-      .toList();
+  final grouped = await ref
+      .watch(debtRepositoryProvider)
+      .getGrouped(monthStr, isOwner);
 
   // Enrich owned tab with empty category groups that have no debts yet
   if (isOwner) {
@@ -79,6 +66,16 @@ class DebtList extends _$DebtList {
   void _invalidateAll() {
     ref.invalidate(debtGroupedProvider(true));
     ref.invalidate(debtGroupedProvider(false));
+  }
+
+  Future<void> saveDebt(String? debtId, CreateDebtParams params) async {
+    if (debtId != null) {
+      await ref.read(debtRepositoryProvider).update(debtId, params);
+      ref.invalidate(debtDetailProvider(debtId));
+    } else {
+      await ref.read(debtRepositoryProvider).create(params);
+    }
+    _invalidateAll();
   }
 
   Future<void> deleteDebt(String id) async {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/l10n/l10n.dart';
+import '../../../../core/utils/validators.dart';
 import '../providers/change_password_provider.dart';
 
 class ChangePasswordScreen extends ConsumerStatefulWidget {
@@ -72,8 +73,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                         setState(() => _showCurrent = !_showCurrent),
                   ),
                 ),
-                validator: (v) =>
-                    (v == null || v.isEmpty) ? l10n.password : null,
+                validator: Validators.password(l10n),
               ),
               const SizedBox(height: 16),
 
@@ -94,11 +94,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                     onPressed: () => setState(() => _showNew = !_showNew),
                   ),
                 ),
-                validator: (v) {
-                  if (v == null || v.isEmpty) return l10n.password;
-                  if (v.length < 8) return l10n.password;
-                  return null;
-                },
+                validator: Validators.password(l10n),
               ),
               const SizedBox(height: 8),
 

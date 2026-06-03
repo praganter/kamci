@@ -1,5 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import '../../../../core/utils/date_formatter.dart';
+import '../../domain/entities/reminder_channel.dart';
 import '../../domain/entities/reminder_embedded.dart';
 
 part 'reminder_embedded_model.freezed.dart';
@@ -21,7 +22,9 @@ sealed class ReminderEmbeddedModel with _$ReminderEmbeddedModel {
 extension ReminderEmbeddedModelMapper on ReminderEmbeddedModel {
   ReminderEmbedded toDomain() => ReminderEmbedded(
     enabled: enabled,
-    channels: channels.isEmpty ? null : channels,
+    channels: channels.isEmpty
+        ? null
+        : channels.map(ReminderChannel.fromJson).toList(),
     reminderDate: DateFormatter.parseApiDate(reminderDate),
     reminderTime: reminderTime,
   );
@@ -30,7 +33,7 @@ extension ReminderEmbeddedModelMapper on ReminderEmbeddedModel {
 extension ReminderEmbeddedFromDomain on ReminderEmbedded {
   ReminderEmbeddedModel toModel() => ReminderEmbeddedModel(
     enabled: enabled,
-    channels: channels ?? [],
+    channels: channels?.map((c) => c.toJson()).toList() ?? [],
     reminderDate: reminderDate != null
         ? DateFormatter.toApiFormat(reminderDate!)
         : null,

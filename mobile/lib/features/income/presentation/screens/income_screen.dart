@@ -264,7 +264,7 @@ class _AddIncomeSheetState extends ConsumerState<_AddIncomeSheet> {
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
               ),
-              validator: Validators.amount,
+              validator: Validators.amount(l10n),
               autofocus: true,
             ),
             const SizedBox(height: 16),
@@ -290,7 +290,7 @@ class _AddIncomeSheetState extends ConsumerState<_AddIncomeSheet> {
                     .toList(),
                 onChanged: (v) => setState(() => _selectedCurrency = v),
                 validator: (v) => v == null
-                    ? Validators.required(null, fieldName: l10n.currency)
+                    ? Validators.required(l10n, null, fieldName: l10n.currency)
                     : null,
               ),
             ),

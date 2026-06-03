@@ -1,3 +1,5 @@
+import 'reminder_channel.dart';
+
 class ReminderEmbedded {
   const ReminderEmbedded({
     required this.enabled,
@@ -6,7 +8,7 @@ class ReminderEmbedded {
     this.reminderTime,
   });
   final bool enabled;
-  final List<String>? channels; // EMAIL, IN_APP
+  final List<ReminderChannel>? channels;
   final DateTime? reminderDate;
   final String? reminderTime; // HH:mm:ss
 }

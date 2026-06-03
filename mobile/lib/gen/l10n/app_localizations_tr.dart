@@ -717,6 +717,44 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
+  String get validationEmailRequired => 'Email gerekli';
+
+  @override
+  String get validationEmailInvalid => 'Geçerli bir email girin';
+
+  @override
+  String get validationPasswordRequired => 'Şifre gerekli';
+
+  @override
+  String get validationPasswordMinLength => 'Şifre en az 8 karakter olmalı';
+
+  @override
+  String get validationConfirmPasswordRequired => 'Şifre tekrarı gerekli';
+
+  @override
+  String get validationPasswordMismatch => 'Şifreler eşleşmiyor';
+
+  @override
+  String validationFieldRequired(String fieldName) {
+    return '$fieldName gerekli';
+  }
+
+  @override
+  String get validationAmountRequired => 'Tutar gerekli';
+
+  @override
+  String get validationAmountInvalid => 'Geçerli bir tutar girin';
+
+  @override
+  String get validationAmountPositive => 'Tutar 0\'dan büyük olmalı';
+
+  @override
+  String get errorInvalidCredentials => 'E-posta veya şifre hatalı.';
+
+  @override
+  String get errorUnexpected => 'Beklenmeyen bir hata oluştu.';
+
+  @override
   String personCount(int count) {
     return '$count kişi';
   }

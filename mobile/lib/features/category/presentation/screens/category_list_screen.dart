@@ -8,6 +8,7 @@ import '../../../../shared/widgets/app_error_widget.dart';
 import '../../../../shared/widgets/confirm_dialog.dart';
 import '../../../../shared/widgets/premium_required_sheet.dart';
 import '../../../subscription/presentation/providers/subscription_providers.dart';
+import '../../../subscription/subscription_constants.dart';
 import '../../domain/entities/category.dart';
 import '../providers/category_providers.dart';
 import '../../domain/entities/member_embedded.dart';
@@ -48,12 +49,12 @@ class _CategoryListScreenState extends ConsumerState<CategoryListScreen>
       final ownedCategories = categories
           .where((c) => c.ownerId == currentUserId)
           .length;
-      if (ownedCategories >= 2) {
+      if (ownedCategories >= SubscriptionConstants.freeCategoryLimit) {
         if (mounted) {
           PremiumRequiredSheet.show(
             context,
             featureName: context.l10n.categories.toLowerCase(),
-            limitCount: 2,
+            limitCount: SubscriptionConstants.freeCategoryLimit,
           );
         }
         return;

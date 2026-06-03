@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../core/utils/date_formatter.dart';
+import '../../domain/entities/category_with_debts.dart';
 import '../../domain/entities/debt.dart';
 import '../../domain/entities/debt_summary.dart';
 import '../../domain/repositories/debt_repository.dart';
@@ -30,6 +31,22 @@ class DebtRepositoryImpl implements DebtRepository {
       for (final cat in categories)
         for (final model in cat.debts) model.toDomain(),
     ];
+  }
+
+  @override
+  Future<List<CategoryWithDebts>> getGrouped(String month, bool isOwner) async {
+    final raw = await _datasource.getGrouped(month: month, isOwner: isOwner);
+    return raw
+        .map(
+          (r) => CategoryWithDebts(
+            categoryId: r.categoryId,
+            categoryName: r.categoryName,
+            owned: r.owned,
+            ownerUserId: r.ownerUserId,
+            debts: r.debts.map((d) => d.toDomain()).toList(),
+          ),
+        )
+        .toList();
   }
 
   @override

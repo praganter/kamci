@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/router/route_names.dart';
+import '../../../../core/utils/snackbar_utils.dart';
 import '../../../../core/utils/validators.dart';
 import '../../data/repositories/auth_repository_impl.dart';
 import '../../domain/usecases/reset_password_usecase.dart';
@@ -42,9 +43,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
     if (!_formKey.currentState!.validate()) return;
     final l10n = context.l10n;
     if (widget.token == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l10n.invalidResetLink)));
+      showErrorSnackBar(context, l10n.invalidResetLink);
       return;
     }
 
@@ -54,17 +53,11 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
           .read(resetPasswordUsecaseProvider)
           .call(widget.token!, _passwordCtrl.text);
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(l10n.passwordUpdated)));
+        showSuccessSnackBar(context, l10n.passwordUpdated);
         context.goNamed(RouteNames.login);
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(e.toString())));
-      }
+      if (mounted) showErrorSnackBar(context, e.toString());
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -94,7 +87,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
                   prefixIcon: Icons.lock_outline_rounded,
                   isPassword: true,
                   textInputAction: TextInputAction.next,
-                  validator: Validators.password,
+                  validator: Validators.password(l10n),
                 ),
                 const SizedBox(height: 16),
                 AuthTextField(
@@ -105,7 +98,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
                   textInputAction: TextInputAction.done,
                   onFieldSubmitted: (_) => _submit(),
                   validator: (v) =>
-                      Validators.confirmPassword(v, _passwordCtrl.text),
+                      Validators.confirmPassword(l10n, v, _passwordCtrl.text),
                 ),
                 const SizedBox(height: 24),
                 AuthButton(

@@ -7,6 +7,7 @@ import 'package:in_app_purchase/in_app_purchase.dart';
 
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/snackbar_utils.dart';
 import '../../data/models/verify_receipt_request.dart';
 import '../../subscription_constants.dart';
 import '../providers/subscription_providers.dart';
@@ -85,8 +86,22 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
                 ),
               );
           await InAppPurchase.instance.completePurchase(p);
-          if (mounted) Navigator.of(context).pop();
+          final subState = ref.read(subscriptionNotifierProvider);
+          if (subState.hasError && mounted) {
+            showErrorSnackBar(context, subState.error.toString());
+          } else if (mounted) {
+            Navigator.of(context).pop();
+          }
         case PurchaseStatus.error:
+          if (p.pendingCompletePurchase) {
+            await InAppPurchase.instance.completePurchase(p);
+          }
+          if (mounted) {
+            showErrorSnackBar(
+              context,
+              p.error?.message ?? 'Satın alma sırasında bir hata oluştu.',
+            );
+          }
         case PurchaseStatus.canceled:
           if (p.pendingCompletePurchase) {
             await InAppPurchase.instance.completePurchase(p);

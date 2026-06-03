@@ -48,5 +48,13 @@ class SecureStorageService {
 
   Future<String?> getEmail() => _storage.read(key: StorageKeys.email);
 
+  Future<void> savePremiumStatus(bool isPremium) =>
+      _storage.write(key: StorageKeys.premium, value: isPremium.toString());
+
+  Future<bool> getCachedPremiumStatus() async {
+    final value = await _storage.read(key: StorageKeys.premium);
+    return value == 'true';
+  }
+
   Future<void> clearAll() => _storage.deleteAll();
 }

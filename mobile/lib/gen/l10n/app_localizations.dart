@@ -1394,6 +1394,78 @@ abstract class AppLocalizations {
   /// **'Hata: {message}'**
   String errorWithMessage(String message);
 
+  /// No description provided for @validationEmailRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Email gerekli'**
+  String get validationEmailRequired;
+
+  /// No description provided for @validationEmailInvalid.
+  ///
+  /// In tr, this message translates to:
+  /// **'Geçerli bir email girin'**
+  String get validationEmailInvalid;
+
+  /// No description provided for @validationPasswordRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Şifre gerekli'**
+  String get validationPasswordRequired;
+
+  /// No description provided for @validationPasswordMinLength.
+  ///
+  /// In tr, this message translates to:
+  /// **'Şifre en az 8 karakter olmalı'**
+  String get validationPasswordMinLength;
+
+  /// No description provided for @validationConfirmPasswordRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Şifre tekrarı gerekli'**
+  String get validationConfirmPasswordRequired;
+
+  /// No description provided for @validationPasswordMismatch.
+  ///
+  /// In tr, this message translates to:
+  /// **'Şifreler eşleşmiyor'**
+  String get validationPasswordMismatch;
+
+  /// No description provided for @validationFieldRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'{fieldName} gerekli'**
+  String validationFieldRequired(String fieldName);
+
+  /// No description provided for @validationAmountRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tutar gerekli'**
+  String get validationAmountRequired;
+
+  /// No description provided for @validationAmountInvalid.
+  ///
+  /// In tr, this message translates to:
+  /// **'Geçerli bir tutar girin'**
+  String get validationAmountInvalid;
+
+  /// No description provided for @validationAmountPositive.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tutar 0\'dan büyük olmalı'**
+  String get validationAmountPositive;
+
+  /// No description provided for @errorInvalidCredentials.
+  ///
+  /// In tr, this message translates to:
+  /// **'E-posta veya şifre hatalı.'**
+  String get errorInvalidCredentials;
+
+  /// No description provided for @errorUnexpected.
+  ///
+  /// In tr, this message translates to:
+  /// **'Beklenmeyen bir hata oluştu.'**
+  String get errorUnexpected;
+
   /// No description provided for @personCount.
   ///
   /// In tr, this message translates to:

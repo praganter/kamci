@@ -1,9 +1,11 @@
+import '../entities/category_with_debts.dart';
 import '../entities/debt.dart';
 import '../entities/debt_summary.dart';
 import '../entities/reminder_embedded.dart';
 
 abstract interface class DebtRepository {
   Future<List<DebtSummary>> getAll(String month, bool isOwner);
+  Future<List<CategoryWithDebts>> getGrouped(String month, bool isOwner);
   Future<Debt> getById(String id);
   Future<Debt> create(CreateDebtParams params);
   Future<Debt> update(String id, CreateDebtParams params);

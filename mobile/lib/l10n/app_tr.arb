@@ -371,6 +371,24 @@
       "message": { "type": "String" }
     }
   },
+
+  "validationEmailRequired": "Email gerekli",
+  "validationEmailInvalid": "Geçerli bir email girin",
+  "validationPasswordRequired": "Şifre gerekli",
+  "validationPasswordMinLength": "Şifre en az 8 karakter olmalı",
+  "validationConfirmPasswordRequired": "Şifre tekrarı gerekli",
+  "validationPasswordMismatch": "Şifreler eşleşmiyor",
+  "validationFieldRequired": "{fieldName} gerekli",
+  "@validationFieldRequired": {
+    "placeholders": {
+      "fieldName": { "type": "String" }
+    }
+  },
+  "validationAmountRequired": "Tutar gerekli",
+  "validationAmountInvalid": "Geçerli bir tutar girin",
+  "validationAmountPositive": "Tutar 0'dan büyük olmalı",
+  "errorInvalidCredentials": "E-posta veya şifre hatalı.",
+  "errorUnexpected": "Beklenmeyen bir hata oluştu.",
   "personCount": "{count} kişi",
   "@personCount": {
     "placeholders": {

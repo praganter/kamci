@@ -47,7 +47,7 @@ class _BulkShareSheetState extends ConsumerState<BulkShareSheet> {
 
   void _addEmail() {
     final email = _emailCtrl.text.trim();
-    if (Validators.email(email) != null) return;
+    if (!Validators.isValidEmail(email)) return;
     if (_emails.contains(email)) {
       _emailCtrl.clear();
       return;

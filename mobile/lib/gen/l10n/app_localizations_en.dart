@@ -715,6 +715,46 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get validationEmailRequired => 'Email is required';
+
+  @override
+  String get validationEmailInvalid => 'Enter a valid email address';
+
+  @override
+  String get validationPasswordRequired => 'Password is required';
+
+  @override
+  String get validationPasswordMinLength =>
+      'Password must be at least 8 characters';
+
+  @override
+  String get validationConfirmPasswordRequired =>
+      'Confirm password is required';
+
+  @override
+  String get validationPasswordMismatch => 'Passwords do not match';
+
+  @override
+  String validationFieldRequired(String fieldName) {
+    return '$fieldName is required';
+  }
+
+  @override
+  String get validationAmountRequired => 'Amount is required';
+
+  @override
+  String get validationAmountInvalid => 'Enter a valid amount';
+
+  @override
+  String get validationAmountPositive => 'Amount must be greater than 0';
+
+  @override
+  String get errorInvalidCredentials => 'Incorrect email or password.';
+
+  @override
+  String get errorUnexpected => 'An unexpected error occurred.';
+
+  @override
   String personCount(int count) {
     return '$count people';
   }

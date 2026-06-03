@@ -81,7 +81,7 @@ class _AddCategorySheetState extends ConsumerState<AddCategorySheet> {
               textInputAction: TextInputAction.done,
               onFieldSubmitted: (_) => _submit(),
               validator: (v) =>
-                  Validators.required(v, fieldName: l10n.categoryName),
+                  Validators.required(l10n, v, fieldName: l10n.categoryName),
             ),
             const SizedBox(height: 20),
             ElevatedButton(

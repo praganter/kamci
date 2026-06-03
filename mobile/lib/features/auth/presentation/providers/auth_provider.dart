@@ -20,29 +20,31 @@ class AuthNotifier extends _$AuthNotifier {
 
   Future<void> _checkAuthState() async {
     state = const AuthState.loading();
+
+    final storage = ref.read(secureStorageServiceProvider);
+    final accessToken = await storage.getAccessToken();
+    final refreshToken = await storage.getRefreshToken();
+
+    if (accessToken == null || refreshToken == null) {
+      state = const AuthState.unauthenticated();
+      return;
+    }
+
+    final tokens = AuthTokens(
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+    );
+
+    if (!tokens.isAccessTokenExpired) {
+      await _saveUserIdFromToken(tokens);
+      state = AuthState.authenticated(tokens);
+      final email = await storage.getEmail();
+      ref.read(notificationServiceProvider).registerToken(email: email);
+      return;
+    }
+
+    // Access token expired — attempt refresh
     try {
-      final storage = ref.read(secureStorageServiceProvider);
-      final accessToken = await storage.getAccessToken();
-      final refreshToken = await storage.getRefreshToken();
-
-      if (accessToken == null || refreshToken == null) {
-        state = const AuthState.unauthenticated();
-        return;
-      }
-
-      final tokens = AuthTokens(
-        accessToken: accessToken,
-        refreshToken: refreshToken,
-      );
-
-      if (!tokens.isAccessTokenExpired) {
-        await _saveUserIdFromToken(tokens);
-        state = AuthState.authenticated(tokens);
-        final email = await storage.getEmail();
-        ref.read(notificationServiceProvider).registerToken(email: email);
-        return;
-      }
-
       final repository = ref.read(authRepositoryProvider);
       final newTokens = await repository.refreshToken(refreshToken);
       await storage.saveTokens(
@@ -53,14 +55,13 @@ class AuthNotifier extends _$AuthNotifier {
       state = AuthState.authenticated(newTokens);
       final email = await storage.getEmail();
       ref.read(notificationServiceProvider).registerToken(email: email);
+    } on NetworkException {
+      // Offline — keep the user signed in with stale tokens; API calls handle 401s
+      state = AuthState.authenticated(tokens);
     } on UnauthorizedException {
-      final storage = ref.read(secureStorageServiceProvider);
       await storage.clearAll();
       state = const AuthState.unauthenticated();
-    } on NetworkException {
-      state = const AuthState.unauthenticated();
     } catch (_) {
-      final storage = ref.read(secureStorageServiceProvider);
       await storage.clearAll();
       state = const AuthState.unauthenticated();
     }
@@ -80,12 +81,12 @@ class AuthNotifier extends _$AuthNotifier {
       await _saveUserIdFromToken(tokens);
       await ref.read(notificationServiceProvider).registerToken(email: email);
       state = AuthState.authenticated(tokens);
-    } on UnauthorizedException {
-      state = const AuthState.error('E-posta veya şifre hatalı.');
+    } on UnauthorizedException catch (e) {
+      state = AuthState.error(e.message);
     } on ApiException catch (e) {
       state = AuthState.error(e.message);
     } catch (_) {
-      state = const AuthState.error('Beklenmeyen bir hata oluştu.');
+      state = const AuthState.error('An unexpected error occurred.');
     }
   }
 
@@ -114,7 +115,31 @@ class AuthNotifier extends _$AuthNotifier {
     } on ApiException catch (e) {
       state = AuthState.error(e.message);
     } catch (_) {
-      state = const AuthState.error('Beklenmeyen bir hata oluştu.');
+      state = const AuthState.error('An unexpected error occurred.');
+    }
+  }
+
+  Future<void> refreshTokens() async {
+    final storage = ref.read(secureStorageServiceProvider);
+    final refreshToken = await storage.getRefreshToken();
+    if (refreshToken == null) return;
+    try {
+      final repository = ref.read(authRepositoryProvider);
+      final newTokens = await repository.refreshToken(refreshToken);
+      await storage.saveTokens(
+        accessToken: newTokens.accessToken,
+        refreshToken: newTokens.refreshToken,
+      );
+      await _saveUserIdFromToken(newTokens);
+      state = AuthState.authenticated(newTokens);
+    } on NetworkException {
+      // Offline — keep current state; tokens remain valid locally
+    } on UnauthorizedException {
+      await storage.clearAll();
+      state = const AuthState.unauthenticated();
+    } catch (_) {
+      await storage.clearAll();
+      state = const AuthState.unauthenticated();
     }
   }
 
