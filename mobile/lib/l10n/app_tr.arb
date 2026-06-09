@@ -389,6 +389,12 @@
   "validationAmountPositive": "Tutar 0'dan büyük olmalı",
   "errorInvalidCredentials": "E-posta veya şifre hatalı.",
   "errorUnexpected": "Beklenmeyen bir hata oluştu.",
+  "errorNetwork": "İnternet bağlantısı yok. Bağlantınızı kontrol edin.",
+  "errorServer": "Sunucu hatası oluştu. Lütfen tekrar deneyin.",
+  "errorNotFound": "İstenen kaynak bulunamadı.",
+  "errorRateLimit": "Çok fazla istek gönderildi. Lütfen bir süre bekleyin.",
+  "errorSessionExpired": "Oturumunuz sona erdi. Lütfen tekrar giriş yapın.",
+  "retryButton": "Tekrar Dene",
   "personCount": "{count} kişi",
   "@personCount": {
     "placeholders": {

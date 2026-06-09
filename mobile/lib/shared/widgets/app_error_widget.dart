@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
+import '../../core/l10n/exception_l10n.dart';
+import '../../core/l10n/l10n.dart';
 
 class AppErrorWidget extends StatelessWidget {
-  const AppErrorWidget({super.key, required this.message, this.onRetry});
+  const AppErrorWidget({super.key, required this.error, this.onRetry});
 
-  final String message;
+  final Object error;
   final VoidCallback? onRetry;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -17,7 +20,7 @@ class AppErrorWidget extends StatelessWidget {
             const Icon(Icons.error_outline, size: 48, color: Colors.red),
             const SizedBox(height: 16),
             Text(
-              message,
+              error.toLocalizedMessage(l10n),
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium,
             ),
@@ -25,7 +28,7 @@ class AppErrorWidget extends StatelessWidget {
               const SizedBox(height: 16),
               FilledButton(
                 onPressed: onRetry,
-                child: const Text('Tekrar Dene'),
+                child: Text(l10n.retryButton),
               ),
             ],
           ],

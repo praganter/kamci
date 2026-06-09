@@ -27,7 +27,7 @@ class CategoryDetailScreen extends ConsumerWidget {
       error: (e, _) => Scaffold(
         appBar: AppBar(),
         body: AppErrorWidget(
-          message: e.toString(),
+          error: e,
           onRetry: () => ref.invalidate(categoryDetailProvider(id)),
         ),
       ),

@@ -158,26 +158,6 @@ class DebtRemoteDatasource {
     }
   }
 
-  Future<List<Map<String, dynamic>>> getPaymentHistory(
-    String id,
-    DateTime from,
-    DateTime to,
-  ) async {
-    try {
-      final response = await _dio.get(
-        '${ApiConstants.debtPayments}/$id/payments',
-        queryParameters: {
-          'from': from.toIso8601String().substring(0, 19),
-          'to': to.toIso8601String().substring(0, 19),
-        },
-      );
-      final list = response.data as List<dynamic>;
-      return list.map((e) => e as Map<String, dynamic>).toList();
-    } on DioException catch (e) {
-      throw _mapException(e);
-    }
-  }
-
   ApiException _mapException(DioException e) =>
       ApiException.fromDioException(e);
 }

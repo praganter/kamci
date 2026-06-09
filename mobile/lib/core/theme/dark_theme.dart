@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'app_colors.dart';
-import 'app_text_styles.dart';
+import 'theme_helpers.dart';
 
 ThemeData buildDarkTheme() {
   const colorScheme = ColorScheme(
@@ -36,7 +36,7 @@ ThemeData buildDarkTheme() {
     useMaterial3: true,
     colorScheme: colorScheme,
     scaffoldBackgroundColor: AppColors.backgroundDark,
-    textTheme: _buildTextTheme(
+    textTheme: buildTextTheme(
       AppColors.textPrimaryDark,
       AppColors.textSecondaryDark,
     ),
@@ -56,13 +56,13 @@ ThemeData buildDarkTheme() {
     ),
     navigationBarTheme: NavigationBarThemeData(
       backgroundColor: AppColors.surfaceDark,
-      indicatorColor: const Color(0xFFA78BFA).withValues(alpha: 0.18),
+      indicatorColor: colorScheme.primary.withValues(alpha: 0.18),
       elevation: 0,
       shadowColor: Colors.transparent,
       labelTextStyle: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
-          return const TextStyle(
-            color: Color(0xFFA78BFA),
+          return TextStyle(
+            color: colorScheme.primary,
             fontSize: 11,
             fontWeight: FontWeight.w600,
           );
@@ -75,28 +75,22 @@ ThemeData buildDarkTheme() {
       }),
       iconTheme: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
-          return const IconThemeData(color: Color(0xFFA78BFA), size: 22);
+          return IconThemeData(color: colorScheme.primary, size: 22);
         }
-        return const IconThemeData(
-          color: AppColors.textSecondaryDark,
-          size: 22,
-        );
+        return const IconThemeData(color: AppColors.textSecondaryDark, size: 22);
       }),
     ),
-    tabBarTheme: const TabBarThemeData(
-      indicatorColor: Color(0xFFA78BFA),
+    tabBarTheme: TabBarThemeData(
+      indicatorColor: colorScheme.primary,
       indicatorSize: TabBarIndicatorSize.tab,
-      labelColor: Color(0xFFA78BFA),
+      labelColor: colorScheme.primary,
       unselectedLabelColor: AppColors.textSecondaryDark,
-      labelStyle: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-      unselectedLabelStyle: TextStyle(
-        fontSize: 13,
-        fontWeight: FontWeight.w400,
-      ),
-      dividerColor: Color(0xFF2E1F55),
+      labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+      unselectedLabelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400),
+      dividerColor: const Color(0xFF2E1F55),
     ),
-    inputDecorationTheme: _buildInputDecorationTheme(colorScheme),
-    elevatedButtonTheme: _buildElevatedButtonTheme(colorScheme),
+    inputDecorationTheme: buildInputDecorationTheme(colorScheme),
+    elevatedButtonTheme: buildElevatedButtonTheme(colorScheme),
     cardTheme: const CardThemeData(
       color: AppColors.surfaceDark,
       elevation: 0,
@@ -111,7 +105,7 @@ ThemeData buildDarkTheme() {
     expansionTileTheme: ExpansionTileThemeData(
       backgroundColor: Colors.transparent,
       collapsedBackgroundColor: Colors.transparent,
-      iconColor: Color(0xFFA78BFA),
+      iconColor: colorScheme.primary,
       collapsedIconColor: AppColors.textSecondaryDark,
       tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       childrenPadding: EdgeInsets.zero,
@@ -119,8 +113,8 @@ ThemeData buildDarkTheme() {
       collapsedShape: const Border(),
     ),
     chipTheme: ChipThemeData(
-      backgroundColor: const Color(0xFFA78BFA).withValues(alpha: 0.12),
-      labelStyle: const TextStyle(color: Color(0xFFA78BFA), fontSize: 12),
+      backgroundColor: colorScheme.primary.withValues(alpha: 0.08),
+      labelStyle: TextStyle(color: colorScheme.primary, fontSize: 12),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
     ),
     dividerTheme: const DividerThemeData(
@@ -128,84 +122,19 @@ ThemeData buildDarkTheme() {
       thickness: 1,
       space: 1,
     ),
-    floatingActionButtonTheme: const FloatingActionButtonThemeData(
-      backgroundColor: Color(0xFFA78BFA),
-      foregroundColor: Color(0xFF2E1065),
+    floatingActionButtonTheme: FloatingActionButtonThemeData(
+      backgroundColor: colorScheme.primary,
+      foregroundColor: colorScheme.onPrimary,
       elevation: 2,
-      shape: RoundedRectangleBorder(
+      shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.all(Radius.circular(16)),
       ),
     ),
     snackBarTheme: SnackBarThemeData(
-      backgroundColor: const Color(0xFF2E2050),
-      contentTextStyle: const TextStyle(color: Color(0xFFF0EEFF), fontSize: 14),
+      backgroundColor: colorScheme.surfaceContainerHighest,
+      contentTextStyle: TextStyle(color: colorScheme.onSurface, fontSize: 14),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       behavior: SnackBarBehavior.floating,
-    ),
-  );
-}
-
-TextTheme _buildTextTheme(Color primaryColor, Color secondaryColor) {
-  return TextTheme(
-    displayLarge: AppTextStyles.displayLarge.copyWith(color: primaryColor),
-    displayMedium: AppTextStyles.displayMedium.copyWith(color: primaryColor),
-    headlineLarge: AppTextStyles.headlineLarge.copyWith(color: primaryColor),
-    headlineMedium: AppTextStyles.headlineMedium.copyWith(color: primaryColor),
-    titleLarge: AppTextStyles.titleLarge.copyWith(color: primaryColor),
-    titleMedium: AppTextStyles.titleMedium.copyWith(color: primaryColor),
-    bodyLarge: AppTextStyles.bodyLarge.copyWith(color: primaryColor),
-    bodyMedium: AppTextStyles.bodyMedium.copyWith(color: primaryColor),
-    bodySmall: AppTextStyles.bodySmall.copyWith(color: secondaryColor),
-    labelLarge: AppTextStyles.labelLarge.copyWith(color: primaryColor),
-    labelSmall: AppTextStyles.bodySmall.copyWith(color: secondaryColor),
-  );
-}
-
-InputDecorationTheme _buildInputDecorationTheme(ColorScheme colorScheme) {
-  return InputDecorationTheme(
-    filled: true,
-    fillColor: colorScheme.surfaceContainerLowest,
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(14),
-      borderSide: BorderSide(color: colorScheme.outline),
-    ),
-    enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(14),
-      borderSide: BorderSide(color: colorScheme.outlineVariant),
-    ),
-    focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(14),
-      borderSide: BorderSide(color: colorScheme.primary, width: 2),
-    ),
-    errorBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(14),
-      borderSide: BorderSide(color: colorScheme.error),
-    ),
-    focusedErrorBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(14),
-      borderSide: BorderSide(color: colorScheme.error, width: 2),
-    ),
-    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-    labelStyle: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 14),
-    hintStyle: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 14),
-    prefixIconColor: colorScheme.primary,
-  );
-}
-
-ElevatedButtonThemeData _buildElevatedButtonTheme(ColorScheme colorScheme) {
-  return ElevatedButtonThemeData(
-    style: ElevatedButton.styleFrom(
-      backgroundColor: colorScheme.primary,
-      foregroundColor: colorScheme.onPrimary,
-      disabledBackgroundColor: colorScheme.outlineVariant,
-      disabledForegroundColor: colorScheme.onSurfaceVariant,
-      minimumSize: const Size(double.infinity, 54),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      textStyle: AppTextStyles.labelLarge.copyWith(
-        fontSize: 16,
-        fontWeight: FontWeight.w600,
-      ),
-      elevation: 0,
     ),
   );
 }

@@ -755,6 +755,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorUnexpected => 'An unexpected error occurred.';
 
   @override
+  String get errorNetwork =>
+      'No internet connection. Please check your connection.';
+
+  @override
+  String get errorServer => 'A server error occurred. Please try again.';
+
+  @override
+  String get errorNotFound => 'The requested resource was not found.';
+
+  @override
+  String get errorRateLimit => 'Too many requests. Please wait a moment.';
+
+  @override
+  String get errorSessionExpired =>
+      'Your session has expired. Please sign in again.';
+
+  @override
+  String get retryButton => 'Try Again';
+
+  @override
   String personCount(int count) {
     return '$count people';
   }

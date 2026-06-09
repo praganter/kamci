@@ -1,3 +1,4 @@
+import '../entities/bulk_payment_entry.dart';
 import '../entities/category_with_debts.dart';
 import '../entities/debt.dart';
 import '../entities/debt_summary.dart';
@@ -11,14 +12,8 @@ abstract interface class DebtRepository {
   Future<Debt> update(String id, CreateDebtParams params);
   Future<Debt> pay(String id, {double? amountPaid});
   Future<Debt> skip(String id);
-  Future<Debt> bulkPay(String id, List<Map<String, dynamic>> payments);
+  Future<Debt> bulkPay(String id, List<BulkPaymentEntry> payments);
   Future<void> delete(String id);
-  Future<Map<String, dynamic>> getSummary(String month);
-  Future<List<Map<String, dynamic>>> getPaymentHistory(
-    String id,
-    DateTime from,
-    DateTime to,
-  );
 }
 
 class CreateDebtParams {

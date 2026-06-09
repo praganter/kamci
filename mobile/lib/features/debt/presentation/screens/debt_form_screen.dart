@@ -163,7 +163,7 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
         );
       }
     } catch (e) {
-      if (mounted) showErrorSnackBar(context, e.toString());
+      if (mounted) showErrorSnackBar(context, e);
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }

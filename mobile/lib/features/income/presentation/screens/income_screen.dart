@@ -24,7 +24,7 @@ class IncomeScreen extends ConsumerWidget {
       body: historyAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => AppErrorWidget(
-          message: e.toString(),
+          error: e,
           onRetry: () => ref.invalidate(incomeHistoryProvider),
         ),
         data: (incomes) {

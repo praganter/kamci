@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../core/utils/date_formatter.dart';
+import '../../domain/entities/bulk_payment_entry.dart';
 import '../../domain/entities/category_with_debts.dart';
 import '../../domain/entities/debt.dart';
 import '../../domain/entities/debt_summary.dart';
@@ -82,24 +83,21 @@ class DebtRepositoryImpl implements DebtRepository {
   }
 
   @override
-  Future<Debt> bulkPay(String id, List<Map<String, dynamic>> payments) async {
-    final model = await _datasource.bulkPay(id, payments);
+  Future<Debt> bulkPay(String id, List<BulkPaymentEntry> payments) async {
+    final raw = payments
+        .map(
+          (p) => {
+            'amountPaid': p.amountPaid,
+            'paidTime': p.paidTime.toIso8601String(),
+          },
+        )
+        .toList();
+    final model = await _datasource.bulkPay(id, raw);
     return model.toDomain();
   }
 
   @override
   Future<void> delete(String id) => _datasource.delete(id);
-
-  @override
-  Future<Map<String, dynamic>> getSummary(String month) =>
-      _datasource.getSummary(month);
-
-  @override
-  Future<List<Map<String, dynamic>>> getPaymentHistory(
-    String id,
-    DateTime from,
-    DateTime to,
-  ) => _datasource.getPaymentHistory(id, from, to);
 
   CreateDebtRequest _paramsToRequest(CreateDebtParams params, {String? id}) {
     return CreateDebtRequest(

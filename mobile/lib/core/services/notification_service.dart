@@ -123,7 +123,7 @@ class NotificationService {
         for (var i = 0; i < 5; i++) {
           apns = await FirebaseMessaging.instance.getAPNSToken();
           if (apns != null) break;
-          await Future.delayed(const Duration(seconds: 2));
+          if (i < 4) await Future.delayed(Duration(seconds: 1 << i)); // 1s, 2s, 4s, 8s
         }
         if (apns == null) {
           debugPrint('APNs token not ready after retries');

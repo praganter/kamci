@@ -44,7 +44,7 @@ class ChartsScreen extends ConsumerWidget {
       body: summaryAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => AppErrorWidget(
-          message: e.toString(),
+          error: e,
           onRetry: () => ref.invalidate(monthlySummaryProvider),
         ),
         data: (summary) => _SummaryBody(summary: summary),

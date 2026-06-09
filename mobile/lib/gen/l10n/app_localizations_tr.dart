@@ -755,6 +755,27 @@ class AppLocalizationsTr extends AppLocalizations {
   String get errorUnexpected => 'Beklenmeyen bir hata oluştu.';
 
   @override
+  String get errorNetwork =>
+      'İnternet bağlantısı yok. Bağlantınızı kontrol edin.';
+
+  @override
+  String get errorServer => 'Sunucu hatası oluştu. Lütfen tekrar deneyin.';
+
+  @override
+  String get errorNotFound => 'İstenen kaynak bulunamadı.';
+
+  @override
+  String get errorRateLimit =>
+      'Çok fazla istek gönderildi. Lütfen bir süre bekleyin.';
+
+  @override
+  String get errorSessionExpired =>
+      'Oturumunuz sona erdi. Lütfen tekrar giriş yapın.';
+
+  @override
+  String get retryButton => 'Tekrar Dene';
+
+  @override
   String personCount(int count) {
     return '$count kişi';
   }

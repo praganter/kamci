@@ -15,14 +15,36 @@ import '../../../category/domain/entities/member_embedded.dart';
 import '../../domain/entities/payment_embedded.dart';
 import '../providers/debt_providers.dart';
 
-class DebtDetailScreen extends ConsumerWidget {
+class DebtDetailScreen extends ConsumerStatefulWidget {
   const DebtDetailScreen({super.key, required this.id});
   final String id;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<DebtDetailScreen> createState() => _DebtDetailScreenState();
+}
+
+class _DebtDetailScreenState extends ConsumerState<DebtDetailScreen> {
+  NumberFormat? _currencyFormat;
+  String? _cachedSymbol;
+  int? _cachedDecimalDigits;
+
+  NumberFormat _getFormat(String symbol, int decimalDigits) {
+    if (symbol != _cachedSymbol || decimalDigits != _cachedDecimalDigits) {
+      _cachedSymbol = symbol;
+      _cachedDecimalDigits = decimalDigits;
+      _currencyFormat = NumberFormat.currency(
+        locale: 'tr_TR',
+        symbol: symbol,
+        decimalDigits: decimalDigits,
+      );
+    }
+    return _currencyFormat!;
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final debtAsync = ref.watch(debtDetailProvider(id));
+    final debtAsync = ref.watch(debtDetailProvider(widget.id));
     final currentUserId = ref.watch(currentUserIdProvider).valueOrNull;
 
     return debtAsync.when(
@@ -31,8 +53,8 @@ class DebtDetailScreen extends ConsumerWidget {
       error: (e, _) => Scaffold(
         appBar: AppBar(),
         body: AppErrorWidget(
-          message: e.toString(),
-          onRetry: () => ref.invalidate(debtDetailProvider(id)),
+          error: e,
+          onRetry: () => ref.invalidate(debtDetailProvider(widget.id)),
         ),
       ),
       data: (debt) {
@@ -56,11 +78,7 @@ class DebtDetailScreen extends ConsumerWidget {
           orElse: () => '₺',
         );
         final decimalDigits = debt.amount % 1 == 0 ? 0 : 2;
-        final currencyFormat = NumberFormat.currency(
-          locale: 'tr_TR',
-          symbol: currencySymbol,
-          decimalDigits: decimalDigits,
-        );
+        final currencyFormat = _getFormat(currencySymbol, decimalDigits);
 
         return Scaffold(
           appBar: AppBar(
@@ -79,9 +97,9 @@ class DebtDetailScreen extends ConsumerWidget {
 
                   await context.pushNamed(
                     RouteNames.debtEdit,
-                    pathParameters: {'id': id},
+                    pathParameters: {'id': widget.id},
                   );
-                  ref.invalidate(debtDetailProvider(id));
+                  ref.invalidate(debtDetailProvider(widget.id));
                   ref.invalidate(debtGroupedProvider(true));
                   ref.invalidate(debtGroupedProvider(false));
                 },

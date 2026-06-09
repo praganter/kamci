@@ -79,8 +79,8 @@ class AuthNotifier extends _$AuthNotifier {
       );
       await storage.saveEmail(email);
       await _saveUserIdFromToken(tokens);
-      await ref.read(notificationServiceProvider).registerToken(email: email);
       state = AuthState.authenticated(tokens);
+      ref.read(notificationServiceProvider).registerToken(email: email).ignore();
     } on UnauthorizedException catch (e) {
       state = AuthState.error(e.message);
     } on ApiException catch (e) {
@@ -110,8 +110,8 @@ class AuthNotifier extends _$AuthNotifier {
       );
       await storage.saveEmail(email);
       await _saveUserIdFromToken(tokens);
-      await ref.read(notificationServiceProvider).registerToken(email: email);
       state = AuthState.authenticated(tokens);
+      ref.read(notificationServiceProvider).registerToken(email: email).ignore();
     } on ApiException catch (e) {
       state = AuthState.error(e.message);
     } catch (_) {

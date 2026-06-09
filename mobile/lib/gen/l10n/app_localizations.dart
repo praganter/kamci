@@ -1466,6 +1466,42 @@ abstract class AppLocalizations {
   /// **'Beklenmeyen bir hata oluştu.'**
   String get errorUnexpected;
 
+  /// No description provided for @errorNetwork.
+  ///
+  /// In tr, this message translates to:
+  /// **'İnternet bağlantısı yok. Bağlantınızı kontrol edin.'**
+  String get errorNetwork;
+
+  /// No description provided for @errorServer.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sunucu hatası oluştu. Lütfen tekrar deneyin.'**
+  String get errorServer;
+
+  /// No description provided for @errorNotFound.
+  ///
+  /// In tr, this message translates to:
+  /// **'İstenen kaynak bulunamadı.'**
+  String get errorNotFound;
+
+  /// No description provided for @errorRateLimit.
+  ///
+  /// In tr, this message translates to:
+  /// **'Çok fazla istek gönderildi. Lütfen bir süre bekleyin.'**
+  String get errorRateLimit;
+
+  /// No description provided for @errorSessionExpired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Oturumunuz sona erdi. Lütfen tekrar giriş yapın.'**
+  String get errorSessionExpired;
+
+  /// No description provided for @retryButton.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tekrar Dene'**
+  String get retryButton;
+
   /// No description provided for @personCount.
   ///
   /// In tr, this message translates to:

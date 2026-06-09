@@ -359,6 +359,12 @@
   "validationAmountPositive": "Amount must be greater than 0",
   "errorInvalidCredentials": "Incorrect email or password.",
   "errorUnexpected": "An unexpected error occurred.",
+  "errorNetwork": "No internet connection. Please check your connection.",
+  "errorServer": "A server error occurred. Please try again.",
+  "errorNotFound": "The requested resource was not found.",
+  "errorRateLimit": "Too many requests. Please wait a moment.",
+  "errorSessionExpired": "Your session has expired. Please sign in again.",
+  "retryButton": "Try Again",
   "personCount": "{count} people",
   "@personCount": {
     "placeholders": {

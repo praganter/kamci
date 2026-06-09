@@ -5,8 +5,9 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../core/constants/api_constants.dart';
 import '../../../../core/network/dio_client.dart';
 import '../../../../core/providers/app_settings_provider.dart';
-import '../../../../core/storage/secure_storage_service.dart';
 import '../../../category/presentation/providers/category_providers.dart';
+import '../../domain/entities/bulk_payment_entry.dart';
+import '../../../../shared/providers/current_user_provider.dart';
 import '../../data/models/currency_model.dart';
 import '../../data/repositories/debt_repository_impl.dart';
 import '../../domain/entities/category_with_debts.dart';
@@ -30,9 +31,7 @@ Future<List<CategoryWithDebts>> debtGrouped(Ref ref, bool isOwner) async {
   // Enrich owned tab with empty category groups that have no debts yet
   if (isOwner) {
     final allCategories = await ref.watch(categoryListProvider.future);
-    final currentUserId = await ref
-        .read(secureStorageServiceProvider)
-        .getUserId();
+    final currentUserId = await ref.watch(currentUserIdProvider.future);
     final groupedIds = grouped.map((g) => g.categoryId).toSet();
     final emptyGroups = allCategories
         .where((c) => c.ownerId == currentUserId && !groupedIds.contains(c.id))
@@ -97,7 +96,7 @@ class DebtList extends _$DebtList {
 
   Future<void> bulkPay(
     String debtId,
-    List<Map<String, dynamic>> payments,
+    List<BulkPaymentEntry> payments,
   ) async {
     await ref.read(debtRepositoryProvider).bulkPay(debtId, payments);
     _invalidateAll();
@@ -163,12 +162,7 @@ typedef GroupedDebtsByPeriod =
       >
     >;
 
-@riverpod
-Future<GroupedDebtsByPeriod> groupedDebtInstances(Ref ref) async {
-  final tab = ref.watch(debtTabProvider);
-  final isOwner = tab == 0;
-  final categories = await ref.watch(debtGroupedProvider(isOwner).future);
-
+GroupedDebtsByPeriod _buildGrouped(List<CategoryWithDebts> categories) {
   final GroupedDebtsByPeriod grouped = {
     for (final period in PaymentPeriodType.values) period: {},
   };
@@ -209,37 +203,7 @@ Future<GroupedDebtsByPeriod> groupedDebtInstancesByOwner(
   bool isOwner,
 ) async {
   final categories = await ref.watch(debtGroupedProvider(isOwner).future);
-
-  final GroupedDebtsByPeriod grouped = {
-    for (final period in PaymentPeriodType.values) period: {},
-  };
-
-  for (final cat in categories) {
-    for (final debt in cat.debts) {
-      final period = debt.paymentPeriodType;
-      final catId = cat.categoryId;
-
-      if (!grouped[period]!.containsKey(catId)) {
-        grouped[period]![catId] = (
-          categoryName: cat.categoryName,
-          owned: cat.owned,
-          ownerUserId: cat.ownerUserId,
-          items: [],
-        );
-      }
-
-      grouped[period]![catId]!.items.add(
-        DebtListItem(
-          debt: debt,
-          categoryName: cat.categoryName,
-          owned: cat.owned,
-          ownerUserId: cat.ownerUserId,
-        ),
-      );
-    }
-  }
-
-  return grouped;
+  return _buildGrouped(categories);
 }
 
 // ── Currency list ────────────────────────────────────────────────────────────

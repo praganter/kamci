@@ -193,7 +193,7 @@ class _CategoryTabViewState extends ConsumerState<_CategoryTabView> {
     return categoriesAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) => AppErrorWidget(
-        message: e.toString(),
+        error: e,
         onRetry: () => ref.invalidate(categoryListProvider),
       ),
       data: (categories) {

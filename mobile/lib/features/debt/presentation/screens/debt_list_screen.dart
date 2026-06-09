@@ -20,6 +20,7 @@ import '../../../subscription/presentation/providers/subscription_providers.dart
 import '../../../subscription/subscription_constants.dart';
 import '../../../subscription/presentation/widgets/premium_card.dart';
 import '../../../../core/providers/app_settings_provider.dart';
+import '../../domain/entities/bulk_payment_entry.dart';
 import '../../domain/entities/debt.dart';
 import '../providers/debt_providers.dart';
 
@@ -249,7 +250,7 @@ class _DebtTabViewState extends ConsumerState<_DebtTabView>
                     loading: () =>
                         const Center(child: CircularProgressIndicator()),
                     error: (e, _) => AppErrorWidget(
-                      message: e.toString(),
+                      error: e,
                       onRetry: () {
                         ref.invalidate(debtGroupedProvider(true));
                         ref.invalidate(debtGroupedProvider(false));
@@ -634,7 +635,7 @@ class _CategoryPeriodSection extends ConsumerWidget {
         );
       }
     } catch (e) {
-      if (context.mounted) showErrorSnackBar(context, e.toString());
+      if (context.mounted) showErrorSnackBar(context, e);
     }
   }
 
@@ -653,7 +654,7 @@ class _CategoryPeriodSection extends ConsumerWidget {
       await ref.read(categoryListProvider.notifier).deleteCategory(categoryId);
       ref.invalidate(debtGroupedProvider(true));
     } catch (e) {
-      if (context.mounted) showErrorSnackBar(context, e.toString());
+      if (context.mounted) showErrorSnackBar(context, e);
     }
   }
 }
@@ -918,7 +919,7 @@ Future<void> _showPaymentOptions(
                   );
                 }
               } catch (e) {
-                if (context.mounted) showErrorSnackBar(context, e.toString());
+                if (context.mounted) showErrorSnackBar(context, e);
               }
             },
           ),
@@ -941,7 +942,7 @@ Future<void> _showPaymentOptions(
                   );
                 }
               } catch (e) {
-                if (context.mounted) showErrorSnackBar(context, e.toString());
+                if (context.mounted) showErrorSnackBar(context, e);
               }
             },
           ),
@@ -962,7 +963,7 @@ Future<void> _showPaymentOptions(
                   );
                 }
               } catch (e) {
-                if (context.mounted) showErrorSnackBar(context, e.toString());
+                if (context.mounted) showErrorSnackBar(context, e);
               }
             },
           ),
@@ -989,7 +990,7 @@ Future<void> _showPaymentOptions(
                     return;
                   }
                   Navigator.of(ctx).pop();
-                  final payments = await showDialog<List<Map<String, dynamic>>>(
+                  final payments = await showDialog<List<BulkPaymentEntry>>(
                     context: context,
                     builder: (_) => _BulkPayDialog(
                       debtId: debt.id,
@@ -1007,7 +1008,7 @@ Future<void> _showPaymentOptions(
                       );
                     }
                   } catch (e) {
-                    if (context.mounted) showErrorSnackBar(context, e.toString());
+                    if (context.mounted) showErrorSnackBar(context, e);
                   }
                 },
               );
@@ -1396,8 +1397,8 @@ class _BulkPayDialogState extends ConsumerState<_BulkPayDialog> {
                               final result = _entries
                                   .where((e) => e.selected)
                                   .map(
-                                    (e) => {
-                                      'amountPaid':
+                                    (e) => BulkPaymentEntry(
+                                      amountPaid:
                                           double.tryParse(
                                             e.controller.text.replaceAll(
                                               ',',
@@ -1405,8 +1406,8 @@ class _BulkPayDialogState extends ConsumerState<_BulkPayDialog> {
                                             ),
                                           ) ??
                                           widget.defaultAmount,
-                                      'paidTime': e.date.toIso8601String(),
-                                    },
+                                      paidTime: e.date,
+                                    ),
                                   )
                                   .toList();
                               Navigator.of(context).pop(result);
