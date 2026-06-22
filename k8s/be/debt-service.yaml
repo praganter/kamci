@@ -20,6 +20,22 @@ spec:
           image: 203.0.113.10:3000/kamci/debt-service:latest
           ports:
             - containerPort: 8081
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8081
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8081
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 10
+            failureThreshold: 5
           env:
             - name: MONGO_DB_URI
               valueFrom:

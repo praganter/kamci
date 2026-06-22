@@ -20,6 +20,22 @@ spec:
           image: 203.0.113.10:3000/kamci/notification-service:latest
           ports:
             - containerPort: 8083
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8083
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8083
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 10
+            failureThreshold: 5
           env:
             - name: CONFIG_SERVER_URL
               value: http://config-server:8888
