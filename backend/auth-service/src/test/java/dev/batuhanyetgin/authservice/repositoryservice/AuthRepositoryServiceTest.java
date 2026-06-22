@@ -134,4 +134,27 @@ class AuthRepositoryServiceTest {
                     .isThrownBy(() -> authRepositoryService.findById("id123"));
         }
     }
+
+    // ─── existsById ───────────────────────────────────────────────────────────
+
+    @Nested
+    @DisplayName("existsById")
+    class ExistsById {
+
+        @Test
+        @DisplayName("existing id → returns true")
+        void existingId_returnsTrue() {
+            when(authRepository.existsById("id123")).thenReturn(true);
+
+            assertThat(authRepositoryService.existsById("id123")).isTrue();
+        }
+
+        @Test
+        @DisplayName("missing id → returns false")
+        void missingId_returnsFalse() {
+            when(authRepository.existsById("id123")).thenReturn(false);
+
+            assertThat(authRepositoryService.existsById("id123")).isFalse();
+        }
+    }
 }

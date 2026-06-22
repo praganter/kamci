@@ -4,6 +4,7 @@ import dev.batuhanyetgin.commonmodule.event.DebtAddedEvent;
 import dev.batuhanyetgin.notificationservice.document.DeviceTokenDocument;
 import dev.batuhanyetgin.notificationservice.repository.DeviceTokenRepository;
 import dev.batuhanyetgin.notificationservice.service.FcmService;
+import dev.batuhanyetgin.notificationservice.service.MailService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -26,6 +27,7 @@ class DebtAddedConsumerTest {
 
     @Mock private DeviceTokenRepository deviceTokenRepository;
     @Mock private FcmService fcmService;
+    @Mock private MailService mailService;
     @Mock private MessageSource messageSource;
 
     @InjectMocks
@@ -49,6 +51,12 @@ class DebtAddedConsumerTest {
 
     private DeviceTokenDocument buildTokenDoc(final String userId, final String token) {
         return DeviceTokenDocument.builder().userId(userId).fcmToken(token).build();
+    }
+
+    private DeviceTokenDocument buildTokenDocWithEmail(final String userId, final String token,
+                                                        final String email, final String locale) {
+        return DeviceTokenDocument.builder()
+                .userId(userId).fcmToken(token).email(email).locale(locale).build();
     }
 
     @Nested
@@ -100,7 +108,7 @@ class DebtAddedConsumerTest {
         }
 
         @Test
-        @DisplayName("locale from event is used for message resolution")
+        @DisplayName("locale from event is used for FCM message resolution")
         void eventLocale_usedForMessages() {
             when(deviceTokenRepository.findByUserIdIn(any())).thenReturn(List.of(buildTokenDoc(MEMBER_1, FCM_TOKEN_1)));
             when(messageSource.getMessage(anyString(), any(), any(Locale.class))).thenReturn("msg");
@@ -109,6 +117,60 @@ class DebtAddedConsumerTest {
 
             verify(messageSource, atLeastOnce())
                     .getMessage(anyString(), any(), eq(Locale.forLanguageTag("en")));
+        }
+
+        @Test
+        @DisplayName("member with email → sends email using doc locale")
+        void memberWithEmail_sendsEmail() {
+            final String memberEmail = "member@example.com";
+            when(deviceTokenRepository.findByUserIdIn(List.of(MEMBER_1)))
+                    .thenReturn(List.of(buildTokenDocWithEmail(MEMBER_1, null, memberEmail, "tr")));
+            when(messageSource.getMessage(anyString(), any(), any(Locale.class))).thenReturn("msg");
+
+            consumer.consume(buildEvent(List.of(MEMBER_1)));
+
+            verify(mailService).send(eq(memberEmail), anyString(), anyString());
+        }
+
+        @Test
+        @DisplayName("member with FCM and email → sends both FCM multicast and email")
+        void memberWithFcmAndEmail_sendsBoth() {
+            final String memberEmail = "member@example.com";
+            when(deviceTokenRepository.findByUserIdIn(List.of(MEMBER_1)))
+                    .thenReturn(List.of(buildTokenDocWithEmail(MEMBER_1, FCM_TOKEN_1, memberEmail, "en")));
+            when(messageSource.getMessage(anyString(), any(), any(Locale.class))).thenReturn("msg");
+
+            consumer.consume(buildEvent(List.of(MEMBER_1)));
+
+            verify(fcmService).sendMulticast(any(), any(), any(), any());
+            verify(mailService).send(eq(memberEmail), anyString(), anyString());
+        }
+
+        @Test
+        @DisplayName("mail send throws → exception caught silently")
+        void mailSendThrows_caughtSilently() {
+            final String memberEmail = "member@example.com";
+            when(deviceTokenRepository.findByUserIdIn(List.of(MEMBER_1)))
+                    .thenReturn(List.of(buildTokenDocWithEmail(MEMBER_1, null, memberEmail, "en")));
+            when(messageSource.getMessage(anyString(), any(), any(Locale.class))).thenReturn("msg");
+            doThrow(new RuntimeException("SMTP error")).when(mailService).send(any(), any(), any());
+
+            org.junit.jupiter.api.Assertions.assertDoesNotThrow(
+                    () -> consumer.consume(buildEvent(List.of(MEMBER_1))));
+        }
+
+        @Test
+        @DisplayName("member doc locale used for email, not event locale")
+        void memberDocLocale_usedForEmail() {
+            final String memberEmail = "member@example.com";
+            when(deviceTokenRepository.findByUserIdIn(List.of(MEMBER_1)))
+                    .thenReturn(List.of(buildTokenDocWithEmail(MEMBER_1, null, memberEmail, "tr")));
+            when(messageSource.getMessage(anyString(), any(), any(Locale.class))).thenReturn("msg");
+
+            consumer.consume(buildEvent(List.of(MEMBER_1))); // event locale is "en"
+
+            verify(messageSource, atLeastOnce())
+                    .getMessage(anyString(), any(Object[].class), eq(Locale.forLanguageTag("tr")));
         }
     }
 }

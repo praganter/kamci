@@ -62,6 +62,9 @@ services:
       - APP_REDIS_HOST=${APP_REDIS_HOST}
       - APP_REDIS_PORT=${APP_REDIS_PORT}
       - APP_REDIS_PASSWORD=${APP_REDIS_PASSWORD}
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/firebase-adminsdk.json
+    volumes:
+      - ./firebase-adminsdk.json:/app/firebase-adminsdk.json:ro
     depends_on:
       mongodb:
         condition: service_healthy

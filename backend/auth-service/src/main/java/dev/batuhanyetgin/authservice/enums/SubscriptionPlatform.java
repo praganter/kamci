@@ -2,5 +2,6 @@ package dev.batuhanyetgin.authservice.enums;
 
 public enum SubscriptionPlatform {
     IOS,
-    ANDROID
+    ANDROID,
+    ADMIN
 }

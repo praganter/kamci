@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Map;
 
@@ -102,8 +103,8 @@ public class SubscriptionController {
 
     private void validateAdminKey(final String adminKey) {
         if (adminSecretKey.isBlank() || !MessageDigest.isEqual(
-                adminSecretKey.getBytes(),
-                adminKey.getBytes())) {
+                adminSecretKey.getBytes(StandardCharsets.UTF_8),
+                adminKey.getBytes(StandardCharsets.UTF_8))) {
             throw BaseException.forbidden("error.admin.unauthorized");
         }
     }

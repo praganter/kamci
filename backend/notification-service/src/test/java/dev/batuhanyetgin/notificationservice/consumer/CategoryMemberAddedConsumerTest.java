@@ -101,7 +101,7 @@ class CategoryMemberAddedConsumerTest {
         }
 
         @Test
-        @DisplayName("no device token record → no notifications sent")
+        @DisplayName("no device token record, no memberEmail → no notifications sent")
         void noTokenRecord_noNotifications() {
             when(deviceTokenRepository.findByUserId(MEMBER_ID)).thenReturn(Optional.empty());
 
@@ -109,6 +109,46 @@ class CategoryMemberAddedConsumerTest {
 
             verifyNoInteractions(fcmService);
             verifyNoInteractions(mailService);
+        }
+
+        @Test
+        @DisplayName("no device token record but memberEmail set → sends fallback email with default locale")
+        void noTokenRecord_memberEmailSet_sendsFallbackEmail() {
+            when(deviceTokenRepository.findByUserId(MEMBER_ID)).thenReturn(Optional.empty());
+            when(messageSource.getMessage(anyString(), any(Object[].class), any(Locale.class))).thenReturn("msg");
+
+            final CategoryMemberAddedEvent eventWithEmail = CategoryMemberAddedEvent.builder()
+                    .categoryId(CATEGORY_ID)
+                    .categoryName(CATEGORY_NAME)
+                    .addedByUserId(OWNER_ID)
+                    .memberUserId(MEMBER_ID)
+                    .memberEmail(EMAIL)
+                    .locale("en")
+                    .build();
+
+            consumer.consume(eventWithEmail);
+
+            verify(mailService).send(eq(EMAIL), anyString(), anyString());
+            verifyNoInteractions(fcmService);
+        }
+
+        @Test
+        @DisplayName("no token record, memberEmail set, mail throws → caught silently")
+        void noTokenRecord_mailThrows_caughtSilently() {
+            when(deviceTokenRepository.findByUserId(MEMBER_ID)).thenReturn(Optional.empty());
+            when(messageSource.getMessage(anyString(), any(Object[].class), any(Locale.class))).thenReturn("msg");
+            doThrow(new RuntimeException("SMTP error")).when(mailService).send(any(), any(), any());
+
+            final CategoryMemberAddedEvent eventWithEmail = CategoryMemberAddedEvent.builder()
+                    .categoryId(CATEGORY_ID)
+                    .categoryName(CATEGORY_NAME)
+                    .addedByUserId(OWNER_ID)
+                    .memberUserId(MEMBER_ID)
+                    .memberEmail(EMAIL)
+                    .locale("en")
+                    .build();
+
+            assertDoesNotThrow(() -> consumer.consume(eventWithEmail));
         }
 
         @Test

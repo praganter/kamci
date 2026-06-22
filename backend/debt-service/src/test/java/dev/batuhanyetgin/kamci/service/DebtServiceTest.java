@@ -8,11 +8,15 @@ import dev.batuhanyetgin.kamci.document.embedded.MemberEmbedded;
 import dev.batuhanyetgin.kamci.document.embedded.PaymentEmbedded;
 import dev.batuhanyetgin.kamci.dto.request.CreateDebtRequest;
 import dev.batuhanyetgin.kamci.dto.request.PayDebtRequest;
+import dev.batuhanyetgin.kamci.dto.request.SetPaidInstallmentsRequest;
+import dev.batuhanyetgin.kamci.dto.request.SkipDebtRequest;
 import dev.batuhanyetgin.kamci.dto.request.UpdateDebtRequest;
 import dev.batuhanyetgin.kamci.dto.response.DebtDetailResponse;
 import dev.batuhanyetgin.kamci.dto.response.DebtItemResponse;
 import dev.batuhanyetgin.kamci.dto.response.DebtResponse;
 import dev.batuhanyetgin.kamci.dto.response.GetDebtResponse;
+import dev.batuhanyetgin.kamci.dto.response.MonthlySummaryResponse;
+import dev.batuhanyetgin.kamci.dto.response.PaymentHistoryResponse;
 import dev.batuhanyetgin.kamci.enums.AccessLevelType;
 import dev.batuhanyetgin.kamci.enums.DebtStatus;
 import dev.batuhanyetgin.kamci.enums.PaymentStatus;
@@ -38,8 +42,10 @@ import org.springframework.http.HttpStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Executor;
 
 import static org.assertj.core.api.Assertions.*;
@@ -864,6 +870,576 @@ class DebtServiceTest {
                 assertThat(captor.getValue().getPayments()).hasSize(1);
                 assertThat(captor.getValue().getPayments().get(0).getAmountPaid())
                         .isEqualByComparingTo(existing.getAmount());
+            }
+        }
+    }
+
+    // ─── skip ─────────────────────────────────────────────────────────────────
+
+    @Nested
+    @DisplayName("skip")
+    class Skip {
+
+        @Test
+        @DisplayName("owner skips → adds skipped payment and returns response")
+        void ownerSkips_addsSkippedPaymentAndReturns() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+
+                final DebtDocument existing = buildDebt(DEBT_ID, OWNER_ID, CAT_ID);
+                when(debtRS.findById(DEBT_ID)).thenReturn(existing);
+                when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
+
+                final ArgumentCaptor<DebtDocument> captor = ArgumentCaptor.forClass(DebtDocument.class);
+                when(debtRS.update(captor.capture())).thenReturn(existing);
+                when(debtMapper.convert(existing)).thenReturn(buildDebtItemResponse());
+
+                final DebtResponse response = debtService.skip(DEBT_ID, null);
+
+                assertThat(response.getDebt()).isNotNull();
+                assertThat(captor.getValue().getPayments()).hasSize(1);
+                assertThat(captor.getValue().getPayments().get(0).isPaid()).isFalse();
+            }
+        }
+
+        @Test
+        @DisplayName("already completed → throws conflict")
+        void alreadyCompleted_throwsConflict() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+
+                final DebtDocument existing = buildDebt(DEBT_ID, OWNER_ID, CAT_ID);
+                existing.setStatus(DebtStatus.COMPLETED);
+                when(debtRS.findById(DEBT_ID)).thenReturn(existing);
+
+                final Throwable t = catchThrowable(() -> debtService.skip(DEBT_ID, null));
+
+                assertThat(t).isInstanceOf(BaseException.class);
+                assertThat(((BaseException) t).getStatus()).isEqualTo(HttpStatus.CONFLICT);
+            }
+        }
+
+        @Test
+        @DisplayName("auto payment enabled → throws conflict")
+        void autoPaymentEnabled_throwsConflict() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+
+                final DebtDocument existing = buildDebt(DEBT_ID, OWNER_ID, CAT_ID);
+                existing.setAutoPayment(true);
+                when(debtRS.findById(DEBT_ID)).thenReturn(existing);
+
+                final Throwable t = catchThrowable(() -> debtService.skip(DEBT_ID, null));
+
+                assertThat(t).isInstanceOf(BaseException.class);
+                assertThat(((BaseException) t).getStatus()).isEqualTo(HttpStatus.CONFLICT);
+            }
+        }
+
+        @Test
+        @DisplayName("no write access → throws forbidden")
+        void noWriteAccess_throwsForbidden() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OTHER_ID);
+
+                final DebtDocument existing = buildDebt(DEBT_ID, OWNER_ID, CAT_ID);
+                when(debtRS.findById(DEBT_ID)).thenReturn(existing);
+                when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
+
+                final Throwable t = catchThrowable(() -> debtService.skip(DEBT_ID, null));
+
+                assertThat(t).isInstanceOf(BaseException.class);
+                assertThat(((BaseException) t).getStatus()).isEqualTo(HttpStatus.FORBIDDEN);
+            }
+        }
+
+        @Test
+        @DisplayName("period already recorded → throws conflict")
+        void periodAlreadyRecorded_throwsConflict() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+
+                final DebtDocument existing = buildDebt(DEBT_ID, OWNER_ID, CAT_ID);
+                final LocalDateTime now = LocalDateTime.now();
+                existing.addPayment(now, now.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0),
+                        now.withDayOfMonth(1).plusMonths(1).minusDays(1), BigDecimal.TEN);
+                when(debtRS.findById(DEBT_ID)).thenReturn(existing);
+                when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
+
+                final Throwable t = catchThrowable(() -> debtService.skip(DEBT_ID, null));
+
+                assertThat(t).isInstanceOf(BaseException.class);
+                assertThat(((BaseException) t).getStatus()).isEqualTo(HttpStatus.CONFLICT);
+            }
+        }
+    }
+
+    // ─── bulkPay ──────────────────────────────────────────────────────────────
+
+    @Nested
+    @DisplayName("bulkPay")
+    class BulkPay {
+
+        @Test
+        @DisplayName("owner bulk pays two distinct periods → both payments recorded")
+        void ownerBulkPays_twoPaymentsRecorded() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+
+                final DebtDocument existing = buildDebt(DEBT_ID, OWNER_ID, CAT_ID);
+                existing.setFirstPaymentDate(LocalDateTime.now().minusMonths(3));
+                when(debtRS.findById(DEBT_ID)).thenReturn(existing);
+                when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
+
+                final ArgumentCaptor<DebtDocument> captor = ArgumentCaptor.forClass(DebtDocument.class);
+                when(debtRS.update(captor.capture())).thenReturn(existing);
+                when(debtMapper.convert(existing)).thenReturn(buildDebtItemResponse());
+
+                final List<PayDebtRequest> requests = List.of(
+                        PayDebtRequest.builder().paidTime(LocalDateTime.now().minusMonths(2)).build(),
+                        PayDebtRequest.builder().paidTime(LocalDateTime.now().minusMonths(1)).build()
+                );
+
+                final DebtResponse response = debtService.bulkPay(DEBT_ID, requests);
+
+                assertThat(response.getDebt()).isNotNull();
+                assertThat(captor.getValue().getPayments()).hasSize(2);
+            }
+        }
+
+        @Test
+        @DisplayName("already completed → throws conflict")
+        void alreadyCompleted_throwsConflict() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+
+                final DebtDocument existing = buildDebt(DEBT_ID, OWNER_ID, CAT_ID);
+                existing.setStatus(DebtStatus.COMPLETED);
+                when(debtRS.findById(DEBT_ID)).thenReturn(existing);
+
+                final Throwable t = catchThrowable(() -> debtService.bulkPay(DEBT_ID, List.of()));
+
+                assertThat(t).isInstanceOf(BaseException.class);
+                assertThat(((BaseException) t).getStatus()).isEqualTo(HttpStatus.CONFLICT);
+            }
+        }
+
+        @Test
+        @DisplayName("auto payment enabled → throws conflict")
+        void autoPaymentEnabled_throwsConflict() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+
+                final DebtDocument existing = buildDebt(DEBT_ID, OWNER_ID, CAT_ID);
+                existing.setAutoPayment(true);
+                when(debtRS.findById(DEBT_ID)).thenReturn(existing);
+
+                final Throwable t = catchThrowable(() -> debtService.bulkPay(DEBT_ID, List.of()));
+
+                assertThat(t).isInstanceOf(BaseException.class);
+                assertThat(((BaseException) t).getStatus()).isEqualTo(HttpStatus.CONFLICT);
+            }
+        }
+
+        @Test
+        @DisplayName("no write access → throws forbidden")
+        void noWriteAccess_throwsForbidden() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OTHER_ID);
+
+                final DebtDocument existing = buildDebt(DEBT_ID, OWNER_ID, CAT_ID);
+                when(debtRS.findById(DEBT_ID)).thenReturn(existing);
+                when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
+
+                final Throwable t = catchThrowable(() -> debtService.bulkPay(DEBT_ID, List.of()));
+
+                assertThat(t).isInstanceOf(BaseException.class);
+                assertThat(((BaseException) t).getStatus()).isEqualTo(HttpStatus.FORBIDDEN);
+            }
+        }
+
+        @Test
+        @DisplayName("installment count reached → status set to COMPLETED")
+        void installmentCountReached_statusCompleted() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+
+                // Use fixed base date so period boundaries are predictable
+                final LocalDateTime base = LocalDateTime.now().minusMonths(3).withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+                final DebtDocument existing = buildDebt(DEBT_ID, OWNER_ID, CAT_ID);
+                existing.setFirstPaymentDate(base);
+                existing.setInstallmentCount(2);
+                when(debtRS.findById(DEBT_ID)).thenReturn(existing);
+                when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
+
+                final ArgumentCaptor<DebtDocument> captor = ArgumentCaptor.forClass(DebtDocument.class);
+                when(debtRS.update(captor.capture())).thenReturn(existing);
+                when(debtMapper.convert(existing)).thenReturn(buildDebtItemResponse());
+
+                // Two payments exactly one month apart, both in distinct periods relative to base
+                final List<PayDebtRequest> requests = List.of(
+                        PayDebtRequest.builder().paidTime(base.plusDays(5)).build(),
+                        PayDebtRequest.builder().paidTime(base.plusMonths(1).plusDays(5)).build()
+                );
+
+                debtService.bulkPay(DEBT_ID, requests);
+
+                assertThat(captor.getValue().getStatus()).isEqualTo(DebtStatus.COMPLETED);
+            }
+        }
+
+        @Test
+        @DisplayName("duplicate period in bulk → skipped silently")
+        void duplicatePeriod_skippedSilently() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+
+                final LocalDateTime base = LocalDateTime.now().minusMonths(3).withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+                final DebtDocument existing = buildDebt(DEBT_ID, OWNER_ID, CAT_ID);
+                existing.setFirstPaymentDate(base);
+                // Pre-populate a payment in base period
+                existing.addPayment(base.plusDays(5), base, base.plusMonths(1).minusDays(1), BigDecimal.TEN);
+                when(debtRS.findById(DEBT_ID)).thenReturn(existing);
+                when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
+
+                final ArgumentCaptor<DebtDocument> captor = ArgumentCaptor.forClass(DebtDocument.class);
+                when(debtRS.update(captor.capture())).thenReturn(existing);
+                when(debtMapper.convert(existing)).thenReturn(buildDebtItemResponse());
+
+                // Send a request for the same period — should be silently skipped
+                debtService.bulkPay(DEBT_ID, List.of(PayDebtRequest.builder().paidTime(base.plusDays(10)).build()));
+
+                assertThat(captor.getValue().getPayments()).hasSize(1);
+            }
+        }
+    }
+
+    // ─── setPaidInstallments ──────────────────────────────────────────────────
+
+    @Nested
+    @DisplayName("setPaidInstallments")
+    class SetPaidInstallments {
+
+        @Test
+        @DisplayName("owner sets 2 installments → 2 payments added")
+        void ownerSetsInstallments_paymentsAdded() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+
+                final DebtDocument existing = buildDebt(DEBT_ID, OWNER_ID, CAT_ID);
+                existing.setFirstPaymentDate(LocalDateTime.now().minusMonths(3));
+                when(debtRS.findById(DEBT_ID)).thenReturn(existing);
+                when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
+
+                final ArgumentCaptor<DebtDocument> captor = ArgumentCaptor.forClass(DebtDocument.class);
+                when(debtRS.update(captor.capture())).thenReturn(existing);
+                when(debtMapper.convert(existing)).thenReturn(buildDebtItemResponse());
+
+                debtService.setPaidInstallments(DEBT_ID, SetPaidInstallmentsRequest.builder().count(2).build());
+
+                assertThat(captor.getValue().getPayments()).hasSize(2);
+                assertThat(captor.getValue().getPayments()).allMatch(PaymentEmbedded::isPaid);
+            }
+        }
+
+        @Test
+        @DisplayName("already completed → throws conflict")
+        void alreadyCompleted_throwsConflict() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+
+                final DebtDocument existing = buildDebt(DEBT_ID, OWNER_ID, CAT_ID);
+                existing.setStatus(DebtStatus.COMPLETED);
+                when(debtRS.findById(DEBT_ID)).thenReturn(existing);
+
+                final Throwable t = catchThrowable(() ->
+                        debtService.setPaidInstallments(DEBT_ID, SetPaidInstallmentsRequest.builder().count(1).build()));
+
+                assertThat(t).isInstanceOf(BaseException.class);
+                assertThat(((BaseException) t).getStatus()).isEqualTo(HttpStatus.CONFLICT);
+            }
+        }
+
+        @Test
+        @DisplayName("auto payment enabled → throws conflict")
+        void autoPaymentEnabled_throwsConflict() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+
+                final DebtDocument existing = buildDebt(DEBT_ID, OWNER_ID, CAT_ID);
+                existing.setAutoPayment(true);
+                when(debtRS.findById(DEBT_ID)).thenReturn(existing);
+
+                final Throwable t = catchThrowable(() ->
+                        debtService.setPaidInstallments(DEBT_ID, SetPaidInstallmentsRequest.builder().count(1).build()));
+
+                assertThat(t).isInstanceOf(BaseException.class);
+                assertThat(((BaseException) t).getStatus()).isEqualTo(HttpStatus.CONFLICT);
+            }
+        }
+
+        @Test
+        @DisplayName("missing period config → throws bad request")
+        void missingPeriodConfig_throwsBadRequest() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+
+                final DebtDocument existing = DebtDocument.builder()
+                        .id(DEBT_ID)
+                        .ownerId(OWNER_ID)
+                        .categoryId(CAT_ID)
+                        .amount(BigDecimal.TEN)
+                        .status(DebtStatus.ACTIVE)
+                        .payments(new ArrayList<>())
+                        .build();
+                when(debtRS.findById(DEBT_ID)).thenReturn(existing);
+
+                final Throwable t = catchThrowable(() ->
+                        debtService.setPaidInstallments(DEBT_ID, SetPaidInstallmentsRequest.builder().count(1).build()));
+
+                assertThat(t).isInstanceOf(BaseException.class);
+                assertThat(((BaseException) t).getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
+            }
+        }
+
+        @Test
+        @DisplayName("count exceeds installment count → throws bad request")
+        void countExceedsInstallmentCount_throwsBadRequest() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+
+                final DebtDocument existing = buildDebt(DEBT_ID, OWNER_ID, CAT_ID);
+                existing.setInstallmentCount(3);
+                when(debtRS.findById(DEBT_ID)).thenReturn(existing);
+
+                final Throwable t = catchThrowable(() ->
+                        debtService.setPaidInstallments(DEBT_ID, SetPaidInstallmentsRequest.builder().count(5).build()));
+
+                assertThat(t).isInstanceOf(BaseException.class);
+                assertThat(((BaseException) t).getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
+            }
+        }
+
+        @Test
+        @DisplayName("no write access → throws forbidden")
+        void noWriteAccess_throwsForbidden() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OTHER_ID);
+
+                final DebtDocument existing = buildDebt(DEBT_ID, OWNER_ID, CAT_ID);
+                when(debtRS.findById(DEBT_ID)).thenReturn(existing);
+                when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
+
+                final Throwable t = catchThrowable(() ->
+                        debtService.setPaidInstallments(DEBT_ID, SetPaidInstallmentsRequest.builder().count(1).build()));
+
+                assertThat(t).isInstanceOf(BaseException.class);
+                assertThat(((BaseException) t).getStatus()).isEqualTo(HttpStatus.FORBIDDEN);
+            }
+        }
+
+        @Test
+        @DisplayName("installment count reached → status set to COMPLETED")
+        void installmentCountReached_statusCompleted() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+
+                final DebtDocument existing = buildDebt(DEBT_ID, OWNER_ID, CAT_ID);
+                existing.setFirstPaymentDate(LocalDateTime.now().minusMonths(3));
+                existing.setInstallmentCount(2);
+                when(debtRS.findById(DEBT_ID)).thenReturn(existing);
+                when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
+
+                final ArgumentCaptor<DebtDocument> captor = ArgumentCaptor.forClass(DebtDocument.class);
+                when(debtRS.update(captor.capture())).thenReturn(existing);
+                when(debtMapper.convert(existing)).thenReturn(buildDebtItemResponse());
+
+                debtService.setPaidInstallments(DEBT_ID, SetPaidInstallmentsRequest.builder().count(2).build());
+
+                assertThat(captor.getValue().getStatus()).isEqualTo(DebtStatus.COMPLETED);
+            }
+        }
+    }
+
+    // ─── getPaymentHistory ────────────────────────────────────────────────────
+
+    @Nested
+    @DisplayName("getPaymentHistory")
+    class GetPaymentHistory {
+
+        @Test
+        @DisplayName("owner requests history → returns payments within range")
+        void owner_returnsPaymentsWithinRange() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+
+                final LocalDateTime now = LocalDateTime.now();
+                final DebtDocument existing = buildDebt(DEBT_ID, OWNER_ID, CAT_ID);
+                existing.addPayment(now.minusDays(5), now.minusDays(10), now.minusDays(1), BigDecimal.TEN);
+                existing.addPayment(now.minusDays(40), now.minusDays(45), now.minusDays(35), BigDecimal.TEN);
+                when(debtRS.findById(DEBT_ID)).thenReturn(existing);
+                when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
+
+                final List<PaymentHistoryResponse> history = debtService.getPaymentHistory(
+                        DEBT_ID, now.minusDays(20), now);
+
+                assertThat(history).hasSize(1);
+                assertThat(history.get(0).isPaid()).isTrue();
+            }
+        }
+
+        @Test
+        @DisplayName("no read access → throws forbidden")
+        void noReadAccess_throwsForbidden() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OTHER_ID);
+
+                final DebtDocument existing = buildDebt(DEBT_ID, OWNER_ID, CAT_ID);
+                when(debtRS.findById(DEBT_ID)).thenReturn(existing);
+                when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
+
+                final LocalDateTime now = LocalDateTime.now();
+                final Throwable t = catchThrowable(() ->
+                        debtService.getPaymentHistory(DEBT_ID, now.minusMonths(1), now));
+
+                assertThat(t).isInstanceOf(BaseException.class);
+                assertThat(((BaseException) t).getStatus()).isEqualTo(HttpStatus.FORBIDDEN);
+            }
+        }
+
+        @Test
+        @DisplayName("read member → can access payment history")
+        void readMember_canAccessHistory() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OTHER_ID);
+
+                final DebtDocument existing = buildDebt(DEBT_ID, OWNER_ID, CAT_ID);
+                when(debtRS.findById(DEBT_ID)).thenReturn(existing);
+                when(categoryRS.findById(CAT_ID)).thenReturn(buildCategoryWithReadMember(CAT_ID, OWNER_ID, OTHER_ID));
+
+                final LocalDateTime now = LocalDateTime.now();
+                final List<PaymentHistoryResponse> history =
+                        debtService.getPaymentHistory(DEBT_ID, now.minusMonths(1), now);
+
+                assertThat(history).isEmpty();
+            }
+        }
+    }
+
+    // ─── getMonthlySummary ────────────────────────────────────────────────────
+
+    @Nested
+    @DisplayName("getMonthlySummary")
+    class GetMonthlySummary {
+
+        @Test
+        @DisplayName("no debts → returns zeroed summary")
+        void noDebts_returnsZeroedSummary() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+
+                when(categoryRS.findByOwnerId(OWNER_ID)).thenReturn(List.of());
+                when(categoryRS.findByMemberUserId(OWNER_ID)).thenReturn(List.of());
+                when(debtRS.findByCategoryIdIn(List.of())).thenReturn(List.of());
+                when(incomeRS.findByOwnerIdAsOf(eq(OWNER_ID), any())).thenReturn(Optional.empty());
+
+                final String month = YearMonth.now().toString();
+                final MonthlySummaryResponse summary = debtService.getMonthlySummary(month);
+
+                assertThat(summary.getTotalPaid()).isEqualByComparingTo(BigDecimal.ZERO);
+                assertThat(summary.getPaidCount()).isZero();
+                assertThat(summary.getSkippedCount()).isZero();
+                assertThat(summary.getPendingCount()).isZero();
+                assertThat(summary.getDebts()).isEmpty();
+            }
+        }
+
+        @Test
+        @DisplayName("paid debt in month → paidCount=1 and totalPaid equals debt amount")
+        void paidDebtInMonth_paidCountAndTotalPaidCorrect() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+
+                final YearMonth ym = YearMonth.now().minusMonths(1);
+                final LocalDateTime monthStart = ym.atDay(1).atStartOfDay();
+                final LocalDateTime monthEnd = ym.atEndOfMonth().atTime(23, 59, 59);
+
+                final CategoryDocument cat = buildCategory(CAT_ID, OWNER_ID);
+                final DebtDocument debt = buildDebt(DEBT_ID, OWNER_ID, CAT_ID);
+                debt.setFirstPaymentDate(monthStart);
+                final LocalDateTime payTime = monthStart.plusDays(5);
+                debt.addPayment(payTime, monthStart, monthEnd, BigDecimal.valueOf(100));
+
+                when(categoryRS.findByOwnerId(OWNER_ID)).thenReturn(List.of(cat));
+                when(categoryRS.findByMemberUserId(OWNER_ID)).thenReturn(List.of());
+                when(debtRS.findByCategoryIdIn(List.of(CAT_ID))).thenReturn(List.of(debt));
+                when(incomeRS.findByOwnerIdAsOf(eq(OWNER_ID), any())).thenReturn(Optional.empty());
+
+                final MonthlySummaryResponse summary = debtService.getMonthlySummary(ym.toString());
+
+                assertThat(summary.getPaidCount()).isEqualTo(1);
+                assertThat(summary.getTotalPaid()).isEqualByComparingTo(BigDecimal.valueOf(100));
+                assertThat(summary.getSkippedCount()).isZero();
+            }
+        }
+
+        @Test
+        @DisplayName("skipped debt in month → skippedCount=1")
+        void skippedDebtInMonth_skippedCountCorrect() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+
+                final YearMonth ym = YearMonth.now().minusMonths(1);
+                final LocalDateTime monthStart = ym.atDay(1).atStartOfDay();
+                final LocalDateTime monthEnd = ym.atEndOfMonth().atTime(23, 59, 59);
+
+                final CategoryDocument cat = buildCategory(CAT_ID, OWNER_ID);
+                final DebtDocument debt = buildDebt(DEBT_ID, OWNER_ID, CAT_ID);
+                debt.setFirstPaymentDate(monthStart);
+                debt.skipPayment(monthStart.plusDays(3), monthStart, monthEnd);
+
+                when(categoryRS.findByOwnerId(OWNER_ID)).thenReturn(List.of(cat));
+                when(categoryRS.findByMemberUserId(OWNER_ID)).thenReturn(List.of());
+                when(debtRS.findByCategoryIdIn(List.of(CAT_ID))).thenReturn(List.of(debt));
+                when(incomeRS.findByOwnerIdAsOf(eq(OWNER_ID), any())).thenReturn(Optional.empty());
+
+                final MonthlySummaryResponse summary = debtService.getMonthlySummary(ym.toString());
+
+                assertThat(summary.getSkippedCount()).isEqualTo(1);
+                assertThat(summary.getPaidCount()).isZero();
+            }
+        }
+
+        @Test
+        @DisplayName("pending debt (no payment, active, started before month end) → pendingCount=1")
+        void pendingDebt_pendingCountCorrect() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+
+                final YearMonth ym = YearMonth.now().minusMonths(1);
+                final LocalDateTime monthStart = ym.atDay(1).atStartOfDay();
+
+                final CategoryDocument cat = buildCategory(CAT_ID, OWNER_ID);
+                final DebtDocument debt = DebtDocument.builder()
+                        .id(DEBT_ID)
+                        .ownerId(OWNER_ID)
+                        .categoryId(CAT_ID)
+                        .amount(BigDecimal.valueOf(50))
+                        .status(DebtStatus.ACTIVE)
+                        .payments(new ArrayList<>())
+                        .firstPaymentDate(monthStart)
+                        .paymentPeriodType(PaymentPeriodType.MONTHLY)
+                        .build();
+
+                when(categoryRS.findByOwnerId(OWNER_ID)).thenReturn(List.of(cat));
+                when(categoryRS.findByMemberUserId(OWNER_ID)).thenReturn(List.of());
+                when(debtRS.findByCategoryIdIn(List.of(CAT_ID))).thenReturn(List.of(debt));
+                when(incomeRS.findByOwnerIdAsOf(eq(OWNER_ID), any())).thenReturn(Optional.empty());
+
+                final MonthlySummaryResponse summary = debtService.getMonthlySummary(ym.toString());
+
+                assertThat(summary.getPendingCount()).isEqualTo(1);
+                assertThat(summary.getPendingAmount()).isEqualByComparingTo(BigDecimal.valueOf(50));
             }
         }
     }

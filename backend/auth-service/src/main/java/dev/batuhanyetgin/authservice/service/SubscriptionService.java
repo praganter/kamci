@@ -13,28 +13,18 @@ import dev.batuhanyetgin.authservice.repositoryservice.SubscriptionRepositorySer
 import dev.batuhanyetgin.commonmodule.exception.BaseException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class SubscriptionService {
 
-    private static final int APPLE_STATUS_OK = 0;
-    private static final int APPLE_STATUS_SANDBOX = 21007;
     // Google Play subscription notification types
     private static final int GOOGLE_SUBSCRIPTION_RECOVERED = 1;
     private static final int GOOGLE_SUBSCRIPTION_RENEWED = 4;
@@ -48,14 +38,8 @@ public class SubscriptionService {
     private final JwtService jwtService;
     private final ObjectMapper objectMapper;
     private final AppleJwsVerifier appleJwsVerifier;
-    @Value("${apple.store.shared-secret}")
-    private String appleSharedSecret;
-    @Value("${apple.store.verify-url}")
-    private String appleVerifyUrl;
-    @Value("${apple.store.sandbox-verify-url}")
-    private String appleSandboxVerifyUrl;
-    @Value("${ADMIN_SECRET_KEY:}")
-    private String adminSecretKey;
+    private final GooglePlayVerifier googlePlayVerifier;
+    private final AppleReceiptVerifier appleReceiptVerifier;
 
     public SubscriptionResponse verifyReceipt(final String userId, final VerifyReceiptRequest request) {
         final SubscriptionPlatform platform = SubscriptionPlatform.valueOf(request.getPlatform());
@@ -65,7 +49,7 @@ public class SubscriptionService {
         final String transactionId;
 
         if (platform == SubscriptionPlatform.IOS) {
-            final JsonNode receiptInfo = verifyAppleReceipt(request.getReceiptData());
+            final JsonNode receiptInfo = appleReceiptVerifier.verify(request.getReceiptData());
             transactionId = receiptInfo.path("original_transaction_id").asText();
             final long expiresMs = receiptInfo.path("expires_date_ms").asLong();
             expiryDate = LocalDateTime.ofInstant(Instant.ofEpochMilli(expiresMs), ZoneOffset.UTC);
@@ -129,11 +113,7 @@ public class SubscriptionService {
             final String signedTransactionInfo = data.path("signedTransactionInfo").asText();
             final String signedRenewalInfo = data.path("signedRenewalInfo").asText();
 
-            // Decode transaction info
-            final String[] txParts = signedTransactionInfo.split("\\.");
-            final JsonNode txInfo = objectMapper.readTree(
-                    new String(Base64.getUrlDecoder().decode(txParts[1]))
-            );
+            final JsonNode txInfo = appleJwsVerifier.verifyAndDecode(signedTransactionInfo);
 
             final String originalTransactionId = txInfo.path("originalTransactionId").asText();
             final long expiresMs = txInfo.path("expiresDate").asLong();
@@ -166,10 +146,7 @@ public class SubscriptionService {
                     log.info("Apple grace period expired for transactionId: {}", originalTransactionId);
                 }
                 case "DID_CHANGE_RENEWAL_STATUS" -> {
-                    final String[] rnParts = signedRenewalInfo.split("\\.");
-                    final JsonNode rnInfo = objectMapper.readTree(
-                            new String(Base64.getUrlDecoder().decode(rnParts[1]))
-                    );
+                    final JsonNode rnInfo = appleJwsVerifier.verifyAndDecode(signedRenewalInfo);
                     final int autoRenewStatus = rnInfo.path("autoRenewStatus").asInt(-1);
                     log.info("Apple DID_CHANGE_RENEWAL_STATUS for transactionId: {}, autoRenewStatus: {}",
                             originalTransactionId, autoRenewStatus);
@@ -245,7 +222,7 @@ public class SubscriptionService {
 
         subscription.setStatus(SubscriptionStatus.ACTIVE);
         subscription.setPlan(SubscriptionPlan.YEARLY);
-        subscription.setPlatform(SubscriptionPlatform.ANDROID);
+        subscription.setPlatform(SubscriptionPlatform.ADMIN);
         subscription.setStartDate(LocalDateTime.now(ZoneOffset.UTC));
         subscription.setExpiryDate(LocalDateTime.now(ZoneOffset.UTC).plusYears(100));
         subscription.setOriginalTransactionId("ADMIN_GRANT_" + userId);
@@ -265,53 +242,19 @@ public class SubscriptionService {
         });
     }
 
-    private JsonNode verifyAppleReceipt(final String receiptData) {
-        final RestTemplate restTemplate = new RestTemplate();
-        final Map<String, String> body = new HashMap<>();
-        body.put("receipt-data", receiptData);
-        body.put("password", appleSharedSecret);
-        body.put("exclude-old-transactions", "true");
-
-        final HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        final HttpEntity<Map<String, String>> entity = new HttpEntity<>(body, headers);
-
-        try {
-            final ResponseEntity<JsonNode> response = restTemplate.postForEntity(appleVerifyUrl, entity, JsonNode.class);
-            final JsonNode result = response.getBody();
-            final int status = result.path("status").asInt(-1);
-
-            if (status == APPLE_STATUS_SANDBOX) {
-                // Retry with sandbox
-                final ResponseEntity<JsonNode> sandboxResponse = restTemplate.postForEntity(
-                        appleSandboxVerifyUrl, entity, JsonNode.class);
-                return extractAppleReceiptInfo(sandboxResponse.getBody());
-            }
-
-            return extractAppleReceiptInfo(result);
-        } catch (Exception e) {
-            log.error("Apple receipt verification failed: {}", e.getMessage());
-            throw BaseException.badRequest("error.subscription.verification_failed");
-        }
-    }
-
-    private JsonNode extractAppleReceiptInfo(final JsonNode result) {
-        if (result == null || result.path("status").asInt(-1) != APPLE_STATUS_OK) {
-            throw BaseException.badRequest("error.subscription.verification_failed");
-        }
-        final JsonNode latestReceiptInfo = result.path("latest_receipt_info");
-        if (!latestReceiptInfo.isArray() || latestReceiptInfo.isEmpty()) {
-            throw BaseException.badRequest("error.subscription.verification_failed");
-        }
-        return latestReceiptInfo.get(latestReceiptInfo.size() - 1);
-    }
-
     private JsonNode verifyGooglePurchase(final String packageName, final String productId, final String purchaseToken) {
-        // Google Play Developer API requires service account OAuth2 — implementation
-        // requires google-api-client library. For now, we validate the token structure
-        // and rely on Google's webhook for state changes.
-        // Full implementation: use GoogleCredentials + AndroidPublisher client.
-        throw BaseException.badRequest("error.subscription.google_verification_not_configured");
+        try {
+            final JsonNode result = googlePlayVerifier.verifySubscription(packageName, productId, purchaseToken);
+            if (result == null) {
+                throw BaseException.badRequest("error.subscription.verification_failed");
+            }
+            return result;
+        } catch (BaseException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Google Play purchase verification failed: {}", e.getMessage());
+            throw BaseException.badRequest("error.subscription.verification_failed");
+        }
     }
 
     private void updatePremiumStatus(final String userId, final boolean premium) {

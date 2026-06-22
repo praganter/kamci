@@ -237,6 +237,16 @@ class AuthServiceTest {
                     .isThrownBy(() -> authService.refreshToken("Bearer   "))
                     .matches(e -> e.getStatus() == HttpStatus.BAD_REQUEST);
         }
+
+        @Test
+        @DisplayName("blacklisted token → throws UNAUTHORIZED")
+        void blacklistedToken_throwsUnauthorized() {
+            when(tokenBlacklistService.isBlacklisted(REFRESH_TOKEN)).thenReturn(true);
+
+            assertThatExceptionOfType(BaseException.class)
+                    .isThrownBy(() -> authService.refreshToken("Bearer " + REFRESH_TOKEN))
+                    .matches(e -> e.getStatus() == HttpStatus.UNAUTHORIZED);
+        }
     }
 
     // ─── forgetPassword ───────────────────────────────────────────────────────
@@ -418,6 +428,14 @@ class AuthServiceTest {
         void missingBearerPrefix_throwsBadRequest() {
             assertThatExceptionOfType(BaseException.class)
                     .isThrownBy(() -> authService.logout(REFRESH_TOKEN))
+                    .matches(e -> e.getStatus() == HttpStatus.BAD_REQUEST);
+        }
+
+        @Test
+        @DisplayName("Bearer with blank token → throws BAD_REQUEST")
+        void bearerWithBlankToken_throwsBadRequest() {
+            assertThatExceptionOfType(BaseException.class)
+                    .isThrownBy(() -> authService.logout("Bearer   "))
                     .matches(e -> e.getStatus() == HttpStatus.BAD_REQUEST);
         }
     }

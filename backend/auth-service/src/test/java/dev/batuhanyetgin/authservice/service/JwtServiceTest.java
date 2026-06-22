@@ -189,4 +189,35 @@ class JwtServiceTest {
                     .isThrownBy(() -> jwtService.generatePasswordResetToken(null));
         }
     }
+
+    // ─── getRemainingTtlSeconds ──────────���────────────────────────────────────
+
+    @Nested
+    @DisplayName("getRemainingTtlSeconds")
+    class GetRemainingTtlSeconds {
+
+        @Test
+        @DisplayName("valid non-expired token → returns remaining seconds > 0")
+        void validToken_returnsPositiveSeconds() {
+            final String token = jwtService.generateToken(USER_ID, false, false);
+
+            assertThat(jwtService.getRemainingTtlSeconds(token)).isGreaterThan(0L);
+        }
+
+        @Test
+        @DisplayName("expired token → returns 0")
+        void expiredToken_returnsZero() {
+            ReflectionTestUtils.setField(jwtService, "jwtExpirationMs", -1L);
+            final String token = jwtService.generateToken(USER_ID, false, false);
+            ReflectionTestUtils.setField(jwtService, "jwtExpirationMs", EXPIRATION_MS);
+
+            assertThat(jwtService.getRemainingTtlSeconds(token)).isEqualTo(0L);
+        }
+
+        @Test
+        @DisplayName("invalid / garbage token → returns 0")
+        void invalidToken_returnsZero() {
+            assertThat(jwtService.getRemainingTtlSeconds("not.a.valid.jwt")).isEqualTo(0L);
+        }
+    }
 }
