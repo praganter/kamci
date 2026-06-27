@@ -1,0 +1,21 @@
+appId: com.batuhanyetgin.kamci
+---
+# PREM-01: 5. borç limiti — freemium hesap
+# Precondition: Non-premium hesap, zaten 5 borç mevcut
+# Bu test User B (non-premium) ile çalışır
+- runFlow: "../../subflows/_login_as_user_b.yaml"
+- tapOn:
+    text: "Borçlar"
+- waitForAnimationToEnd
+# FAB'a tıkla — limit aşıldıysa premium sheet açılmalı
+- tapOn:
+    point: "89%, 80%"
+- assertVisible:
+    text: "Premium Gerekli"
+- assertVisible:
+    text: "5"
+- assertNotVisible:
+    text: "Yeni Borç"
+# "Belki Daha Sonra" ile kapat
+- tapOn:
+    text: "Belki Daha Sonra"

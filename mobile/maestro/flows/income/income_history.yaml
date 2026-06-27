@@ -1,0 +1,15 @@
+appId: com.batuhanyetgin.kamci
+---
+# INC-02: Gelir geçmişi listesi
+# ⚠️ BLOCKED: Income screen (/income route) uygulamada hiçbir UI elementine bağlı değil.
+# Bu test, IncomeScreen'e navigasyon eklendikten sonra aktif edilebilir.
+# İlgili route: lib/core/router/app_router.dart:101
+#
+# Beklenen akış:
+# - runFlow: "../../subflows/_login_as_user_a.yaml"
+# - tapOn:
+#     text: "Gelir"         # <-- entry point eklenince
+# - assertVisible:
+#     text: "Gelir Geçmişi"
+# - assertNotVisible:
+#     text: "Hata"

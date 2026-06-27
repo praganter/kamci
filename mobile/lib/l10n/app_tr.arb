@@ -19,6 +19,7 @@
   "signIn": "Giriş Yap",
   "signUp": "Kayıt Ol",
   "signOut": "Çıkış Yap",
+  "signOutConfirm": "Hesabınızdan çıkış yapmak istediğinize emin misiniz?",
   "email": "E-posta Adresi",
   "password": "Şifre",
   "confirmPassword": "Şifre Tekrar",

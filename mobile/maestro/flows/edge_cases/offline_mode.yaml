@@ -1,0 +1,28 @@
+appId: com.batuhanyetgin.kamci
+---
+# EDGE-01: Offline mod — ağ kesilince hata mesajı, "Tekrar Dene" çalışır
+# Ağ toggle için toggle_network.sh kullanılır (scripts/ altında)
+# Bu flow'u run_p2_edge_cases.sh wrapper scripti ile çalıştırın:
+#   ./scripts/toggle_network.sh off emulator-5554 android
+#   maestro test ... offline_mode.yaml
+#   ./scripts/toggle_network.sh on emulator-5554 android
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- tapOn:
+    text: "Borçlar"
+- waitForAnimationToEnd
+- tapOn:
+    id: "myDebtsTab"
+- waitForAnimationToEnd
+# Pull-to-refresh — ağ kapalıyken bağlantı hatası gösterilmeli
+- swipe:
+    direction: DOWN
+    duration: 500
+- assertVisible:
+    text: "bağlantı"
+- assertVisible:
+    text: "Tekrar Dene"
+# Tekrar Dene butonuna bas
+- tapOn:
+    text: "Tekrar Dene"
+# Ağ hâlâ kapalıysa hata tekrar görünür, açıksa liste gelir
+- waitForAnimationToEnd

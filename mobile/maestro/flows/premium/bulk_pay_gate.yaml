@@ -1,0 +1,24 @@
+appId: com.batuhanyetgin.kamci
+---
+# PREM-03: Toplu ödeme premium engeli — freemium hesap
+- runFlow: "../../subflows/_login_as_user_b.yaml"
+- tapOn:
+    text: "Borçlar"
+- waitForAnimationToEnd
+- tapOn:
+    id: "myDebtsTab"
+- waitForAnimationToEnd
+# Taksitli bir borç üzerinde sağa swipe
+- swipe:
+    direction: RIGHT
+    element:
+      index: 0
+- assertVisible:
+    text: "Ödeme İşlemleri"
+# Toplu Ödeme'de PRO badge görünmeli ve tıklanınca sheet açılmalı
+- tapOn:
+    text: "Toplu Ödeme"
+- assertVisible:
+    text: "Premium Gerekli"
+- tapOn:
+    text: "Belki Daha Sonra"

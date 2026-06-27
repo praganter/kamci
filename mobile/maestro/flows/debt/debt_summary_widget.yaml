@@ -1,0 +1,20 @@
+appId: com.batuhanyetgin.kamci
+---
+# DEBT-16: Debt Summary widget — ana ekranda tutar özeti doğru yükleniyor
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- runFlow: "../../subflows/_create_default_debt.yaml"
+- tapOn:
+    text: "Borçlar"
+- tapOn:
+    id: "myDebtsTab"
+- waitForAnimationToEnd
+# Borç listesinde tutar ve para birimi görünmeli
+- assertVisible:
+    text: "500"
+- assertVisible:
+    text: "TRY"
+# Hata durumu olmamalı
+- assertNotVisible:
+    text: "Hata"
+- assertNotVisible:
+    text: "hata"

@@ -1,0 +1,33 @@
+appId: com.batuhanyetgin.kamci
+---
+# SHARE-01 (Device A): User A, Test Kategorisi'ni User B ile READ yetkisiyle paylaşır
+# Bu flow emulator-5554 (Device A) üzerinde çalışır
+# Ardından device_b_verify_read.yaml emulator-5556'da çalıştırılır
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- runFlow: "../../subflows/_create_default_category.yaml"
+- runFlow: "../../subflows/_create_default_debt.yaml"
+- tapOn:
+    text: "Kategoriler"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Test Kategorisi"
+- waitForAnimationToEnd
+# Üye ekle FAB veya butonu
+- tapOn:
+    text: "Üye Ekle"
+- assertVisible:
+    text: "Üye Ekle"
+- tapOn:
+    text: "E-posta Adresi"
+- inputText: "${USER_B_EMAIL}"
+# Erişim seviyesi: Okuma (READ)
+- tapOn:
+    text: "Erişim Seviyesi"
+- tapOn:
+    text: "Okuma"
+- tapOn:
+    text: "Ekle"
+- assertVisible:
+    text: "${USER_B_EMAIL}"
+- assertVisible:
+    text: "üye olarak eklendi"

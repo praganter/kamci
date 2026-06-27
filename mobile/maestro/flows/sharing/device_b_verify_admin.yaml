@@ -1,0 +1,31 @@
+appId: com.batuhanyetgin.kamci
+---
+# SHARE-04 (Device B): ADMIN yetkisi — borç silme testi
+- runFlow: "../../subflows/_login_as_user_b.yaml"
+- tapOn:
+    text: "Borçlar"
+- waitForAnimationToEnd
+- tapOn:
+    id: "sharedDebtsTab"
+- waitForAnimationToEnd
+# ADMIN sola swipe = sil (canDelete=true)
+- swipe:
+    direction: LEFT
+    element:
+      text: "Test Borcu"
+- assertVisible:
+    text: "Borcu Sil"
+- tapOn:
+    text: "Evet"
+- assertNotVisible:
+    text: "Test Borcu"
+# Üye yönetimi FAB'ı görünmemeli (sadece owner ekleyebilir)
+- tapOn:
+    text: "Kategoriler"
+- tapOn:
+    text: "Paylaşılanlar"
+    index: 0
+- tapOn:
+    text: "Test Kategorisi"
+- assertNotVisible:
+    text: "Üye Ekle"

@@ -1,0 +1,23 @@
+appId: com.batuhanyetgin.kamci
+---
+# CAT-03: Kategoriyi borçlarıyla sil
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- runFlow: "../../subflows/_create_default_category.yaml"
+- runFlow: "../../subflows/_create_default_debt.yaml"
+- tapOn:
+    text: "Kategoriler"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Test Kategorisi"
+- waitForAnimationToEnd
+# Uzun basış veya menü ile sil seçeneği
+- longPressOn:
+    text: "Test Kategorisi"
+- assertVisible:
+    text: "Borçları ile Kategoriyi Sil"
+- tapOn:
+    text: "Borçları ile Kategoriyi Sil"
+- tapOn:
+    text: "Evet"
+- assertNotVisible:
+    text: "Test Kategorisi"

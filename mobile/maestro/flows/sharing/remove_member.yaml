@@ -1,0 +1,27 @@
+appId: com.batuhanyetgin.kamci
+---
+# SHARE-06 (Device A): User B'yi kategoriden çıkar
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- tapOn:
+    text: "Kategoriler"
+- tapOn:
+    text: "Sahip Olduklarım"
+    index: 0
+- tapOn:
+    text: "Test Kategorisi"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Üyeleri Yönet"
+- assertVisible:
+    text: "${USER_B_EMAIL}"
+# Kaldır butonuna tıkla
+- tapOn:
+    text: "Kaldır"
+- assertVisible:
+    text: "Bu üyeyi kategoriden kaldırmak"
+- tapOn:
+    text: "Evet"
+- assertVisible:
+    text: "Üye kaldırıldı."
+- assertNotVisible:
+    text: "${USER_B_EMAIL}"

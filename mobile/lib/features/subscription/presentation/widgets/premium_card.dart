@@ -234,7 +234,9 @@ class _UpgradeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return Semantics(
+      identifier: 'upgradeCard',
+      child: Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -296,6 +298,7 @@ class _UpgradeCard extends StatelessWidget {
             ],
           ),
         ),
+      ),
       ),
     );
   }

@@ -1,0 +1,19 @@
+appId: com.batuhanyetgin.kamci
+---
+# INC-04: Gelir sil
+# ⚠️ BLOCKED: Income screen (/income route) uygulamada hiçbir UI elementine bağlı değil.
+# Bu test, IncomeScreen'e navigasyon eklendikten sonra aktif edilebilir.
+# İlgili route: lib/core/router/app_router.dart:101
+#
+# Beklenen akış:
+# - runFlow: "../../subflows/_login_as_user_a.yaml"
+# - tapOn:
+#     text: "Gelir"
+# - swipe:
+#     direction: LEFT
+#     element:
+#       text: "5000"
+# - tapOn:
+#     text: "Evet"
+# - assertNotVisible:
+#     text: "5000"

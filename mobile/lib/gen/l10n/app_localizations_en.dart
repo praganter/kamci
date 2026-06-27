@@ -57,6 +57,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get signOut => 'Sign Out';
 
   @override
+  String get signOutConfirm => 'Are you sure you want to sign out?';
+
+  @override
   String get email => 'Email Address';
 
   @override

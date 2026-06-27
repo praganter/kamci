@@ -1,0 +1,63 @@
+appId: com.batuhanyetgin.kamci
+---
+# DEBT-02: MONTHLY 12 taksitli borç
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- runFlow: "../../subflows/_create_default_category.yaml"
+- tapOn:
+    text: "Borçlar"
+- waitForAnimationToEnd
+- tapOn:
+    point: "89%, 80%"
+- assertVisible:
+    text: "Yeni Borç"
+- tapOn:
+    text: "Kategori"
+- waitForAnimationToEnd
+- tapOn:
+    index: 0
+- tapOn:
+    text: "Borç Adı"
+- inputText: "Aylık Taksit Borcu"
+- tapOn:
+    text: "Tutar"
+- inputText: "600"
+- tapOn:
+    text: "Yeni Borç"
+- tapOn:
+    text: "Para Birimi"
+- waitForAnimationToEnd
+- tapOn:
+    text: "TRY"
+- tapOn:
+    text: "Ödeme Periyodu"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Aylık"
+- waitForAnimationToEnd
+# Taksit alanı görünmeli (MONTHLY için)
+- assertVisible:
+    text: "Toplam Taksit Sayısı"
+- tapOn:
+    text: "Toplam Taksit Sayısı"
+- inputText: "12"
+- tapOn:
+    text: "Yeni Borç"
+- scrollUntilVisible:
+    element:
+      text: "İlk Ödeme Tarihi"
+    direction: DOWN
+- tapOn:
+    text: "İlk Ödeme Tarihi"
+- tapOn:
+    text: "Tamam"
+- scrollUntilVisible:
+    element:
+      text: "Oluştur"
+    direction: DOWN
+- tapOn:
+    text: "Oluştur"
+- assertVisible:
+    text: "Aylık Taksit Borcu"
+# Taksit göstergesi: "0 / 12"
+- assertVisible:
+    text: "0 / 12"

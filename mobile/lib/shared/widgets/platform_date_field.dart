@@ -107,9 +107,8 @@ class _PlatformDateFieldState extends State<PlatformDateField> {
       initialValue: widget.value,
       validator: widget.validator,
       builder: (state) {
-        final hasValue = state.value != null;
         return Tooltip(
-          message: hasValue ? widget.label : '',
+          message: widget.label,
           triggerMode: TooltipTriggerMode.longPress,
           preferBelow: false,
           child: InkWell(

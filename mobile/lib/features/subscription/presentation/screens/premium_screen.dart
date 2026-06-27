@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -81,8 +80,9 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
               .read(subscriptionNotifierProvider.notifier)
               .verifyReceipt(
                 VerifyReceiptRequest(
-                  platform: Platform.isIOS ? 'IOS' : 'ANDROID',
-                  receipt: p.verificationData.serverVerificationData,
+                  receiptData: p.verificationData.serverVerificationData,
+                  plan: SubscriptionConstants.planForProductId(p.productID),
+                  productId: p.productID,
                 ),
               );
           await InAppPurchase.instance.completePurchase(p);
@@ -139,9 +139,12 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.close_rounded, color: cs.onSurface),
-          onPressed: () => Navigator.of(context).pop(),
+        leading: Semantics(
+          identifier: 'close',
+          child: IconButton(
+            icon: Icon(Icons.close_rounded, color: cs.onSurface),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
         ),
       ),
       body: SafeArea(

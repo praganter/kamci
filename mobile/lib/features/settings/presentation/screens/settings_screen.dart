@@ -58,6 +58,8 @@ class SettingsScreen extends ConsumerWidget {
                   subtitle: l10n.changePasswordDesc,
                   onTap: () => context.pushNamed(RouteNames.changePassword),
                 ),
+                const SizedBox(height: 10),
+                _LogoutTile(),
                 const SizedBox(height: 20),
 
                 // ── Geri Bildirim ──────────────────────────────────────────
@@ -301,6 +303,82 @@ class _SettingsTile extends StatelessWidget {
                 Icons.chevron_right_rounded,
                 size: 20,
                 color: cs.onSurfaceVariant,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Logout tile ──────────────────────────────────────────────────────────────
+
+class _LogoutTile extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final cs = Theme.of(context).colorScheme;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: cs.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: cs.outlineVariant),
+      ),
+      child: InkWell(
+        onTap: () async {
+          final confirm = await showDialog<bool>(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              title: Text(l10n.signOut),
+              content: Text(l10n.signOutConfirm),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(false),
+                  child: Text(l10n.cancel),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(true),
+                  child: Text(
+                    l10n.signOut,
+                    style: TextStyle(color: cs.error),
+                  ),
+                ),
+              ],
+            ),
+          );
+          if (confirm == true) {
+            await ref.read(authNotifierProvider.notifier).logout();
+          }
+        },
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: cs.errorContainer,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.logout_rounded,
+                  size: 20,
+                  color: cs.error,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Text(
+                  l10n.signOut,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: cs.error,
+                  ),
+                ),
               ),
             ],
           ),

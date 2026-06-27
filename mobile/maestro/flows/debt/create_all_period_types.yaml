@@ -1,0 +1,266 @@
+appId: com.batuhanyetgin.kamci
+---
+# DEBT-03a..f: Tüm payment period tipleri
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- runFlow: "../../subflows/_create_default_category.yaml"
+- tapOn:
+    text: "Borçlar"
+- waitForAnimationToEnd
+
+# ── DAILY ──────────────────────────────────────────────────
+- tapOn:
+    point: "89%, 80%"
+- tapOn:
+    text: "Kategori"
+- waitForAnimationToEnd
+- tapOn:
+    index: 0
+- tapOn:
+    text: "Borç Adı"
+- inputText: "Günlük Borç"
+- tapOn:
+    text: "Tutar"
+- inputText: "10"
+- tapOn:
+    text: "Yeni Borç"
+- tapOn:
+    text: "Para Birimi"
+- waitForAnimationToEnd
+- tapOn:
+    text: "TRY"
+- tapOn:
+    text: "Ödeme Periyodu"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Günlük"
+- scrollUntilVisible:
+    element:
+      text: "İlk Ödeme Tarihi"
+    direction: DOWN
+- tapOn:
+    text: "İlk Ödeme Tarihi"
+- tapOn:
+    text: "Tamam"
+- scrollUntilVisible:
+    element:
+      text: "Oluştur"
+    direction: DOWN
+- tapOn:
+    text: "Oluştur"
+- assertVisible:
+    text: "Günlük Borç"
+
+# ── WEEKLY ──────────────────────────────────────────────────
+- tapOn:
+    point: "89%, 80%"
+- tapOn:
+    text: "Kategori"
+- waitForAnimationToEnd
+- tapOn:
+    index: 0
+- tapOn:
+    text: "Borç Adı"
+- inputText: "Haftalık Borç"
+- tapOn:
+    text: "Tutar"
+- inputText: "50"
+- tapOn:
+    text: "Yeni Borç"
+- tapOn:
+    text: "Para Birimi"
+- waitForAnimationToEnd
+- tapOn:
+    text: "TRY"
+- tapOn:
+    text: "Ödeme Periyodu"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Haftalık"
+- scrollUntilVisible:
+    element:
+      text: "İlk Ödeme Tarihi"
+    direction: DOWN
+- tapOn:
+    text: "İlk Ödeme Tarihi"
+- tapOn:
+    text: "Tamam"
+- scrollUntilVisible:
+    element:
+      text: "Oluştur"
+    direction: DOWN
+- tapOn:
+    text: "Oluştur"
+- assertVisible:
+    text: "Haftalık Borç"
+
+# ── BI-WEEKLY ──────────────────────────────────────────────
+- tapOn:
+    point: "89%, 80%"
+- tapOn:
+    text: "Kategori"
+- waitForAnimationToEnd
+- tapOn:
+    index: 0
+- tapOn:
+    text: "Borç Adı"
+- inputText: "İki Haftalık Borç"
+- tapOn:
+    text: "Tutar"
+- inputText: "100"
+- tapOn:
+    text: "Yeni Borç"
+- tapOn:
+    text: "Para Birimi"
+- waitForAnimationToEnd
+- tapOn:
+    text: "TRY"
+- tapOn:
+    text: "Ödeme Periyodu"
+- waitForAnimationToEnd
+- tapOn:
+    text: "İki Haftalık"
+- scrollUntilVisible:
+    element:
+      text: "İlk Ödeme Tarihi"
+    direction: DOWN
+- tapOn:
+    text: "İlk Ödeme Tarihi"
+- tapOn:
+    text: "Tamam"
+- scrollUntilVisible:
+    element:
+      text: "Oluştur"
+    direction: DOWN
+- tapOn:
+    text: "Oluştur"
+- assertVisible:
+    text: "İki Haftalık Borç"
+
+# ── QUARTERLY ──────────────────────────────────────────────
+- tapOn:
+    point: "89%, 80%"
+- tapOn:
+    text: "Kategori"
+- waitForAnimationToEnd
+- tapOn:
+    index: 0
+- tapOn:
+    text: "Borç Adı"
+- inputText: "Üç Aylık Borç"
+- tapOn:
+    text: "Tutar"
+- inputText: "750"
+- tapOn:
+    text: "Yeni Borç"
+- tapOn:
+    text: "Para Birimi"
+- waitForAnimationToEnd
+- tapOn:
+    text: "TRY"
+- tapOn:
+    text: "Ödeme Periyodu"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Üç Aylık"
+- scrollUntilVisible:
+    element:
+      text: "İlk Ödeme Tarihi"
+    direction: DOWN
+- tapOn:
+    text: "İlk Ödeme Tarihi"
+- tapOn:
+    text: "Tamam"
+- scrollUntilVisible:
+    element:
+      text: "Oluştur"
+    direction: DOWN
+- tapOn:
+    text: "Oluştur"
+- assertVisible:
+    text: "Üç Aylık Borç"
+
+# ── HALF-YEARLY ────────────────────────────────────────────
+- tapOn:
+    point: "89%, 80%"
+- tapOn:
+    text: "Kategori"
+- waitForAnimationToEnd
+- tapOn:
+    index: 0
+- tapOn:
+    text: "Borç Adı"
+- inputText: "Altı Aylık Borç"
+- tapOn:
+    text: "Tutar"
+- inputText: "1500"
+- tapOn:
+    text: "Yeni Borç"
+- tapOn:
+    text: "Para Birimi"
+- waitForAnimationToEnd
+- tapOn:
+    text: "TRY"
+- tapOn:
+    text: "Ödeme Periyodu"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Altı Aylık"
+- scrollUntilVisible:
+    element:
+      text: "İlk Ödeme Tarihi"
+    direction: DOWN
+- tapOn:
+    text: "İlk Ödeme Tarihi"
+- tapOn:
+    text: "Tamam"
+- scrollUntilVisible:
+    element:
+      text: "Oluştur"
+    direction: DOWN
+- tapOn:
+    text: "Oluştur"
+- assertVisible:
+    text: "Altı Aylık Borç"
+
+# ── YEARLY ─────────────────────────────────────────────────
+- tapOn:
+    point: "89%, 80%"
+- tapOn:
+    text: "Kategori"
+- waitForAnimationToEnd
+- tapOn:
+    index: 0
+- tapOn:
+    text: "Borç Adı"
+- inputText: "Yıllık Borç"
+- tapOn:
+    text: "Tutar"
+- inputText: "3000"
+- tapOn:
+    text: "Yeni Borç"
+- tapOn:
+    text: "Para Birimi"
+- waitForAnimationToEnd
+- tapOn:
+    text: "TRY"
+- tapOn:
+    text: "Ödeme Periyodu"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Yıllık"
+- scrollUntilVisible:
+    element:
+      text: "İlk Ödeme Tarihi"
+    direction: DOWN
+- tapOn:
+    text: "İlk Ödeme Tarihi"
+- tapOn:
+    text: "Tamam"
+- scrollUntilVisible:
+    element:
+      text: "Oluştur"
+    direction: DOWN
+- tapOn:
+    text: "Oluştur"
+- assertVisible:
+    text: "Yıllık Borç"

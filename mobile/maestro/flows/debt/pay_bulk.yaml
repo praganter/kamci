@@ -1,0 +1,29 @@
+appId: com.batuhanyetgin.kamci
+---
+# DEBT-09: Toplu ödeme (PREMIUM hesap gerektirir)
+# Precondition: User A premium, geçmiş tarihli taksitli borç mevcut
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- tapOn:
+    text: "Borçlar"
+- waitForAnimationToEnd
+- tapOn:
+    id: "myDebtsTab"
+- waitForAnimationToEnd
+# Aylık borç üzerinde sağa swipe
+- swipe:
+    direction: RIGHT
+    element:
+      text: "Aylık"
+- assertVisible:
+    text: "Ödeme İşlemleri"
+- tapOn:
+    text: "Toplu Ödeme"
+- assertVisible:
+    text: "Toplu Ödeme Seç"
+# Tüm ödemeleri seç
+- tapOn:
+    text: "Seçim"
+- tapOn:
+    text: "Gönder"
+- assertVisible:
+    text: "ödeme kaydedildi"

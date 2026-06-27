@@ -1,0 +1,21 @@
+appId: com.batuhanyetgin.kamci
+---
+# DEBT-12: Ay filtresi — sol ok ile önceki aya git
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- tapOn:
+    text: "Borçlar"
+- waitForAnimationToEnd
+- tapOn:
+    id: "myDebtsTab"
+- waitForAnimationToEnd
+# Sol ok: önceki aya git
+- tapOn:
+    id: "prevMonthBtn"
+- waitForAnimationToEnd
+# Ay değişti — bugünün ayı görünmemeli (önceki ay olmalı)
+- assertNotVisible:
+    text: "Yeni borç eklemek için"
+# Sağ ok: bu aya dön
+- tapOn:
+    id: "nextMonthBtn"
+- waitForAnimationToEnd

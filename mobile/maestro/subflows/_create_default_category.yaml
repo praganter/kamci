@@ -1,0 +1,18 @@
+appId: com.batuhanyetgin.kamci
+---
+- tapOn:
+    text: "Kategoriler"
+- waitForAnimationToEnd
+- tapOn:
+    point: "89%, 80%"
+- assertVisible:
+    text: "Yeni Kategori"
+- tapOn:
+    text: "Kategori Adı"
+- inputText: "Test Kategorisi"
+- tapOn:
+    text: "Oluştur"
+- assertVisible:
+    text: "Test Kategorisi"
+- tapOn:
+    text: "Borçlar"

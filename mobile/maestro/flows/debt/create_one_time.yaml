@@ -1,0 +1,57 @@
+appId: com.batuhanyetgin.kamci
+---
+# DEBT-01: ONE_TIME borç oluştur
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- runFlow: "../../subflows/_create_default_category.yaml"
+- tapOn:
+    text: "Borçlar"
+- waitForAnimationToEnd
+- tapOn:
+    point: "89%, 80%"
+- assertVisible:
+    text: "Yeni Borç"
+- tapOn:
+    text: "Kategori"
+- waitForAnimationToEnd
+- tapOn:
+    index: 0
+- tapOn:
+    text: "Borç Adı"
+- inputText: "Tek Seferlik Test Borcu"
+- tapOn:
+    text: "Tutar"
+- inputText: "150"
+- tapOn:
+    text: "Yeni Borç"
+- tapOn:
+    text: "Para Birimi"
+- waitForAnimationToEnd
+- tapOn:
+    text: "TRY"
+- tapOn:
+    text: "Ödeme Periyodu"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Tek Seferlik"
+- waitForAnimationToEnd
+# Taksit alanı görünmemeli (ONE_TIME)
+- assertNotVisible:
+    text: "Taksit Sayısı"
+- scrollUntilVisible:
+    element:
+      text: "İlk Ödeme Tarihi"
+    direction: DOWN
+- tapOn:
+    text: "İlk Ödeme Tarihi"
+- tapOn:
+    text: "Tamam"
+- scrollUntilVisible:
+    element:
+      text: "Oluştur"
+    direction: DOWN
+- tapOn:
+    text: "Oluştur"
+- assertVisible:
+    text: "Tek Seferlik Test Borcu"
+- assertVisible:
+    text: "150"

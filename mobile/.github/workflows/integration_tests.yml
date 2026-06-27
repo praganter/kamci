@@ -1,0 +1,37 @@
+name: Integration Tests
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  test:
+    name: Flutter Integration Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.41.6"
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run integration tests
+        run: |
+          flutter test test/integration/ \
+            --dart-define=PREMIUM_EMAIL=${{ secrets.PREMIUM_EMAIL }} \
+            --dart-define=PREMIUM_PASSWORD=${{ secrets.PREMIUM_PASSWORD }} \
+            --reporter=expanded
+        env:
+          PREMIUM_EMAIL: ${{ secrets.PREMIUM_EMAIL }}
+          PREMIUM_PASSWORD: ${{ secrets.PREMIUM_PASSWORD }}

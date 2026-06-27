@@ -1,0 +1,27 @@
+appId: com.batuhanyetgin.kamci
+---
+# DEBT-07: Parçalı ödeme
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- runFlow: "../../subflows/_create_default_debt.yaml"
+- tapOn:
+    text: "Borçlar"
+- tapOn:
+    id: "myDebtsTab"
+- waitForAnimationToEnd
+- swipe:
+    direction: RIGHT
+    element:
+      text: "Test Borcu"
+- assertVisible:
+    text: "Ödeme İşlemleri"
+- tapOn:
+    text: "Parçalı Ödeme"
+- assertVisible:
+    text: "Tutar Girin"
+- tapOn:
+    text: "Tutar Girin"
+- inputText: "75"
+- tapOn:
+    text: "Gönder"
+- assertVisible:
+    text: "kayıt edildi"

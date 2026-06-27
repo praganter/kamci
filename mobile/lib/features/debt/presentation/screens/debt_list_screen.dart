@@ -79,8 +79,14 @@ class _DebtListScreenState extends ConsumerState<DebtListScreen>
                 labelStyle: const TextStyle(fontWeight: FontWeight.w600),
                 overlayColor: WidgetStateProperty.all(Colors.transparent),
                 tabs: [
-                  Tab(text: l10n.myDebts),
-                  Tab(text: l10n.sharedDebts),
+                  Semantics(
+                    identifier: 'myDebtsTab',
+                    child: Tab(text: l10n.myDebts),
+                  ),
+                  Semantics(
+                    identifier: 'sharedDebtsTab',
+                    child: Tab(text: l10n.sharedDebts),
+                  ),
                 ],
               ),
             ),
@@ -160,6 +166,7 @@ class _DebtTabViewState extends ConsumerState<_DebtTabView>
               child: Row(
                 children: [
                   IconButton(
+                    key: const Key('prevMonthBtn'),
                     onPressed: () =>
                         ref.read(selectedMonthProvider.notifier).previous(),
                     icon: Icon(Icons.chevron_left, color: cs.onSurfaceVariant),
@@ -204,6 +211,7 @@ class _DebtTabViewState extends ConsumerState<_DebtTabView>
                     ),
                   ),
                   IconButton(
+                    key: const Key('nextMonthBtn'),
                     onPressed: () =>
                         ref.read(selectedMonthProvider.notifier).next(),
                     icon: Icon(Icons.chevron_right, color: cs.onSurfaceVariant),

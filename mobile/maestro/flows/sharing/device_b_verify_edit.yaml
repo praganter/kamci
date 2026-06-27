@@ -1,0 +1,31 @@
+appId: com.batuhanyetgin.kamci
+---
+# SHARE-03 (Device B): EDIT yetkisi doğrulama
+- runFlow: "../../subflows/_login_as_user_b.yaml"
+- tapOn:
+    text: "Borçlar"
+- waitForAnimationToEnd
+- tapOn:
+    id: "sharedDebtsTab"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Test Borcu"
+- waitForAnimationToEnd
+# Düzenle butonu görünmeli — canEdit=true
+- assertVisible:
+    text: "Düzenle"
+- tapOn:
+    text: "Düzenle"
+- assertVisible:
+    text: "Borcu Düzenle"
+- tapOn:
+    text: "İptal"
+# Sil swipe — canDelete=false (EDIT)
+- tapOn:
+    text: "Geri"
+- swipe:
+    direction: LEFT
+    element:
+      text: "Test Borcu"
+- assertVisible:
+    text: "yetkiniz yok"

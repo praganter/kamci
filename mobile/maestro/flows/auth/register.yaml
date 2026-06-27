@@ -1,0 +1,26 @@
+appId: com.batuhanyetgin.kamci
+---
+# AUTH-01: Başarılı yeni kullanıcı kaydı
+- runFlow: "../../subflows/_ensure_login_screen.yaml"
+- tapOn:
+    text: "Kayıt Ol"
+- assertVisible:
+    text: "E-posta Adresi"
+- evalScript: ${output.regEmail = 'reg_' + Date.now() + '@test.com'}
+- tapOn:
+    text: "E-posta Adresi"
+- inputText: "${output.regEmail}"
+- tapOn:
+    text: "Şifre"
+    index: 0
+- inputText: "${USER_A_PASSWORD}"
+- tapOn:
+    text: "Şifre Tekrar"
+- inputText: "${USER_A_PASSWORD}"
+- tapOn:
+    text: "Kayıt Ol"
+    index: 1
+- assertVisible:
+    text: "Borçlar"
+- assertNotVisible:
+    text: "Giriş Yap"

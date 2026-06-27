@@ -1,0 +1,21 @@
+appId: com.batuhanyetgin.kamci
+---
+# DEBT-11: Borç silme — sola swipe → confirm dialog
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- runFlow: "../../subflows/_create_default_debt.yaml"
+- tapOn:
+    text: "Borçlar"
+- tapOn:
+    id: "myDebtsTab"
+- waitForAnimationToEnd
+# endToStart = sola swipe = sil
+- swipe:
+    direction: LEFT
+    element:
+      text: "Test Borcu"
+- assertVisible:
+    text: "Borcu Sil"
+- tapOn:
+    text: "Evet"
+- assertNotVisible:
+    text: "Test Borcu"

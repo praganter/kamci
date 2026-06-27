@@ -1,0 +1,42 @@
+appId: com.batuhanyetgin.kamci
+---
+# CAT-04: Kategori migrate — borçları taşı ve kaynak kategoriyi sil
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- runFlow: "../../subflows/_create_default_category.yaml"
+- runFlow: "../../subflows/_create_default_debt.yaml"
+- tapOn:
+    text: "Kategoriler"
+- waitForAnimationToEnd
+# Hedef kategori oluştur
+- tapOn:
+    point: "89%, 80%"
+- assertVisible:
+    text: "Yeni Kategori"
+- tapOn:
+    text: "Kategori Adı"
+- inputText: "Hedef Kategori"
+- tapOn:
+    text: "Oluştur"
+- assertVisible:
+    text: "Hedef Kategori"
+# Kaynak kategoriye git
+- tapOn:
+    text: "Test Kategorisi"
+- waitForAnimationToEnd
+- longPressOn:
+    text: "Test Kategorisi"
+- assertVisible:
+    text: "Borçları Aktarıp Kategoriyi Sil"
+- tapOn:
+    text: "Borçları Aktarıp Kategoriyi Sil"
+# Hedef kategori seç
+- assertVisible:
+    text: "Hedef Kategori Seç"
+- tapOn:
+    text: "Hedef Kategori"
+- tapOn:
+    text: "Evet"
+- assertVisible:
+    text: "borç hedef kategoriye taşındı"
+- assertNotVisible:
+    text: "Test Kategorisi"

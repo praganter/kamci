@@ -1,0 +1,31 @@
+appId: com.batuhanyetgin.kamci
+---
+# DEBT-05: Borç düzenleme
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- runFlow: "../../subflows/_create_default_debt.yaml"
+- tapOn:
+    text: "Test Borcu"
+- waitForAnimationToEnd
+# Düzenle butonuna tıkla
+- tapOn:
+    text: "Düzenle"
+- assertVisible:
+    text: "Borcu Düzenle"
+# Borç adını güncelle
+- tapOn:
+    text: "Borç Adı"
+- eraseText: 100
+- inputText: "Güncellenmiş Borç"
+# Tutarı güncelle
+- tapOn:
+    text: "Tutar"
+- eraseText: 100
+- inputText: "999"
+- tapOn:
+    text: "Borcu Düzenle"
+- tapOn:
+    text: "Güncelle"
+- assertVisible:
+    text: "Güncellenmiş Borç"
+- assertVisible:
+    text: "999"

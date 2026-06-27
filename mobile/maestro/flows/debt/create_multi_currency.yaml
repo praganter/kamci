@@ -1,0 +1,98 @@
+appId: com.batuhanyetgin.kamci
+---
+# DEBT-13/14: Multi-currency — USD ve EUR
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- runFlow: "../../subflows/_create_default_category.yaml"
+- tapOn:
+    text: "Borçlar"
+- waitForAnimationToEnd
+
+# ── USD ────────────────────────────────────────────────────
+- tapOn:
+    point: "89%, 80%"
+- tapOn:
+    text: "Kategori"
+- waitForAnimationToEnd
+- tapOn:
+    index: 0
+- tapOn:
+    text: "Borç Adı"
+- inputText: "USD Test Borcu"
+- tapOn:
+    text: "Tutar"
+- inputText: "1200"
+- tapOn:
+    text: "Yeni Borç"
+- tapOn:
+    text: "Para Birimi"
+- waitForAnimationToEnd
+- tapOn:
+    text: "USD"
+- tapOn:
+    text: "Ödeme Periyodu"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Tek Seferlik"
+- scrollUntilVisible:
+    element:
+      text: "İlk Ödeme Tarihi"
+    direction: DOWN
+- tapOn:
+    text: "İlk Ödeme Tarihi"
+- tapOn:
+    text: "Tamam"
+- scrollUntilVisible:
+    element:
+      text: "Oluştur"
+    direction: DOWN
+- tapOn:
+    text: "Oluştur"
+- assertVisible:
+    text: "USD Test Borcu"
+- assertVisible:
+    text: "USD"
+
+# ── EUR ────────────────────────────────────────────────────
+- tapOn:
+    point: "89%, 80%"
+- tapOn:
+    text: "Kategori"
+- waitForAnimationToEnd
+- tapOn:
+    index: 0
+- tapOn:
+    text: "Borç Adı"
+- inputText: "EUR Test Borcu"
+- tapOn:
+    text: "Tutar"
+- inputText: "900"
+- tapOn:
+    text: "Yeni Borç"
+- tapOn:
+    text: "Para Birimi"
+- waitForAnimationToEnd
+- tapOn:
+    text: "EUR"
+- tapOn:
+    text: "Ödeme Periyodu"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Tek Seferlik"
+- scrollUntilVisible:
+    element:
+      text: "İlk Ödeme Tarihi"
+    direction: DOWN
+- tapOn:
+    text: "İlk Ödeme Tarihi"
+- tapOn:
+    text: "Tamam"
+- scrollUntilVisible:
+    element:
+      text: "Oluştur"
+    direction: DOWN
+- tapOn:
+    text: "Oluştur"
+- assertVisible:
+    text: "EUR Test Borcu"
+- assertVisible:
+    text: "EUR"

@@ -1,0 +1,33 @@
+appId: com.batuhanyetgin.kamci
+---
+# SHARE-01 (Device B): User B READ yetkisini doğrular
+# Bu flow emulator-5556 (Device B) üzerinde çalışır
+- runFlow: "../../subflows/_login_as_user_b.yaml"
+- tapOn:
+    text: "Kategoriler"
+- waitForAnimationToEnd
+# Paylaşılan sekmesinde kategori görünmeli
+- tapOn:
+    text: "Paylaşılanlar"
+- assertVisible:
+    text: "Test Kategorisi"
+# Borçlar sekmesine git, paylaşılan borçları görmeli
+- tapOn:
+    text: "Borçlar"
+- waitForAnimationToEnd
+- tapOn:
+    id: "sharedDebtsTab"
+- waitForAnimationToEnd
+# Test Borcu görünmeli
+- assertVisible:
+    text: "Test Borcu"
+# FAB (yeni borç ekle) görünmemeli — READ yetkisi yok
+- assertNotVisible:
+    point: "89%, 80%"
+# Sağa swipe dene — "Bu operasyon için yetkiniz yok" göstermeli
+- swipe:
+    direction: RIGHT
+    element:
+      text: "Test Borcu"
+- assertVisible:
+    text: "yetkiniz yok"

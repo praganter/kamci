@@ -1,0 +1,63 @@
+appId: com.batuhanyetgin.kamci
+---
+# SET-05/06/07: Görünüm ayarları — Tema, Dil, Baz Para Birimi
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- tapOn:
+    text: "Ayarlar"
+- waitForAnimationToEnd
+
+# ── Tema toggle ────────────────────────────────────────────────────────────────
+# SET-05: Koyu temaya geç
+- tapOn:
+    text: "Koyu"
+- waitForAnimationToEnd
+# UI render olur, hata yoksa geçer
+- assertNotVisible:
+    text: "Hata"
+# Sistem temasına geri dön
+- tapOn:
+    text: "Sistem"
+- waitForAnimationToEnd
+
+# ── Dil toggle ────────────────────────────────────────────────────────────────
+# SET-06: İngilizce'ye geç — etiketler değişmeli
+- tapOn:
+    text: "English"
+- waitForAnimationToEnd
+# Settings AppBar başlığı İngilizce olmalı
+- assertVisible:
+    text: "Settings"
+# Türkçe'ye geri dön
+- tapOn:
+    text: "Türkçe"
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Ayarlar"
+
+# ── Baz Para Birimi picker ────────────────────────────────────────────────────
+# SET-07: Para birimini USD olarak değiştir
+- scrollUntilVisible:
+    element:
+      text: "Baz Para Birimi"
+    direction: DOWN
+- tapOn:
+    text: "Baz Para Birimi"
+- waitForAnimationToEnd
+# Bottom sheet açılır
+- assertVisible:
+    text: "Baz Para Birimi"
+- tapOn:
+    text: "USD"
+- waitForAnimationToEnd
+# Seçim yansımalı
+- assertVisible:
+    text: "USD"
+# TRY'ye geri dön
+- tapOn:
+    text: "Baz Para Birimi"
+- waitForAnimationToEnd
+- tapOn:
+    text: "TRY"
+- waitForAnimationToEnd
+- assertVisible:
+    text: "TRY"

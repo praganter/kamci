@@ -1,0 +1,18 @@
+appId: com.batuhanyetgin.kamci
+---
+# DEBT-04: Borç detay görüntüleme
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- runFlow: "../../subflows/_create_default_debt.yaml"
+- tapOn:
+    text: "Test Borcu"
+- waitForAnimationToEnd
+- assertVisible:
+    text: "500"
+- assertVisible:
+    text: "TRY"
+- assertVisible:
+    text: "Tek Seferlik"
+- assertVisible:
+    text: "İlk Ödeme Tarihi"
+- assertVisible:
+    text: "Ödeme Geçmişi"

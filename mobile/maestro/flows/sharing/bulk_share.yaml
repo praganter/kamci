@@ -1,0 +1,31 @@
+appId: com.batuhanyetgin.kamci
+---
+# SHARE-07: Toplu paylaşım — tüm kategorileri User B ile paylaş
+# Precondition: User A premium, en az 2 kategori var
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- tapOn:
+    text: "Kategoriler"
+- waitForAnimationToEnd
+# Toplu paylaş butonu
+- tapOn:
+    text: "Toplu Paylaş"
+- assertVisible:
+    text: "Kategorileri Seç"
+# Tüm kategorileri seç
+- tapOn:
+    index: 0
+- tapOn:
+    index: 1
+# Email ve erişim seviyesi
+- tapOn:
+    text: "E-posta Adresi"
+- inputText: "${USER_B_EMAIL}"
+- tapOn:
+    text: "Erişim seviyesi seçin"
+- tapOn:
+    text: "Yazma"
+# Paylaş
+- tapOn:
+    text: "kategoriye ekle"
+- assertVisible:
+    text: "kategoriye eklendi"

@@ -1,0 +1,24 @@
+appId: com.batuhanyetgin.kamci
+---
+# CAT-02: Kategori düzenle
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- runFlow: "../../subflows/_create_default_category.yaml"
+- tapOn:
+    text: "Kategoriler"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Test Kategorisi"
+- waitForAnimationToEnd
+# Kategori detayında düzenle butonu
+- tapOn:
+    text: "Düzenle"
+- assertVisible:
+    text: "Kategoriyi Düzenle"
+- tapOn:
+    text: "Kategori Adı"
+- eraseText: 100
+- inputText: "Güncellenmiş Kategori"
+- tapOn:
+    text: "Kaydet"
+- assertVisible:
+    text: "Güncellenmiş Kategori"

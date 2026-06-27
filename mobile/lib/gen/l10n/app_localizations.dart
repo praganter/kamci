@@ -194,6 +194,12 @@ abstract class AppLocalizations {
   /// **'Çıkış Yap'**
   String get signOut;
 
+  /// No description provided for @signOutConfirm.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hesabınızdan çıkış yapmak istediğinize emin misiniz?'**
+  String get signOutConfirm;
+
   /// No description provided for @email.
   ///
   /// In tr, this message translates to:

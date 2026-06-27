@@ -1,0 +1,21 @@
+appId: com.batuhanyetgin.kamci
+---
+# DEBT-06: Tam ödeme — sağa swipe → "Ödeme İşlemleri" → "Tam Ödeme"
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- runFlow: "../../subflows/_create_default_debt.yaml"
+- tapOn:
+    text: "Borçlar"
+- tapOn:
+    id: "myDebtsTab"
+- waitForAnimationToEnd
+# startToEnd = sağa swipe = ödeme paneli
+- swipe:
+    direction: RIGHT
+    element:
+      text: "Test Borcu"
+- assertVisible:
+    text: "Ödeme İşlemleri"
+- tapOn:
+    text: "Tam Ödeme"
+- assertVisible:
+    text: "kayıt edildi"

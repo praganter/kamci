@@ -57,6 +57,10 @@ class AppLocalizationsTr extends AppLocalizations {
   String get signOut => 'Çıkış Yap';
 
   @override
+  String get signOutConfirm =>
+      'Hesabınızdan çıkış yapmak istediğinize emin misiniz?';
+
+  @override
   String get email => 'E-posta Adresi';
 
   @override

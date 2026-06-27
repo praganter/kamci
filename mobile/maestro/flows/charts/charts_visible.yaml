@@ -1,0 +1,13 @@
+appId: com.batuhanyetgin.kamci
+---
+# CHART-01: Grafik ekranı yüklenir
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- tapOn:
+    text: "Grafikler"
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Grafikler"
+- assertNotVisible:
+    text: "Hata"
+- assertNotVisible:
+    text: "hata"

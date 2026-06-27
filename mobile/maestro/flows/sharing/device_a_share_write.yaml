@@ -1,0 +1,23 @@
+appId: com.batuhanyetgin.kamci
+---
+# SHARE-02 (Device A): User B'yi WRITE yetkisine yükselt
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- tapOn:
+    text: "Kategoriler"
+- tapOn:
+    text: "Paylaşılanlar"
+    index: 0
+- tapOn:
+    text: "Test Kategorisi"
+- waitForAnimationToEnd
+# Üye listesinde User B'yi bul ve erişim seviyesini değiştir
+- tapOn:
+    text: "${USER_B_EMAIL}"
+- assertVisible:
+    text: "Erişim Seviyesini Değiştir"
+- tapOn:
+    text: "Yazma"
+- tapOn:
+    text: "Kaydet"
+- assertVisible:
+    text: "Yazma"

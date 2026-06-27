@@ -1,0 +1,36 @@
+appId: com.batuhanyetgin.kamci
+---
+# iOS'ta clearState bildirim iznini sıfırlar → popup çıkar.
+# Bu subflow clearState kullanmadan login ekranına ulaşır.
+- launchApp
+- waitForAnimationToEnd
+# Deep link system dialog'u kapat ("Kamci ile Açılsın mı?" — deeplink testinden kalabilir)
+- tapOn:
+    text: "Vazgeç"
+    optional: true
+- tapOn:
+    text: "Vazgeç"
+    optional: true
+# Bildirim izin popup'ı (clearState veya ilk kurulumda çıkar)
+- tapOn:
+    text: "İzin Ver"
+    optional: true
+- waitForAnimationToEnd
+# Uygulama içindeyse logout yap
+- tapOn:
+    text: "Ayarlar"
+    optional: true
+- scrollUntilVisible:
+    element:
+      text: "Çıkış Yap"
+    direction: DOWN
+    optional: true
+- tapOn:
+    text: "Çıkış Yap"
+    optional: true
+- waitForAnimationToEnd
+- tapOn:
+    text: "Çıkış Yap"
+    optional: true
+    index: 1
+- waitForAnimationToEnd

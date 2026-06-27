@@ -1,0 +1,17 @@
+appId: com.batuhanyetgin.kamci
+---
+# AUTH-04: Var olmayan email — 404 hatası
+- runFlow: "../../subflows/_ensure_login_screen.yaml"
+- tapOn:
+    text: "E-posta Adresi"
+- inputText: "yokolan_kullanici_99999@test.com"
+- tapOn:
+    text: "Şifre"
+- inputText: "TestPass123!"
+- tapOn:
+    text: "Giriş Yap"
+- waitForAnimationToEnd
+- assertVisible:
+    text: "bulunamadı"
+- assertNotVisible:
+    text: "Kendi Borçlarım"

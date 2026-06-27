@@ -1,0 +1,37 @@
+appId: com.batuhanyetgin.kamci
+---
+# iOS'ta clearState Keychain'i silmiyor — önce logout dene (optional), sonra login yap
+- launchApp
+- waitForAnimationToEnd
+# Bildirim izin popup'ını kapat (ilk kurulumda çıkar)
+- tapOn:
+    text: "İzin Ver"
+    optional: true
+# Uygulama içindeyse logout yap — timeout kısa tutularak hız kazanılır
+- tapOn:
+    text: "Ayarlar"
+    optional: true
+- scrollUntilVisible:
+    element:
+      text: "Çıkış Yap"
+    direction: DOWN
+    timeout: 4000
+    optional: true
+- tapOn:
+    text: "Çıkış Yap"
+    optional: true
+- tapOn:
+    text: "Çıkış Yap"
+    optional: true
+    index: 1
+- waitForAnimationToEnd
+- tapOn:
+    text: "E-posta Adresi"
+- inputText: "${USER_B_EMAIL}"
+- tapOn:
+    text: "Şifre"
+- inputText: "${USER_B_PASSWORD}"
+- tapOn:
+    text: "Giriş Yap"
+- assertVisible:
+    text: "Borçlar"
