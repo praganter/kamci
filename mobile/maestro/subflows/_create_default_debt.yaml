@@ -4,14 +4,20 @@ appId: com.batuhanyetgin.kamci
     text: "Borçlar"
 - waitForAnimationToEnd
 - tapOn:
+    id: "myDebtsTab"
+- waitForAnimationToEnd
+- tapOn:
     point: "89%, 80%"
 - assertVisible:
     text: "Yeni Borç"
+- waitForAnimationToEnd
+# Kategori picker
 - tapOn:
-    text: "Kategori"
+    id: "categoryField"
 - waitForAnimationToEnd
 - tapOn:
-    index: 0
+    text: "Tamam"
+# Borç adı ve tutar
 - tapOn:
     text: "Borç Adı"
 - inputText: "Test Borcu"
@@ -20,18 +26,23 @@ appId: com.batuhanyetgin.kamci
 - inputText: "500"
 - tapOn:
     text: "Yeni Borç"
+# Para Birimi picker
 - tapOn:
-    text: "Ödeme Periyodu"
+    id: "currencyField"
 - waitForAnimationToEnd
 - tapOn:
-    text: "Tek Seferlik"
-- waitForAnimationToEnd
-- scrollUntilVisible:
-    element:
-      text: "İlk Ödeme Tarihi"
-    direction: DOWN
+    text: "Tamam"
+# Ödeme Periyodu picker
 - tapOn:
-    text: "İlk Ödeme Tarihi"
+    id: "periodField"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Tamam"
+- waitForAnimationToEnd
+# İlk Ödeme Tarihi picker
+- tapOn:
+    id: "dateField"
+- waitForAnimationToEnd
 - tapOn:
     text: "Tamam"
 - scrollUntilVisible:
@@ -40,5 +51,6 @@ appId: com.batuhanyetgin.kamci
     direction: DOWN
 - tapOn:
     text: "Oluştur"
+- waitForAnimationToEnd
 - assertVisible:
     text: "Test Borcu"

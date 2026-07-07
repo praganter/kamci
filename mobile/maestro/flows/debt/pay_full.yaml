@@ -1,7 +1,9 @@
 appId: com.batuhanyetgin.kamci
 ---
-# DEBT-06: Tam ödeme — sağa swipe → "Ödeme İşlemleri" → "Tam Ödeme"
+# DEBT-06: Tam ödeme — sağa swipe → "Ödeme İşlemleri" → "Tam Ödeme" — testten sonra siler
 - runFlow: "../../subflows/_login_as_user_a.yaml"
+- runFlow: "../../subflows/_cleanup_all_debts.yaml"
+- runFlow: "../../subflows/_create_default_category.yaml"
 - runFlow: "../../subflows/_create_default_debt.yaml"
 - tapOn:
     text: "Borçlar"
@@ -19,3 +21,12 @@ appId: com.batuhanyetgin.kamci
     text: "Tam Ödeme"
 - assertVisible:
     text: "kayıt edildi"
+# Cleanup: borcu sil
+- swipe:
+    direction: LEFT
+    element:
+      text: "Test Borcu"
+- assertVisible:
+    text: "Borcu Sil"
+- tapOn:
+    text: "Sil"

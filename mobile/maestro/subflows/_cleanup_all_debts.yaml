@@ -1,0 +1,197 @@
+appId: com.batuhanyetgin.kamci
+---
+# Cleanup: tüm test borçlarını siler.
+# Mevcut ay + 2 ay öncesini kontrol eder.
+# Boş ayda swipe, TabBarView'ün gesture handler'ını tetikler → tab kayar.
+# Her ay bölümünden önce myDebtsTab'a kilitle.
+
+- tapOn:
+    text: "Borçlar"
+- tapOn:
+    id: "myDebtsTab"
+- waitForAnimationToEnd
+
+# ── Mevcut ay (Temmuz 2026) ──────────────────────────────────────────────────
+- tapOn:
+    id: "myDebtsTab"
+- waitForAnimationToEnd
+- swipe:
+    start: "75%, 40%"
+    end: "5%, 40%"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Sil"
+    optional: true
+- waitForAnimationToEnd
+- tapOn:
+    id: "myDebtsTab"
+- swipe:
+    start: "75%, 40%"
+    end: "5%, 40%"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Sil"
+    optional: true
+- waitForAnimationToEnd
+- tapOn:
+    id: "myDebtsTab"
+- swipe:
+    start: "75%, 40%"
+    end: "5%, 40%"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Sil"
+    optional: true
+- waitForAnimationToEnd
+- tapOn:
+    id: "myDebtsTab"
+- swipe:
+    start: "75%, 40%"
+    end: "5%, 40%"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Sil"
+    optional: true
+- waitForAnimationToEnd
+- tapOn:
+    id: "myDebtsTab"
+- swipe:
+    start: "75%, 40%"
+    end: "5%, 40%"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Sil"
+    optional: true
+- waitForAnimationToEnd
+
+# ── 1 ay geri (Haziran 2026) ─────────────────────────────────────────────────
+- tapOn:
+    id: "prevMonthBtn"
+- waitForAnimationToEnd
+- tapOn:
+    id: "myDebtsTab"
+- waitForAnimationToEnd
+- swipe:
+    start: "75%, 40%"
+    end: "5%, 40%"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Sil"
+    optional: true
+- waitForAnimationToEnd
+- tapOn:
+    id: "myDebtsTab"
+- swipe:
+    start: "75%, 40%"
+    end: "5%, 40%"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Sil"
+    optional: true
+- waitForAnimationToEnd
+- tapOn:
+    id: "myDebtsTab"
+- swipe:
+    start: "75%, 40%"
+    end: "5%, 40%"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Sil"
+    optional: true
+- waitForAnimationToEnd
+- tapOn:
+    id: "myDebtsTab"
+- swipe:
+    start: "75%, 40%"
+    end: "5%, 40%"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Sil"
+    optional: true
+- waitForAnimationToEnd
+- tapOn:
+    id: "myDebtsTab"
+- swipe:
+    start: "75%, 40%"
+    end: "5%, 40%"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Sil"
+    optional: true
+- waitForAnimationToEnd
+
+# ── 2 ay geri (Mayıs 2026) ───────────────────────────────────────────────────
+- tapOn:
+    id: "prevMonthBtn"
+- waitForAnimationToEnd
+- tapOn:
+    id: "myDebtsTab"
+- waitForAnimationToEnd
+- swipe:
+    start: "75%, 40%"
+    end: "5%, 40%"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Sil"
+    optional: true
+- waitForAnimationToEnd
+- tapOn:
+    id: "myDebtsTab"
+- swipe:
+    start: "75%, 40%"
+    end: "5%, 40%"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Sil"
+    optional: true
+- waitForAnimationToEnd
+- tapOn:
+    id: "myDebtsTab"
+- swipe:
+    start: "75%, 40%"
+    end: "5%, 40%"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Sil"
+    optional: true
+- waitForAnimationToEnd
+- tapOn:
+    id: "myDebtsTab"
+- swipe:
+    start: "75%, 40%"
+    end: "5%, 40%"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Sil"
+    optional: true
+- waitForAnimationToEnd
+- tapOn:
+    id: "myDebtsTab"
+- swipe:
+    start: "75%, 40%"
+    end: "5%, 40%"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Sil"
+    optional: true
+- waitForAnimationToEnd
+
+# ── Mevcut aya geri dön (Mayıs → Temmuz: 2x ileri) ──────────────────────────
+# nextMonthBtn iOS accessibility tree'de görünmüyor (Flutter bug: Row semantics collapse)
+# → Koordinat tabanlı tap kullanılır. Body y=115pt'de başlar; month nav center y≈151pt=18%
+# X: 393-16-24=353pt=90%; Y: 115+12+24=151pt=18%
+- tapOn:
+    id: "myDebtsTab"
+- waitForAnimationToEnd
+- tapOn:
+    point: "90%, 18%"
+- waitForAnimationToEnd
+- tapOn:
+    id: "myDebtsTab"
+- waitForAnimationToEnd
+- tapOn:
+    point: "90%, 18%"
+- waitForAnimationToEnd
+- tapOn:
+    id: "myDebtsTab"
+- waitForAnimationToEnd

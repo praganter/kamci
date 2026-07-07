@@ -230,6 +230,7 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                       prefixIcon: const Icon(Icons.folder_outlined),
                       value: _selectedCategoryId,
                       hint: l10n.select,
+                      semanticsId: 'categoryField',
                       items: categoriesAsync.valueOrNull
                               ?.map(
                                 (c) => PlatformSelectItem(
@@ -323,6 +324,7 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                     prefixIcon: const Icon(Icons.attach_money),
                     value: _selectedCurrency,
                     hint: l10n.select,
+                    semanticsId: 'currencyField',
                     items: sorted
                         .map(
                           (c) => PlatformSelectItem(
@@ -346,6 +348,7 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                 prefixIcon: const Icon(Icons.repeat),
                 value: _periodType,
                 hint: l10n.select,
+                semanticsId: 'periodField',
                 items: PaymentPeriodType.values
                     .map(
                       (t) => PlatformSelectItem(
@@ -367,6 +370,7 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                 prefixIcon: const Icon(Icons.calendar_today),
                 value: _firstPaymentDate,
                 hint: l10n.select,
+                semanticsId: 'dateField',
                 firstDate: DateTime(2000),
                 lastDate: DateTime(2100),
                 onChanged: (date) => setState(() => _firstPaymentDate = date),

@@ -2,6 +2,7 @@ appId: com.batuhanyetgin.kamci
 ---
 # iOS'ta clearState bildirim iznini sıfırlar → popup çıkar.
 # Bu subflow clearState kullanmadan login ekranına ulaşır.
+# scrollUntilVisible timeout:2000 — varsayılan 20s yerine; optional olduğu için kısa tutulur
 - launchApp
 - waitForAnimationToEnd
 # Deep link system dialog'u kapat ("Kamci ile Açılsın mı?" — deeplink testinden kalabilir)
@@ -24,6 +25,7 @@ appId: com.batuhanyetgin.kamci
     element:
       text: "Çıkış Yap"
     direction: DOWN
+    timeout: 2000
     optional: true
 - tapOn:
     text: "Çıkış Yap"

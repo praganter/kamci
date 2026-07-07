@@ -17,6 +17,7 @@ class PlatformSelectField<T> extends StatefulWidget {
     required this.onChanged,
     this.validator,
     this.hint,
+    this.semanticsId,
   });
 
   final String label;
@@ -26,6 +27,7 @@ class PlatformSelectField<T> extends StatefulWidget {
   final ValueChanged<T?> onChanged;
   final FormFieldValidator<T>? validator;
   final String? hint;
+  final String? semanticsId;
 
   @override
   State<PlatformSelectField<T>> createState() => _PlatformSelectFieldState<T>();
@@ -60,8 +62,11 @@ class _PlatformSelectFieldState<T> extends State<PlatformSelectField<T>> {
     final mloc = MaterialLocalizations.of(context);
     final cs = Theme.of(context).colorScheme;
 
-    await showCupertinoModalPopup<void>(
+    await showModalBottomSheet<void>(
       context: context,
+      isDismissible: false,
+      enableDrag: false,
+      backgroundColor: Colors.transparent,
       builder: (ctx) => _SelectPickerSheet(
         initialIndex: currentIdx,
         labels: items.map((i) => i.label).toList(),
@@ -101,25 +106,28 @@ class _PlatformSelectFieldState<T> extends State<PlatformSelectField<T>> {
             message: selectedLabel != null ? widget.label : '',
             triggerMode: TooltipTriggerMode.longPress,
             preferBelow: false,
-            child: InkWell(
-              onTap: () => _showPicker(context, state),
-              borderRadius: BorderRadius.circular(4),
-              hoverColor: Colors.transparent,
-              highlightColor: Colors.transparent,
-              splashColor: Colors.transparent,
-              splashFactory: NoSplash.splashFactory,
-              child: InputDecorator(
-                decoration: InputDecoration(
-                  labelText: widget.label,
-                  prefixIcon: widget.prefixIcon,
-                  hintText: widget.hint,
-                  errorText: state.errorText,
-                  suffixIcon: const Icon(Icons.arrow_drop_down),
+            child: Semantics(
+              identifier: widget.semanticsId ?? '',
+              child: InkWell(
+                onTap: () => _showPicker(context, state),
+                borderRadius: BorderRadius.circular(4),
+                hoverColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+                splashColor: Colors.transparent,
+                splashFactory: NoSplash.splashFactory,
+                child: InputDecorator(
+                  decoration: InputDecoration(
+                    labelText: widget.label,
+                    prefixIcon: widget.prefixIcon,
+                    hintText: widget.hint,
+                    errorText: state.errorText,
+                    suffixIcon: const Icon(Icons.arrow_drop_down),
+                  ),
+                  isEmpty: selectedLabel == null,
+                  child: selectedLabel != null
+                      ? Text(selectedLabel)
+                      : const SizedBox.shrink(),
                 ),
-                isEmpty: selectedLabel == null,
-                child: selectedLabel != null
-                    ? Text(selectedLabel)
-                    : const SizedBox.shrink(),
               ),
             ),
           );
@@ -260,9 +268,12 @@ class _SelectPickerSheetState extends State<_SelectPickerSheet> {
               widget.onConfirm(_selectedIdx);
               Navigator.of(context).pop();
             },
-            child: Text(
-              widget.confirmLabel,
-              style: TextStyle(color: cs.primary, fontWeight: FontWeight.bold),
+            child: Semantics(
+              identifier: 'pickerOkBtn',
+              child: Text(
+                widget.confirmLabel,
+                style: TextStyle(color: cs.primary, fontWeight: FontWeight.bold),
+              ),
             ),
           ),
         ],

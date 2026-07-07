@@ -13,6 +13,7 @@ class PlatformDateField extends StatefulWidget {
     this.hint,
     this.firstDate,
     this.lastDate,
+    this.semanticsId,
   });
 
   final String label;
@@ -23,6 +24,7 @@ class PlatformDateField extends StatefulWidget {
   final String? hint;
   final DateTime? firstDate;
   final DateTime? lastDate;
+  final String? semanticsId;
 
   @override
   State<PlatformDateField> createState() => _PlatformDateFieldState();
@@ -64,8 +66,11 @@ class _PlatformDateFieldState extends State<PlatformDateField> {
     final cs = Theme.of(context).colorScheme;
     final brightness = Theme.of(context).brightness;
 
-    await showCupertinoModalPopup<void>(
+    await showModalBottomSheet<void>(
       context: context,
+      isDismissible: false,
+      enableDrag: false,
+      backgroundColor: Colors.transparent,
       builder: (ctx) => _DatePickerSheet(
         initialDate: initDate,
         minimumDate: firstDate,
@@ -111,26 +116,29 @@ class _PlatformDateFieldState extends State<PlatformDateField> {
           message: widget.label,
           triggerMode: TooltipTriggerMode.longPress,
           preferBelow: false,
-          child: InkWell(
-            onTap: () => isIOS
-                ? _showIOSPicker(context, state)
-                : _showMaterialPicker(context, state),
-            borderRadius: BorderRadius.circular(4),
-            hoverColor: Colors.transparent,
-            highlightColor: Colors.transparent,
-            splashColor: Colors.transparent,
-            splashFactory: NoSplash.splashFactory,
-            child: InputDecorator(
-              decoration: InputDecoration(
-                labelText: widget.label,
-                prefixIcon: widget.prefixIcon,
-                hintText: widget.hint,
-                errorText: state.errorText,
+          child: Semantics(
+            identifier: widget.semanticsId ?? '',
+            child: InkWell(
+              onTap: () => isIOS
+                  ? _showIOSPicker(context, state)
+                  : _showMaterialPicker(context, state),
+              borderRadius: BorderRadius.circular(4),
+              hoverColor: Colors.transparent,
+              highlightColor: Colors.transparent,
+              splashColor: Colors.transparent,
+              splashFactory: NoSplash.splashFactory,
+              child: InputDecorator(
+                decoration: InputDecoration(
+                  labelText: widget.label,
+                  prefixIcon: widget.prefixIcon,
+                  hintText: widget.hint,
+                  errorText: state.errorText,
+                ),
+                isEmpty: state.value == null,
+                child: state.value != null
+                    ? Text(DateFormatter.formatDate(state.value!))
+                    : const SizedBox.shrink(),
               ),
-              isEmpty: state.value == null,
-              child: state.value != null
-                  ? Text(DateFormatter.formatDate(state.value!))
-                  : const SizedBox.shrink(),
             ),
           ),
         );
@@ -250,9 +258,12 @@ class _DatePickerSheetState extends State<_DatePickerSheet> {
               widget.onConfirm(_selectedDate);
               Navigator.of(context).pop();
             },
-            child: Text(
-              widget.confirmLabel,
-              style: TextStyle(color: cs.primary, fontWeight: FontWeight.bold),
+            child: Semantics(
+              identifier: 'pickerOkBtn',
+              child: Text(
+                widget.confirmLabel,
+                style: TextStyle(color: cs.primary, fontWeight: FontWeight.bold),
+              ),
             ),
           ),
         ],

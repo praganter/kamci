@@ -2,6 +2,8 @@ appId: com.batuhanyetgin.kamci
 ---
 # DEBT-11: Borç silme — sola swipe → confirm dialog
 - runFlow: "../../subflows/_login_as_user_a.yaml"
+- runFlow: "../../subflows/_cleanup_all_debts.yaml"
+- runFlow: "../../subflows/_create_default_category.yaml"
 - runFlow: "../../subflows/_create_default_debt.yaml"
 - tapOn:
     text: "Borçlar"
@@ -16,6 +18,6 @@ appId: com.batuhanyetgin.kamci
 - assertVisible:
     text: "Borcu Sil"
 - tapOn:
-    text: "Evet"
+    text: "Sil"
 - assertNotVisible:
     text: "Test Borcu"

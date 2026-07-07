@@ -1,7 +1,8 @@
 appId: com.batuhanyetgin.kamci
 ---
-# DEBT-02: MONTHLY 12 taksitli borç
+# DEBT-02: MONTHLY 12 taksitli borç — testten sonra siler (test izolasyonu)
 - runFlow: "../../subflows/_login_as_user_a.yaml"
+- runFlow: "../../subflows/_cleanup_all_debts.yaml"
 - runFlow: "../../subflows/_create_default_category.yaml"
 - tapOn:
     text: "Borçlar"
@@ -11,10 +12,10 @@ appId: com.batuhanyetgin.kamci
 - assertVisible:
     text: "Yeni Borç"
 - tapOn:
-    text: "Kategori"
+    id: "categoryField"
 - waitForAnimationToEnd
 - tapOn:
-    index: 0
+    text: "Tamam"
 - tapOn:
     text: "Borç Adı"
 - inputText: "Aylık Taksit Borcu"
@@ -24,15 +25,19 @@ appId: com.batuhanyetgin.kamci
 - tapOn:
     text: "Yeni Borç"
 - tapOn:
-    text: "Para Birimi"
+    id: "currencyField"
 - waitForAnimationToEnd
 - tapOn:
     text: "TRY"
 - tapOn:
-    text: "Ödeme Periyodu"
+    text: "Tamam"
+- tapOn:
+    id: "periodField"
 - waitForAnimationToEnd
 - tapOn:
     text: "Aylık"
+- tapOn:
+    text: "Tamam"
 - waitForAnimationToEnd
 # Taksit alanı görünmeli (MONTHLY için)
 - assertVisible:
@@ -44,10 +49,10 @@ appId: com.batuhanyetgin.kamci
     text: "Yeni Borç"
 - scrollUntilVisible:
     element:
-      text: "İlk Ödeme Tarihi"
+      id: "dateField"
     direction: DOWN
 - tapOn:
-    text: "İlk Ödeme Tarihi"
+    id: "dateField"
 - tapOn:
     text: "Tamam"
 - scrollUntilVisible:
@@ -61,3 +66,12 @@ appId: com.batuhanyetgin.kamci
 # Taksit göstergesi: "0 / 12"
 - assertVisible:
     text: "0 / 12"
+# Cleanup: borcu sil
+- swipe:
+    direction: LEFT
+    element:
+      text: "Aylık Taksit Borcu"
+- assertVisible:
+    text: "Borcu Sil"
+- tapOn:
+    text: "Sil"

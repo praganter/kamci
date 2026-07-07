@@ -1,7 +1,9 @@
 appId: com.batuhanyetgin.kamci
 ---
-# DEBT-07: Parçalı ödeme
+# DEBT-07: Parçalı ödeme — testten sonra siler (test izolasyonu)
 - runFlow: "../../subflows/_login_as_user_a.yaml"
+- runFlow: "../../subflows/_cleanup_all_debts.yaml"
+- runFlow: "../../subflows/_create_default_category.yaml"
 - runFlow: "../../subflows/_create_default_debt.yaml"
 - tapOn:
     text: "Borçlar"
@@ -21,7 +23,17 @@ appId: com.batuhanyetgin.kamci
 - tapOn:
     text: "Tutar Girin"
 - inputText: "75"
+# OK butonu "Tamam" (MaterialLocalizations.okButtonLabel = Tamam)
 - tapOn:
-    text: "Gönder"
+    text: "Tamam"
 - assertVisible:
     text: "kayıt edildi"
+# Cleanup: borcu sil
+- swipe:
+    direction: LEFT
+    element:
+      text: "Test Borcu"
+- assertVisible:
+    text: "Borcu Sil"
+- tapOn:
+    text: "Sil"

@@ -1,7 +1,9 @@
 appId: com.batuhanyetgin.kamci
 ---
-# DEBT-05: Borç düzenleme
+# DEBT-05: Borç düzenleme — testten sonra siler (test izolasyonu)
 - runFlow: "../../subflows/_login_as_user_a.yaml"
+- runFlow: "../../subflows/_cleanup_all_debts.yaml"
+- runFlow: "../../subflows/_create_default_category.yaml"
 - runFlow: "../../subflows/_create_default_debt.yaml"
 - tapOn:
     text: "Test Borcu"
@@ -29,3 +31,15 @@ appId: com.batuhanyetgin.kamci
     text: "Güncellenmiş Borç"
 - assertVisible:
     text: "999"
+# Geri dön (Detail → List) sonra borcu sil
+- tapOn:
+    text: "Geri"
+- waitForAnimationToEnd
+- swipe:
+    direction: LEFT
+    element:
+      text: "Güncellenmiş Borç"
+- assertVisible:
+    text: "Borcu Sil"
+- tapOn:
+    text: "Sil"

@@ -1,13 +1,14 @@
 appId: com.batuhanyetgin.kamci
 ---
 # iOS'ta clearState Keychain'i silmiyor — önce logout dene (optional), sonra login yap
+# scrollUntilVisible timeout:2000 — varsayılan 20s yerine; optional olduğu için kısa tutulur
 - launchApp
 - waitForAnimationToEnd
 # Bildirim izin popup'ını kapat (ilk kurulumda çıkar)
 - tapOn:
     text: "İzin Ver"
     optional: true
-# Uygulama içindeyse logout yap — timeout kısa tutularak hız kazanılır
+# Uygulama içindeyse logout yap
 - tapOn:
     text: "Ayarlar"
     optional: true
@@ -15,7 +16,7 @@ appId: com.batuhanyetgin.kamci
     element:
       text: "Çıkış Yap"
     direction: DOWN
-    timeout: 4000
+    timeout: 2000
     optional: true
 - tapOn:
     text: "Çıkış Yap"

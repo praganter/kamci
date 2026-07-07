@@ -1,21 +1,31 @@
 appId: com.batuhanyetgin.kamci
 ---
-# DEBT-12: Ay filtresi — sol ok ile önceki aya git
+# DEBT-12: Ay filtresi — önceki/sonraki ay navigasyonu
+# nextMonthBtn Semantics ID iOS'ta erişilebilir değil → koordinat kullanılır
 - runFlow: "../../subflows/_login_as_user_a.yaml"
+- runFlow: "../../subflows/_cleanup_all_debts.yaml"
 - tapOn:
     text: "Borçlar"
 - waitForAnimationToEnd
 - tapOn:
     id: "myDebtsTab"
 - waitForAnimationToEnd
-# Sol ok: önceki aya git
+
+# Sol ok: önceki aya git (Haziran 2026)
 - tapOn:
     id: "prevMonthBtn"
 - waitForAnimationToEnd
-# Ay değişti — bugünün ayı görünmemeli (önceki ay olmalı)
+# Önceki aya gidildi — Temmuz artık görünmemeli
 - assertNotVisible:
-    text: "Yeni borç eklemek için"
+    text: "Temmuz 2026"
+
 # Sağ ok: bu aya dön
+# nextMonthBtn ID iOS'ta accessibility tree'de yok (Flutter Row semantics bug) → koordinat
 - tapOn:
-    id: "nextMonthBtn"
+    point: "90%, 18%"
 - waitForAnimationToEnd
+# Temmuz'a döndük — prevMonthBtn görünmeli, Haziran görünmemeli
+- assertVisible:
+    id: "prevMonthBtn"
+- assertNotVisible:
+    text: "Haziran 2026"

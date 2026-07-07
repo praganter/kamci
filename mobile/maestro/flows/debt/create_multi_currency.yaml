@@ -1,7 +1,8 @@
 appId: com.batuhanyetgin.kamci
 ---
-# DEBT-13/14: Multi-currency — USD ve EUR
+# DEBT-13/14: Multi-currency — USD ve EUR — testten sonra siler (test izolasyonu)
 - runFlow: "../../subflows/_login_as_user_a.yaml"
+- runFlow: "../../subflows/_cleanup_all_debts.yaml"
 - runFlow: "../../subflows/_create_default_category.yaml"
 - tapOn:
     text: "Borçlar"
@@ -10,11 +11,13 @@ appId: com.batuhanyetgin.kamci
 # ── USD ────────────────────────────────────────────────────
 - tapOn:
     point: "89%, 80%"
+- assertVisible:
+    text: "Yeni Borç"
 - tapOn:
-    text: "Kategori"
+    id: "categoryField"
 - waitForAnimationToEnd
 - tapOn:
-    index: 0
+    text: "Tamam"
 - tapOn:
     text: "Borç Adı"
 - inputText: "USD Test Borcu"
@@ -24,21 +27,26 @@ appId: com.batuhanyetgin.kamci
 - tapOn:
     text: "Yeni Borç"
 - tapOn:
-    text: "Para Birimi"
+    id: "currencyField"
 - waitForAnimationToEnd
 - tapOn:
     text: "USD"
 - tapOn:
-    text: "Ödeme Periyodu"
+    text: "Tamam"
+- tapOn:
+    id: "periodField"
 - waitForAnimationToEnd
 - tapOn:
     text: "Tek Seferlik"
+- tapOn:
+    text: "Tamam"
+- waitForAnimationToEnd
 - scrollUntilVisible:
     element:
-      text: "İlk Ödeme Tarihi"
+      id: "dateField"
     direction: DOWN
 - tapOn:
-    text: "İlk Ödeme Tarihi"
+    id: "dateField"
 - tapOn:
     text: "Tamam"
 - scrollUntilVisible:
@@ -51,15 +59,27 @@ appId: com.batuhanyetgin.kamci
     text: "USD Test Borcu"
 - assertVisible:
     text: "USD"
+# Cleanup USD borcu
+- swipe:
+    direction: LEFT
+    element:
+      text: "USD Test Borcu"
+- assertVisible:
+    text: "Borcu Sil"
+- tapOn:
+    text: "Sil"
+- waitForAnimationToEnd
 
 # ── EUR ────────────────────────────────────────────────────
 - tapOn:
     point: "89%, 80%"
+- assertVisible:
+    text: "Yeni Borç"
 - tapOn:
-    text: "Kategori"
+    id: "categoryField"
 - waitForAnimationToEnd
 - tapOn:
-    index: 0
+    text: "Tamam"
 - tapOn:
     text: "Borç Adı"
 - inputText: "EUR Test Borcu"
@@ -69,21 +89,26 @@ appId: com.batuhanyetgin.kamci
 - tapOn:
     text: "Yeni Borç"
 - tapOn:
-    text: "Para Birimi"
+    id: "currencyField"
 - waitForAnimationToEnd
 - tapOn:
     text: "EUR"
 - tapOn:
-    text: "Ödeme Periyodu"
+    text: "Tamam"
+- tapOn:
+    id: "periodField"
 - waitForAnimationToEnd
 - tapOn:
     text: "Tek Seferlik"
+- tapOn:
+    text: "Tamam"
+- waitForAnimationToEnd
 - scrollUntilVisible:
     element:
-      text: "İlk Ödeme Tarihi"
+      id: "dateField"
     direction: DOWN
 - tapOn:
-    text: "İlk Ödeme Tarihi"
+    id: "dateField"
 - tapOn:
     text: "Tamam"
 - scrollUntilVisible:
@@ -96,3 +121,12 @@ appId: com.batuhanyetgin.kamci
     text: "EUR Test Borcu"
 - assertVisible:
     text: "EUR"
+# Cleanup EUR borcu
+- swipe:
+    direction: LEFT
+    element:
+      text: "EUR Test Borcu"
+- assertVisible:
+    text: "Borcu Sil"
+- tapOn:
+    text: "Sil"

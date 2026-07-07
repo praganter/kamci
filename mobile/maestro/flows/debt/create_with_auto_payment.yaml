@@ -1,7 +1,9 @@
 appId: com.batuhanyetgin.kamci
 ---
-# DEBT-15: Auto Payment flag
+# DEBT-15: Auto Payment flag — testten sonra siler (test izolasyonu)
 - runFlow: "../../subflows/_login_as_user_a.yaml"
+- runFlow: "../../subflows/_cleanup_all_debts.yaml"
+- runFlow: "../../subflows/_create_default_category.yaml"
 - tapOn:
     text: "Borçlar"
 - waitForAnimationToEnd
@@ -10,10 +12,10 @@ appId: com.batuhanyetgin.kamci
 - assertVisible:
     text: "Yeni Borç"
 - tapOn:
-    text: "Kategori"
+    id: "categoryField"
 - waitForAnimationToEnd
 - tapOn:
-    index: 0
+    text: "Tamam"
 - tapOn:
     text: "Borç Adı"
 - inputText: "Otomatik Ödemeli Borç"
@@ -23,21 +25,26 @@ appId: com.batuhanyetgin.kamci
 - tapOn:
     text: "Yeni Borç"
 - tapOn:
-    text: "Para Birimi"
+    id: "currencyField"
 - waitForAnimationToEnd
 - tapOn:
     text: "TRY"
 - tapOn:
-    text: "Ödeme Periyodu"
+    text: "Tamam"
+- tapOn:
+    id: "periodField"
 - waitForAnimationToEnd
 - tapOn:
     text: "Aylık"
+- tapOn:
+    text: "Tamam"
+- waitForAnimationToEnd
 - scrollUntilVisible:
     element:
-      text: "İlk Ödeme Tarihi"
+      id: "dateField"
     direction: DOWN
 - tapOn:
-    text: "İlk Ödeme Tarihi"
+    id: "dateField"
 - tapOn:
     text: "Tamam"
 - scrollUntilVisible:
@@ -55,3 +62,12 @@ appId: com.batuhanyetgin.kamci
     text: "Oluştur"
 - assertVisible:
     text: "Otomatik Ödemeli Borç"
+# Cleanup: borcu sil
+- swipe:
+    direction: LEFT
+    element:
+      text: "Otomatik Ödemeli Borç"
+- assertVisible:
+    text: "Borcu Sil"
+- tapOn:
+    text: "Sil"

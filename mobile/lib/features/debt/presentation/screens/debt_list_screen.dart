@@ -52,6 +52,9 @@ class _DebtListScreenState extends ConsumerState<DebtListScreen>
     final cs = Theme.of(context).colorScheme;
     final l10n = context.l10n;
     final isPremium = ref.watch(isPremiumProvider);
+    // Keep categoryListProvider alive while this screen is in the stack.
+    // This prevents auto-dispose between FAB pre-fetch and form opening.
+    ref.watch(categoryListProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -116,7 +119,11 @@ class _DebtListScreenState extends ConsumerState<DebtListScreen>
               }
               ref.invalidate(categoryListProvider);
               ref.invalidate(currencyListProvider);
-              ref.read(currencyListProvider.future).ignore();
+              await Future.wait([
+                ref.read(categoryListProvider.future),
+                ref.read(currencyListProvider.future),
+              ]);
+              if (!context.mounted) return;
               await context.pushNamed(RouteNames.debtNew);
               ref.invalidate(debtGroupedProvider(true));
             },
@@ -165,11 +172,14 @@ class _DebtTabViewState extends ConsumerState<_DebtTabView>
               ),
               child: Row(
                 children: [
-                  IconButton(
-                    key: const Key('prevMonthBtn'),
-                    onPressed: () =>
-                        ref.read(selectedMonthProvider.notifier).previous(),
-                    icon: Icon(Icons.chevron_left, color: cs.onSurfaceVariant),
+                  Semantics(
+                    identifier: 'prevMonthBtn',
+                    child: IconButton(
+                      key: const Key('prevMonthBtn'),
+                      onPressed: () =>
+                          ref.read(selectedMonthProvider.notifier).previous(),
+                      icon: Icon(Icons.chevron_left, color: cs.onSurfaceVariant),
+                    ),
                   ),
                   Expanded(
                     child: InkWell(
@@ -210,11 +220,14 @@ class _DebtTabViewState extends ConsumerState<_DebtTabView>
                       ),
                     ),
                   ),
-                  IconButton(
-                    key: const Key('nextMonthBtn'),
-                    onPressed: () =>
-                        ref.read(selectedMonthProvider.notifier).next(),
-                    icon: Icon(Icons.chevron_right, color: cs.onSurfaceVariant),
+                  Semantics(
+                    identifier: 'nextMonthBtn',
+                    child: IconButton(
+                      key: const Key('nextMonthBtn'),
+                      onPressed: () =>
+                          ref.read(selectedMonthProvider.notifier).next(),
+                      icon: Icon(Icons.chevron_right, color: cs.onSurfaceVariant),
+                    ),
                   ),
                 ],
               ),
@@ -434,6 +447,7 @@ class _CategoryPeriodSection extends ConsumerWidget {
         child: ClipRRect(
           borderRadius: BorderRadius.circular(15),
           child: ExpansionTile(
+            initiallyExpanded: true,
             tilePadding: const EdgeInsets.fromLTRB(12, 4, 12, 4),
             backgroundColor: cs.primary.withValues(alpha: 0.04),
             title: Text(
