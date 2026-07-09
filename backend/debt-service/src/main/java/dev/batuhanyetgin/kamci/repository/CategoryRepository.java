@@ -2,6 +2,7 @@ package dev.batuhanyetgin.kamci.repository;
 
 import dev.batuhanyetgin.kamci.document.CategoryDocument;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -15,6 +16,7 @@ public interface CategoryRepository extends MongoRepository<CategoryDocument, St
 
     long countByOwnerId(final String ownerId);
 
+    @Query(value = "{ 'owner_id': ?0, 'members': { $size: 0 } }", count = true)
     long countByOwnerIdAndMembersIsEmpty(final String ownerId);
 
     List<CategoryDocument> findByIdIn(List<String> ids);
