@@ -20,14 +20,15 @@ appId: com.batuhanyetgin.kamci
 - tapOn:
     text: "E-posta Adresi"
 - inputText: "${USER_B_EMAIL}"
-# Erişim seviyesi: Okuma (READ)
-- tapOn:
-    text: "Erişim Seviyesi"
-- tapOn:
-    text: "Okuma"
+# inputText sonrası field commit için bekle (yoksa Ekle boş email ile gider)
+- waitForAnimationToEnd
+# Erişim seviyesi dropdown'ı DEFAULT "Okuma" (AccessLevel.read) ile başlar
+# → READ paylaşımı için dokunmaya gerek yok, direkt Ekle.
 - tapOn:
     text: "Ekle"
-- assertVisible:
-    text: "${USER_B_EMAIL}"
-- assertVisible:
-    text: "üye olarak eklendi"
+# Üye satırı birleşik label taşır ("OKUMA\n...\nios2@test.com") → [\s\S]* regex.
+# "üye olarak eklendi" snackbar geçicidir, güvenilir değil → üye satırıyla doğrula.
+- extendedWaitUntil:
+    visible:
+      text: "[\\s\\S]*${USER_B_EMAIL}[\\s\\S]*"
+    timeout: 10000

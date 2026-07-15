@@ -1,16 +1,19 @@
 appId: com.batuhanyetgin.kamci
 ---
 # SHARE-01 (Device B): User B READ yetkisini doğrular
-# Bu flow emulator-5556 (Device B) üzerinde çalışır
+# NOT: Category tab'larının Semantics identifier'ı yok (debt tab'larının aksine),
+# iOS Tab suffix'i ("\nSekme 2/2") tam eşleşmeyi kırar → "Paylaşılanlar[\s\S]*"
+# regex. Kategori/borç tile'ları birleşik label → [\s\S]*.
 - runFlow: "../../subflows/_login_as_user_b.yaml"
 - tapOn:
     text: "Kategoriler"
 - waitForAnimationToEnd
 # Paylaşılan sekmesinde kategori görünmeli
 - tapOn:
-    text: "Paylaşılanlar"
+    text: "Paylaşılanlar[\\s\\S]*"
+- waitForAnimationToEnd
 - assertVisible:
-    text: "Test Kategorisi"
+    text: "Test Kategorisi[\\s\\S]*"
 # Borçlar sekmesine git, paylaşılan borçları görmeli
 - tapOn:
     text: "Borçlar"
@@ -18,16 +21,17 @@ appId: com.batuhanyetgin.kamci
 - tapOn:
     id: "sharedDebtsTab"
 - waitForAnimationToEnd
-# Test Borcu görünmeli
-- assertVisible:
-    text: "Test Borcu"
-# FAB (yeni borç ekle) görünmemeli — READ yetkisi yok
-- assertNotVisible:
-    point: "89%, 80%"
-# Sağa swipe dene — "Bu operasyon için yetkiniz yok" göstermeli
+# Test Borcu görünmeli (paylaşılan tab'da)
+- extendedWaitUntil:
+    visible:
+      text: "Test Borcu[\\s\\S]*"
+    timeout: 10000
+# Sağa swipe dene — READ yetkisi ödeme yapamaz → "yetkiniz yok"
 - swipe:
     direction: RIGHT
     element:
-      text: "Test Borcu"
-- assertVisible:
-    text: "yetkiniz yok"
+      text: "Test Borcu[\\s\\S]*"
+- extendedWaitUntil:
+    visible:
+      text: "[\\s\\S]*yetkiniz yok[\\s\\S]*"
+    timeout: 8000

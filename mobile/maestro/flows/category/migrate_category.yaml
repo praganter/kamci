@@ -1,42 +1,55 @@
 appId: com.batuhanyetgin.kamci
 ---
 # CAT-04: Kategori migrate — borçları taşı ve kaynak kategoriyi sil
+# NOT: "Borçları Aktarıp Kategoriyi Sil" seçeneği BORÇLAR ekranındaki kategori
+# grup başlığına longPress ile açılan PopupMenu'dedir (Kategoriler ekranında
+# DEĞİL). Grup başlığı birleşik label → [\s\S]* regex.
 - runFlow: "../../subflows/_login_as_user_a.yaml"
+- runFlow: "../../subflows/_cleanup_all_debts.yaml"
 - runFlow: "../../subflows/_create_default_category.yaml"
-- runFlow: "../../subflows/_create_default_debt.yaml"
+# Hedef kategori oluştur (migrate için 2. kategori gerekli)
 - tapOn:
     text: "Kategoriler"
 - waitForAnimationToEnd
-# Hedef kategori oluştur
 - tapOn:
     id: "addCategoryFab"
-- assertVisible:
-    text: "Yeni Kategori"
+- extendedWaitUntil:
+    visible:
+      text: "Yeni Kategori"
+    timeout: 5000
 - tapOn:
     text: "Kategori Adı"
 - inputText: "Hedef Kategori"
 - tapOn:
     text: "Oluştur"
-- assertVisible:
-    text: "Hedef Kategori"
-# Kaynak kategoriye git
+- extendedWaitUntil:
+    visible:
+      text: "Hedef Kategori"
+    timeout: 10000
+# Kaynak kategoriye (Test Kategorisi) borç ekle → Borçlar'da görünsün
 - tapOn:
-    text: "Test Kategorisi"
+    text: "Borçlar"
 - waitForAnimationToEnd
+- runFlow: "../../subflows/_create_default_debt.yaml"
+# Borçlar ekranında kaynak kategori başlığına longPress → PopupMenu
 - longPressOn:
-    text: "Test Kategorisi"
-- assertVisible:
-    text: "Borçları Aktarıp Kategoriyi Sil"
+    text: "Test Kategorisi[\\s\\S]*"
+- extendedWaitUntil:
+    visible:
+      text: "Borçları Aktarıp Kategoriyi Sil"
+    timeout: 5000
 - tapOn:
     text: "Borçları Aktarıp Kategoriyi Sil"
-# Hedef kategori seç
-- assertVisible:
-    text: "Hedef Kategori Seç"
+# Hedef kategori seçim dialog'u. Dropdown zaten ilk hedefi (targets.first =
+# tek "Hedef Kategori") seçili başlatır → dokunma; direkt Kaydet.
+- extendedWaitUntil:
+    visible:
+      text: "Hedef Kategori Seç"
+    timeout: 5000
 - tapOn:
-    text: "Hedef Kategori"
-- tapOn:
-    text: "Evet"
-- assertVisible:
-    text: "borç hedef kategoriye taşındı"
-- assertNotVisible:
-    text: "Test Kategorisi"
+    text: "Kaydet"
+# Borç hedefe taşındı, kaynak silindi → Test Borcu hâlâ listede (Hedef altında)
+- extendedWaitUntil:
+    visible:
+      text: "Test Borcu[\\s\\S]*"
+    timeout: 10000

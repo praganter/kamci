@@ -15,9 +15,10 @@ appId: com.batuhanyetgin.kamci
       index: 0
 - assertVisible:
     text: "Ödeme İşlemleri"
-# Toplu Ödeme'de PRO badge görünmeli ve tıklanınca sheet açılmalı
+# Free user'da bu satır ProBadge ile birleşik label taşır ("Toplu Ödeme\nPRO")
+# → tam eşleşme tutmaz, [\s\S]* regex şart.
 - tapOn:
-    text: "Toplu Ödeme"
+    text: "Toplu Ödeme[\\s\\S]*"
 - assertVisible:
     text: "Premium Gerekli"
 - tapOn:

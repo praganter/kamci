@@ -112,10 +112,18 @@ class _DebtListScreenState extends ConsumerState<DebtListScreen>
               child: FloatingActionButton(
                 onPressed: () async {
                   if (!isPremium) {
-                    final debts =
-                        ref.read(debtListProvider).valueOrNull ?? [];
-                    if (debts.length >=
-                        SubscriptionConstants.freeDebtLimit) {
+                    // Borç sayısını, ekranın zaten resolve ettiği
+                    // debtGroupedProvider(true) üzerinden say. (Önceki hâli
+                    // debtListProvider'ı okuyordu; o provider ekranda hiç
+                    // watch edilmediğinden null dönüp limiti bypass ediyordu.)
+                    final grouped =
+                        await ref.read(debtGroupedProvider(true).future);
+                    final debtCount = grouped.fold<int>(
+                      0,
+                      (sum, cat) => sum + cat.debts.length,
+                    );
+                    if (debtCount >= SubscriptionConstants.freeDebtLimit) {
+                      if (!context.mounted) return;
                       PremiumRequiredSheet.show(
                         context,
                         featureName: l10n.debts.toLowerCase(),
@@ -124,6 +132,7 @@ class _DebtListScreenState extends ConsumerState<DebtListScreen>
                       return;
                     }
                   }
+                  if (!context.mounted) return;
                   ref.invalidate(currencyListProvider);
                   await context.pushNamed(RouteNames.debtNew);
                 },

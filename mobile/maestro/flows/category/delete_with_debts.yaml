@@ -1,23 +1,34 @@
 appId: com.batuhanyetgin.kamci
 ---
 # CAT-03: Kategoriyi borçlarıyla sil
+# NOT: "Borçları ile Kategoriyi Sil" seçeneği KATEGORİLER ekranında DEĞİL,
+# BORÇLAR ekranındaki kategori grup başlığına longPress ile açılan
+# PopupMenu'de (debt_list_screen.dart _showCategoryMenu). Grup başlığının
+# accessibility label'ı birleşiktir ("Test Kategorisi\n₺500\n1") → [\s\S]* regex.
 - runFlow: "../../subflows/_login_as_user_a.yaml"
+- runFlow: "../../subflows/_cleanup_all_debts.yaml"
 - runFlow: "../../subflows/_create_default_category.yaml"
+- tapOn:
+    text: "Borçlar"
+- waitForAnimationToEnd
 - runFlow: "../../subflows/_create_default_debt.yaml"
-- tapOn:
-    text: "Kategoriler"
-- waitForAnimationToEnd
-- tapOn:
-    text: "Test Kategorisi"
-- waitForAnimationToEnd
-# Uzun basış veya menü ile sil seçeneği
+# Borçlar ekranında kategori grup başlığına uzun bas → PopupMenu
 - longPressOn:
-    text: "Test Kategorisi"
-- assertVisible:
-    text: "Borçları ile Kategoriyi Sil"
+    text: "Test Kategorisi[\\s\\S]*"
+- extendedWaitUntil:
+    visible:
+      text: "Borçları ile Kategoriyi Sil"
+    timeout: 5000
 - tapOn:
     text: "Borçları ile Kategoriyi Sil"
+- extendedWaitUntil:
+    visible:
+      text: "Sil"
+    timeout: 5000
 - tapOn:
-    text: "Evet"
-- assertNotVisible:
-    text: "Test Kategorisi"
+    text: "Sil"
+# Kategori + borçları silindi → Borçlar listesinde artık yok
+- extendedWaitUntil:
+    notVisible:
+      text: "Test Borcu[\\s\\S]*"
+    timeout: 10000

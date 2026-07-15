@@ -14,8 +14,10 @@ appId: com.batuhanyetgin.kamci
     visible:
       text: "Premium Gerekli"
     timeout: 5000
+# PremiumRequiredSheet limit sayısını ayrı bir metin olarak render etmez;
+# "Premium Al" CTA'sı ve gate'in formu AÇMAMASI ile doğrula.
 - assertVisible:
-    text: "5"
+    text: "Premium Al"
 - assertNotVisible:
     text: "Yeni Borç"
 # "Belki Daha Sonra" ile kapat
