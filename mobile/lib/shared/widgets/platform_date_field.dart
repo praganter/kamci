@@ -80,8 +80,12 @@ class _PlatformDateFieldState extends State<PlatformDateField> {
         colorScheme: cs,
         brightness: brightness,
         onConfirm: (date) {
-          state.didChange(date);
-          widget.onChanged(date);
+          // Date-only: initialDateTime DateTime.now() olduğunda saat bileşeni
+          // sızar; backend firstPaymentDate'i saatle saklayınca aynı günün
+          // gece-yarısı paidTime'ı "payment_before_start" (400) üretir.
+          final dateOnly = DateTime(date.year, date.month, date.day);
+          state.didChange(dateOnly);
+          widget.onChanged(dateOnly);
         },
       ),
     );

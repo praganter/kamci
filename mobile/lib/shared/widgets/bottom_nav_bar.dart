@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/l10n/l10n.dart';
 import '../../core/providers/app_settings_provider.dart';
 import '../../core/router/route_names.dart';
+import '../../features/category/presentation/providers/category_providers.dart';
 
 class AppShell extends ConsumerWidget {
   const AppShell({super.key, required this.child});
@@ -36,6 +37,9 @@ class AppShell extends ConsumerWidget {
     final cs = Theme.of(context).colorScheme;
     final l10n = context.l10n;
     final selectedIndex = _selectedIndex(context, ref);
+    // Keep categoryListProvider alive across all tab switches so the debt form
+    // never opens while categories are still re-fetching after a tab change.
+    ref.watch(categoryListProvider);
 
     final items = [
       (

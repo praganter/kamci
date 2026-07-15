@@ -9,9 +9,11 @@ appId: com.batuhanyetgin.kamci
 - waitForAnimationToEnd
 # FAB'a tıkla — limit aşıldıysa premium sheet açılmalı
 - tapOn:
-    point: "89%, 80%"
-- assertVisible:
-    text: "Premium Gerekli"
+    id: "addDebtFab"
+- extendedWaitUntil:
+    visible:
+      text: "Premium Gerekli"
+    timeout: 5000
 - assertVisible:
     text: "5"
 - assertNotVisible:

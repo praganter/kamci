@@ -19,6 +19,7 @@ appId: com.batuhanyetgin.kamci
 - inputText: "${USER_A_PASSWORD}"
 - tapOn:
     text: "Giriş Yap"
+- waitForAnimationToEnd
 - assertVisible:
     text: "Borçlar"
 # FCM token kaydı arka planda gerçekleşir

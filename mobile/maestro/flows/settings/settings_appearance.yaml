@@ -36,28 +36,32 @@ appId: com.batuhanyetgin.kamci
 
 # ── Baz Para Birimi picker ────────────────────────────────────────────────────
 # SET-07: Para birimini USD olarak değiştir
+# _SegmentCard label "Baz Para Birimi" is a plain Text — NOT tappable.
+# The tappable InkWell is _BaseCurrencyPicker; its a11y text = "₺ TRY" or "$ USD".
 - scrollUntilVisible:
     element:
-      text: "Baz Para Birimi"
+      text: "(?s)Baz Para Birimi.*"
     direction: DOWN
+# Tap the dropdown InkWell (currently shows TRY)
 - tapOn:
-    text: "Baz Para Birimi"
+    text: "(?s).*TRY"
 - waitForAnimationToEnd
-# Bottom sheet açılır
+# Bottom sheet açılır — başlık standalone text olarak görünür
 - assertVisible:
     text: "Baz Para Birimi"
+# ListTile a11y = "$ USD"
 - tapOn:
-    text: "USD"
+    text: "(?s).*USD"
 - waitForAnimationToEnd
-# Seçim yansımalı
+# Seçim sonrası dropdown "$ USD" gösterir
 - assertVisible:
-    text: "USD"
-# TRY'ye geri dön
+    text: "(?s).*USD.*"
+# TRY'ye geri dön — dropdown now shows USD, tap it to re-open picker
 - tapOn:
-    text: "Baz Para Birimi"
+    text: "(?s).*USD"
 - waitForAnimationToEnd
 - tapOn:
-    text: "TRY"
+    text: "(?s).*TRY"
 - waitForAnimationToEnd
 - assertVisible:
-    text: "TRY"
+    text: "(?s).*TRY.*"

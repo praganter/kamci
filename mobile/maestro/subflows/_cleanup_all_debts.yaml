@@ -7,6 +7,7 @@ appId: com.batuhanyetgin.kamci
 
 - tapOn:
     text: "Borçlar"
+- waitForAnimationToEnd
 - tapOn:
     id: "myDebtsTab"
 - waitForAnimationToEnd
@@ -68,6 +69,11 @@ appId: com.batuhanyetgin.kamci
 - tapOn:
     id: "prevMonthBtn"
 - waitForAnimationToEnd
+# Month navigation causes a brief accessibility gap — wait for the tab to reappear
+- extendedWaitUntil:
+    visible:
+      id: "myDebtsTab"
+    timeout: 5000
 - tapOn:
     id: "myDebtsTab"
 - waitForAnimationToEnd
@@ -124,6 +130,11 @@ appId: com.batuhanyetgin.kamci
 - tapOn:
     id: "prevMonthBtn"
 - waitForAnimationToEnd
+# Month navigation causes a brief accessibility gap — wait for the tab to reappear
+- extendedWaitUntil:
+    visible:
+      id: "myDebtsTab"
+    timeout: 5000
 - tapOn:
     id: "myDebtsTab"
 - waitForAnimationToEnd

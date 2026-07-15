@@ -1,30 +1,120 @@
 appId: com.batuhanyetgin.kamci
 ---
-# DEBT-09: Toplu ödeme (PREMIUM hesap gerektirir)
-# Precondition: User A premium, geçmiş tarihli taksitli borç mevcut
+# DEBT-09: Toplu ödeme
+# ⚠️  User A premium olmalı — değilse "Toplu Ödeme Seç" yerine premium gate görünür
+# Premium aktivasyonu: backend DB'de User A için premium: true yap
 - runFlow: "../../subflows/_login_as_user_a.yaml"
 - runFlow: "../../subflows/_cleanup_all_debts.yaml"
+- runFlow: "../../subflows/_create_default_category.yaml"
+# Aylık taksitli borç oluştur
 - tapOn:
     text: "Borçlar"
 - waitForAnimationToEnd
 - tapOn:
-    id: "myDebtsTab"
+    id: "addDebtFab"
+- extendedWaitUntil:
+    visible:
+      text: "Yeni Borç"
+    timeout: 8000
+- tapOn:
+    id: "categoryField"
 - waitForAnimationToEnd
+- tapOn:
+    text: "Tamam"
+- tapOn:
+    text: "Borç Adı"
+- inputText: "Toplu Ödeme Borcu"
+- tapOn:
+    text: "Tutar"
+- inputText: "300"
+- tapOn:
+    text: "Yeni Borç"
+- tapOn:
+    id: "currencyField"
+- waitForAnimationToEnd
+- assertVisible:
+    text: "TRY[\\s\\S]*"
+- tapOn:
+    text: "Tamam"
+- tapOn:
+    id: "periodField"
+- waitForAnimationToEnd
+- repeat:
+    times: 4
+    commands:
+      - runFlow: "../../subflows/_picker_wheel_next.yaml"
+- assertVisible:
+    text: "Aylık"
+- tapOn:
+    text: "Tamam"
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Toplam Taksit Sayısı.*"
+- tapOn:
+    text: "Toplam Taksit Sayısı.*"
+- inputText: "6"
+- tapOn:
+    text: "Yeni Borç"
+- scrollUntilVisible:
+    element:
+      id: "dateField"
+    direction: DOWN
+- tapOn:
+    id: "dateField"
+- tapOn:
+    text: "Tamam"
+- scrollUntilVisible:
+    element:
+      text: "Oluştur"
+    direction: DOWN
+- tapOn:
+    text: "Oluştur"
+# Form kapanış animasyon race'i: Kategoriler→Borçlar bounce ile temiz state
+- extendedWaitUntil:
+    visible:
+      id: "myDebtsTab"
+    timeout: 35000
+- waitForAnimationToEnd
+- tapOn:
+    text: "Kategoriler"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Borçlar"
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "Toplu Ödeme Borcu[\\s\\S]*"
+    direction: DOWN
+    timeout: 20000
 # Aylık borç üzerinde sağa swipe
 - swipe:
-    direction: RIGHT
-    element:
-      text: "Aylık"
+    start: "25%, 40%"
+    end: "95%, 40%"
+- waitForAnimationToEnd
 - assertVisible:
     text: "Ödeme İşlemleri"
 - tapOn:
     text: "Toplu Ödeme"
 - assertVisible:
     text: "Toplu Ödeme Seç"
-# Tüm ödemeleri seç
+# Vadesi gelen taksitler sheet'te ZATEN İŞARETLİ gelir (checked: true) —
+# checkbox'a dokunma. Ancak entry'ler debtDetailProvider'dan async yüklenir:
+# dialog başlığı görünürken buton hâlâ "Gönder (0)" (disabled) olabilir.
+# Sayaç ≥ 1 olana kadar bekle, sonra gönder.
+- extendedWaitUntil:
+    visible:
+      text: "Gönder \\([1-9][0-9]*\\)"
+    timeout: 10000
 - tapOn:
-    text: "Seçim"
-- tapOn:
-    text: "Gönder"
+    text: "Gönder.*"
 - assertVisible:
-    text: "ödeme kaydedildi"
+    text: "[\\s\\S]*ödeme kaydedildi[\\s\\S]*"
+# Cleanup
+- swipe:
+    start: "75%, 40%"
+    end: "5%, 40%"
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Borcu Sil"
+- tapOn:
+    text: "Sil"

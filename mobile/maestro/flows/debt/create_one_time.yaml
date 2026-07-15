@@ -8,9 +8,11 @@ appId: com.batuhanyetgin.kamci
     text: "Borçlar"
 - waitForAnimationToEnd
 - tapOn:
-    point: "89%, 80%"
-- assertVisible:
-    text: "Yeni Borç"
+    id: "addDebtFab"
+- extendedWaitUntil:
+    visible:
+      text: "Yeni Borç"
+    timeout: 8000
 - tapOn:
     id: "categoryField"
 - waitForAnimationToEnd
@@ -28,8 +30,6 @@ appId: com.batuhanyetgin.kamci
     id: "currencyField"
 - waitForAnimationToEnd
 - tapOn:
-    text: "TRY"
-- tapOn:
     text: "Tamam"
 - tapOn:
     id: "periodField"
@@ -41,7 +41,7 @@ appId: com.batuhanyetgin.kamci
 - waitForAnimationToEnd
 # Taksit alanı görünmemeli (ONE_TIME)
 - assertNotVisible:
-    text: "Taksit Sayısı"
+    text: ".*Taksit Sayısı.*"
 - scrollUntilVisible:
     element:
       id: "dateField"
@@ -56,15 +56,38 @@ appId: com.batuhanyetgin.kamci
     direction: DOWN
 - tapOn:
     text: "Oluştur"
+# After form pop the slide-back animation may still be running when
+# myDebtsTab first appears in the accessibility tree.  Tapping the tab
+# during that animation lands on wrong coordinates → wrong tab selected.
+# Fix: wait for animation to settle, then force a clean /debts navigation
+# via the bottom nav (Kategoriler → Borçlar) which always starts at index 0.
+- extendedWaitUntil:
+    visible:
+      id: "myDebtsTab"
+    timeout: 35000
+- waitForAnimationToEnd
+- tapOn:
+    text: "Kategoriler"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Borçlar"
+- waitForAnimationToEnd
+# Scroll to find the debt regardless of how many empty category groups are above it.
+# NOT: Debt tile'ın iOS accessibility label'ı birleşiktir:
+# "Tek Seferlik Test Borcu\n0 / 1\n150.0 TRY" — tam metin eşleşmez.
+# Maestro regex'inde `.` newline'ı eşlemez → [\s\S]* şart.
+- scrollUntilVisible:
+    element:
+      text: "Tek Seferlik Test Borcu[\\s\\S]*"
+    direction: DOWN
+    timeout: 20000
 - assertVisible:
-    text: "Tek Seferlik Test Borcu"
-- assertVisible:
-    text: "150"
+    text: "Tek Seferlik Test Borcu[\\s\\S]*150\\.0 TRY"
 # Cleanup: borcu sil (limit aşımını önle)
 - swipe:
-    direction: LEFT
-    element:
-      text: "Tek Seferlik Test Borcu"
+    start: "75%, 40%"
+    end: "5%, 40%"
+- waitForAnimationToEnd
 - assertVisible:
     text: "Borcu Sil"
 - tapOn:

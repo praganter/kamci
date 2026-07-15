@@ -10,9 +10,11 @@ appId: com.batuhanyetgin.kamci
 
 # ── USD ────────────────────────────────────────────────────
 - tapOn:
-    point: "89%, 80%"
-- assertVisible:
-    text: "Yeni Borç"
+    id: "addDebtFab"
+- extendedWaitUntil:
+    visible:
+      text: "Yeni Borç"
+    timeout: 8000
 - tapOn:
     id: "categoryField"
 - waitForAnimationToEnd
@@ -29,8 +31,12 @@ appId: com.batuhanyetgin.kamci
 - tapOn:
     id: "currencyField"
 - waitForAnimationToEnd
-- tapOn:
-    text: "USD"
+- repeat:
+    times: 14
+    commands:
+      - runFlow: "../../subflows/_picker_wheel_next.yaml"
+- assertVisible:
+    text: "USD[\\s\\S]*"
 - tapOn:
     text: "Tamam"
 - tapOn:
@@ -55,15 +61,30 @@ appId: com.batuhanyetgin.kamci
     direction: DOWN
 - tapOn:
     text: "Oluştur"
+- extendedWaitUntil:
+    visible:
+      id: "myDebtsTab"
+    timeout: 35000
+- waitForAnimationToEnd
+- tapOn:
+    text: "Kategoriler"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Borçlar"
+- waitForAnimationToEnd
+# Debt tile label'ı birleşiktir ("Ad\n0 / 1\n1200.0 USD") → [\s\S]* regex şart
+- scrollUntilVisible:
+    element:
+      text: "USD Test Borcu[\\s\\S]*"
+    direction: DOWN
+    timeout: 20000
 - assertVisible:
-    text: "USD Test Borcu"
-- assertVisible:
-    text: "USD"
+    text: "USD Test Borcu[\\s\\S]*USD"
 # Cleanup USD borcu
 - swipe:
-    direction: LEFT
-    element:
-      text: "USD Test Borcu"
+    start: "75%, 40%"
+    end: "5%, 40%"
+- waitForAnimationToEnd
 - assertVisible:
     text: "Borcu Sil"
 - tapOn:
@@ -72,9 +93,11 @@ appId: com.batuhanyetgin.kamci
 
 # ── EUR ────────────────────────────────────────────────────
 - tapOn:
-    point: "89%, 80%"
-- assertVisible:
-    text: "Yeni Borç"
+    id: "addDebtFab"
+- extendedWaitUntil:
+    visible:
+      text: "Yeni Borç"
+    timeout: 8000
 - tapOn:
     id: "categoryField"
 - waitForAnimationToEnd
@@ -91,8 +114,12 @@ appId: com.batuhanyetgin.kamci
 - tapOn:
     id: "currencyField"
 - waitForAnimationToEnd
-- tapOn:
-    text: "EUR"
+- repeat:
+    times: 7
+    commands:
+      - runFlow: "../../subflows/_picker_wheel_next.yaml"
+- assertVisible:
+    text: "EUR[\\s\\S]*"
 - tapOn:
     text: "Tamam"
 - tapOn:
@@ -117,15 +144,30 @@ appId: com.batuhanyetgin.kamci
     direction: DOWN
 - tapOn:
     text: "Oluştur"
+- extendedWaitUntil:
+    visible:
+      id: "myDebtsTab"
+    timeout: 35000
+- waitForAnimationToEnd
+- tapOn:
+    text: "Kategoriler"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Borçlar"
+- waitForAnimationToEnd
+# Debt tile label'ı birleşiktir → [\s\S]* regex şart
+- scrollUntilVisible:
+    element:
+      text: "EUR Test Borcu[\\s\\S]*"
+    direction: DOWN
+    timeout: 20000
 - assertVisible:
-    text: "EUR Test Borcu"
-- assertVisible:
-    text: "EUR"
+    text: "EUR Test Borcu[\\s\\S]*EUR"
 # Cleanup EUR borcu
 - swipe:
-    direction: LEFT
-    element:
-      text: "EUR Test Borcu"
+    start: "75%, 40%"
+    end: "5%, 40%"
+- waitForAnimationToEnd
 - assertVisible:
     text: "Borcu Sil"
 - tapOn:

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -10,12 +12,21 @@ import 'core/providers/app_settings_provider.dart';
 import 'core/services/notification_service.dart';
 import 'firebase_options.dart';
 
-void main() async {
+void main() {
+  runZonedGuarded(_bootstrap, (error, stack) {
+    debugPrint('[UNHANDLED] $error\n$stack');
+  });
+}
+
+Future<void> _bootstrap() async {
   // flutter run --dart-define=MAESTRO=true ile build edilince animasyonlar 100x hızlanır
   if (const bool.fromEnvironment('MAESTRO')) {
     timeDilation = 0.01;
   }
   WidgetsFlutterBinding.ensureInitialized();
+  FlutterError.onError = (details) {
+    debugPrint('[FLUTTER_ERROR] ${details.exception}\n${details.stack}');
+  };
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   FirebaseMessaging.onBackgroundMessage(firebaseBackgroundHandler);
   await NotificationService.initialize();

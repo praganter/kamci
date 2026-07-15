@@ -86,6 +86,7 @@ class _DebtDetailScreenState extends ConsumerState<DebtDetailScreen> {
             actions: [
               IconButton(
                 icon: const Icon(Icons.edit_outlined),
+                tooltip: l10n.edit,
                 onPressed: () async {
                   final hasEdit = PermissionUtils.check(
                     context,

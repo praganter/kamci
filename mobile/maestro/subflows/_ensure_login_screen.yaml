@@ -1,38 +1,19 @@
 appId: com.batuhanyetgin.kamci
 ---
-# iOS'ta clearState bildirim iznini sıfırlar → popup çıkar.
-# Bu subflow clearState kullanmadan login ekranına ulaşır.
-# scrollUntilVisible timeout:2000 — varsayılan 20s yerine; optional olduğu için kısa tutulur
-- launchApp
-- waitForAnimationToEnd
-# Deep link system dialog'u kapat ("Kamci ile Açılsın mı?" — deeplink testinden kalabilir)
+# clearKeychain: true → stale token yok, auth check <1s'de tamamlanır.
+# permissions:all:allow → izin diyaloğu otomatik kabul edilir.
+# Deep link dialog'u kapat (deeplink testinden kalabilir).
+- launchApp:
+    clearKeychain: true
+    permissions:
+      all: allow
 - tapOn:
     text: "Vazgeç"
     optional: true
 - tapOn:
     text: "Vazgeç"
     optional: true
-# Bildirim izin popup'ı (clearState veya ilk kurulumda çıkar)
-- tapOn:
-    text: "İzin Ver"
-    optional: true
-- waitForAnimationToEnd
-# Uygulama içindeyse logout yap
-- tapOn:
-    text: "Ayarlar"
-    optional: true
-- scrollUntilVisible:
-    element:
-      text: "Çıkış Yap"
-    direction: DOWN
-    timeout: 2000
-    optional: true
-- tapOn:
-    text: "Çıkış Yap"
-    optional: true
-- waitForAnimationToEnd
-- tapOn:
-    text: "Çıkış Yap"
-    optional: true
-    index: 1
-- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible:
+      text: "E-posta Adresi"
+    timeout: 10000

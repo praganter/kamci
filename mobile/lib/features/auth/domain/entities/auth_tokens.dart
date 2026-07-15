@@ -6,6 +6,23 @@ class AuthTokens {
   final String accessToken;
   final String refreshToken;
 
+  bool get isPremium {
+    try {
+      final parts = accessToken.split('.');
+      if (parts.length != 3) return false;
+      final payload = parts[1];
+      final padded = payload.padRight(
+        payload.length + (4 - payload.length % 4) % 4,
+        '=',
+      );
+      final decoded = utf8.decode(base64Url.decode(padded));
+      final map = json.decode(decoded) as Map<String, dynamic>;
+      return map['premium'] as bool? ?? false;
+    } catch (_) {
+      return false;
+    }
+  }
+
   String? get userId {
     try {
       final parts = accessToken.split('.');

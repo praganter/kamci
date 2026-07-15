@@ -46,24 +46,47 @@ class CategoryDetailScreen extends ConsumerWidget {
           appBar: AppBar(
             title: Text(category.name),
             actions: [
-              if (isOwner)
-                IconButton(
-                  icon: const Icon(Icons.edit_outlined),
-                  onPressed: () => showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    useSafeArea: true,
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.vertical(
-                        top: Radius.circular(24),
+              if (isOwner) ...[
+                Semantics(
+                  identifier: 'editCategoryBtn',
+                  child: IconButton(
+                    icon: const Icon(Icons.edit_outlined),
+                    onPressed: () => showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      useSafeArea: true,
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.vertical(
+                          top: Radius.circular(24),
+                        ),
                       ),
-                    ),
-                    builder: (_) => AddCategorySheet(
-                      categoryId: id,
-                      initialName: category.name,
+                      builder: (_) => AddCategorySheet(
+                        categoryId: id,
+                        initialName: category.name,
+                      ),
                     ),
                   ),
                 ),
+                Semantics(
+                  identifier: 'deleteCategoryBtn',
+                  child: IconButton(
+                    icon: const Icon(Icons.delete_outline),
+                    onPressed: () async {
+                      final confirmed = await showConfirmDialog(
+                        context,
+                        title: l10n.deleteCategory,
+                        content: l10n.deleteCategoryConfirm(category.name),
+                      );
+                      if (confirmed && context.mounted) {
+                        await ref
+                            .read(categoryListProvider.notifier)
+                            .deleteCategory(id);
+                        if (context.mounted) Navigator.of(context).pop();
+                      }
+                    },
+                  ),
+                ),
+              ],
             ],
           ),
           floatingActionButton: isOwner

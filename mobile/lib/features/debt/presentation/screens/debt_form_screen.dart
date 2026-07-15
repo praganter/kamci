@@ -154,6 +154,10 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
     try {
       await ref.read(debtListProvider.notifier).saveDebt(widget.debtId, params);
       if (mounted) context.pop();
+      // Refresh the grouped lists AFTER pop so the GET requests fire while
+      // the debt list is the active screen, not during the form close animation.
+      ref.invalidate(debtGroupedProvider(true));
+      ref.invalidate(debtGroupedProvider(false));
     } on PremiumLimitException {
       if (mounted) {
         PremiumRequiredSheet.show(
@@ -432,31 +436,34 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
               ),
 
               // ── Hatırlatma ──────────────────────────────────────────
-              Theme(
-                data: Theme.of(context).copyWith(
-                  splashFactory: NoSplash.splashFactory,
-                  highlightColor: Colors.transparent,
-                  hoverColor: Colors.transparent,
-                ),
-                child: CheckboxListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Row(
-                    children: [
-                      Text(l10n.reminder),
-                      const SizedBox(width: 6),
-                      const ProBadge(),
-                    ],
+              Semantics(
+                identifier: 'reminderToggle',
+                child: Theme(
+                  data: Theme.of(context).copyWith(
+                    splashFactory: NoSplash.splashFactory,
+                    highlightColor: Colors.transparent,
+                    hoverColor: Colors.transparent,
                   ),
-                  value: _reminderEnabled,
-                  onChanged: (v) {
-                    if (!ref.requirePremium(
-                      context,
-                      featureName: l10n.reminder.toLowerCase(),
-                      message: l10n.premiumFeatureRequired(l10n.reminder),
-                    )) { return; }
-                    setState(() => _reminderEnabled = v ?? false);
-                  },
-                  controlAffinity: ListTileControlAffinity.trailing,
+                  child: CheckboxListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Row(
+                      children: [
+                        Text(l10n.reminder),
+                        const SizedBox(width: 6),
+                        const ProBadge(),
+                      ],
+                    ),
+                    value: _reminderEnabled,
+                    onChanged: (v) {
+                      if (!ref.requirePremium(
+                        context,
+                        featureName: l10n.reminder.toLowerCase(),
+                        message: l10n.premiumFeatureRequired(l10n.reminder),
+                      )) { return; }
+                      setState(() => _reminderEnabled = v ?? false);
+                    },
+                    controlAffinity: ListTileControlAffinity.trailing,
+                  ),
                 ),
               ),
               if (_reminderEnabled) ...[

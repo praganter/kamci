@@ -127,10 +127,13 @@ class _CategoryListScreenState extends ConsumerState<CategoryListScreen>
                   child: const Icon(Icons.share_outlined),
                 ),
                 const SizedBox(height: 8),
-                FloatingActionButton(
-                  heroTag: 'add_category',
-                  onPressed: _openAddSheet,
-                  child: const Icon(Icons.add),
+                Semantics(
+                  identifier: 'addCategoryFab',
+                  child: FloatingActionButton(
+                    heroTag: 'add_category',
+                    onPressed: _openAddSheet,
+                    child: const Icon(Icons.add),
+                  ),
                 ),
               ],
             )
@@ -189,6 +192,7 @@ class _CategoryTabViewState extends ConsumerState<_CategoryTabView> {
     final l10n = context.l10n;
     final categoriesAsync = ref.watch(categoryListProvider);
     final currentUserAsync = ref.watch(currentUserIdProvider);
+    debugPrint('🟡 _CategoryTabView(isOwner=${widget.isOwner}) build: cats=${categoriesAsync.runtimeType}, userId=${currentUserAsync.valueOrNull}');
 
     return categoriesAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -481,9 +485,11 @@ class _CategoryCard extends StatelessWidget {
                               ?.copyWith(fontWeight: FontWeight.w600),
                         ),
                         const SizedBox(height: 2),
-                        Text(
-                          l10n.memberCount(category.members.length),
-                          style: Theme.of(context).textTheme.bodySmall,
+                        ExcludeSemantics(
+                          child: Text(
+                            l10n.memberCount(category.members.length),
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
                         ),
                       ],
                     ),
@@ -497,44 +503,7 @@ class _CategoryCard extends StatelessWidget {
                       onDelete != null ||
                       onManageMembers != null ||
                       onLeaveCategory != null)
-                    PopupMenuButton(
-                      icon: Icon(
-                        Icons.more_vert,
-                        size: 18,
-                        color: cs.onSurfaceVariant,
-                      ),
-                      itemBuilder: (_) => [
-                        if (onManageMembers != null)
-                          PopupMenuItem(
-                            value: 'manage',
-                            child: Text(l10n.manageMembers),
-                          ),
-                        if (onEdit != null)
-                          PopupMenuItem(value: 'edit', child: Text(l10n.edit)),
-                        if (onDelete != null)
-                          PopupMenuItem(
-                            value: 'delete',
-                            child: Text(
-                              l10n.delete,
-                              style: const TextStyle(color: Colors.red),
-                            ),
-                          ),
-                        if (onLeaveCategory != null)
-                          PopupMenuItem(
-                            value: 'leave',
-                            child: Text(
-                              l10n.leaveCategory,
-                              style: const TextStyle(color: Colors.red),
-                            ),
-                          ),
-                      ],
-                      onSelected: (value) {
-                        if (value == 'manage') onManageMembers?.call();
-                        if (value == 'edit') onEdit?.call();
-                        if (value == 'delete') onDelete?.call();
-                        if (value == 'leave') onLeaveCategory?.call();
-                      },
-                    )
+                    const SizedBox(width: 40)
                   else
                     Icon(
                       Icons.chevron_right_rounded,
@@ -545,6 +514,92 @@ class _CategoryCard extends StatelessWidget {
               ),
             ),
           ),
+          if (!selectionMode &&
+              (onEdit != null ||
+                  onDelete != null ||
+                  onManageMembers != null ||
+                  onLeaveCategory != null))
+            Positioned(
+              right: 4,
+              top: 0,
+              bottom: 0,
+              child: Align(
+                alignment: Alignment.center,
+                child: Semantics(
+                  identifier: 'categoryMoreBtn',
+                  child: Builder(
+                    builder: (ctx) => IconButton(
+                      icon: Icon(
+                        Icons.more_vert,
+                        size: 18,
+                        color: cs.onSurfaceVariant,
+                      ),
+                      iconSize: 18,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(
+                        minWidth: 40,
+                        minHeight: 40,
+                      ),
+                      onPressed: () async {
+                        final box =
+                            ctx.findRenderObject()! as RenderBox;
+                        final overlay = Overlay.of(ctx)
+                            .context
+                            .findRenderObject()! as RenderBox;
+                        final position = RelativeRect.fromRect(
+                          box.localToGlobal(
+                                Offset.zero,
+                                ancestor: overlay,
+                              ) &
+                              box.size,
+                          Offset.zero & overlay.size,
+                        );
+                        final result = await showMenu<String>(
+                          context: ctx,
+                          position: position,
+                          items: [
+                            if (onManageMembers != null)
+                              PopupMenuItem(
+                                value: 'manage',
+                                child: Text(l10n.manageMembers),
+                              ),
+                            if (onEdit != null)
+                              PopupMenuItem(
+                                value: 'edit',
+                                child: Text(l10n.edit),
+                              ),
+                            if (onDelete != null)
+                              PopupMenuItem(
+                                value: 'delete',
+                                child: Text(
+                                  l10n.delete,
+                                  style: const TextStyle(
+                                    color: Colors.red,
+                                  ),
+                                ),
+                              ),
+                            if (onLeaveCategory != null)
+                              PopupMenuItem(
+                                value: 'leave',
+                                child: Text(
+                                  l10n.leaveCategory,
+                                  style: const TextStyle(
+                                    color: Colors.red,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        );
+                        if (result == 'manage') onManageMembers?.call();
+                        if (result == 'edit') onEdit?.call();
+                        if (result == 'delete') onDelete?.call();
+                        if (result == 'leave') onLeaveCategory?.call();
+                      },
+                    ),
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );

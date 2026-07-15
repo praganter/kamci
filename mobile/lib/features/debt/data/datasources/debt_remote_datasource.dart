@@ -60,10 +60,7 @@ class DebtRemoteDatasource {
         ApiConstants.debtSave,
         data: request.toJson(),
       );
-      final debt =
-          (response.data as Map<String, dynamic>)['debt']
-              as Map<String, dynamic>;
-      return DebtModel.fromJson(debt);
+      return DebtModel.fromJson(_extractDebt(response.data));
     } on DioException catch (e) {
       throw _mapException(e);
     }
@@ -75,10 +72,7 @@ class DebtRemoteDatasource {
         ApiConstants.debtUpdate,
         data: request.toJson(),
       );
-      final debt =
-          (response.data as Map<String, dynamic>)['debt']
-              as Map<String, dynamic>;
-      return DebtModel.fromJson(debt);
+      return DebtModel.fromJson(_extractDebt(response.data));
     } on DioException catch (e) {
       throw _mapException(e);
     }
@@ -90,10 +84,7 @@ class DebtRemoteDatasource {
         '${ApiConstants.debtPay}/$id',
         data: amountPaid != null ? {'paidAmount': amountPaid} : null,
       );
-      final debt =
-          (response.data as Map<String, dynamic>)['debt']
-              as Map<String, dynamic>;
-      return DebtModel.fromJson(debt);
+      return DebtModel.fromJson(_extractDebt(response.data));
     } on DioException catch (e) {
       throw _mapException(e);
     }
@@ -102,10 +93,7 @@ class DebtRemoteDatasource {
   Future<DebtModel> skip(String id) async {
     try {
       final response = await _dio.post('${ApiConstants.debtSkip}/$id');
-      final debt =
-          (response.data as Map<String, dynamic>)['debt']
-              as Map<String, dynamic>;
-      return DebtModel.fromJson(debt);
+      return DebtModel.fromJson(_extractDebt(response.data));
     } on DioException catch (e) {
       throw _mapException(e);
     }
@@ -120,13 +108,17 @@ class DebtRemoteDatasource {
         '${ApiConstants.debtBulkPay}/$id/bulk',
         data: payments,
       );
-      final debt =
-          (response.data as Map<String, dynamic>)['debt']
-              as Map<String, dynamic>;
-      return DebtModel.fromJson(debt);
+      return DebtModel.fromJson(_extractDebt(response.data));
     } on DioException catch (e) {
       throw _mapException(e);
     }
+  }
+
+  Map<String, dynamic> _extractDebt(dynamic data) {
+    final map = data as Map<String, dynamic>;
+    final debt = map['debt'];
+    if (debt == null) throw const FormatException('Missing "debt" in response');
+    return debt as Map<String, dynamic>;
   }
 
   Future<Map<String, dynamic>> getSummary(String month) async {

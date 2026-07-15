@@ -11,9 +11,11 @@ appId: com.batuhanyetgin.kamci
 
 # ── DAILY ──────────────────────────────────────────────────
 - tapOn:
-    point: "89%, 80%"
-- assertVisible:
-    text: "Yeni Borç"
+    id: "addDebtFab"
+- extendedWaitUntil:
+    visible:
+      text: "Yeni Borç"
+    timeout: 8000
 - tapOn:
     id: "categoryField"
 - waitForAnimationToEnd
@@ -31,13 +33,15 @@ appId: com.batuhanyetgin.kamci
     id: "currencyField"
 - waitForAnimationToEnd
 - tapOn:
-    text: "TRY"
-- tapOn:
     text: "Tamam"
 - tapOn:
     id: "periodField"
 - waitForAnimationToEnd
-- tapOn:
+- repeat:
+    times: 1
+    commands:
+      - runFlow: "../../subflows/_picker_wheel_next.yaml"
+- assertVisible:
     text: "Günlük"
 - tapOn:
     text: "Tamam"
@@ -56,12 +60,28 @@ appId: com.batuhanyetgin.kamci
     direction: DOWN
 - tapOn:
     text: "Oluştur"
-- assertVisible:
-    text: "Günlük Borç"
-- swipe:
-    direction: LEFT
+- extendedWaitUntil:
+    visible:
+      id: "myDebtsTab"
+    timeout: 35000
+- waitForAnimationToEnd
+- tapOn:
+    text: "Kategoriler"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Borçlar"
+- waitForAnimationToEnd
+- scrollUntilVisible:
     element:
-      text: "Günlük Borç"
+      text: "Günlük Borç[\\s\\S]*"
+    direction: DOWN
+    timeout: 20000
+- assertVisible:
+    text: "Günlük Borç[\\s\\S]*"
+- swipe:
+    start: "75%, 40%"
+    end: "5%, 40%"
+- waitForAnimationToEnd
 - assertVisible:
     text: "Borcu Sil"
 - tapOn:
@@ -70,9 +90,11 @@ appId: com.batuhanyetgin.kamci
 
 # ── WEEKLY ──────────────────────────────────────────────────
 - tapOn:
-    point: "89%, 80%"
-- assertVisible:
-    text: "Yeni Borç"
+    id: "addDebtFab"
+- extendedWaitUntil:
+    visible:
+      text: "Yeni Borç"
+    timeout: 8000
 - tapOn:
     id: "categoryField"
 - waitForAnimationToEnd
@@ -90,13 +112,15 @@ appId: com.batuhanyetgin.kamci
     id: "currencyField"
 - waitForAnimationToEnd
 - tapOn:
-    text: "TRY"
-- tapOn:
     text: "Tamam"
 - tapOn:
     id: "periodField"
 - waitForAnimationToEnd
-- tapOn:
+- repeat:
+    times: 2
+    commands:
+      - runFlow: "../../subflows/_picker_wheel_next.yaml"
+- assertVisible:
     text: "Haftalık"
 - tapOn:
     text: "Tamam"
@@ -115,12 +139,28 @@ appId: com.batuhanyetgin.kamci
     direction: DOWN
 - tapOn:
     text: "Oluştur"
-- assertVisible:
-    text: "Haftalık Borç"
-- swipe:
-    direction: LEFT
+- extendedWaitUntil:
+    visible:
+      id: "myDebtsTab"
+    timeout: 35000
+- waitForAnimationToEnd
+- tapOn:
+    text: "Kategoriler"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Borçlar"
+- waitForAnimationToEnd
+- scrollUntilVisible:
     element:
-      text: "Haftalık Borç"
+      text: "Haftalık Borç[\\s\\S]*"
+    direction: DOWN
+    timeout: 20000
+- assertVisible:
+    text: "Haftalık Borç[\\s\\S]*"
+- swipe:
+    start: "75%, 40%"
+    end: "5%, 40%"
+- waitForAnimationToEnd
 - assertVisible:
     text: "Borcu Sil"
 - tapOn:
@@ -129,9 +169,11 @@ appId: com.batuhanyetgin.kamci
 
 # ── BI-WEEKLY ──────────────────────────────────────────────
 - tapOn:
-    point: "89%, 80%"
-- assertVisible:
-    text: "Yeni Borç"
+    id: "addDebtFab"
+- extendedWaitUntil:
+    visible:
+      text: "Yeni Borç"
+    timeout: 8000
 - tapOn:
     id: "categoryField"
 - waitForAnimationToEnd
@@ -149,13 +191,15 @@ appId: com.batuhanyetgin.kamci
     id: "currencyField"
 - waitForAnimationToEnd
 - tapOn:
-    text: "TRY"
-- tapOn:
     text: "Tamam"
 - tapOn:
     id: "periodField"
 - waitForAnimationToEnd
-- tapOn:
+- repeat:
+    times: 3
+    commands:
+      - runFlow: "../../subflows/_picker_wheel_next.yaml"
+- assertVisible:
     text: "İki Haftalık"
 - tapOn:
     text: "Tamam"
@@ -174,12 +218,28 @@ appId: com.batuhanyetgin.kamci
     direction: DOWN
 - tapOn:
     text: "Oluştur"
-- assertVisible:
-    text: "İki Haftalık Borç"
-- swipe:
-    direction: LEFT
+- extendedWaitUntil:
+    visible:
+      id: "myDebtsTab"
+    timeout: 35000
+- waitForAnimationToEnd
+- tapOn:
+    text: "Kategoriler"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Borçlar"
+- waitForAnimationToEnd
+- scrollUntilVisible:
     element:
-      text: "İki Haftalık Borç"
+      text: "İki Haftalık Borç[\\s\\S]*"
+    direction: DOWN
+    timeout: 20000
+- assertVisible:
+    text: "İki Haftalık Borç[\\s\\S]*"
+- swipe:
+    start: "75%, 40%"
+    end: "5%, 40%"
+- waitForAnimationToEnd
 - assertVisible:
     text: "Borcu Sil"
 - tapOn:
@@ -188,9 +248,11 @@ appId: com.batuhanyetgin.kamci
 
 # ── QUARTERLY ──────────────────────────────────────────────
 - tapOn:
-    point: "89%, 80%"
-- assertVisible:
-    text: "Yeni Borç"
+    id: "addDebtFab"
+- extendedWaitUntil:
+    visible:
+      text: "Yeni Borç"
+    timeout: 8000
 - tapOn:
     id: "categoryField"
 - waitForAnimationToEnd
@@ -208,13 +270,15 @@ appId: com.batuhanyetgin.kamci
     id: "currencyField"
 - waitForAnimationToEnd
 - tapOn:
-    text: "TRY"
-- tapOn:
     text: "Tamam"
 - tapOn:
     id: "periodField"
 - waitForAnimationToEnd
-- tapOn:
+- repeat:
+    times: 5
+    commands:
+      - runFlow: "../../subflows/_picker_wheel_next.yaml"
+- assertVisible:
     text: "Üç Aylık"
 - tapOn:
     text: "Tamam"
@@ -233,12 +297,28 @@ appId: com.batuhanyetgin.kamci
     direction: DOWN
 - tapOn:
     text: "Oluştur"
-- assertVisible:
-    text: "Üç Aylık Borç"
-- swipe:
-    direction: LEFT
+- extendedWaitUntil:
+    visible:
+      id: "myDebtsTab"
+    timeout: 35000
+- waitForAnimationToEnd
+- tapOn:
+    text: "Kategoriler"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Borçlar"
+- waitForAnimationToEnd
+- scrollUntilVisible:
     element:
-      text: "Üç Aylık Borç"
+      text: "Üç Aylık Borç[\\s\\S]*"
+    direction: DOWN
+    timeout: 20000
+- assertVisible:
+    text: "Üç Aylık Borç[\\s\\S]*"
+- swipe:
+    start: "75%, 40%"
+    end: "5%, 40%"
+- waitForAnimationToEnd
 - assertVisible:
     text: "Borcu Sil"
 - tapOn:
@@ -247,9 +327,11 @@ appId: com.batuhanyetgin.kamci
 
 # ── HALF-YEARLY ────────────────────────────────────────────
 - tapOn:
-    point: "89%, 80%"
-- assertVisible:
-    text: "Yeni Borç"
+    id: "addDebtFab"
+- extendedWaitUntil:
+    visible:
+      text: "Yeni Borç"
+    timeout: 8000
 - tapOn:
     id: "categoryField"
 - waitForAnimationToEnd
@@ -267,13 +349,15 @@ appId: com.batuhanyetgin.kamci
     id: "currencyField"
 - waitForAnimationToEnd
 - tapOn:
-    text: "TRY"
-- tapOn:
     text: "Tamam"
 - tapOn:
     id: "periodField"
 - waitForAnimationToEnd
-- tapOn:
+- repeat:
+    times: 6
+    commands:
+      - runFlow: "../../subflows/_picker_wheel_next.yaml"
+- assertVisible:
     text: "Altı Aylık"
 - tapOn:
     text: "Tamam"
@@ -292,12 +376,28 @@ appId: com.batuhanyetgin.kamci
     direction: DOWN
 - tapOn:
     text: "Oluştur"
-- assertVisible:
-    text: "Altı Aylık Borç"
-- swipe:
-    direction: LEFT
+- extendedWaitUntil:
+    visible:
+      id: "myDebtsTab"
+    timeout: 35000
+- waitForAnimationToEnd
+- tapOn:
+    text: "Kategoriler"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Borçlar"
+- waitForAnimationToEnd
+- scrollUntilVisible:
     element:
-      text: "Altı Aylık Borç"
+      text: "Altı Aylık Borç[\\s\\S]*"
+    direction: DOWN
+    timeout: 20000
+- assertVisible:
+    text: "Altı Aylık Borç[\\s\\S]*"
+- swipe:
+    start: "75%, 40%"
+    end: "5%, 40%"
+- waitForAnimationToEnd
 - assertVisible:
     text: "Borcu Sil"
 - tapOn:
@@ -306,9 +406,11 @@ appId: com.batuhanyetgin.kamci
 
 # ── YEARLY ─────────────────────────────────────────────────
 - tapOn:
-    point: "89%, 80%"
-- assertVisible:
-    text: "Yeni Borç"
+    id: "addDebtFab"
+- extendedWaitUntil:
+    visible:
+      text: "Yeni Borç"
+    timeout: 8000
 - tapOn:
     id: "categoryField"
 - waitForAnimationToEnd
@@ -326,13 +428,15 @@ appId: com.batuhanyetgin.kamci
     id: "currencyField"
 - waitForAnimationToEnd
 - tapOn:
-    text: "TRY"
-- tapOn:
     text: "Tamam"
 - tapOn:
     id: "periodField"
 - waitForAnimationToEnd
-- tapOn:
+- repeat:
+    times: 7
+    commands:
+      - runFlow: "../../subflows/_picker_wheel_next.yaml"
+- assertVisible:
     text: "Yıllık"
 - tapOn:
     text: "Tamam"
@@ -351,12 +455,28 @@ appId: com.batuhanyetgin.kamci
     direction: DOWN
 - tapOn:
     text: "Oluştur"
-- assertVisible:
-    text: "Yıllık Borç"
-- swipe:
-    direction: LEFT
+- extendedWaitUntil:
+    visible:
+      id: "myDebtsTab"
+    timeout: 35000
+- waitForAnimationToEnd
+- tapOn:
+    text: "Kategoriler"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Borçlar"
+- waitForAnimationToEnd
+- scrollUntilVisible:
     element:
-      text: "Yıllık Borç"
+      text: "Yıllık Borç[\\s\\S]*"
+    direction: DOWN
+    timeout: 20000
+- assertVisible:
+    text: "Yıllık Borç[\\s\\S]*"
+- swipe:
+    start: "75%, 40%"
+    end: "5%, 40%"
+- waitForAnimationToEnd
 - assertVisible:
     text: "Borcu Sil"
 - tapOn:

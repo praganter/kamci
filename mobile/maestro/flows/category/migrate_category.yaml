@@ -9,7 +9,7 @@ appId: com.batuhanyetgin.kamci
 - waitForAnimationToEnd
 # Hedef kategori oluştur
 - tapOn:
-    point: "89%, 80%"
+    id: "addCategoryFab"
 - assertVisible:
     text: "Yeni Kategori"
 - tapOn:

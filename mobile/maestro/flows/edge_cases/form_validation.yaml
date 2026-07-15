@@ -7,23 +7,36 @@ appId: com.batuhanyetgin.kamci
 - tapOn:
     text: "Borçlar"
 - tapOn:
-    point: "89%, 80%"
-- assertVisible:
-    text: "Yeni Borç"
+    id: "addDebtFab"
+- extendedWaitUntil:
+    visible:
+      text: "Yeni Borç"
+    timeout: 8000
 - scrollUntilVisible:
     element:
       text: "Oluştur"
     direction: DOWN
 - tapOn:
     text: "Oluştur"
-# Kategori zorunlu
+# Validation hataları ayrı Text element olarak gösterilir
 - assertVisible:
-    text: "gerekli"
-- tapOn:
-    text: "İptal"
+    text: "(?s).*gerekli.*"
+# Geri gitmek için sağa kaydırma (iOS back gesture)
+- swipe:
+    direction: RIGHT
+    duration: 400
 
 # ── Login formu — geçersiz email ───────────────────────────
 - runFlow: "../../subflows/_logout.yaml"
+# GoRouter stack replacement → XCTest tree geçici invalid; launchApp ile doğrula
+- launchApp:
+    clearKeychain: false
+    permissions:
+      all: allow
+- extendedWaitUntil:
+    visible:
+      text: "E-posta Adresi"
+    timeout: 10000
 - tapOn:
     text: "E-posta Adresi"
 - inputText: "gecersizemail"
@@ -47,7 +60,7 @@ appId: com.batuhanyetgin.kamci
 - tapOn:
     text: "Giriş Yap"
 - assertVisible:
-    text: "en az 8 karakter"
+    text: "Şifre en az 8 karakter olmalı"
 
 # ── Register — şifre uyuşmuyor ─────────────────────────────
 - tapOn:

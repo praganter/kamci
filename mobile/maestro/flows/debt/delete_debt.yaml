@@ -12,12 +12,12 @@ appId: com.batuhanyetgin.kamci
 - waitForAnimationToEnd
 # endToStart = sola swipe = sil
 - swipe:
-    direction: LEFT
-    element:
-      text: "Test Borcu"
+    start: "75%, 40%"
+    end: "5%, 40%"
+- waitForAnimationToEnd
 - assertVisible:
     text: "Borcu Sil"
 - tapOn:
     text: "Sil"
 - assertNotVisible:
-    text: "Test Borcu"
+    text: "Test Borcu[\\s\\S]*"

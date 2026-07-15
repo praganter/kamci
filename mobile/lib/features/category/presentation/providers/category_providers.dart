@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../shared/providers/current_user_provider.dart';
@@ -32,7 +33,10 @@ Future<Map<String, AccessLevel>> categoryAccessLevels(Ref ref) async {
 class CategoryList extends _$CategoryList {
   @override
   Future<List<Category>> build() async {
-    return ref.watch(categoryRepositoryProvider).getAll();
+    debugPrint('🔵 categoryListProvider.build() START ${DateTime.now()}');
+    final result = await ref.watch(categoryRepositoryProvider).getAll();
+    debugPrint('🟢 categoryListProvider.build() DONE ${result.length} cats ${DateTime.now()}');
+    return result;
   }
 
   Future<void> deleteCategory(String id) async {
@@ -87,6 +91,7 @@ class CategoryForm extends _$CategoryForm {
   build() => (isLoading: false, error: null, isSuccess: false, createdId: null);
 
   Future<void> submit(String name, {String? categoryId}) async {
+    if (state.isLoading || state.isSuccess) return;
     state = (isLoading: true, error: null, isSuccess: false, createdId: null);
     try {
       final repo = ref.read(categoryRepositoryProvider);

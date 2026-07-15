@@ -71,3 +71,5 @@ lib/firebase_options.dart
 .mcp.json
 .opencode.json
 ios/Runner
+# Local environment
+.env

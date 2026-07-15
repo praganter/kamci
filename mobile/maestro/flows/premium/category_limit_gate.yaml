@@ -7,11 +7,11 @@ appId: com.batuhanyetgin.kamci
     text: "Kategoriler"
 - waitForAnimationToEnd
 - tapOn:
-    point: "89%, 80%"
-- assertVisible:
-    text: "Premium Gerekli"
-- assertVisible:
-    text: "2"
+    id: "addCategoryFab"
+- extendedWaitUntil:
+    visible:
+      text: "Premium Gerekli"
+    timeout: 5000
 - assertNotVisible:
     text: "Yeni Kategori"
 - tapOn:

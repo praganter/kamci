@@ -1,20 +1,18 @@
 appId: com.batuhanyetgin.kamci
 ---
-- tapOn:
-    text: "Borçlar"
 - waitForAnimationToEnd
 - tapOn:
     id: "myDebtsTab"
 - waitForAnimationToEnd
 - tapOn:
-    point: "89%, 80%"
-- assertVisible:
-    text: "Yeni Borç"
+    id: "addDebtFab"
 - waitForAnimationToEnd
-# Kategori picker
 - tapOn:
     id: "categoryField"
-- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible:
+      text: "Tamam"
+    timeout: 5000
 - tapOn:
     text: "Tamam"
 # Borç adı ve tutar
@@ -51,6 +49,21 @@ appId: com.batuhanyetgin.kamci
     direction: DOWN
 - tapOn:
     text: "Oluştur"
+# Form kapanış animasyonu bitmeden tab tap'i yanlış yere gider; ayrıca yeni
+# oluşan borcun tile label'ı birleşiktir ("Test Borcu\n0 / 1\n500.0 TRY").
+- extendedWaitUntil:
+    visible:
+      id: "myDebtsTab"
+    timeout: 35000
 - waitForAnimationToEnd
-- assertVisible:
-    text: "Test Borcu"
+- tapOn:
+    text: "Kategoriler"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Borçlar"
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "Test Borcu[\\s\\S]*"
+    direction: DOWN
+    timeout: 20000

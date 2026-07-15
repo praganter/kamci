@@ -8,9 +8,11 @@ appId: com.batuhanyetgin.kamci
     text: "Borçlar"
 - waitForAnimationToEnd
 - tapOn:
-    point: "89%, 80%"
-- assertVisible:
-    text: "Yeni Borç"
+    id: "addDebtFab"
+- extendedWaitUntil:
+    visible:
+      text: "Yeni Borç"
+    timeout: 8000
 - tapOn:
     id: "categoryField"
 - waitForAnimationToEnd
@@ -28,13 +30,15 @@ appId: com.batuhanyetgin.kamci
     id: "currencyField"
 - waitForAnimationToEnd
 - tapOn:
-    text: "TRY"
-- tapOn:
     text: "Tamam"
 - tapOn:
     id: "periodField"
 - waitForAnimationToEnd
-- tapOn:
+- repeat:
+    times: 4
+    commands:
+      - runFlow: "../../subflows/_picker_wheel_next.yaml"
+- assertVisible:
     text: "Aylık"
 - tapOn:
     text: "Tamam"
@@ -60,13 +64,30 @@ appId: com.batuhanyetgin.kamci
     direction: DOWN
 - tapOn:
     text: "Oluştur"
+- extendedWaitUntil:
+    visible:
+      id: "myDebtsTab"
+    timeout: 35000
+- waitForAnimationToEnd
+- tapOn:
+    text: "Kategoriler"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Borçlar"
+- waitForAnimationToEnd
+# Debt tile label'ı birleşiktir → [\s\S]* regex şart
+- scrollUntilVisible:
+    element:
+      text: "Otomatik Ödemeli Borç[\\s\\S]*"
+    direction: DOWN
+    timeout: 20000
 - assertVisible:
-    text: "Otomatik Ödemeli Borç"
+    text: "Otomatik Ödemeli Borç[\\s\\S]*"
 # Cleanup: borcu sil
 - swipe:
-    direction: LEFT
-    element:
-      text: "Otomatik Ödemeli Borç"
+    start: "75%, 40%"
+    end: "5%, 40%"
+- waitForAnimationToEnd
 - assertVisible:
     text: "Borcu Sil"
 - tapOn:

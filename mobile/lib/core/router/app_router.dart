@@ -46,6 +46,18 @@ GoRouter appRouter(Ref ref) {
     debugLogDiagnostics: kDebugMode,
     refreshListenable: notifier,
     redirect: (context, state) {
+      // GoRouter receives the raw debttracker:// URL from the platform before
+      // app_links can intercept it. Map it to the correct path-based route.
+      if (state.uri.scheme == 'debttracker') {
+        if (state.uri.host == 'reset-password') {
+          final token = state.uri.queryParameters['token'];
+          return token != null
+              ? '${RoutePaths.resetPassword}?token=$token'
+              : RoutePaths.resetPassword;
+        }
+        return RoutePaths.login;
+      }
+
       final authState = ref.read(authNotifierProvider);
 
       final isAuthRoute = [

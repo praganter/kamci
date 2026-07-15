@@ -6,14 +6,16 @@ appId: com.batuhanyetgin.kamci
     text: "Borçlar"
 - waitForAnimationToEnd
 - tapOn:
-    point: "89%, 80%"
-- assertVisible:
-    text: "Yeni Borç"
+    id: "addDebtFab"
+- extendedWaitUntil:
+    visible:
+      text: "Yeni Borç"
+    timeout: 8000
 - tapOn:
-    text: "Kategori"
+    id: "categoryField"
 - waitForAnimationToEnd
 - tapOn:
-    index: 0
+    text: "Tamam"
 - tapOn:
     text: "Borç Adı"
 - inputText: "Hatırlatma Test"
@@ -23,30 +25,33 @@ appId: com.batuhanyetgin.kamci
 - tapOn:
     text: "Yeni Borç"
 - tapOn:
-    text: "Para Birimi"
+    id: "currencyField"
 - waitForAnimationToEnd
-- tapOn:
-    text: "TRY"
-- tapOn:
-    text: "Ödeme Periyodu"
-- waitForAnimationToEnd
-- tapOn:
-    text: "Aylık"
-- scrollUntilVisible:
-    element:
-      text: "İlk Ödeme Tarihi"
-    direction: DOWN
-- tapOn:
-    text: "İlk Ödeme Tarihi"
 - tapOn:
     text: "Tamam"
+- tapOn:
+    id: "periodField"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Tamam"
+- waitForAnimationToEnd
 - scrollUntilVisible:
     element:
-      text: "Hatırlatma"
+      id: "dateField"
+    direction: DOWN
+- tapOn:
+    id: "dateField"
+- waitForAnimationToEnd
+- tapOn:
+    id: "pickerOkBtn"
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: "reminderToggle"
     direction: DOWN
 # Hatırlatma toggle'a tıkla
 - tapOn:
-    text: "Hatırlatma"
+    id: "reminderToggle"
 # Premium sheet açılmalı
 - assertVisible:
     text: "Premium Gerekli"

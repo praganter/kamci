@@ -21,12 +21,13 @@ appId: com.batuhanyetgin.kamci
     direction: DOWN
 - assertVisible:
     text: "Hesap"
+# ListTile a11y text = "title\nsubtitle" — (?s) flag ile .* newline'ı da eşler
 - assertVisible:
-    text: "Şifre Değiştir"
+    text: "(?s)Şifre Değiştir.*"
 - assertVisible:
     text: "Çıkış Yap"
 # Geri Bildirim bölümü — aynı scroll pozisyonunda görünmeli
 - assertVisible:
     text: "Geri Bildirim"
 - assertVisible:
-    text: "Öneri / Şikayet Gönder"
+    text: "(?s)Öneri / Şikayet Gönder.*"

@@ -43,6 +43,7 @@ class _AddCategorySheetState extends ConsumerState<AddCategorySheet> {
     final isEdit = widget.categoryId != null;
 
     ref.listen(categoryFormProvider, (_, state) {
+      if (!context.mounted) return;
       if (state.isSuccess) Navigator.of(context).pop(state.createdId);
       if (state.error != null) {
         ScaffoldMessenger.of(

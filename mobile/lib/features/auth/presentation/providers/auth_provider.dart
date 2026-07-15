@@ -10,7 +10,7 @@ import 'auth_state.dart';
 
 part 'auth_provider.g.dart';
 
-@riverpod
+@Riverpod(keepAlive: true)
 class AuthNotifier extends _$AuthNotifier {
   @override
   AuthState build() {
@@ -18,12 +18,31 @@ class AuthNotifier extends _$AuthNotifier {
     return const AuthState.initial();
   }
 
+  // Reads a single Keychain key, returning null on timeout OR PlatformException.
+  // After `xcrun simctl keychain reset` the securityd daemon is killed; reads
+  // may hang (handled by timeout) or throw errSecInteractionNotAllowed
+  // (handled by catch).  Either way we treat it as "no token".
+  static Future<String?> _safeRead(Future<String?> read) async {
+    try {
+      return await read.timeout(
+        const Duration(seconds: 3),
+        onTimeout: () => null,
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<void> _checkAuthState() async {
     state = const AuthState.loading();
 
     final storage = ref.read(secureStorageServiceProvider);
-    final accessToken = await storage.getAccessToken();
-    final refreshToken = await storage.getRefreshToken();
+    final accessToken = await _safeRead(storage.getAccessToken());
+    final refreshToken = await _safeRead(storage.getRefreshToken());
+
+    // Guard: login() may have completed while we were awaiting Keychain reads.
+    // Don't overwrite an authenticated state with unauthenticated.
+    if (state is AuthStateAuthenticated) return;
 
     if (accessToken == null || refreshToken == null) {
       state = const AuthState.unauthenticated();
@@ -67,18 +86,28 @@ class AuthNotifier extends _$AuthNotifier {
     }
   }
 
+  // Writes a single Keychain key with a 5-second timeout + exception swallow.
+  // After `clearKeychain` (E2E tests) securityd may still be restarting; each
+  // write is best-effort — if it times out the session still works via the
+  // in-memory token, but the next cold start will require re-login.
+  static Future<void> _safeWrite(Future<void> write) async {
+    try {
+      await write.timeout(const Duration(seconds: 5), onTimeout: () {});
+    } catch (_) {}
+  }
+
   Future<void> login(String email, String password) async {
     state = const AuthState.loading();
     try {
       final repository = ref.read(authRepositoryProvider);
       final tokens = await repository.login(email, password);
       final storage = ref.read(secureStorageServiceProvider);
-      await storage.saveTokens(
+      await _safeWrite(storage.saveTokens(
         accessToken: tokens.accessToken,
         refreshToken: tokens.refreshToken,
-      );
-      await storage.saveEmail(email);
-      await _saveUserIdFromToken(tokens);
+      ));
+      await _safeWrite(storage.saveEmail(email));
+      await _safeWrite(_saveUserIdFromToken(tokens));
       state = AuthState.authenticated(tokens);
       ref.read(notificationServiceProvider).registerToken(email: email).ignore();
     } on UnauthorizedException catch (e) {
@@ -104,12 +133,12 @@ class AuthNotifier extends _$AuthNotifier {
         premium: premium,
       );
       final storage = ref.read(secureStorageServiceProvider);
-      await storage.saveTokens(
+      await _safeWrite(storage.saveTokens(
         accessToken: tokens.accessToken,
         refreshToken: tokens.refreshToken,
-      );
-      await storage.saveEmail(email);
-      await _saveUserIdFromToken(tokens);
+      ));
+      await _safeWrite(storage.saveEmail(email));
+      await _safeWrite(_saveUserIdFromToken(tokens));
       state = AuthState.authenticated(tokens);
       ref.read(notificationServiceProvider).registerToken(email: email).ignore();
     } on ApiException catch (e) {
@@ -117,6 +146,13 @@ class AuthNotifier extends _$AuthNotifier {
     } catch (_) {
       state = const AuthState.error('An unexpected error occurred.');
     }
+  }
+
+  /// Called by AuthInterceptor after a successful silent refresh so that
+  /// subsequent requests immediately use the new access token from memory.
+  /// Synchronous — no Keychain writes — so it never throws or blocks.
+  void updateTokensFromInterceptor(AuthTokens tokens) {
+    state = AuthState.authenticated(tokens);
   }
 
   Future<void> refreshTokens() async {

@@ -74,7 +74,10 @@ class DebtList extends _$DebtList {
     } else {
       await ref.read(debtRepositoryProvider).create(params);
     }
-    _invalidateAll();
+    // _invalidateAll() intentionally omitted: the form screen calls
+    // ref.invalidate(debtGroupedProvider) AFTER context.pop() so the
+    // GET requests fire when the list is visible, not during the form
+    // close animation (avoids a 401→logout race causing a login flash).
   }
 
   Future<void> deleteDebt(String id) async {

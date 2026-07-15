@@ -4,16 +4,16 @@ appId: com.batuhanyetgin.kamci
 - runFlow: "../../subflows/_login_as_user_a.yaml"
 - runFlow: "../../subflows/_cleanup_all_debts.yaml"
 - runFlow: "../../subflows/_create_default_category.yaml"
-- runFlow: "../../subflows/_create_default_debt.yaml"
+- runFlow: "../../subflows/_create_monthly_debt.yaml"
 - tapOn:
     text: "Borçlar"
 - tapOn:
     id: "myDebtsTab"
 - waitForAnimationToEnd
 - swipe:
-    direction: RIGHT
-    element:
-      text: "Test Borcu"
+    start: "25%, 40%"
+    end: "95%, 40%"
+- waitForAnimationToEnd
 - assertVisible:
     text: "Ödeme İşlemleri"
 - tapOn:
@@ -27,12 +27,12 @@ appId: com.batuhanyetgin.kamci
 - tapOn:
     text: "Tamam"
 - assertVisible:
-    text: "kayıt edildi"
+    text: "[\\s\\S]*kayıt edildi[\\s\\S]*"
 # Cleanup: borcu sil
 - swipe:
-    direction: LEFT
-    element:
-      text: "Test Borcu"
+    start: "75%, 40%"
+    end: "5%, 40%"
+- waitForAnimationToEnd
 - assertVisible:
     text: "Borcu Sil"
 - tapOn:

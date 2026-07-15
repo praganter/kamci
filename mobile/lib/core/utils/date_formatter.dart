@@ -10,8 +10,11 @@ abstract final class DateFormatter {
 
   static String toApiFormat(DateTime date) => _apiFormat.format(date);
 
+  // Naive (zone'suz) ISO: backend datetime'ları timezone'suz saklar ve naive
+  // karşılaştırır. toUtc() kullanmak gece yarısını önceki güne (21:00Z)
+  // kaydırıp aynı gün ödemelerde "payment_before_start" (400) üretiyordu.
   static String toApiDateTimeFormat(DateTime date) =>
-      date.toUtc().toIso8601String();
+      date.toIso8601String();
 
   static DateTime? parseApiDate(String? dateStr) {
     if (dateStr == null) return null;

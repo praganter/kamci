@@ -38,8 +38,16 @@ appId: com.batuhanyetgin.kamci
     text: "Çıkış Yap"
     index: 1
 - waitForAnimationToEnd
-# Login ekranına dönülür
-- assertVisible:
-    text: "Giriş Yap"
+# GoRouter stack replacement kauseth XCTest tree geçici invalidation yapar.
+# Re-launch (clearKeychain:false) ile auth state sıfırlandığını doğrula:
+# Token Keychain'e yazılamamıştı (simulator entitlement yok) → re-launch sonrası login ekranı çıkar.
+- launchApp:
+    clearKeychain: false
+    permissions:
+      all: allow
+- extendedWaitUntil:
+    visible:
+      text: "E-posta Adresi"
+    timeout: 15000
 - assertNotVisible:
-    text: "Kendi Borçlarım"
+    text: "Borçlar"

@@ -6,16 +6,13 @@ appId: com.batuhanyetgin.kamci
 - runFlow: "../../subflows/_create_default_category.yaml"
 - runFlow: "../../subflows/_create_default_debt.yaml"
 - tapOn:
-    text: "Test Borcu"
+    text: "Test Borcu[\\s\\S]*"
 - waitForAnimationToEnd
+# Detaydaki info kartı TEK birleşik accessibility node'dur:
+# "Tutar\n₺500\nDurum\nAktif\nÖdeme Periyodu\nTek Seferlik\nBaşlangıç\n..."
+# → tüm alanlar tek regex ile doğrulanır ([\s\S]* newline'ları aşar)
 - assertVisible:
-    text: "500"
+    text: "Tutar[\\s\\S]*₺500[\\s\\S]*Tek Seferlik[\\s\\S]*Başlangıç[\\s\\S]*"
+# Başlık "Ödeme Geçmişi (N)" formatındadır
 - assertVisible:
-    text: "TRY"
-- assertVisible:
-    text: "Tek Seferlik"
-# Detail screen'de başlangıç tarihi "Başlangıç" etiketiyle gösterilir (form'daki "İlk Ödeme Tarihi" değil)
-- assertVisible:
-    text: "Başlangıç"
-- assertVisible:
-    text: "Ödeme Geçmişi"
+    text: "Ödeme Geçmişi.*"

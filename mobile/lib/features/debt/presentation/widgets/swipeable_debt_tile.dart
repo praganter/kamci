@@ -58,8 +58,23 @@ class _SwipeableTileState extends ConsumerState<SwipeableTile>
     );
     if (!mounted) return;
     if (confirmed) {
-      await ref.read(debtListProvider.notifier).deleteDebt(widget.debt.id);
-      ref.invalidate(debtGroupedProvider);
+      try {
+        await ref.read(debtListProvider.notifier).deleteDebt(widget.debt.id);
+        ref.invalidate(debtGroupedProvider);
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(e.toString()),
+              backgroundColor: const Color(0xFFEF4444),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          );
+        }
+      }
     } else {
       _snapBack();
     }

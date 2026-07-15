@@ -10,10 +10,10 @@ appId: com.batuhanyetgin.kamci
 - assertVisible:
     text: "Yeni Borç"
 - tapOn:
-    text: "Kategori"
+    id: "categoryField"
 - waitForAnimationToEnd
 - tapOn:
-    index: 0
+    text: "Tamam"
 - tapOn:
     text: "Borç Adı"
 # Emoji ve özel karakter içeren isim
@@ -24,23 +24,28 @@ appId: com.batuhanyetgin.kamci
 - tapOn:
     text: "Yeni Borç"
 - tapOn:
-    text: "Para Birimi"
+    id: "currencyField"
 - waitForAnimationToEnd
 - tapOn:
-    text: "TRY"
+    text: "Tamam"
 - tapOn:
-    text: "Ödeme Periyodu"
+    id: "periodField"
 - waitForAnimationToEnd
 - tapOn:
     text: "Tek Seferlik"
-- scrollUntilVisible:
-    element:
-      text: "İlk Ödeme Tarihi"
-    direction: DOWN
-- tapOn:
-    text: "İlk Ödeme Tarihi"
 - tapOn:
     text: "Tamam"
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: "dateField"
+    direction: DOWN
+- tapOn:
+    id: "dateField"
+- waitForAnimationToEnd
+- tapOn:
+    id: "pickerOkBtn"
+- waitForAnimationToEnd
 - scrollUntilVisible:
     element:
       text: "Oluştur"

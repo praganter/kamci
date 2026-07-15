@@ -40,6 +40,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     ref.listen<AuthState>(authNotifierProvider, (_, state) {
+      if (!context.mounted) return;
       if (state is AuthStateError) {
         showErrorSnackBar(context, state.message);
       }

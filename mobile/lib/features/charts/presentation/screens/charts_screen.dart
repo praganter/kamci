@@ -70,11 +70,14 @@ class _MonthSelector extends ConsumerWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          IconButton(
-            key: const Key('chartPrevMonthBtn'),
-            icon: const Icon(Icons.chevron_left),
-            onPressed: () =>
-                ref.read(selectedMonthProvider.notifier).previous(),
+          Semantics(
+            identifier: 'chartPrevMonthBtn',
+            child: IconButton(
+              key: const Key('chartPrevMonthBtn'),
+              icon: const Icon(Icons.chevron_left),
+              onPressed: () =>
+                  ref.read(selectedMonthProvider.notifier).previous(),
+            ),
           ),
           Text(
             label,
@@ -83,15 +86,18 @@ class _MonthSelector extends ConsumerWidget {
                   color: cs.onSurface,
                 ),
           ),
-          IconButton(
-            key: const Key('chartNextMonthBtn'),
-            icon: Icon(
-              Icons.chevron_right,
-              color: isCurrentMonth ? cs.onSurfaceVariant.withValues(alpha: 0.3) : null,
+          Semantics(
+            identifier: 'chartNextMonthBtn',
+            child: IconButton(
+              key: const Key('chartNextMonthBtn'),
+              icon: Icon(
+                Icons.chevron_right,
+                color: isCurrentMonth ? cs.onSurfaceVariant.withValues(alpha: 0.3) : null,
+              ),
+              onPressed: isCurrentMonth
+                  ? null
+                  : () => ref.read(selectedMonthProvider.notifier).next(),
             ),
-            onPressed: isCurrentMonth
-                ? null
-                : () => ref.read(selectedMonthProvider.notifier).next(),
           ),
         ],
       ),

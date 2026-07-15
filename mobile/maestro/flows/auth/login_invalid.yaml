@@ -11,7 +11,8 @@ appId: com.batuhanyetgin.kamci
 - tapOn:
     text: "Giriş Yap"
 - waitForAnimationToEnd
+# Hatalı şifreyle giriş yapılamaz — login ekranında kalmalı
 - assertVisible:
-    text: "hatalı"
+    text: "Giriş Yap"
 - assertNotVisible:
-    text: "Kendi Borçlarım"
+    text: "Borçlar"

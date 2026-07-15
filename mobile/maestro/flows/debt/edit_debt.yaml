@@ -6,7 +6,7 @@ appId: com.batuhanyetgin.kamci
 - runFlow: "../../subflows/_create_default_category.yaml"
 - runFlow: "../../subflows/_create_default_debt.yaml"
 - tapOn:
-    text: "Test Borcu"
+    text: "Test Borcu[\\s\\S]*"
 - waitForAnimationToEnd
 # Düzenle butonuna tıkla
 - tapOn:
@@ -25,20 +25,28 @@ appId: com.batuhanyetgin.kamci
 - inputText: "999"
 - tapOn:
     text: "Borcu Düzenle"
+# Güncelle butonu formun dibinde — scroll şart (create flow'lardaki Oluştur gibi)
+- scrollUntilVisible:
+    element:
+      text: "Güncelle"
+    direction: DOWN
 - tapOn:
     text: "Güncelle"
+- extendedWaitUntil:
+    visible:
+      text: "Güncellenmiş Borç"
+    timeout: 10000
+# Detay info kartı tek birleşik node → ₺999 ancak [\s\S]* ile bulunur
 - assertVisible:
-    text: "Güncellenmiş Borç"
-- assertVisible:
-    text: "999"
+    text: "[\\s\\S]*₺999[\\s\\S]*"
 # Geri dön (Detail → List) sonra borcu sil
 - tapOn:
     text: "Geri"
 - waitForAnimationToEnd
 - swipe:
-    direction: LEFT
-    element:
-      text: "Güncellenmiş Borç"
+    start: "75%, 40%"
+    end: "5%, 40%"
+- waitForAnimationToEnd
 - assertVisible:
     text: "Borcu Sil"
 - tapOn:

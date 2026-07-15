@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../auth/domain/entities/user_detail.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../auth/presentation/providers/auth_state.dart';
 import '../../../../core/storage/secure_storage_service.dart';
 import '../../data/models/verify_receipt_request.dart';
 import '../../data/repositories/subscription_repository_impl.dart';
@@ -21,23 +22,30 @@ Future<bool> cachedPremium(Ref ref) =>
     ref.read(secureStorageServiceProvider).getCachedPremiumStatus();
 
 /// userDetail.premium üzerinden türetilen premium flag.
-/// API yanıtı gelene kadar storage cache'i kullanır.
+/// JWT token hemen mevcutsa oradan okur; sonra userDetail ile doğrular.
 @riverpod
 bool isPremium(Ref ref) {
+  final authState = ref.watch(authNotifierProvider);
   final userDetailAsync = ref.watch(userDetailProvider);
 
-  // Yeni değer gelince storage'a yaz
+  // userDetail yüklenince storage'a kaydet
   ref.listen<AsyncValue<UserDetail>>(userDetailProvider, (_, next) {
     if (next case AsyncData(:final value)) {
       ref.read(secureStorageServiceProvider).savePremiumStatus(value.premium);
     }
   });
 
-  // API yanıtı varsa onu kullan
+  // userDetail yanıtı varsa en güncel değer
   if (userDetailAsync.valueOrNull != null) {
     return userDetailAsync.valueOrNull!.premium;
   }
-  // Yüklenirken son cache'i kullan
+
+  // userDetail yüklenirken JWT'deki premium claim'ini kullan (anında mevcut)
+  if (authState case AuthStateAuthenticated(:final tokens)) {
+    return tokens.isPremium;
+  }
+
+  // Authenticated değilse son storage cache'i
   return ref.watch(cachedPremiumProvider).valueOrNull ?? false;
 }
 

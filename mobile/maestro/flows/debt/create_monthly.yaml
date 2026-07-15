@@ -8,9 +8,11 @@ appId: com.batuhanyetgin.kamci
     text: "Borçlar"
 - waitForAnimationToEnd
 - tapOn:
-    point: "89%, 80%"
-- assertVisible:
-    text: "Yeni Borç"
+    id: "addDebtFab"
+- extendedWaitUntil:
+    visible:
+      text: "Yeni Borç"
+    timeout: 8000
 - tapOn:
     id: "categoryField"
 - waitForAnimationToEnd
@@ -28,22 +30,24 @@ appId: com.batuhanyetgin.kamci
     id: "currencyField"
 - waitForAnimationToEnd
 - tapOn:
-    text: "TRY"
-- tapOn:
     text: "Tamam"
 - tapOn:
     id: "periodField"
 - waitForAnimationToEnd
-- tapOn:
+- repeat:
+    times: 4
+    commands:
+      - runFlow: "../../subflows/_picker_wheel_next.yaml"
+- assertVisible:
     text: "Aylık"
 - tapOn:
     text: "Tamam"
 - waitForAnimationToEnd
 # Taksit alanı görünmeli (MONTHLY için)
 - assertVisible:
-    text: "Toplam Taksit Sayısı"
+    text: "Toplam Taksit Sayısı.*"
 - tapOn:
-    text: "Toplam Taksit Sayısı"
+    text: "Toplam Taksit Sayısı.*"
 - inputText: "12"
 - tapOn:
     text: "Yeni Borç"
@@ -61,16 +65,34 @@ appId: com.batuhanyetgin.kamci
     direction: DOWN
 - tapOn:
     text: "Oluştur"
+# Same animation-race fix as create_one_time: navigate Kategoriler→Borçlar
+# to guarantee a fresh Kendi Borçlarım state before asserting.
+- extendedWaitUntil:
+    visible:
+      id: "myDebtsTab"
+    timeout: 35000
+- waitForAnimationToEnd
+- tapOn:
+    text: "Kategoriler"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Borçlar"
+- waitForAnimationToEnd
+# Debt tile accessibility label'ı birleşiktir ("Ad\n0 / 12\n600.0 TRY");
+# tam metin eşleşmez, [\s\S]* ile regex gerekir (`.` newline eşlemez).
+- scrollUntilVisible:
+    element:
+      text: "Aylık Taksit Borcu[\\s\\S]*"
+    direction: DOWN
+    timeout: 20000
+# Taksit göstergesi "0 / 12" aynı birleşik label içinde doğrulanır
 - assertVisible:
-    text: "Aylık Taksit Borcu"
-# Taksit göstergesi: "0 / 12"
-- assertVisible:
-    text: "0 / 12"
+    text: "Aylık Taksit Borcu[\\s\\S]*0 / 12[\\s\\S]*"
 # Cleanup: borcu sil
 - swipe:
-    direction: LEFT
-    element:
-      text: "Aylık Taksit Borcu"
+    start: "75%, 40%"
+    end: "5%, 40%"
+- waitForAnimationToEnd
 - assertVisible:
     text: "Borcu Sil"
 - tapOn:

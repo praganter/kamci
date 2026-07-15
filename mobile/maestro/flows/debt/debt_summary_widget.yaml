@@ -10,11 +10,9 @@ appId: com.batuhanyetgin.kamci
 - tapOn:
     id: "myDebtsTab"
 - waitForAnimationToEnd
-# Borç listesinde tutar ve para birimi görünmeli
+# Borç listesinde tutar ve para birimi tile'ın birleşik label'ında doğrulanır
 - assertVisible:
-    text: "500"
-- assertVisible:
-    text: "TRY"
+    text: "Test Borcu[\\s\\S]*500\\.0 TRY"
 # Hata durumu olmamalı
 - assertNotVisible:
     text: "Hata"
@@ -22,9 +20,9 @@ appId: com.batuhanyetgin.kamci
     text: "hata"
 # Cleanup: borcu sil
 - swipe:
-    direction: LEFT
-    element:
-      text: "Test Borcu"
+    start: "75%, 40%"
+    end: "5%, 40%"
+- waitForAnimationToEnd
 - assertVisible:
     text: "Borcu Sil"
 - tapOn:

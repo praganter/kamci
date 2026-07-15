@@ -2,23 +2,53 @@ appId: com.batuhanyetgin.kamci
 ---
 # CAT-02: Kategori düzenle
 - runFlow: "../../subflows/_login_as_user_a.yaml"
-- runFlow: "../../subflows/_create_default_category.yaml"
 - tapOn:
     text: "Kategoriler"
 - waitForAnimationToEnd
 - tapOn:
-    text: "Test Kategorisi"
-- waitForAnimationToEnd
-# Kategori detayında düzenle butonu
+    id: "addCategoryFab"
+- extendedWaitUntil:
+    visible:
+      text: "Yeni Kategori"
+    timeout: 5000
 - tapOn:
-    text: "Düzenle"
-- assertVisible:
-    text: "Kategoriyi Düzenle"
+    text: "Kategori Adı"
+- inputText: "Test Kategorisi"
+- tapOn:
+    text: "Oluştur"
+- extendedWaitUntil:
+    visible:
+      text: "Test Kategorisi"
+    timeout: 10000
+# Detay sayfasına git
+- tapOn:
+    text: "Test Kategorisi"
+- extendedWaitUntil:
+    visible:
+      text: "Test Kategorisi"
+    timeout: 5000
+- extendedWaitUntil:
+    visible:
+      id: "editCategoryBtn"
+    timeout: 8000
+- tapOn:
+    id: "editCategoryBtn"
+- extendedWaitUntil:
+    visible:
+      text: "Kategoriyi Düzenle"
+    timeout: 5000
 - tapOn:
     text: "Kategori Adı"
 - eraseText: 100
 - inputText: "Güncellenmiş Kategori"
 - tapOn:
-    text: "Kaydet"
-- assertVisible:
-    text: "Güncellenmiş Kategori"
+    text: "Güncelle"
+- extendedWaitUntil:
+    visible:
+      text: "Güncellenmiş Kategori"
+    timeout: 10000
+# Temizlik: detay ekranından sil (sonraki çalışma için)
+- tapOn:
+    id: "deleteCategoryBtn"
+- tapOn:
+    text: "Sil"

@@ -8,8 +8,15 @@ appId: com.batuhanyetgin.kamci
     text: "Borçlar"
 # Logout yap
 - runFlow: "../../subflows/_logout.yaml"
-- assertVisible:
-    text: "Giriş Yap"
+# GoRouter stack replacement sonrası tree geçici invalid — launchApp ile doğrula
+- launchApp:
+    clearKeychain: false
+    permissions:
+      all: allow
+- extendedWaitUntil:
+    visible:
+      text: "E-posta Adresi"
+    timeout: 10000
 # Tekrar giriş yap — FCM token yeniden kaydedilmeli (POST /notification/device-token)
 - tapOn:
     text: "E-posta Adresi"

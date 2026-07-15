@@ -17,8 +17,8 @@ import '../../../../shared/widgets/pro_badge.dart';
 import '../../../category/domain/entities/category.dart';
 import '../../../category/presentation/widgets/add_category_sheet.dart';
 import '../../../subscription/presentation/providers/subscription_providers.dart';
-import '../../../subscription/subscription_constants.dart';
 import '../../../subscription/presentation/widgets/premium_card.dart';
+import '../../../subscription/subscription_constants.dart';
 import '../../../../core/providers/app_settings_provider.dart';
 import '../../domain/entities/bulk_payment_entry.dart';
 import '../../domain/entities/debt.dart';
@@ -39,10 +39,16 @@ class _DebtListScreenState extends ConsumerState<DebtListScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(_onTabChanged);
+  }
+
+  void _onTabChanged() {
+    if (!_tabController.indexIsChanging) setState(() {});
   }
 
   @override
   void dispose() {
+    _tabController.removeListener(_onTabChanged);
     _tabController.dispose();
     super.dispose();
   }
@@ -100,37 +106,31 @@ class _DebtListScreenState extends ConsumerState<DebtListScreen>
         controller: _tabController,
         children: const [_DebtTabView(owned: true), _DebtTabView(owned: false)],
       ),
-      floatingActionButton: AnimatedBuilder(
-        animation: _tabController,
-        builder: (context, _) {
-          if (_tabController.index != 0) return const SizedBox.shrink();
-          return FloatingActionButton(
-            onPressed: () async {
-              if (!isPremium) {
-                final debts = ref.read(debtListProvider).valueOrNull ?? [];
-                if (debts.length >= SubscriptionConstants.freeDebtLimit) {
-                  PremiumRequiredSheet.show(
-                    context,
-                    featureName: l10n.debts.toLowerCase(),
-                    limitCount: SubscriptionConstants.freeDebtLimit,
-                  );
-                  return;
-                }
-              }
-              ref.invalidate(categoryListProvider);
-              ref.invalidate(currencyListProvider);
-              await Future.wait([
-                ref.read(categoryListProvider.future),
-                ref.read(currencyListProvider.future),
-              ]);
-              if (!context.mounted) return;
-              await context.pushNamed(RouteNames.debtNew);
-              ref.invalidate(debtGroupedProvider(true));
-            },
-            child: const Icon(Icons.add),
-          );
-        },
-      ),
+      floatingActionButton: _tabController.index == 0
+          ? Semantics(
+              identifier: 'addDebtFab',
+              child: FloatingActionButton(
+                onPressed: () async {
+                  if (!isPremium) {
+                    final debts =
+                        ref.read(debtListProvider).valueOrNull ?? [];
+                    if (debts.length >=
+                        SubscriptionConstants.freeDebtLimit) {
+                      PremiumRequiredSheet.show(
+                        context,
+                        featureName: l10n.debts.toLowerCase(),
+                        limitCount: SubscriptionConstants.freeDebtLimit,
+                      );
+                      return;
+                    }
+                  }
+                  ref.invalidate(currencyListProvider);
+                  await context.pushNamed(RouteNames.debtNew);
+                },
+                child: const Icon(Icons.add),
+              ),
+            )
+          : null,
     );
   }
 }
