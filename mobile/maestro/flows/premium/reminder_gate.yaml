@@ -1,6 +1,10 @@
 appId: com.batuhanyetgin.kamci
 ---
 # PREM-04: Hatırlatma premium engeli — freemium hesap
+# ⚠️ ÖNKOŞUL: User B'nin borç sayısı < 5 OLMALI (freeDebtLimit).
+# 5 borçta FAB borç formu yerine limit gate'i açar → bu test forma giremez.
+# debt_limit_gate TAM TERSİNİ ister (5 borç). İkisi aynı seed'le koşulamaz:
+# önce reminder_gate'i (<5 borç) koş, sonra 5. borcu ekleyip debt_limit_gate'i koş.
 - runFlow: "../../subflows/_login_as_user_b.yaml"
 - tapOn:
     text: "Borçlar"

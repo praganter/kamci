@@ -15,7 +15,10 @@ appId: com.batuhanyetgin.kamci
 - tapOn:
     text: "Oluştur"
 - waitForAnimationToEnd
-- extendedWaitUntil:
-    visible:
-      text: "Maestro Kategori"
+# Kategoriler her test koşumunda birikir (cleanup yok) → yeni kategori listenin
+# altında kalabilir. extendedWaitUntil scroll etmez, sadece görünen alana bakar.
+- scrollUntilVisible:
+    element:
+      text: "Maestro Kategori[\\s\\S]*"
+    direction: DOWN
     timeout: 30000

@@ -22,10 +22,13 @@ appId: com.batuhanyetgin.kamci
 - inputText: "Hedef Kategori"
 - tapOn:
     text: "Oluştur"
-- extendedWaitUntil:
-    visible:
-      text: "Hedef Kategori"
-    timeout: 10000
+# Kategoriler test koşumları arasında birikir → yeni kategori listenin altında
+# kalabilir; extendedWaitUntil scroll etmez.
+- scrollUntilVisible:
+    element:
+      text: "Hedef Kategori[\\s\\S]*"
+    direction: DOWN
+    timeout: 15000
 # Kaynak kategoriye (Test Kategorisi) borç ekle → Borçlar'da görünsün
 - tapOn:
     text: "Borçlar"
