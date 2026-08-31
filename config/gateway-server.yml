@@ -70,6 +70,7 @@ endpoints:
     - /auth/register
     - /auth/login
     - /auth/refresh-token
+    - /auth/logout
     - /auth/forget-password
     - /auth/reset-password
     - /subscription/apple/webhook
