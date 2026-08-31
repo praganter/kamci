@@ -12,6 +12,7 @@ public interface CategoryDocumentToGetAllCategoryResponseMapper extends BaseMapp
     @Mapping(target = "members", source = "members")
     GetAllCategoryResponse map(CategoryDocument categoryDocument);
 
+    @Mapping(target = "userId", source = "userId")
     @Mapping(target = "email", source = "email")
     @Mapping(target = "accessLevel", source = "accessLevel")
     GetAllCategoryResponse.MemberItem mapMember(dev.batuhanyetgin.kamci.document.embedded.MemberEmbedded memberEmbedded);

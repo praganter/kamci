@@ -9,4 +9,5 @@ public class SaveCategoryResponse {
 
     private String id;
     private String name;
+    private String ownerId;
 }

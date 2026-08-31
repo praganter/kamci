@@ -18,6 +18,7 @@ public class GetAllCategoryResponse {
     @Getter
     @Builder
     public static class MemberItem {
+        private String userId;
         private String email;
         private AccessLevelType accessLevel;
     }

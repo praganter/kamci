@@ -67,6 +67,7 @@ public class CategoryService {
         return SaveCategoryResponse.builder()
                 .id(saved.getId())
                 .name(saved.getName())
+                .ownerId(saved.getOwnerId())
                 .build();
     }
 
@@ -82,6 +83,7 @@ public class CategoryService {
         return UpdateCategoryResponse.builder()
                 .id(updated.getId())
                 .name(updated.getName())
+                .ownerId(updated.getOwnerId())
                 .build();
     }
 

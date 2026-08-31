@@ -185,8 +185,9 @@ public class DebtService {
 
         final int originalDay = existing.getFirstPaymentDate() != null
                 ? existing.getFirstPaymentDate().getDayOfMonth() : 1;
-        final LocalDateTime periodEnd = PaymentPeriodUtil.getPeriodEnd(
-                periodStart, existing.getPaymentPeriodType(), originalDay).minusDays(1);
+        final LocalDateTime rawPeriodEnd = PaymentPeriodUtil.getPeriodEnd(
+                periodStart, existing.getPaymentPeriodType(), originalDay);
+        final LocalDateTime periodEnd = rawPeriodEnd != null ? rawPeriodEnd.minusDays(1) : null;
         final BigDecimal amount = (request != null && request.getAmountPaid() != null)
                 ? request.getAmountPaid()
                 : existing.getAmount();
@@ -247,8 +248,9 @@ public class DebtService {
 
         final int originalDay = existing.getFirstPaymentDate() != null
                 ? existing.getFirstPaymentDate().getDayOfMonth() : 1;
-        final LocalDateTime periodEnd = PaymentPeriodUtil.getPeriodEnd(
-                periodStart, existing.getPaymentPeriodType(), originalDay).minusDays(1);
+        final LocalDateTime rawPeriodEnd = PaymentPeriodUtil.getPeriodEnd(
+                periodStart, existing.getPaymentPeriodType(), originalDay);
+        final LocalDateTime periodEnd = rawPeriodEnd != null ? rawPeriodEnd.minusDays(1) : null;
         existing.skipPayment(effectiveTime, periodStart, periodEnd);
 
         if (!isHistorical && existing.getPaymentStatus() == PaymentStatus.OVERDUE) {
@@ -305,8 +307,9 @@ public class DebtService {
                 continue;
             }
 
-            final LocalDateTime periodEnd = PaymentPeriodUtil.getPeriodEnd(
-                    periodStart, existing.getPaymentPeriodType(), originalDay).minusDays(1);
+            final LocalDateTime rawPeriodEnd = PaymentPeriodUtil.getPeriodEnd(
+                    periodStart, existing.getPaymentPeriodType(), originalDay);
+            final LocalDateTime periodEnd = rawPeriodEnd != null ? rawPeriodEnd.minusDays(1) : null;
             final BigDecimal amount = req.getAmountPaid() != null
                     ? req.getAmountPaid() : existing.getAmount();
             existing.addPayment(effectiveTime, periodStart, periodEnd, amount);
