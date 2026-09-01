@@ -17,11 +17,19 @@ spring:
         - id: debt-service
           uri: lb://DEBT-SERVICE
           predicates:
-            - Path=/debt/**,/category/**
+            - Path=/debt/**,/category/**,/income/**
           filters:
             - name: CircuitBreaker
               args:
                 name: debt-service
+        - id: cache-service
+          uri: lb://CACHE-SERVICE
+          predicates:
+            - Path=/rates/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: cache-service
         - id: auth-service
           uri: lb://AUTH-SERVICE
           predicates:
