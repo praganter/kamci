@@ -731,6 +731,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Password must be at least 8 characters';
 
   @override
+  String get validationPasswordMaxLength =>
+      'Password must be at most 72 characters';
+
+  @override
   String get validationConfirmPasswordRequired =>
       'Confirm password is required';
 

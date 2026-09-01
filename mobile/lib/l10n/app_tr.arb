@@ -377,6 +377,7 @@
   "validationEmailInvalid": "Geçerli bir email girin",
   "validationPasswordRequired": "Şifre gerekli",
   "validationPasswordMinLength": "Şifre en az 8 karakter olmalı",
+  "validationPasswordMaxLength": "Şifre en fazla 72 karakter olabilir",
   "validationConfirmPasswordRequired": "Şifre tekrarı gerekli",
   "validationPasswordMismatch": "Şifreler eşleşmiyor",
   "validationFieldRequired": "{fieldName} gerekli",

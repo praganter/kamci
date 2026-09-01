@@ -347,6 +347,7 @@
   "validationEmailInvalid": "Enter a valid email address",
   "validationPasswordRequired": "Password is required",
   "validationPasswordMinLength": "Password must be at least 8 characters",
+  "validationPasswordMaxLength": "Password must be at most 72 characters",
   "validationConfirmPasswordRequired": "Confirm password is required",
   "validationPasswordMismatch": "Passwords do not match",
   "validationFieldRequired": "{fieldName} is required",

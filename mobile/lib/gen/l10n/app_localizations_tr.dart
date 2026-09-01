@@ -733,6 +733,10 @@ class AppLocalizationsTr extends AppLocalizations {
   String get validationPasswordMinLength => 'Şifre en az 8 karakter olmalı';
 
   @override
+  String get validationPasswordMaxLength =>
+      'Şifre en fazla 72 karakter olabilir';
+
+  @override
   String get validationConfirmPasswordRequired => 'Şifre tekrarı gerekli';
 
   @override

@@ -5,6 +5,7 @@ extension ApiExceptionL10n on ApiException {
   String toLocalizedMessage(AppLocalizations l10n) => switch (this) {
         BusinessException() => message,
         PremiumLimitException() => message,
+        PermissionDeniedException() => message,
         NetworkException() => l10n.errorNetwork,
         UnauthorizedException() => l10n.errorSessionExpired,
         NotFoundException() => l10n.errorNotFound,

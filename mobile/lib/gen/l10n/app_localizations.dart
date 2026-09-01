@@ -1424,6 +1424,12 @@ abstract class AppLocalizations {
   /// **'Şifre en az 8 karakter olmalı'**
   String get validationPasswordMinLength;
 
+  /// No description provided for @validationPasswordMaxLength.
+  ///
+  /// In tr, this message translates to:
+  /// **'Şifre en fazla 72 karakter olabilir'**
+  String get validationPasswordMaxLength;
+
   /// No description provided for @validationConfirmPasswordRequired.
   ///
   /// In tr, this message translates to:

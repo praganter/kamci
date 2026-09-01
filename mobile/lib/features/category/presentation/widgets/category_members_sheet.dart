@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/l10n/l10n.dart';
+import '../../../../core/network/api_exception.dart';
 import '../../../../shared/widgets/confirm_dialog.dart';
+import '../../../../shared/widgets/premium_required_sheet.dart';
 import '../../domain/entities/category.dart';
 import '../../domain/entities/member_embedded.dart';
 import '../providers/category_providers.dart';
@@ -145,6 +147,17 @@ class CategoryMembersSheet extends ConsumerWidget {
           SnackBar(
             content: Text(context.l10n.memberAddedSuccess(result.email)),
           ),
+        );
+      }
+    } on PremiumLimitException catch (e) {
+      // Backend gated this on premium (error.category.premium_required) —
+      // show the upsell sheet instead of a plain error snackbar.
+      if (context.mounted) {
+        PremiumRequiredSheet.show(
+          context,
+          featureName: context.l10n.shareCategory.toLowerCase(),
+          limitCount: 0,
+          message: e.message,
         );
       }
     } catch (e) {

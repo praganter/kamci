@@ -29,8 +29,19 @@ class CategoryRepositoryImpl implements CategoryRepository {
   @override
   Future<Category> create(String name) async {
     final model = await _datasource.create(name);
-    final domain = model.toDomain();
-    // Backend create yanıtı ownerId döndürmüyor — oluşturan kullanıcı = sahip.
+    return _withOwnerIdFallback(model.toDomain());
+  }
+
+  @override
+  Future<Category> update(String id, String name) async {
+    final model = await _datasource.update(id, name);
+    return _withOwnerIdFallback(model.toDomain());
+  }
+
+  /// Backend populates `ownerId` on save/update as of 2026-09-01 — this is a
+  /// safety net for rollout/legacy responses that still omit it (creator is
+  /// always the owner for save; update never changes ownership).
+  Future<Category> _withOwnerIdFallback(Category domain) async {
     if (domain.ownerId.isNotEmpty) return domain;
     final ownerId = await _storage.getUserId() ?? '';
     return Category(
@@ -41,12 +52,6 @@ class CategoryRepositoryImpl implements CategoryRepository {
       createdAt: domain.createdAt,
       updatedAt: domain.updatedAt,
     );
-  }
-
-  @override
-  Future<Category> update(String id, String name) async {
-    final model = await _datasource.update(id, name);
-    return model.toDomain();
   }
 
   @override

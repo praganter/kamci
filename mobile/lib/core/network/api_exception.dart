@@ -7,12 +7,46 @@ sealed class ApiException implements Exception {
   @override
   String toString() => message;
 
+  /// `ErrorResponse.code` values that mean "this action needs premium /
+  /// hit a free-tier limit" — regardless of whether they arrive as 400
+  /// (limit exceeded) or 403 (premium required for the feature).
+  static const _premiumCodes = {
+    'error.debt.limit_exceeded',
+    'error.category.limit_exceeded',
+    'error.category.premium_required',
+    'error.debt.premium_required',
+  };
+
+  /// `code` values that mean "you don't own/aren't allowed this row" — a
+  /// 403 that must NOT be routed to the premium-upsell flow.
+  static const _permissionDeniedCodes = {
+    'error.debt.permission_denied',
+    'error.category.permission_denied',
+    'error.income.permission_denied',
+  };
+
   factory ApiException.fromDioException(DioException e) {
     final statusCode = e.response?.statusCode;
     final data = e.response?.data;
 
     if (data is Map<String, dynamic>) {
       final message = data['message'] as String?;
+      final code = data['code'] as String?;
+
+      // Prefer the stable `code` over the HTTP status — the backend reuses
+      // 400/403 for several distinct situations that a status code alone
+      // can't disambiguate (limit vs. validation, premium vs. permission).
+      if (code != null) {
+        if (_premiumCodes.contains(code)) {
+          return PremiumLimitException(message ?? const PremiumLimitException().message);
+        }
+        if (_permissionDeniedCodes.contains(code)) {
+          return PermissionDeniedException(message ?? const PermissionDeniedException().message);
+        }
+        if (code == 'error.user.not_found_in_context') {
+          return UnauthorizedException(message ?? const UnauthorizedException().message);
+        }
+      }
 
       if (statusCode == 400) {
         return BusinessException(message ?? 'Invalid request.');
@@ -21,6 +55,8 @@ sealed class ApiException implements Exception {
         return UnauthorizedException(message ?? const UnauthorizedException().message);
       }
       if (statusCode == 403) {
+        // No recognized `code` — fall back to the pre-C2 behavior (treat as
+        // a premium/limit wall) rather than guessing permission-denied.
         return PremiumLimitException(message ?? const PremiumLimitException().message);
       }
       if (statusCode == 409) {
@@ -84,6 +120,16 @@ class UnknownException extends ApiException {
 class PremiumLimitException extends ApiException {
   const PremiumLimitException([
     super.message = 'This feature is available to premium members only.',
+  ]);
+}
+
+/// The request was understood and authenticated, but the caller doesn't own
+/// or have rights to the target row (e.g. editing a category they only have
+/// READ access to). Distinct from [PremiumLimitException]: this is NOT a
+/// premium-upsell situation — no sheet, just an error message.
+class PermissionDeniedException extends ApiException {
+  const PermissionDeniedException([
+    super.message = "You don't have permission to perform this action.",
   ]);
 }
 

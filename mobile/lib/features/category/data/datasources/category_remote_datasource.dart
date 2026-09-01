@@ -37,15 +37,11 @@ class CategoryRemoteDatasource {
         ApiConstants.categorySave,
         data: {'name': name},
       );
-      final data = Map<String, dynamic>.from(
-        response.data as Map<String, dynamic>,
-      );
-      // Live backend'in create yanıtı hâlâ ownerId içermiyor (2026-09-01
-      // doğrulandı) — placeholder CategoryModel'in required alanını karşılar,
-      // repository katmanı gerçek değeri yazar. Backend eklerse putIfAbsent
-      // dokunmaz.
-      data.putIfAbsent('ownerId', () => '');
-      return CategoryModel.fromJson(data);
+      // Backend now populates ownerId on the save response (be-agent
+      // confirmed 2026-09-01). CategoryModel.ownerId defaults to '' if it
+      // ever comes back missing again; CategoryRepositoryImpl.create falls
+      // back to the locally stored user id in that case.
+      return CategoryModel.fromJson(response.data as Map<String, dynamic>);
     } on DioException catch (e) {
       throw _mapException(e);
     }
@@ -57,12 +53,7 @@ class CategoryRemoteDatasource {
         ApiConstants.categoryUpdate,
         data: {'id': id, 'name': name},
       );
-      final data = Map<String, dynamic>.from(
-        response.data as Map<String, dynamic>,
-      );
-      // Same as create: live backend response ownerId içermiyor.
-      data.putIfAbsent('ownerId', () => '');
-      return CategoryModel.fromJson(data);
+      return CategoryModel.fromJson(response.data as Map<String, dynamic>);
     } on DioException catch (e) {
       throw _mapException(e);
     }

@@ -12,6 +12,7 @@ abstract final class Validators {
   static FormFieldValidator<String> password(AppLocalizations l10n) => (value) {
     if (value == null || value.isEmpty) return l10n.validationPasswordRequired;
     if (value.length < 8) return l10n.validationPasswordMinLength;
+    if (value.length > 72) return l10n.validationPasswordMaxLength;
     return null;
   };
 

@@ -46,7 +46,21 @@ class AuthInterceptor extends QueuedInterceptorsWrapper {
     }
   }
 
+  /// Endpoints where a 401/403 means "wrong credentials supplied in the body"
+  /// (current password, reset token) — NOT an expired session. Refreshing here
+  /// is wrong: it wastes a refresh round-trip, retries the bad credentials, and
+  /// can mask the real error. Let these pass straight through to the datasource
+  /// so `ApiException.fromDioException` maps them to a UnauthorizedException /
+  /// BusinessException the UI can show.
+  static const _credentialCheckPaths = [
+    '/auth/change-password',
+    '/auth/reset-password',
+  ];
+
   bool _isTokenError(DioException err) {
+    final path = err.requestOptions.path;
+    if (_credentialCheckPaths.any(path.contains)) return false;
+
     final status = err.response?.statusCode;
     if (status == 401) return true;
     if (status == 403) {
