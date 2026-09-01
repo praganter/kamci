@@ -9,8 +9,6 @@ import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.server.ServerWebExchange;
@@ -26,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 public class RateLimitFilter implements GlobalFilter, Ordered {
 
     private final RateLimitProperties properties;
+    private final ErrorResponseWriter errorResponseWriter;
 
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
@@ -48,7 +47,8 @@ public class RateLimitFilter implements GlobalFilter, Ordered {
                 if (bucket.tryConsume(1)) {
                     return chain.filter(exchange);
                 } else {
-                    return onRateLimitExceeded(exchange);
+                    return errorResponseWriter.write(exchange, HttpStatus.TOO_MANY_REQUESTS,
+                            "error.ratelimit.exceeded", "Too many requests, please try again later");
                 }
             }
         }
@@ -77,15 +77,6 @@ public class RateLimitFilter implements GlobalFilter, Ordered {
         return address != null && address.getAddress() != null
                 ? address.getAddress().getHostAddress()
                 : "unknown";
-    }
-
-    private Mono<Void> onRateLimitExceeded(ServerWebExchange exchange) {
-        ServerHttpResponse response = exchange.getResponse();
-        response.setStatusCode(HttpStatus.TOO_MANY_REQUESTS);
-        response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
-        String body = "{\"error\": \"Too many requests, please try again later.\", \"status\": 429}";
-        byte[] bytes = body.getBytes();
-        return response.writeWith(Mono.just(response.bufferFactory().wrap(bytes)));
     }
 
     @Override

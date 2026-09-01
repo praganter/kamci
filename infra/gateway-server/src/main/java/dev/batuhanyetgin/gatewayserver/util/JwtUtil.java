@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
-import java.util.Date;
 
 @Component
 public class JwtUtil {
@@ -32,12 +31,14 @@ public class JwtUtil {
                 .getPayload();
     }
 
-    public boolean isInvalid(Claims claims) {
-        return isTokenExpired(claims) || !"ACCESS".equals(claims.get("type", String.class));
-    }
-
-    private boolean isTokenExpired(Claims claims) {
-        return claims.getExpiration().before(new Date());
+    /**
+     * True if the token is structurally valid (signature verified, not
+     * expired — both already enforced by {@code parseSignedClaims}) but is
+     * not an access token, e.g. a refresh token used where an access token
+     * is required.
+     */
+    public boolean isWrongType(Claims claims) {
+        return !"ACCESS".equals(claims.get("type", String.class));
     }
 
     public String getAuthHeader(String authHeader) {
