@@ -7,8 +7,6 @@ import io.github.bucket4j.Bucket;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
-import org.springframework.cloud.gateway.support.ipresolver.RemoteAddressResolver;
-import org.springframework.cloud.gateway.support.ipresolver.XForwardedRemoteAddressResolver;
 import org.springframework.core.Ordered;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -28,9 +26,6 @@ import java.util.concurrent.TimeUnit;
 public class RateLimitFilter implements GlobalFilter, Ordered {
 
     private final RateLimitProperties properties;
-
-    private final RemoteAddressResolver addressResolver =
-            XForwardedRemoteAddressResolver.maxTrustedIndex(1);
 
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
@@ -69,9 +64,19 @@ public class RateLimitFilter implements GlobalFilter, Ordered {
         return Bucket.builder().addLimit(limit).build();
     }
 
+    /**
+     * Resolves the client IP from the raw Netty TCP connection, NOT from any
+     * X-Forwarded-For / Forwarded header. There is no trusted reverse proxy in
+     * front of the gateway (NodePort is exposed directly), so forwarded headers
+     * are attacker-controlled and are stripped by {@link ForwardedHeaderStrippingFilter}.
+     * If a reverse proxy / ingress is ever placed in front of the gateway, this
+     * logic must be revisited to trust the proxy-supplied XFF instead.
+     */
     private String resolveIp(ServerWebExchange exchange) {
-        InetSocketAddress address = addressResolver.resolve(exchange);
-        return address != null ? address.getHostString() : "unknown";
+        InetSocketAddress address = exchange.getRequest().getRemoteAddress();
+        return address != null && address.getAddress() != null
+                ? address.getAddress().getHostAddress()
+                : "unknown";
     }
 
     private Mono<Void> onRateLimitExceeded(ServerWebExchange exchange) {
