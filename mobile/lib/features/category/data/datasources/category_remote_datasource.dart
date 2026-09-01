@@ -40,8 +40,10 @@ class CategoryRemoteDatasource {
       final data = Map<String, dynamic>.from(
         response.data as Map<String, dynamic>,
       );
-      // API create response doesn't include ownerId; placeholder satisfies
-      // CategoryModel's required field. Repository layer fills the real value.
+      // Live backend'in create yanıtı hâlâ ownerId içermiyor (2026-09-01
+      // doğrulandı) — placeholder CategoryModel'in required alanını karşılar,
+      // repository katmanı gerçek değeri yazar. Backend eklerse putIfAbsent
+      // dokunmaz.
       data.putIfAbsent('ownerId', () => '');
       return CategoryModel.fromJson(data);
     } on DioException catch (e) {
@@ -58,7 +60,7 @@ class CategoryRemoteDatasource {
       final data = Map<String, dynamic>.from(
         response.data as Map<String, dynamic>,
       );
-      // Same as create: ownerId missing from API response.
+      // Same as create: live backend response ownerId içermiyor.
       data.putIfAbsent('ownerId', () => '');
       return CategoryModel.fromJson(data);
     } on DioException catch (e) {

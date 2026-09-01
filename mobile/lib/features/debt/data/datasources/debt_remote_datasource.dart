@@ -4,6 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../core/constants/api_constants.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/network/dio_client.dart';
+import '../../../../core/utils/date_formatter.dart';
 import '../models/create_debt_request.dart';
 import '../models/debt_model.dart';
 import '../models/debt_summary_model.dart';
@@ -78,11 +79,20 @@ class DebtRemoteDatasource {
     }
   }
 
-  Future<DebtModel> pay(String id, {double? amountPaid}) async {
+  Future<DebtModel> pay(
+    String id, {
+    double? amountPaid,
+    DateTime? paidTime,
+  }) async {
     try {
+      final body = <String, dynamic>{
+        'amountPaid': ?amountPaid,
+        if (paidTime != null)
+          'paidTime': DateFormatter.toApiDateTimeFormat(paidTime),
+      };
       final response = await _dio.post(
         '${ApiConstants.debtPay}/$id',
-        data: amountPaid != null ? {'paidAmount': amountPaid} : null,
+        data: body.isEmpty ? null : body,
       );
       return DebtModel.fromJson(_extractDebt(response.data));
     } on DioException catch (e) {

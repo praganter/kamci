@@ -64,6 +64,20 @@ class AuthRemoteDatasource {
     }
   }
 
+  /// Server-side refresh-token blacklist. Gateway'de public endpoint;
+  /// refresh token'ı `Authorization: Bearer` ile gönderiyoruz (refreshToken ile
+  /// aynı sözleşme — hem gateway hem auth-service "Bearer " prefix'i şart koşar).
+  Future<void> logout(String refreshToken) async {
+    try {
+      await _dio.post(
+        ApiConstants.logout,
+        options: Options(headers: {'Authorization': 'Bearer $refreshToken'}),
+      );
+    } on DioException catch (e) {
+      throw _mapException(e);
+    }
+  }
+
   Future<void> forgotPassword(String email) async {
     try {
       await _dio.post(ApiConstants.forgetPassword, data: {'email': email});

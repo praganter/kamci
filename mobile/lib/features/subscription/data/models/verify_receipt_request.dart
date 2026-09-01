@@ -9,6 +9,10 @@ sealed class VerifyReceiptRequest with _$VerifyReceiptRequest {
     required String receiptData,
     required String plan,
     required String productId,
+    // Backend'de @NotNull — IOS | ANDROID
+    required String platform,
+    // Android'de zorunlu, iOS'ta gönderilmez.
+    String? packageName,
   }) = _VerifyReceiptRequest;
 
   factory VerifyReceiptRequest.fromJson(Map<String, dynamic> json) =>

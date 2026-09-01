@@ -71,8 +71,12 @@ class DebtRepositoryImpl implements DebtRepository {
   }
 
   @override
-  Future<Debt> pay(String id, {double? amountPaid}) async {
-    final model = await _datasource.pay(id, amountPaid: amountPaid);
+  Future<Debt> pay(String id, {double? amountPaid, DateTime? paidTime}) async {
+    final model = await _datasource.pay(
+      id,
+      amountPaid: amountPaid,
+      paidTime: paidTime,
+    );
     return model.toDomain();
   }
 
@@ -88,7 +92,7 @@ class DebtRepositoryImpl implements DebtRepository {
         .map(
           (p) => {
             'amountPaid': p.amountPaid,
-            'paidTime': p.paidTime.toIso8601String(),
+            'paidTime': DateFormatter.toApiDateTimeFormat(p.paidTime),
           },
         )
         .toList();
@@ -100,10 +104,12 @@ class DebtRepositoryImpl implements DebtRepository {
   Future<void> delete(String id) => _datasource.delete(id);
 
   CreateDebtRequest _paramsToRequest(CreateDebtParams params, {String? id}) {
+    final reminder = params.reminder;
     return CreateDebtRequest(
       id: id ?? params.id,
       name: params.name,
-      categoryId: params.categoryId,
+      // Backend'de zorunlu — form validator'ları null'ı zaten engelliyor.
+      categoryId: params.categoryId!,
       description: params.description,
       firstPaymentDate: DateFormatter.toApiDateTimeFormat(
         params.firstPaymentDate,
@@ -114,8 +120,13 @@ class DebtRepositoryImpl implements DebtRepository {
       ),
       amount: params.amount,
       autoPayment: params.autoPayment,
-      currency: params.currency,
-      reminder: params.reminder?.toModel(),
+      // Backend'de zorunlu.
+      currency: params.currency ?? 'TRY',
+      // Hatırlatıcı kapalıyken JSON'dan komple çıkar (backend enabled:false
+      // yerine alanın hiç olmamasını bekliyor).
+      reminder: (reminder != null && reminder.enabled)
+          ? reminder.toModel()
+          : null,
     );
   }
 }

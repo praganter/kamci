@@ -1,0 +1,32 @@
+appId: com.batuhanyetgin.kamci
+---
+# User C = PREMIUM paylaşım alıcısı (ios3@test.com).
+# Neden ayrı hesap: paylaşılan BORÇLARI görüntülemek premium (PREM-05
+# shared_debts_gate). User B non-premium kalmalı ki premium gate testleri
+# çalışsın → paylaşım testlerinin alıcısı ayrı bir premium hesap olmak zorunda.
+# Detay: [[project-test-suite]]
+- launchApp:
+    clearKeychain: true
+    permissions:
+      all: allow
+- runFlow:
+    file: "_safe_logout.yaml"
+    optional: true
+- extendedWaitUntil:
+    visible:
+      text: "E-posta Adresi"
+    timeout: 20000
+- tapOn:
+    text: "E-posta Adresi"
+- waitForAnimationToEnd
+- inputText: "${USER_C_EMAIL}"
+- tapOn:
+    text: "Şifre"
+- waitForAnimationToEnd
+- inputText: "${USER_C_PASSWORD}"
+- tapOn:
+    text: "Giriş Yap"
+- extendedWaitUntil:
+    visible:
+      text: "Borçlar"
+    timeout: 30000

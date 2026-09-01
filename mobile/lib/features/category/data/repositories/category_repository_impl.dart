@@ -29,8 +29,10 @@ class CategoryRepositoryImpl implements CategoryRepository {
   @override
   Future<Category> create(String name) async {
     final model = await _datasource.create(name);
-    final ownerId = await _storage.getUserId() ?? '';
     final domain = model.toDomain();
+    // Backend create yanıtı ownerId döndürmüyor — oluşturan kullanıcı = sahip.
+    if (domain.ownerId.isNotEmpty) return domain;
+    final ownerId = await _storage.getUserId() ?? '';
     return Category(
       id: domain.id,
       ownerId: ownerId,

@@ -50,9 +50,13 @@ class AuthInterceptor extends QueuedInterceptorsWrapper {
     final status = err.response?.statusCode;
     if (status == 401) return true;
     if (status == 403) {
-      final error = err.response?.data;
-      final message = error is Map ? (error['error'] as String?) : null;
-      return message != null && message.contains('JWT');
+      // Backend servisleri 'code' gönderir (JWT_EXPIRED / INVALID_JWT);
+      // gateway 403 gövdesi farklı: {"error":"JWT is invalid or expired","status":403}.
+      // İkisini de + geriye dönük 'message'ı yakala.
+      final data = err.response?.data;
+      if (data is! Map) return false;
+      final code = (data['code'] ?? data['error'] ?? data['message']) as String?;
+      return code != null && code.contains('JWT');
     }
     return false;
   }

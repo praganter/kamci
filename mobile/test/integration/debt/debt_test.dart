@@ -125,8 +125,9 @@ void main() {
       }
     });
 
-    // TODO: Backend /debt/pay/{id} endpoint'i 500 döndürüyor (backend bug).
-    // Bug düzeltildiğinde skip kaldırılmalı.
+    // ONE_TIME /debt/pay 500 (periodEnd NPE) — backend'de düzeltildi ama
+    // 198.51.100.10:30080 gateway'ine henüz DEPLOY EDİLMEDİ (2026-09-01 doğrulandı,
+    // hâlâ 500). Deploy sonrası skip kaldırılmalı.
     test(
       'borcu öder ve paymentStatus değişir',
       () async {
@@ -134,10 +135,13 @@ void main() {
         expect(result.id, equals(createdDebtId));
         expect(
           result.paymentStatus,
-          anyOf(equals(PaymentStatusJson.paid), equals(PaymentStatusJson.partiallyPaid)),
+          anyOf(
+            equals(PaymentStatusJson.paid),
+            equals(PaymentStatusJson.partiallyPaid),
+          ),
         );
       },
-      skip: 'Backend /debt/pay endpoint 500 döndürüyor — backend bug',
+      skip: 'Backend /debt/pay 500 fix henüz deploy edilmedi',
     );
   });
 

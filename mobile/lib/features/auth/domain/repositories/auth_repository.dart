@@ -9,6 +9,7 @@ abstract interface class AuthRepository {
     bool premium = false,
   });
   Future<AuthTokens> refreshToken(String refreshToken);
+  Future<void> logout(String refreshToken);
   Future<void> forgotPassword(String email);
   Future<void> resetPassword(String token, String newPassword);
   Future<void> changePassword(String currentPassword, String newPassword);

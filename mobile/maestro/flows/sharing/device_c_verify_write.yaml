@@ -1,0 +1,62 @@
+appId: com.batuhanyetgin.kamci
+---
+# SHARE-02 (Device C): WRITE yetkisi doğrulama
+# WRITE = canWrite ✓ (ödeme yapabilir), canEdit ✗, canDelete ✗
+# İzin modeli debt_list_screen.dart Dismissible.confirmDismiss'te:
+#   sağa swipe (startToEnd) → canWrite → "Ödeme İşlemleri"
+#   sola swipe              → canDelete → "Borcu Sil"
+# ÖNKOŞUL: device_a_share_write.yaml hemen önce koşmuş olmalı.
+- runFlow: "../../subflows/_login_as_user_c.yaml"
+- tapOn:
+    text: "Borçlar"
+- waitForAnimationToEnd
+- tapOn:
+    id: "sharedDebtsTab"
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible:
+      text: "Test Borcu[\\s\\S]*"
+    timeout: 10000
+# 1) Sola swipe = silme → canDelete YOK → "yetkiniz yok"
+# element-swipe KULLANMA: Dismissible üstündeki element-swipe'ı TabBarView
+# yakalayıp sekmeyi kaydırıyor → koordinat swipe.
+- swipe:
+    start: "75%, 40%"
+    end: "5%, 40%"
+    duration: 400
+- extendedWaitUntil:
+    visible:
+      text: "[\\s\\S]*yetkiniz yok[\\s\\S]*"
+    timeout: 8000
+# 2) Detayda Düzenle → canEdit YOK → "yetkiniz yok"
+# NOT: Düzenle butonu HER ZAMAN görünür; izin onPressed içinde kontrol edilir
+# (debt_detail_screen.dart) → assertNotVisible YANLIŞ olur, basıp sonuca bak.
+- tapOn:
+    text: "Test Borcu[\\s\\S]*"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Düzenle"
+- extendedWaitUntil:
+    visible:
+      text: "[\\s\\S]*yetkiniz yok[\\s\\S]*"
+    timeout: 8000
+- assertNotVisible:
+    text: "Borcu Düzenle"
+- tapOn:
+    text: "Geri"
+- waitForAnimationToEnd
+# 3) Sağa swipe = ödeme → canWrite VAR → ödeme gerçekten yapılabilmeli
+- swipe:
+    start: "25%, 40%"
+    end: "95%, 40%"
+    duration: 400
+- extendedWaitUntil:
+    visible:
+      text: "Ödeme İşlemleri"
+    timeout: 8000
+- tapOn:
+    text: "Tam Ödeme"
+- extendedWaitUntil:
+    visible:
+      text: "[\\s\\S]*kayıt edildi[\\s\\S]*"
+    timeout: 10000

@@ -1,31 +1,63 @@
 appId: com.batuhanyetgin.kamci
 ---
-# SHARE-07: Toplu paylaşım — tüm kategorileri User B ile paylaş
-# Precondition: User A premium, en az 2 kategori var
+# SHARE-07: Toplu paylaşım — iki kategoriyi tek seferde User C ile paylaş
+# ⚠️ ÖNKOŞUL: python3 scripts/reset_sharing_state.py (temiz zemin)
+#
+# Akış (category_list_screen.dart + bulk_share_sheet.dart):
+#   FAB "Toplu Paylaş" → _CategorySharePickerSheet (kategori çipleri)
+#   → "Seçilenleri Paylaş (n)" → BulkShareSheet
+#   → e-posta yaz + "Ekle" (e-postayı listeye ekler) → seviye → "{n} kategoriye ekle"
 - runFlow: "../../subflows/_login_as_user_a.yaml"
+- runFlow: "../../subflows/_create_default_category.yaml"
+# İkinci kategori (toplu paylaşımın anlamlı olması için)
 - tapOn:
     text: "Kategoriler"
 - waitForAnimationToEnd
-# Toplu paylaş butonu
+- tapOn:
+    id: "addCategoryFab"
+- assertVisible:
+    text: "Yeni Kategori"
+- tapOn:
+    text: "Kategori Adı"
+- inputText: "Ikinci Kategori"
+- tapOn:
+    text: "Oluştur"
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Ikinci Kategori[\\s\\S]*"
+# Toplu paylaş FAB'ı (tooltip: l10n.bulkShare)
 - tapOn:
     text: "Toplu Paylaş"
-- assertVisible:
-    text: "Kategorileri Seç"
-# Tüm kategorileri seç
+- waitForAnimationToEnd
 - tapOn:
-    index: 0
+    text: "Test Kategorisi[\\s\\S]*"
 - tapOn:
-    index: 1
-# Email ve erişim seviyesi
+    text: "Ikinci Kategori[\\s\\S]*"
+# Buton metni seçim sayısına göre değişir: "Seçilenleri Paylaş (2)"
+- tapOn:
+    text: "Seçilenleri Paylaş[\\s\\S]*"
+- waitForAnimationToEnd
 - tapOn:
     text: "E-posta Adresi"
-- inputText: "${USER_B_EMAIL}"
+- waitForAnimationToEnd
+- inputText: "${USER_C_EMAIL}"
+- waitForAnimationToEnd
+# E-postayı listeye ekleyen IconButton (tooltip: l10n.add)
 - tapOn:
-    text: "Erişim seviyesi seçin"
+    text: "Ekle"
+- waitForAnimationToEnd
+# Dropdown birleşik label: "Erişim Seviyesi\nOkuma\nSadece görüntüleyebilir"
 - tapOn:
-    text: "Yazma"
-# Paylaş
+    text: "Erişim Seviyesi[\\s\\S]*"
+- waitForAnimationToEnd
 - tapOn:
-    text: "kategoriye ekle"
-- assertVisible:
-    text: "kategoriye eklendi"
+    text: "Yazma[\\s\\S]*"
+- waitForAnimationToEnd
+# "{count} kategoriye ekle" → "2 kategoriye ekle"
+- tapOn:
+    text: "[\\s\\S]*kategoriye ekle[\\s\\S]*"
+# "{email} {count} kategoriye eklendi."
+- extendedWaitUntil:
+    visible:
+      text: "[\\s\\S]*kategoriye eklendi[\\s\\S]*"
+    timeout: 10000

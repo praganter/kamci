@@ -180,8 +180,16 @@ class AuthNotifier extends _$AuthNotifier {
   }
 
   Future<void> logout() async {
-    await ref.read(notificationServiceProvider).unregisterToken();
     final storage = ref.read(secureStorageServiceProvider);
+    // Best-effort: sunucuda refresh token'ı blacklist'le. Başarısız olsa bile
+    // (offline / token zaten geçersiz) yerel logout devam eder.
+    final refreshToken = await storage.getRefreshToken();
+    if (refreshToken != null) {
+      try {
+        await ref.read(authRepositoryProvider).logout(refreshToken);
+      } catch (_) {}
+    }
+    await ref.read(notificationServiceProvider).unregisterToken();
     await storage.clearAll();
     state = const AuthState.unauthenticated();
   }

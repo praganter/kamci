@@ -83,6 +83,8 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
                   receiptData: p.verificationData.serverVerificationData,
                   plan: SubscriptionConstants.planForProductId(p.productID),
                   productId: p.productID,
+                  platform: SubscriptionConstants.platform,
+                  packageName: SubscriptionConstants.androidPackageName,
                 ),
               );
           await InAppPurchase.instance.completePurchase(p);

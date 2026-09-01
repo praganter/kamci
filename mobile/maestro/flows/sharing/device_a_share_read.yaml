@@ -1,6 +1,6 @@
 appId: com.batuhanyetgin.kamci
 ---
-# SHARE-01 (Device A): User A, Test Kategorisi'ni User B ile READ yetkisiyle paylaşır
+# SHARE-01 (Device A): User A, Test Kategorisi'ni User C ile READ yetkisiyle paylaşır
 # Bu flow emulator-5554 (Device A) üzerinde çalışır
 # Ardından device_b_verify_read.yaml emulator-5556'da çalıştırılır
 - runFlow: "../../subflows/_login_as_user_a.yaml"
@@ -19,7 +19,7 @@ appId: com.batuhanyetgin.kamci
     text: "Üye Ekle"
 - tapOn:
     text: "E-posta Adresi"
-- inputText: "${USER_B_EMAIL}"
+- inputText: "${USER_C_EMAIL}"
 # inputText sonrası field commit için bekle (yoksa Ekle boş email ile gider)
 - waitForAnimationToEnd
 # Erişim seviyesi dropdown'ı DEFAULT "Okuma" (AccessLevel.read) ile başlar
@@ -30,5 +30,5 @@ appId: com.batuhanyetgin.kamci
 # "üye olarak eklendi" snackbar geçicidir, güvenilir değil → üye satırıyla doğrula.
 - extendedWaitUntil:
     visible:
-      text: "[\\s\\S]*${USER_B_EMAIL}[\\s\\S]*"
+      text: "[\\s\\S]*${USER_C_EMAIL}[\\s\\S]*"
     timeout: 10000

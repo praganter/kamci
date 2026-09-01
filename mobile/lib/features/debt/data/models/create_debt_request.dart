@@ -10,14 +10,14 @@ sealed class CreateDebtRequest with _$CreateDebtRequest {
   const factory CreateDebtRequest({
     String? id,
     required String name,
-    String? categoryId,
+    required String categoryId,
     String? description,
     required String firstPaymentDate,
     int? installmentCount,
     required PaymentPeriodTypeJson paymentPeriodType,
     required double amount,
     @Default(false) bool autoPayment,
-    String? currency,
+    required String currency,
     ReminderEmbeddedModel? reminder,
   }) = _CreateDebtRequest;
 

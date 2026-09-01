@@ -17,6 +17,13 @@ abstract final class SubscriptionConstants {
 
   static Set<String> get productIds => {monthlyProductId, yearlyProductId};
 
+  /// Backend `/subscription/verify` için platform ayrımı (IOS | ANDROID).
+  static String get platform => Platform.isIOS ? 'IOS' : 'ANDROID';
+
+  /// Android'de `/subscription/verify` body'sinde zorunlu; iOS'ta null.
+  static String? get androidPackageName =>
+      Platform.isIOS ? null : 'com.batuhanyetgin.kamci';
+
   static String planForProductId(String productId) =>
       productId == monthlyProductId ? monthly : yearly;
 }

@@ -1,0 +1,22 @@
+appId: com.batuhanyetgin.kamci
+---
+# SHARE-06 (Device C): Çıkarılan üyenin kategoriyi artık görmediğini doğrula
+#
+# 🚫 BLOKE — remove_member.yaml'a bağlı; üye çıkarma production'da bozuk
+# (backend e-posta ile DELETE'e 204 dönüp hiçbir şey silmiyor).
+# Bu test aslında bug'ın EN KRİTİK yüzünü ölçüyor: sahibi "kaldırdım" sanırken
+# User C kategoriyi görmeye devam ediyor. Detay: [[project-api-blocker]]
+#
+# ÖNKOŞUL: remove_member.yaml hemen önce koşmuş olmalı.
+- runFlow: "../../subflows/_login_as_user_c.yaml"
+- tapOn:
+    text: "Kategoriler"
+- waitForAnimationToEnd
+# iOS Tab suffix'i ("\nSekme 2/2") tam eşleşmeyi kırar → [\s\S]* regex
+- tapOn:
+    text: "Paylaşılanlar[\\s\\S]*"
+- waitForAnimationToEnd
+- assertNotVisible:
+    text: "Test Kategorisi[\\s\\S]*"
+- assertVisible:
+    text: "Paylaşılan kategori yok"

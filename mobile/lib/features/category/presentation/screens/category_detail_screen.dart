@@ -266,13 +266,25 @@ class _LevelSection extends StatelessWidget {
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             trailing: isOwner
-                ? IconButton(
-                    icon: Icon(
-                      Icons.person_remove_outlined,
-                      color: cs.error,
-                      size: 20,
+                ? Semantics(
+                    identifier: 'removeMemberBtn',
+                    // container: true şart — ListTile satırı semantics'i
+                    // birleştirdiğinden identifier, butonun kendi node'u yerine
+                    // tüm satırı kaplayan birleşik node'a taşınıyor ve
+                    // dokunuş satırın ortasına, boşluğa düşüyordu.
+                    container: true,
+                    child: IconButton(
+                      icon: Icon(
+                        Icons.person_remove_outlined,
+                        color: cs.error,
+                        size: 20,
+                      ),
+                      // Tooltip olmadan buton a11y ağacında label'sız kalıyordu:
+                      // ikon tek başına anlam taşımıyor, ekran okuyucu boş bir
+                      // düğme okuyordu.
+                      tooltip: l10n.removeMember,
+                      onPressed: () => onRemove(member),
                     ),
-                    onPressed: () => onRemove(member),
                   )
                 : null,
           ),

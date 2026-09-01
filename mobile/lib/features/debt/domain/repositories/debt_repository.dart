@@ -10,7 +10,7 @@ abstract interface class DebtRepository {
   Future<Debt> getById(String id);
   Future<Debt> create(CreateDebtParams params);
   Future<Debt> update(String id, CreateDebtParams params);
-  Future<Debt> pay(String id, {double? amountPaid});
+  Future<Debt> pay(String id, {double? amountPaid, DateTime? paidTime});
   Future<Debt> skip(String id);
   Future<Debt> bulkPay(String id, List<BulkPaymentEntry> payments);
   Future<void> delete(String id);

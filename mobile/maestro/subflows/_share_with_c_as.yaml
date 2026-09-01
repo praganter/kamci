@@ -1,0 +1,53 @@
+appId: com.batuhanyetgin.kamci
+---
+# "Test Kategorisi" + "Test Borcu" oluşturur ve User C ile ${LEVEL} yetkisiyle
+# paylaşır. Çağıran flow zaten User A olarak login olmuş olmalı.
+#
+# ${LEVEL} = Okuma | Yazma | Düzenleme | Admin  (l10n accessRead/Write/Edit/Delete)
+#
+# ⚠️ ÖNKOŞUL: User A'nın HİÇ kategorisi olmamalı →
+#     python3 scripts/reset_sharing_state.py
+# Neden: _create_default_debt kategori çarkının VARSAYILANINI (ilk kategori)
+# seçer; birden fazla kategori varsa borç yanlış kategoriye düşer ve
+# device_c_verify_* paylaşılan borcu göremez.
+#
+# NEDEN her seferinde sıfırdan kuruyoruz (seviyeyi değiştirmek yerine):
+# 1. Uygulamada bir üyenin erişim seviyesini DEĞİŞTİREN UI yok (l10n'deki
+#    changeAccessLevel kullanılmayan ölü string).
+# 2. Üyeyi kaldırıp yeniden eklemek de mümkün değil: kaldırma BOZUK — app
+#    member.userId ?? member.email gönderiyor, /category/getAll üyelerde userId
+#    döndürmediği için hep e-posta gidiyor, backend de e-posta için HTTP 204
+#    ("başarılı") deyip hiçbir şey silmiyor. Detay: [[project-api-blocker]]
+- runFlow: "_create_default_category.yaml"
+- runFlow: "_create_default_debt.yaml"
+- tapOn:
+    text: "Kategoriler"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Test Kategorisi[\\s\\S]*"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Üye Ekle"
+- assertVisible:
+    text: "Üye Ekle"
+- tapOn:
+    text: "E-posta Adresi"
+- waitForAnimationToEnd
+- inputText: "${USER_C_EMAIL}"
+# inputText sonrası field commit için bekle (yoksa Ekle boş email ile gider)
+- waitForAnimationToEnd
+# Dropdown birleşik label taşır: "Erişim Seviyesi\nOkuma\nSadece görüntüleyebilir"
+- tapOn:
+    text: "Erişim Seviyesi[\\s\\S]*"
+- waitForAnimationToEnd
+# Seçenek satırı da birleşik: "Yazma\nGörüntüleyebilir ve ödeme yapabilir"
+- tapOn:
+    text: "${LEVEL}[\\s\\S]*"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Ekle"
+# Snackbar geçicidir, güvenilir değil → üye satırıyla doğrula.
+- extendedWaitUntil:
+    visible:
+      text: "[\\s\\S]*${USER_C_EMAIL}[\\s\\S]*"
+    timeout: 10000

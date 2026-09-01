@@ -1,27 +1,46 @@
 appId: com.batuhanyetgin.kamci
 ---
-# SHARE-06 (Device A): User B'yi kategoriden çıkar
+# SHARE-05 (Device A): User C'yi kategoriden çıkar
+#
+# 🚫 BLOKE — ÜYE ÇIKARMA GERÇEKTEN BOZUK (test sorunu değil, production bug):
+#   1. /category/getAll üyelerde userId döndürmüyor (yalnız email + accessLevel)
+#      → category_detail_screen'de member.userId ?? member.email hep E-POSTA gönderir.
+#   2. DELETE /category/{id}/member/{email} backend'de HTTP 204 ("başarılı")
+#      döner ama HİÇBİR ŞEY SİLMEZ. Gerçek userId ile aynı çağrı çalışıyor.
+#   3. App 204'ü başarı sayıp "Üye kaldırıldı." snackbar'ı gösterir → kullanıcı
+#      üyeyi çıkardığını sanır, üye erişimini korur. Sessiz veri/erişim sızıntısı.
+# Backend members[].userId döndürene VEYA e-posta ile silmeyi desteklemeye
+# başlayana kadar bu test GEÇEMEZ. Detay: [[project-api-blocker]]
+#
+# Aşağısı DÜZELTİLMİŞ hâl (backend hazır olunca çalışması beklenir):
+# - "Üyeleri Yönet" ekranı yok; üye listesi kategori DETAY ekranının gövdesi.
+# - Kaldır butonu ListTile trailing'inde, label'sızdı → removeMemberBtn id'si
+#   eklendi (Semantics container:true, yoksa identifier birleşik satıra kaçıyor).
+# - Onay butonu "Kaldır" (confirmText: l10n.remove), "Evet" DEĞİL.
 - runFlow: "../../subflows/_login_as_user_a.yaml"
 - tapOn:
     text: "Kategoriler"
-- tapOn:
-    text: "Sahip Olduklarım"
-    index: 0
-- tapOn:
-    text: "Test Kategorisi"
 - waitForAnimationToEnd
 - tapOn:
-    text: "Üyeleri Yönet"
+    text: "Test Kategorisi[\\s\\S]*"
+- waitForAnimationToEnd
 - assertVisible:
-    text: "${USER_B_EMAIL}"
-# Kaldır butonuna tıkla
+    text: "[\\s\\S]*${USER_C_EMAIL}[\\s\\S]*"
+- tapOn:
+    id: "removeMemberBtn"
+    index: 0
+- extendedWaitUntil:
+    visible:
+      text: "[\\s\\S]*kaldırmak istediğinize emin misiniz[\\s\\S]*"
+    timeout: 5000
 - tapOn:
     text: "Kaldır"
-- assertVisible:
-    text: "Bu üyeyi kategoriden kaldırmak"
-- tapOn:
-    text: "Evet"
-- assertVisible:
-    text: "Üye kaldırıldı."
-- assertNotVisible:
-    text: "${USER_B_EMAIL}"
+- extendedWaitUntil:
+    visible:
+      text: "Üye kaldırıldı."
+    timeout: 8000
+# Asıl kanıt: üye satırı GERÇEKTEN gitmeli. Snackbar 204 yüzünden yalan söylüyor.
+- extendedWaitUntil:
+    notVisible:
+      text: "[\\s\\S]*${USER_C_EMAIL}[\\s\\S]*"
+    timeout: 10000

@@ -1,22 +1,14 @@
 appId: com.batuhanyetgin.kamci
 ---
-# SHARE-04 (Device A): User B'yi ADMIN yetkisine yükselt
+# SHARE-04 (Device A): User C'yi ADMIN yetkisiyle paylaşıma al
+# Önceki hâli "Erişim Seviyesini Değiştir" ekranını kullanıyordu — öyle bir ekran
+# uygulamada YOK (changeAccessLevel ölü l10n string'i). Bkz _share_with_c_as.yaml.
+# ⚠️ ÖNKOŞUL: python3 scripts/reset_sharing_state.py
 - runFlow: "../../subflows/_login_as_user_a.yaml"
-- tapOn:
-    text: "Kategoriler"
-- tapOn:
-    text: "Sahip Olduklarım"
-    index: 0
-- tapOn:
-    text: "Test Kategorisi"
-- waitForAnimationToEnd
-- tapOn:
-    text: "${USER_B_EMAIL}"
+- runFlow:
+    file: "../../subflows/_share_with_c_as.yaml"
+    env:
+      LEVEL: "Admin"
+# Üye satırındaki AccessLevelBadge ADMIN'i göstermeli
 - assertVisible:
-    text: "Erişim Seviyesini Değiştir"
-- tapOn:
-    text: "Admin"
-- tapOn:
-    text: "Kaydet"
-- assertVisible:
-    text: "Admin"
+    text: "[\\s\\S]*ADMIN[\\s\\S]*"
