@@ -8,6 +8,17 @@ import '../../constants/api_constants.dart';
 import '../../storage/secure_storage_service.dart';
 import '../dio_client.dart';
 
+enum _TokenErrorAction {
+  /// Not a token error — pass through untouched.
+  none,
+
+  /// Attempt the normal refresh-then-retry flow.
+  refresh,
+
+  /// Skip refresh entirely and end the session immediately.
+  forceLogout,
+}
+
 class AuthInterceptor extends QueuedInterceptorsWrapper {
   AuthInterceptor(this._ref);
 
@@ -57,27 +68,66 @@ class AuthInterceptor extends QueuedInterceptorsWrapper {
     '/auth/reset-password',
   ];
 
-  bool _isTokenError(DioException err) {
+  /// F5 (2026-09-01): gateway is rolling out stable error codes for
+  /// auth/rate-limit failures (`TOKEN_EXPIRED`, `TOKEN_INVALID`,
+  /// `AUTH_HEADER_MISSING`, `AUTH_HEADER_INVALID`, `RATE_LIMITED`) to replace
+  /// the old free-text `"JWT is invalid or expired"` / `JWT_EXPIRED` /
+  /// `INVALID_JWT` strings. Gateway and mobile deploy independently, so this
+  /// interceptor recognizes BOTH: the new codes take priority, the old
+  /// substring match stays as a fallback for as long as any backend instance
+  /// still speaks the old shape. Drop the fallback once the rollout is
+  /// confirmed complete on all environments.
+  static const _tokenExpiredCodes = {
+    'TOKEN_EXPIRED',
+    // A missing/malformed Authorization header is most likely a stale or
+    // corrupted in-memory/Keychain token — the same recovery as an expired
+    // token (attempt refresh; retry naturally re-attaches a fresh header)
+    // fixes it, and falls through to the existing "no refresh token → logout"
+    // path if there's nothing to refresh with.
+    'AUTH_HEADER_MISSING',
+    'AUTH_HEADER_INVALID',
+  };
+
+  /// A refresh token was sent where an access token was expected (wrong
+  /// `type` claim). Retrying with a freshly refreshed access token won't fix
+  /// a structurally wrong request that already proves the client's token
+  /// bookkeeping is broken — end the session instead of looping on refresh.
+  static const _tokenInvalidCode = 'TOKEN_INVALID';
+
+  _TokenErrorAction _tokenErrorAction(DioException err) {
     final path = err.requestOptions.path;
-    if (_credentialCheckPaths.any(path.contains)) return false;
+    if (_credentialCheckPaths.any(path.contains)) return _TokenErrorAction.none;
 
     final status = err.response?.statusCode;
-    if (status == 401) return true;
-    if (status == 403) {
-      // Backend servisleri 'code' gönderir (JWT_EXPIRED / INVALID_JWT);
-      // gateway 403 gövdesi farklı: {"error":"JWT is invalid or expired","status":403}.
-      // İkisini de + geriye dönük 'message'ı yakala.
-      final data = err.response?.data;
-      if (data is! Map) return false;
-      final code = (data['code'] ?? data['error'] ?? data['message']) as String?;
-      return code != null && code.contains('JWT');
+    final data = err.response?.data;
+    final code = data is Map ? data['code'] as String? : null;
+
+    if (code == _tokenInvalidCode) return _TokenErrorAction.forceLogout;
+    if (code != null && _tokenExpiredCodes.contains(code)) {
+      return _TokenErrorAction.refresh;
     }
-    return false;
+
+    if (status == 401) return _TokenErrorAction.refresh;
+    if (status == 403) {
+      // Legacy detection (pre-`code`-rollout gateway/services): gateway 403
+      // body is {"error":"JWT is invalid or expired","status":403}; services
+      // send {"code":"JWT_EXPIRED"} / {"code":"INVALID_JWT"}.
+      if (data is! Map) return _TokenErrorAction.none;
+      final legacy = (data['code'] ?? data['error'] ?? data['message']) as String?;
+      if (legacy != null && legacy.contains('JWT')) return _TokenErrorAction.refresh;
+    }
+    return _TokenErrorAction.none;
   }
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
-    if (!_isTokenError(err)) {
+    final action = _tokenErrorAction(err);
+    if (action == _TokenErrorAction.none) {
+      handler.next(err);
+      return;
+    }
+    if (action == _TokenErrorAction.forceLogout) {
+      await _logout();
       handler.next(err);
       return;
     }
