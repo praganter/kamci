@@ -102,6 +102,18 @@ rate-limit:
       capacity: 5
       refillTokens: 5
       refillSeconds: 3600
+    - path: /auth/register
+      capacity: 5
+      refillTokens: 5
+      refillSeconds: 3600
+    - path: /auth/reset-password
+      capacity: 5
+      refillTokens: 5
+      refillSeconds: 3600
+    - path: /auth/refresh-token
+      capacity: 20
+      refillTokens: 20
+      refillSeconds: 600
 
 logging:
   level:
