@@ -58,6 +58,8 @@ public class CategoryService {
             throw BaseException.badRequest("error.category.limit_exceeded");
         }
 
+        checkNameConflict(userId, request.getName(), null);
+
         final CategoryDocument saved = categoryRS.save(CategoryDocument.builder()
                 .ownerId(userId)
                 .name(request.getName())
@@ -76,6 +78,7 @@ public class CategoryService {
         final CategoryDocument category = categoryRS.findById(request.getId());
 
         checkOwner(category, userId);
+        checkNameConflict(userId, request.getName(), category.getId());
         category.setName(request.getName());
 
         final CategoryDocument updated = categoryRS.save(category);
@@ -166,6 +169,10 @@ public class CategoryService {
             throw BaseException.notFound("error.category.member_user_not_found", email);
         }
 
+        if (memberUserId.equals(category.getOwnerId())) {
+            throw BaseException.conflict("error.category.cannot_add_self");
+        }
+
         final boolean alreadyMember = category.getMembers().stream()
                 .anyMatch(m -> m.getUserId().equals(memberUserId));
 
@@ -202,6 +209,12 @@ public class CategoryService {
 
         checkOwner(category, userId);
 
+        final boolean isMember = category.getMembers().stream()
+                .anyMatch(m -> m.getUserId().equals(memberUserId));
+        if (!isMember) {
+            throw BaseException.notFound("error.category.member_not_found");
+        }
+
         category.setMembers(category.getMembers().stream()
                 .filter(m -> !m.getUserId().equals(memberUserId))
                 .toList());
@@ -231,6 +244,15 @@ public class CategoryService {
     private void checkOwner(final CategoryDocument category, final String userId) {
         if (!category.getOwnerId().equals(userId)) {
             throw BaseException.forbidden("error.category.permission_denied");
+        }
+    }
+
+    private void checkNameConflict(final String ownerId, final String name, final String excludeCategoryId) {
+        final boolean conflict = categoryRS.findByOwnerId(ownerId).stream()
+                .filter(c -> excludeCategoryId == null || !c.getId().equals(excludeCategoryId))
+                .anyMatch(c -> c.getName() != null && c.getName().equalsIgnoreCase(name));
+        if (conflict) {
+            throw BaseException.conflict("error.category.name_conflict");
         }
     }
 }

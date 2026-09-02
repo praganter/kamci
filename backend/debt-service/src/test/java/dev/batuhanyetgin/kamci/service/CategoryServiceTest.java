@@ -134,6 +134,28 @@ class CategoryServiceTest {
                 verify(categoryRS, never()).save(any());
             }
         }
+
+        @Test
+        @DisplayName("name matches existing category case-insensitively → throws CONFLICT")
+        void nameConflict_throwsConflict() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+                ctx.when(RequestContextUtil::isPremium).thenReturn(true);
+
+                when(categoryRS.countByOwnerIdAndMembersIsEmpty(OWNER_ID)).thenReturn(0L);
+                when(categoryRS.findByOwnerId(OWNER_ID))
+                        .thenReturn(List.of(buildCategory(CAT_ID, OWNER_ID))); // name = "Test Category"
+
+                final CreateCategoryRequest request = new CreateCategoryRequest();
+                request.setName("test category");
+
+                assertThatExceptionOfType(BaseException.class)
+                        .isThrownBy(() -> categoryService.save(request))
+                        .matches(e -> e.getStatus() == HttpStatus.CONFLICT);
+
+                verify(categoryRS, never()).save(any());
+            }
+        }
     }
 
     // ─── update ───────────────────────────────────────────────────────────────
@@ -184,6 +206,51 @@ class CategoryServiceTest {
                         .matches(e -> e.getStatus() == HttpStatus.FORBIDDEN);
 
                 verify(categoryRS, never()).save(any());
+            }
+        }
+
+        @Test
+        @DisplayName("new name matches another owned category case-insensitively → throws CONFLICT")
+        void nameConflict_throwsConflict() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+                ctx.when(RequestContextUtil::isPremium).thenReturn(true);
+
+                final CategoryDocument cat = buildCategory(CAT_ID, OWNER_ID);
+                cat.setName("Groceries");
+                when(categoryRS.findById(CAT_ID)).thenReturn(cat);
+                when(categoryRS.findByOwnerId(OWNER_ID))
+                        .thenReturn(List.of(cat, buildCategory(CAT_ID_2, OWNER_ID))); // CAT_ID_2 name = "Test Category"
+
+                final UpdateCategoryRequest request = new UpdateCategoryRequest();
+                request.setId(CAT_ID);
+                request.setName("test category");
+
+                assertThatExceptionOfType(BaseException.class)
+                        .isThrownBy(() -> categoryService.update(request))
+                        .matches(e -> e.getStatus() == HttpStatus.CONFLICT);
+
+                verify(categoryRS, never()).save(any());
+            }
+        }
+
+        @Test
+        @DisplayName("renaming to same name (self match excluded) → succeeds")
+        void renameToOwnCurrentName_succeeds() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+                ctx.when(RequestContextUtil::isPremium).thenReturn(true);
+
+                final CategoryDocument cat = buildCategory(CAT_ID, OWNER_ID);
+                when(categoryRS.findById(CAT_ID)).thenReturn(cat);
+                when(categoryRS.findByOwnerId(OWNER_ID)).thenReturn(List.of(cat));
+                when(categoryRS.save(cat)).thenReturn(cat);
+
+                final UpdateCategoryRequest request = new UpdateCategoryRequest();
+                request.setId(CAT_ID);
+                request.setName("Test Category");
+
+                assertThatNoException().isThrownBy(() -> categoryService.update(request));
             }
         }
     }
@@ -420,6 +487,30 @@ class CategoryServiceTest {
                 verify(categoryRS, never()).save(any());
             }
         }
+
+        @Test
+        @DisplayName("owner tries to add themselves → throws CONFLICT")
+        void ownerAddsSelf_throwsConflict() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+                ctx.when(RequestContextUtil::isPremium).thenReturn(true);
+
+                final CategoryDocument cat = buildCategory(CAT_ID, OWNER_ID);
+                when(categoryRS.findById(CAT_ID)).thenReturn(cat);
+                final String ownerEmail = "owner@example.com";
+                when(authClient.getUserIdByEmail(ownerEmail)).thenReturn(OWNER_ID);
+
+                final AddMemberRequest request = new AddMemberRequest();
+                request.setEmail(ownerEmail);
+                request.setAccessLevel(AccessLevelType.READ);
+
+                assertThatExceptionOfType(BaseException.class)
+                        .isThrownBy(() -> categoryService.addMember(CAT_ID, request))
+                        .matches(e -> e.getStatus() == HttpStatus.CONFLICT);
+
+                verify(categoryRS, never()).save(any());
+            }
+        }
     }
 
     // ─── bulkAddMember ────────────────────────────────────────────────────────
@@ -510,6 +601,22 @@ class CategoryServiceTest {
                 assertThatExceptionOfType(BaseException.class)
                         .isThrownBy(() -> categoryService.removeMember(CAT_ID, MEMBER_ID))
                         .matches(e -> e.getStatus() == HttpStatus.FORBIDDEN);
+
+                verify(categoryRS, never()).save(any());
+            }
+        }
+
+        @Test
+        @DisplayName("user is not a member → throws NOT_FOUND")
+        void notAMember_throwsNotFound() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+                ctx.when(RequestContextUtil::isPremium).thenReturn(true);
+                when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
+
+                assertThatExceptionOfType(BaseException.class)
+                        .isThrownBy(() -> categoryService.removeMember(CAT_ID, MEMBER_ID))
+                        .matches(e -> e.getStatus() == HttpStatus.NOT_FOUND);
 
                 verify(categoryRS, never()).save(any());
             }
