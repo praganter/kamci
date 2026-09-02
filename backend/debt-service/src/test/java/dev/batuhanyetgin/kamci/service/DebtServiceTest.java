@@ -695,8 +695,8 @@ class DebtServiceTest {
         }
 
         @Test
-        @DisplayName("ONE_TIME debt paid again → throws CONFLICT with error.debt.already_paid, no DB update")
-        void oneTimeDebtPaidAgain_throwsAlreadyPaidConflict() {
+        @DisplayName("ONE_TIME debt paid again → throws CONFLICT with error.debt.already_completed, no DB update")
+        void oneTimeDebtPaidAgain_throwsAlreadyCompletedConflict() {
             try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
                 ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
                 ctx.when(RequestContextUtil::isPremium).thenReturn(true);
@@ -705,19 +705,22 @@ class DebtServiceTest {
                 final List<PaymentEmbedded> existingPayments = new ArrayList<>();
                 existingPayments.add(PaymentEmbedded.builder().paid(true)
                         .paidTime(LocalDateTime.now().minusDays(1)).build());
+                // ONE_TIME debts are marked COMPLETED after their first payment (see below),
+                // so a second pay() call must be rejected by the already_completed guard.
                 final DebtDocument existing = DebtDocument.builder()
                         .id(DEBT_ID).ownerId(OWNER_ID).categoryId(CAT_ID)
                         .name("Test Debt").amount(BigDecimal.TEN)
                         .paymentPeriodType(PaymentPeriodType.ONE_TIME)
                         .firstPaymentDate(LocalDateTime.now().minusDays(2))
                         .payments(existingPayments)
+                        .status(DebtStatus.COMPLETED)
                         .build();
                 when(debtRS.findById(DEBT_ID)).thenReturn(existing);
 
                 assertThatExceptionOfType(BaseException.class)
                         .isThrownBy(() -> debtService.pay(DEBT_ID, null))
                         .matches(e -> e.getStatus() == HttpStatus.CONFLICT)
-                        .matches(e -> "error.debt.already_paid".equals(e.getCode()));
+                        .matches(e -> "error.debt.already_completed".equals(e.getCode()));
 
                 verify(debtRS, never()).update(any());
                 verify(categoryRS, never()).findById(any());

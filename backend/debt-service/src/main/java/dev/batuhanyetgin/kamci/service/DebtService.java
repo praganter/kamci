@@ -159,11 +159,6 @@ public class DebtService {
             throw BaseException.conflict("error.debt.auto_payment_enabled");
         }
 
-        if (existing.getPaymentPeriodType() == PaymentPeriodType.ONE_TIME
-                && existing.getPayments().stream().anyMatch(PaymentEmbedded::isPaid)) {
-            throw BaseException.conflict("error.debt.already_paid");
-        }
-
         final CategoryDocument category = categoryRS.findById(existing.getCategoryId());
         if (lacksWriteAccess(category, userId)) {
             throw BaseException.forbidden("error.debt.permission_denied");
