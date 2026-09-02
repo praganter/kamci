@@ -31,7 +31,7 @@ sealed class ApiException implements Exception {
   /// not-found. Carried on [BusinessException.code] and resolved to copy in
   /// `exception_l10n.dart` (falls back to the backend `message`).
   static const _businessCodes = {
-    'error.debt.already_paid', // 409 — /debt/pay on an already-paid ONE_TIME
+    'error.debt.already_completed', // 409 — /debt/pay on a COMPLETED (paid/skipped) debt
     'error.debt.overpayment', // 400 — pay/bulkPay amount exceeds the debt
     'error.category.name_conflict', // 409 — same owner, case-insensitive name
     'error.category.cannot_add_self', // 409 — owner adds themselves as member

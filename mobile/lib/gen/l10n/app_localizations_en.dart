@@ -779,7 +779,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Your session has expired. Please sign in again.';
 
   @override
-  String get errorDebtAlreadyPaid => 'This debt has already been paid.';
+  String get errorDebtAlreadyCompleted => 'This debt is already completed.';
 
   @override
   String get errorDebtOverpayment =>

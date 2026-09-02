@@ -46,7 +46,7 @@ void main() {
 
     group('business codes → BusinessException carrying the code', () {
       const cases = {
-        'error.debt.already_paid': 409,
+        'error.debt.already_completed': 409,
         'error.debt.overpayment': 400,
         'error.category.name_conflict': 409,
         'error.category.cannot_add_self': 409,

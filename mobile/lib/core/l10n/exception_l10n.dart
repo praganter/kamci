@@ -21,7 +21,7 @@ extension ApiExceptionL10n on ApiException {
 /// backend-supplied message.
 String? _businessCodeMessage(String? code, AppLocalizations l10n) =>
     switch (code) {
-      'error.debt.already_paid' => l10n.errorDebtAlreadyPaid,
+      'error.debt.already_completed' => l10n.errorDebtAlreadyCompleted,
       'error.debt.overpayment' => l10n.errorDebtOverpayment,
       'error.category.name_conflict' => l10n.errorCategoryNameConflict,
       'error.category.cannot_add_self' => l10n.errorCategoryCannotAddSelf,

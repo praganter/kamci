@@ -32,7 +32,7 @@ Tüm datasource'lar `on DioException` yakalar → `ApiException.fromDioException
 | `error.debt.limit_exceeded`, `error.category.limit_exceeded`, `error.category.premium_required`, `error.debt.premium_required` | `PremiumLimitException` (upsell sheet) |
 | `error.debt.permission_denied`, `error.category.permission_denied`, `error.income.permission_denied` | `PermissionDeniedException` (düz hata, upsell YOK) |
 | `error.user.not_found_in_context` | `UnauthorizedException` |
-| `error.debt.already_paid` (409), `error.debt.overpayment` (400), `error.category.name_conflict` (409), `error.category.cannot_add_self` (409), `error.category.member_not_found` (404) | `BusinessException(message, code: <code>)` — `exception_l10n.dart` lokalize kopyaya çevirir, yoksa backend `message`'a düşer |
+| `error.debt.already_completed` (409), `error.debt.overpayment` (400), `error.category.name_conflict` (409), `error.category.cannot_add_self` (409), `error.category.member_not_found` (404) | `BusinessException(message, code: <code>)` — `exception_l10n.dart` lokalize kopyaya çevirir, yoksa backend `message`'a düşer |
 
 **`code` yoksa / tanınmıyorsa — status fallback:**
 
@@ -51,7 +51,7 @@ Tüm datasource'lar `on DioException` yakalar → `ApiException.fromDioException
 
 > Not: Beklenen sözleşme hata gövdesi `{ "message": string, "code"?: string, "errors"?: [{ "message": string }] }`. AuthInterceptor ayrıca gateway formatı `{ "error": string, "status": int }` ve servis formatı `{ "code": string }` okur.
 >
-> **C2-optional (uygulandı):** 5 iş kodu (`error.debt.already_paid`, `error.debt.overpayment`, `error.category.name_conflict`, `error.category.cannot_add_self`, `error.category.member_not_found`) `_businessCodes` setinde tanınıyor → `BusinessException.code` taşıyor → `exception_l10n._businessCodeMessage` lokalize kopya döndürüyor (`errorDebtAlreadyPaid` vb. arb anahtarları). `error.auth.email_in_use` backend'de zaten vardı, mobile code bazlı tanımıyor (409 → jenerik `BusinessException(message)`). `invalid_migration_target` / `income period_overlap` kullanıcı kararıyla eklenmedi.
+> **C2-optional (uygulandı + backend debt-service v0.0.20'ye karşı E2E doğrulandı):** 5 iş kodu (`error.debt.already_completed`, `error.debt.overpayment`, `error.category.name_conflict`, `error.category.cannot_add_self`, `error.category.member_not_found`) `_businessCodes` setinde tanınıyor → `BusinessException.code` taşıyor → `exception_l10n._businessCodeMessage` lokalize kopya döndürüyor (`errorDebtAlreadyCompleted` vb. arb anahtarları). NOT: backend kodu `already_paid` değil `already_completed` (orchestrator listesi yanlıştı, E2E'de yakalandı). `error.auth.email_in_use` backend'de zaten vardı, mobile code bazlı tanımıyor (409 → jenerik `BusinessException(message)`). `invalid_migration_target` / `income period_overlap` kullanıcı kararıyla eklenmedi.
 
 ---
 

@@ -125,24 +125,19 @@ void main() {
       }
     });
 
-    // ONE_TIME /debt/pay 500 (periodEnd NPE) — backend'de düzeltildi ama
-    // 198.51.100.10:30080 gateway'ine henüz DEPLOY EDİLMEDİ (2026-09-01 doğrulandı,
-    // hâlâ 500). Deploy sonrası skip kaldırılmalı.
-    test(
-      'borcu öder ve paymentStatus değişir',
-      () async {
-        final result = await ds.pay(createdDebtId);
-        expect(result.id, equals(createdDebtId));
-        expect(
-          result.paymentStatus,
-          anyOf(
-            equals(PaymentStatusJson.paid),
-            equals(PaymentStatusJson.partiallyPaid),
-          ),
-        );
-      },
-      skip: 'Backend /debt/pay 500 fix henüz deploy edilmedi',
-    );
+    // ONE_TIME /debt/pay 500 (periodEnd NPE) → debt-service v0.0.20'de düzeldi
+    // (2026-09-03 E2E doğrulandı, 200 + COMPLETED/PAID).
+    test('borcu öder ve paymentStatus değişir', () async {
+      final result = await ds.pay(createdDebtId);
+      expect(result.id, equals(createdDebtId));
+      expect(
+        result.paymentStatus,
+        anyOf(
+          equals(PaymentStatusJson.paid),
+          equals(PaymentStatusJson.partiallyPaid),
+        ),
+      );
+    });
   });
 
   group('skip', () {

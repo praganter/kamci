@@ -781,10 +781,11 @@ class AppLocalizationsTr extends AppLocalizations {
       'Oturumunuz sona erdi. Lütfen tekrar giriş yapın.';
 
   @override
-  String get errorDebtAlreadyPaid => 'Bu borç zaten ödenmiş.';
+  String get errorDebtAlreadyCompleted => 'Bu borç zaten tamamlanmış.';
 
   @override
-  String get errorDebtOverpayment => 'Ödeme tutarı kalan borç tutarını aşamaz.';
+  String get errorDebtOverpayment =>
+      'Ödeme tutarı, kalan borç tutarını aşamaz.';
 
   @override
   String get errorCategoryNameConflict => 'Bu isimde bir kategori zaten var.';

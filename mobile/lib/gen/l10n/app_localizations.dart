@@ -1508,16 +1508,16 @@ abstract class AppLocalizations {
   /// **'Oturumunuz sona erdi. Lütfen tekrar giriş yapın.'**
   String get errorSessionExpired;
 
-  /// No description provided for @errorDebtAlreadyPaid.
+  /// No description provided for @errorDebtAlreadyCompleted.
   ///
   /// In tr, this message translates to:
-  /// **'Bu borç zaten ödenmiş.'**
-  String get errorDebtAlreadyPaid;
+  /// **'Bu borç zaten tamamlanmış.'**
+  String get errorDebtAlreadyCompleted;
 
   /// No description provided for @errorDebtOverpayment.
   ///
   /// In tr, this message translates to:
-  /// **'Ödeme tutarı kalan borç tutarını aşamaz.'**
+  /// **'Ödeme tutarı, kalan borç tutarını aşamaz.'**
   String get errorDebtOverpayment;
 
   /// No description provided for @errorCategoryNameConflict.
