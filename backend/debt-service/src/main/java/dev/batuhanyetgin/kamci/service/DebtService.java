@@ -159,6 +159,11 @@ public class DebtService {
             throw BaseException.conflict("error.debt.auto_payment_enabled");
         }
 
+        if (existing.getPaymentPeriodType() == PaymentPeriodType.ONE_TIME
+                && existing.getPayments().stream().anyMatch(PaymentEmbedded::isPaid)) {
+            throw BaseException.conflict("error.debt.already_paid");
+        }
+
         final CategoryDocument category = categoryRS.findById(existing.getCategoryId());
         if (lacksWriteAccess(category, userId)) {
             throw BaseException.forbidden("error.debt.permission_denied");
@@ -198,8 +203,9 @@ public class DebtService {
             existing.setPaymentStatus(isFullPayment ? PaymentStatus.PAID : PaymentStatus.PARTIALLY_PAID);
         }
 
-        if (existing.getInstallmentCount() != null
-                && existing.getPayments().size() >= existing.getInstallmentCount()) {
+        if (existing.getPaymentPeriodType() == PaymentPeriodType.ONE_TIME
+                || (existing.getInstallmentCount() != null
+                        && existing.getPayments().size() >= existing.getInstallmentCount())) {
             existing.setStatus(DebtStatus.COMPLETED);
             log.info("Debt {} marked as COMPLETED — all {} installments paid", id, existing.getInstallmentCount());
         } else {

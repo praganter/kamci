@@ -695,6 +695,63 @@ class DebtServiceTest {
         }
 
         @Test
+        @DisplayName("ONE_TIME debt paid again → throws CONFLICT with error.debt.already_paid, no DB update")
+        void oneTimeDebtPaidAgain_throwsAlreadyPaidConflict() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+                ctx.when(RequestContextUtil::isPremium).thenReturn(true);
+                ctx.when(RequestContextUtil::getLocale).thenReturn("en");
+
+                final List<PaymentEmbedded> existingPayments = new ArrayList<>();
+                existingPayments.add(PaymentEmbedded.builder().paid(true)
+                        .paidTime(LocalDateTime.now().minusDays(1)).build());
+                final DebtDocument existing = DebtDocument.builder()
+                        .id(DEBT_ID).ownerId(OWNER_ID).categoryId(CAT_ID)
+                        .name("Test Debt").amount(BigDecimal.TEN)
+                        .paymentPeriodType(PaymentPeriodType.ONE_TIME)
+                        .firstPaymentDate(LocalDateTime.now().minusDays(2))
+                        .payments(existingPayments)
+                        .build();
+                when(debtRS.findById(DEBT_ID)).thenReturn(existing);
+
+                assertThatExceptionOfType(BaseException.class)
+                        .isThrownBy(() -> debtService.pay(DEBT_ID, null))
+                        .matches(e -> e.getStatus() == HttpStatus.CONFLICT)
+                        .matches(e -> "error.debt.already_paid".equals(e.getCode()));
+
+                verify(debtRS, never()).update(any());
+                verify(categoryRS, never()).findById(any());
+            }
+        }
+
+        @Test
+        @DisplayName("ONE_TIME debt first payment → marked COMPLETED")
+        void oneTimeDebtFirstPayment_marksCompleted() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+                ctx.when(RequestContextUtil::isPremium).thenReturn(true);
+                ctx.when(RequestContextUtil::getLocale).thenReturn("en");
+
+                final DebtDocument existing = DebtDocument.builder()
+                        .id(DEBT_ID).ownerId(OWNER_ID).categoryId(CAT_ID)
+                        .name("Test Debt").amount(BigDecimal.TEN)
+                        .paymentPeriodType(PaymentPeriodType.ONE_TIME)
+                        .firstPaymentDate(LocalDateTime.now().minusDays(1))
+                        .build();
+                when(debtRS.findById(DEBT_ID)).thenReturn(existing);
+                when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
+
+                final ArgumentCaptor<DebtDocument> captor = ArgumentCaptor.forClass(DebtDocument.class);
+                when(debtRS.update(captor.capture())).thenReturn(existing);
+                when(debtMapper.convert(existing)).thenReturn(buildDebtItemResponse());
+
+                debtService.pay(DEBT_ID, null);
+
+                assertThat(captor.getValue().getStatus()).isEqualTo(DebtStatus.COMPLETED);
+            }
+        }
+
+        @Test
         @DisplayName("pay after full period has elapsed → allowed, not treated as duplicate")
         void payAfterNewPeriodStarted_allowsPayment() {
             try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
