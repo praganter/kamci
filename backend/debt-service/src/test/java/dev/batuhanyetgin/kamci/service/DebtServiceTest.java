@@ -900,7 +900,7 @@ class DebtServiceTest {
                 when(debtRS.update(captor.capture())).thenReturn(existing);
                 when(debtMapper.convert(existing)).thenReturn(buildDebtItemResponse());
 
-                final BigDecimal partial = new BigDecimal("15000");
+                final BigDecimal partial = new BigDecimal("5");
                 debtService.pay(DEBT_ID, PayDebtRequest.builder().amountPaid(partial).build());
 
                 assertThat(captor.getValue().getPayments()).hasSize(1);
@@ -927,6 +927,27 @@ class DebtServiceTest {
                 assertThat(captor.getValue().getPayments()).hasSize(1);
                 assertThat(captor.getValue().getPayments().get(0).getAmountPaid())
                         .isEqualByComparingTo(existing.getAmount());
+            }
+        }
+
+        @Test
+        @DisplayName("amountPaid exceeds amount due → throws BAD_REQUEST error.debt.overpayment")
+        void amountExceedsDue_throwsOverpayment() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+
+                final DebtDocument existing = buildDebt(DEBT_ID, OWNER_ID, CAT_ID);
+                when(debtRS.findById(DEBT_ID)).thenReturn(existing);
+                when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
+
+                final BigDecimal tooMuch = existing.getAmount().add(BigDecimal.ONE);
+
+                assertThatExceptionOfType(BaseException.class)
+                        .isThrownBy(() -> debtService.pay(DEBT_ID, PayDebtRequest.builder().amountPaid(tooMuch).build()))
+                        .matches(e -> e.getStatus() == HttpStatus.BAD_REQUEST)
+                        .matches(e -> "error.debt.overpayment".equals(e.getCode()));
+
+                verify(debtRS, never()).update(any());
             }
         }
     }
@@ -1061,6 +1082,29 @@ class DebtServiceTest {
 
                 assertThat(response.getDebt()).isNotNull();
                 assertThat(captor.getValue().getPayments()).hasSize(2);
+            }
+        }
+
+        @Test
+        @DisplayName("amountPaid exceeds amount due → throws BAD_REQUEST error.debt.overpayment")
+        void amountExceedsDue_throwsOverpayment() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+
+                final DebtDocument existing = buildDebt(DEBT_ID, OWNER_ID, CAT_ID);
+                when(debtRS.findById(DEBT_ID)).thenReturn(existing);
+                when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
+
+                final BigDecimal tooMuch = existing.getAmount().add(BigDecimal.ONE);
+                final List<PayDebtRequest> requests = List.of(
+                        PayDebtRequest.builder().amountPaid(tooMuch).build());
+
+                assertThatExceptionOfType(BaseException.class)
+                        .isThrownBy(() -> debtService.bulkPay(DEBT_ID, requests))
+                        .matches(e -> e.getStatus() == HttpStatus.BAD_REQUEST)
+                        .matches(e -> "error.debt.overpayment".equals(e.getCode()));
+
+                verify(debtRS, never()).update(any());
             }
         }
 

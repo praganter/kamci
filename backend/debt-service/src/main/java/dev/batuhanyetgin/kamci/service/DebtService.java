@@ -196,6 +196,9 @@ public class DebtService {
         final BigDecimal amount = (request != null && request.getAmountPaid() != null)
                 ? request.getAmountPaid()
                 : existing.getAmount();
+        if (amount.compareTo(existing.getAmount()) > 0) {
+            throw BaseException.badRequest("error.debt.overpayment");
+        }
         existing.addPayment(effectiveTime, periodStart, periodEnd, amount);
 
         final boolean isFullPayment = amount.compareTo(existing.getAmount()) >= 0;
@@ -318,6 +321,9 @@ public class DebtService {
             final LocalDateTime periodEnd = rawPeriodEnd != null ? rawPeriodEnd.minusDays(1) : null;
             final BigDecimal amount = req.getAmountPaid() != null
                     ? req.getAmountPaid() : existing.getAmount();
+            if (amount.compareTo(existing.getAmount()) > 0) {
+                throw BaseException.badRequest("error.debt.overpayment");
+            }
             existing.addPayment(effectiveTime, periodStart, periodEnd, amount);
         }
 
