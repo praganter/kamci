@@ -87,7 +87,7 @@ class CategoryDetail extends _$CategoryDetail {
 @riverpod
 class CategoryForm extends _$CategoryForm {
   @override
-  ({bool isLoading, String? error, bool isSuccess, String? createdId})
+  ({bool isLoading, Object? error, bool isSuccess, String? createdId})
   build() => (isLoading: false, error: null, isSuccess: false, createdId: null);
 
   Future<void> submit(String name, {String? categoryId}) async {
@@ -112,7 +112,7 @@ class CategoryForm extends _$CategoryForm {
     } catch (e) {
       state = (
         isLoading: false,
-        error: e.toString(),
+        error: e,
         isSuccess: false,
         createdId: null,
       );

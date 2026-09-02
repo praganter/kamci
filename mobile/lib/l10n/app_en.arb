@@ -366,6 +366,11 @@
   "errorNotFound": "The requested resource was not found.",
   "errorRateLimit": "Too many requests. Please wait a moment.",
   "errorSessionExpired": "Your session has expired. Please sign in again.",
+  "errorDebtAlreadyPaid": "This debt has already been paid.",
+  "errorDebtOverpayment": "The payment amount can't exceed the remaining debt.",
+  "errorCategoryNameConflict": "A category with this name already exists.",
+  "errorCategoryCannotAddSelf": "You can't add yourself as a member.",
+  "errorCategoryMemberNotFound": "Member not found.",
   "retryButton": "Try Again",
   "personCount": "{count} people",
   "@personCount": {

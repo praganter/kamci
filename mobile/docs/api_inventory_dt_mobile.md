@@ -23,13 +23,24 @@ _Kaynak: `lib/` — 2026-09-01, commit `0bc8213`. Sadece mevcut hal raporlanmı�
 
 ## 1. Hata (error) JSON parse — `ApiException.fromDioException(DioException e)`
 
-Tüm datasource'lar `on DioException` yakalar → `ApiException.fromDioException`. Mantık:
+Tüm datasource'lar `on DioException` yakalar → `ApiException.fromDioException`. Mantık (commit `e9b8d7c` sonrası — C2):
+
+**Önce `data['code']` (status'ten bağımsız):**
+
+| `code` değeri | Fırlatılan tip |
+|---|---|
+| `error.debt.limit_exceeded`, `error.category.limit_exceeded`, `error.category.premium_required`, `error.debt.premium_required` | `PremiumLimitException` (upsell sheet) |
+| `error.debt.permission_denied`, `error.category.permission_denied`, `error.income.permission_denied` | `PermissionDeniedException` (düz hata, upsell YOK) |
+| `error.user.not_found_in_context` | `UnauthorizedException` |
+| `error.debt.already_paid` (409), `error.debt.overpayment` (400), `error.category.name_conflict` (409), `error.category.cannot_add_self` (409), `error.category.member_not_found` (404) | `BusinessException(message, code: <code>)` — `exception_l10n.dart` lokalize kopyaya çevirir, yoksa backend `message`'a düşer |
+
+**`code` yoksa / tanınmıyorsa — status fallback:**
 
 | Koşul | Okunan alan(lar) | Fırlatılan tip |
 |---|---|---|
 | gövde `Map<String,dynamic>` & status 400 | `data['message']` | `BusinessException(message ?? 'Invalid request.')` |
 | gövde `Map` & status 401 | `data['message']` | `UnauthorizedException` |
-| gövde `Map` & status 403 | `data['message']` | `PremiumLimitException` |
+| gövde `Map` & status 403 | `data['message']` | `PremiumLimitException` (pre-C2 davranışı korunuyor) |
 | gövde `Map` & status 409 | `data['message']` | `BusinessException(message ?? 'This operation cannot be completed right now.')` |
 | gövde `Map` & status 422 | `data['errors'][0]['message']` yoksa `data['message']` | `BusinessException` |
 | status 404 | — | `NotFoundException` |
@@ -38,7 +49,9 @@ Tüm datasource'lar `on DioException` yakalar → `ApiException.fromDioException
 | `DioExceptionType.connectionTimeout/receiveTimeout/connectionError` | — | `NetworkException` |
 | diğer | — | `UnknownException` |
 
-> Not: Beklenen sözleşme hata gövdesi `{ "message": string, "errors"?: [{ "message": string }] }`. AuthInterceptor ayrıca gateway formatı `{ "error": string, "status": int }` ve servis formatı `{ "code": string }` okur.
+> Not: Beklenen sözleşme hata gövdesi `{ "message": string, "code"?: string, "errors"?: [{ "message": string }] }`. AuthInterceptor ayrıca gateway formatı `{ "error": string, "status": int }` ve servis formatı `{ "code": string }` okur.
+>
+> **C2-optional (uygulandı):** 5 iş kodu (`error.debt.already_paid`, `error.debt.overpayment`, `error.category.name_conflict`, `error.category.cannot_add_self`, `error.category.member_not_found`) `_businessCodes` setinde tanınıyor → `BusinessException.code` taşıyor → `exception_l10n._businessCodeMessage` lokalize kopya döndürüyor (`errorDebtAlreadyPaid` vb. arb anahtarları). `error.auth.email_in_use` backend'de zaten vardı, mobile code bazlı tanımıyor (409 → jenerik `BusinessException(message)`). `invalid_migration_target` / `income period_overlap` kullanıcı kararıyla eklenmedi.
 
 ---
 

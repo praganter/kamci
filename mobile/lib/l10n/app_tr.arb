@@ -396,6 +396,11 @@
   "errorNotFound": "İstenen kaynak bulunamadı.",
   "errorRateLimit": "Çok fazla istek gönderildi. Lütfen bir süre bekleyin.",
   "errorSessionExpired": "Oturumunuz sona erdi. Lütfen tekrar giriş yapın.",
+  "errorDebtAlreadyPaid": "Bu borç zaten ödenmiş.",
+  "errorDebtOverpayment": "Ödeme tutarı kalan borç tutarını aşamaz.",
+  "errorCategoryNameConflict": "Bu isimde bir kategori zaten var.",
+  "errorCategoryCannotAddSelf": "Kendinizi üye olarak ekleyemezsiniz.",
+  "errorCategoryMemberNotFound": "Üye bulunamadı.",
   "retryButton": "Tekrar Dene",
   "personCount": "{count} kişi",
   "@personCount": {

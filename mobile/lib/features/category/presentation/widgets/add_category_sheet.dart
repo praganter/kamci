@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/l10n/exception_l10n.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/utils/validators.dart';
 import '../providers/category_providers.dart';
@@ -46,9 +47,11 @@ class _AddCategorySheetState extends ConsumerState<AddCategorySheet> {
       if (!context.mounted) return;
       if (state.isSuccess) Navigator.of(context).pop(state.createdId);
       if (state.error != null) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(state.error!)));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(state.error!.toLocalizedMessage(context.l10n)),
+          ),
+        );
       }
     });
 

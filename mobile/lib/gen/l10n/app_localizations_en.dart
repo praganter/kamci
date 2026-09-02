@@ -779,6 +779,24 @@ class AppLocalizationsEn extends AppLocalizations {
       'Your session has expired. Please sign in again.';
 
   @override
+  String get errorDebtAlreadyPaid => 'This debt has already been paid.';
+
+  @override
+  String get errorDebtOverpayment =>
+      'The payment amount can\'t exceed the remaining debt.';
+
+  @override
+  String get errorCategoryNameConflict =>
+      'A category with this name already exists.';
+
+  @override
+  String get errorCategoryCannotAddSelf =>
+      'You can\'t add yourself as a member.';
+
+  @override
+  String get errorCategoryMemberNotFound => 'Member not found.';
+
+  @override
   String get retryButton => 'Try Again';
 
   @override

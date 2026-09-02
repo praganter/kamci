@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/network/api_exception.dart';
+import '../../../../core/utils/snackbar_utils.dart';
 import '../../../../shared/widgets/confirm_dialog.dart';
 import '../../../../shared/widgets/premium_required_sheet.dart';
 import '../../domain/entities/category.dart';
@@ -161,11 +162,7 @@ class CategoryMembersSheet extends ConsumerWidget {
         );
       }
     } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(context.l10n.errorWithMessage(e.toString()))),
-        );
-      }
+      if (context.mounted) showErrorSnackBar(context, e);
     }
   }
 
@@ -195,11 +192,7 @@ class CategoryMembersSheet extends ConsumerWidget {
         );
       }
     } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(context.l10n.errorWithMessage(e.toString()))),
-        );
-      }
+      if (context.mounted) showErrorSnackBar(context, e);
     }
   }
 }

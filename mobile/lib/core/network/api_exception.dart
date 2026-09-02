@@ -25,6 +25,19 @@ sealed class ApiException implements Exception {
     'error.income.permission_denied',
   };
 
+  /// `code` values that just need a specific localized message — no special
+  /// UI (no upsell sheet, no session reset). They can arrive as 400, 404 or
+  /// 409; the status alone can't tell them apart from generic validation /
+  /// not-found. Carried on [BusinessException.code] and resolved to copy in
+  /// `exception_l10n.dart` (falls back to the backend `message`).
+  static const _businessCodes = {
+    'error.debt.already_paid', // 409 — /debt/pay on an already-paid ONE_TIME
+    'error.debt.overpayment', // 400 — pay/bulkPay amount exceeds the debt
+    'error.category.name_conflict', // 409 — same owner, case-insensitive name
+    'error.category.cannot_add_self', // 409 — owner adds themselves as member
+    'error.category.member_not_found', // 404 — removing a non-member
+  };
+
   factory ApiException.fromDioException(DioException e) {
     final statusCode = e.response?.statusCode;
     final data = e.response?.data;
@@ -45,6 +58,12 @@ sealed class ApiException implements Exception {
         }
         if (code == 'error.user.not_found_in_context') {
           return UnauthorizedException(message ?? const UnauthorizedException().message);
+        }
+        if (_businessCodes.contains(code)) {
+          return BusinessException(
+            message ?? 'This operation cannot be completed right now.',
+            code: code,
+          );
         }
       }
 
@@ -134,7 +153,11 @@ class PermissionDeniedException extends ApiException {
 }
 
 class BusinessException extends ApiException {
-  const BusinessException(super.message);
+  const BusinessException(super.message, {this.code});
+
+  /// Optional backend `ErrorResponse.code`. When set and recognized,
+  /// `exception_l10n.dart` renders localized copy instead of [message].
+  final String? code;
 }
 
 class RateLimitException extends ApiException {

@@ -781,6 +781,22 @@ class AppLocalizationsTr extends AppLocalizations {
       'Oturumunuz sona erdi. Lütfen tekrar giriş yapın.';
 
   @override
+  String get errorDebtAlreadyPaid => 'Bu borç zaten ödenmiş.';
+
+  @override
+  String get errorDebtOverpayment => 'Ödeme tutarı kalan borç tutarını aşamaz.';
+
+  @override
+  String get errorCategoryNameConflict => 'Bu isimde bir kategori zaten var.';
+
+  @override
+  String get errorCategoryCannotAddSelf =>
+      'Kendinizi üye olarak ekleyemezsiniz.';
+
+  @override
+  String get errorCategoryMemberNotFound => 'Üye bulunamadı.';
+
+  @override
   String get retryButton => 'Tekrar Dene';
 
   @override

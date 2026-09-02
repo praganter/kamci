@@ -1508,6 +1508,36 @@ abstract class AppLocalizations {
   /// **'Oturumunuz sona erdi. Lütfen tekrar giriş yapın.'**
   String get errorSessionExpired;
 
+  /// No description provided for @errorDebtAlreadyPaid.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu borç zaten ödenmiş.'**
+  String get errorDebtAlreadyPaid;
+
+  /// No description provided for @errorDebtOverpayment.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ödeme tutarı kalan borç tutarını aşamaz.'**
+  String get errorDebtOverpayment;
+
+  /// No description provided for @errorCategoryNameConflict.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu isimde bir kategori zaten var.'**
+  String get errorCategoryNameConflict;
+
+  /// No description provided for @errorCategoryCannotAddSelf.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kendinizi üye olarak ekleyemezsiniz.'**
+  String get errorCategoryCannotAddSelf;
+
+  /// No description provided for @errorCategoryMemberNotFound.
+  ///
+  /// In tr, this message translates to:
+  /// **'Üye bulunamadı.'**
+  String get errorCategoryMemberNotFound;
+
   /// No description provided for @retryButton.
   ///
   /// In tr, this message translates to:
