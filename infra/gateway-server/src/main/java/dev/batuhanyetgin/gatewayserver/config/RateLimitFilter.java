@@ -15,8 +15,6 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import java.net.InetSocketAddress;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -40,10 +38,6 @@ public class RateLimitFilter implements GlobalFilter, Ordered {
         String path = exchange.getRequest().getURI().getPath();
         List<RateLimitProperties.Rule> rules = properties.getRules();
 
-        if (isBypassed(exchange)) {
-            return chain.filter(stripBypassHeader(exchange));
-        }
-
         for (RateLimitProperties.Rule rule : rules) {
             if (pathMatcher.match(rule.getPath(), path)) {
                 String ip = resolveIp(exchange);
@@ -60,33 +54,6 @@ public class RateLimitFilter implements GlobalFilter, Ordered {
         }
 
         return chain.filter(exchange);
-    }
-
-    /**
-     * True when the request carries the configured bypass header with a value
-     * that matches {@code rate-limit.bypassSecret}. Disabled (always false) when
-     * the secret is blank. Comparison is constant-time to avoid leaking the
-     * secret via timing.
-     */
-    private boolean isBypassed(ServerWebExchange exchange) {
-        String secret = properties.getBypassSecret();
-        if (secret == null || secret.isBlank()) {
-            return false;
-        }
-        String presented = exchange.getRequest().getHeaders().getFirst(properties.getBypassHeader());
-        if (presented == null) {
-            return false;
-        }
-        return MessageDigest.isEqual(
-                presented.getBytes(StandardCharsets.UTF_8),
-                secret.getBytes(StandardCharsets.UTF_8));
-    }
-
-    /** Removes the bypass header so it is never forwarded to downstream services. */
-    private ServerWebExchange stripBypassHeader(ServerWebExchange exchange) {
-        return exchange.mutate()
-                .request(r -> r.headers(h -> h.remove(properties.getBypassHeader())))
-                .build();
     }
 
     private Bucket buildBucket(RateLimitProperties.Rule rule) {
