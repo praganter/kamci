@@ -1,6 +1,7 @@
-# dt_mobile — Dio API Katmanı Envanteri
+# dt_mobile — Dio API Katmanı Envanteri (api-contracts)
 
-_Kaynak: `lib/` — 2026-09-01, commit `0bc8213`. Sadece mevcut hal raporlanmıştır._
+_Kaynak: `lib/` — son güncelleme 2026-09-19, commit `9ea7c0b`. Sadece mevcut hal
+raporlanmıştır. Mimari/ekran özeti için `docs/architecture.md`'ye bak._
 
 ## 0. Altyapı
 
@@ -32,7 +33,7 @@ Tüm datasource'lar `on DioException` yakalar → `ApiException.fromDioException
 | `error.debt.limit_exceeded`, `error.category.limit_exceeded`, `error.category.premium_required`, `error.debt.premium_required` | `PremiumLimitException` (upsell sheet) |
 | `error.debt.permission_denied`, `error.category.permission_denied`, `error.income.permission_denied` | `PermissionDeniedException` (düz hata, upsell YOK) |
 | `error.user.not_found_in_context` | `UnauthorizedException` |
-| `error.debt.already_completed` (409), `error.debt.overpayment` (400), `error.category.name_conflict` (409), `error.category.cannot_add_self` (409), `error.category.member_not_found` (404) | `BusinessException(message, code: <code>)` — `exception_l10n.dart` lokalize kopyaya çevirir, yoksa backend `message`'a düşer |
+| `error.debt.already_completed` (409), `error.debt.overpayment` (400), `error.category.name_conflict` (409), `error.category.cannot_add_self` (409), `error.category.member_not_found` (404), + 2026-09-19'da eklenen 24 code (`error.category.{not_found,member_user_not_found,member_already_exists,migrate_same_category}`, `error.debt.{not_found,already_paid_this_period,auto_payment_enabled,concurrent_request,payment_before_start,period_already_recorded,installment_count_exceeded,missing_period_config}`, `error.income.not_found`, `error.reminder.date_or_time_missing`, `error.subscription.{verification_failed,not_found}`, `error.auth.{email_in_use,too_many_login_attempts,not_valid,token_revoked,token_invalid,current_password_invalid,token_already_used,too_many_password_reset_attempts}`) | `BusinessException(message, code: <code>)` — `exception_l10n.dart` lokalize kopyaya çevirir, yoksa backend `message`'a düşer |
 
 **`code` yoksa / tanınmıyorsa — status fallback:**
 
@@ -51,7 +52,11 @@ Tüm datasource'lar `on DioException` yakalar → `ApiException.fromDioException
 
 > Not: Beklenen sözleşme hata gövdesi `{ "message": string, "code"?: string, "errors"?: [{ "message": string }] }`. AuthInterceptor ayrıca gateway formatı `{ "error": string, "status": int }` ve servis formatı `{ "code": string }` okur.
 >
-> **C2-optional (uygulandı + backend debt-service v0.0.20'ye karşı E2E doğrulandı):** 5 iş kodu (`error.debt.already_completed`, `error.debt.overpayment`, `error.category.name_conflict`, `error.category.cannot_add_self`, `error.category.member_not_found`) `_businessCodes` setinde tanınıyor → `BusinessException.code` taşıyor → `exception_l10n._businessCodeMessage` lokalize kopya döndürüyor (`errorDebtAlreadyCompleted` vb. arb anahtarları). NOT: backend kodu `already_paid` değil `already_completed` (orchestrator listesi yanlıştı, E2E'de yakalandı). `error.auth.email_in_use` backend'de zaten vardı, mobile code bazlı tanımıyor (409 → jenerik `BusinessException(message)`). `invalid_migration_target` / `income period_overlap` kullanıcı kararıyla eklenmedi.
+> **C2-optional (uygulandı + backend debt-service v0.0.20'ye karşı E2E doğrulandı):** 5 iş kodu (`error.debt.already_completed`, `error.debt.overpayment`, `error.category.name_conflict`, `error.category.cannot_add_self`, `error.category.member_not_found`) `_businessCodes` setinde tanınıyor → `BusinessException.code` taşıyor → `exception_l10n._businessCodeMessage` lokalize kopya döndürüyor (`errorDebtAlreadyCompleted` vb. arb anahtarları). NOT: backend kodu `already_paid` değil `already_completed` (orchestrator listesi yanlıştı, E2E'de yakalandı). `invalid_migration_target` / `income period_overlap` kullanıcı kararıyla eklenmedi.
+>
+> **2026-09-19 turu:** `error.auth.email_in_use` dahil 24 yeni code `_businessCodes`'a
+> eklendi ve hepsi kendi lokalize mesajına kavuştu (önceki not — "email_in_use jenerik
+> BusinessException" — artık geçersiz). Bkz. `HANDOFF.md` 2026-09-19 mobile-agent girişi.
 
 ---
 
@@ -62,7 +67,7 @@ Dio: `login/register/refreshToken/logout/forgotPassword/resetPassword` → `refr
 | Fonksiyon | Metot + Yol | Request body (alan: tip) | Query/Path | Yanıt modeli (alan: tip) |
 |---|---|---|---|---|
 | `login` | `POST /auth/login` | `email: String`, `password: String` | — | `AuthResponse { token→accessToken: String, refreshToken: String }` |
-| `register` | `POST /auth/register` | `email: String`, `password: String`, `premium: bool` (default false, daima gönderilir) | — | `AuthResponse` (aynı) |
+| `register` | `POST /auth/register` | `email: String`, `password: String` (`premium` alanı 2026-09-19'da kaldırıldı — backend DTO'sunda karşılığı yoktu) | — | `AuthResponse` (aynı) |
 | `refreshToken` | `POST /auth/refresh-token` | gövde yok; header `Authorization: Bearer <refreshToken>` | — | `AuthResponse` (aynı) |
 | `logout` | `POST /auth/logout` | gövde yok; header `Authorization: Bearer <refreshToken>` | — | — (void) |
 | `forgotPassword` | `POST /auth/forget-password` | `email: String` | — | — (void) |
