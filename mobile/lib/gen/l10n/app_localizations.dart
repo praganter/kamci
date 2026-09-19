@@ -296,18 +296,6 @@ abstract class AppLocalizations {
   /// **'Şifreniz başarıyla güncellendi.'**
   String get passwordUpdated;
 
-  /// No description provided for @premiumMembership.
-  ///
-  /// In tr, this message translates to:
-  /// **'Premium Üyelik'**
-  String get premiumMembership;
-
-  /// No description provided for @premiumMembershipDesc.
-  ///
-  /// In tr, this message translates to:
-  /// **'Daha fazla özelliğe erişin'**
-  String get premiumMembershipDesc;
-
   /// No description provided for @debts.
   ///
   /// In tr, this message translates to:
@@ -1537,6 +1525,150 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Üye bulunamadı.'**
   String get errorCategoryMemberNotFound;
+
+  /// No description provided for @errorCategoryNotFound.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kategori bulunamadı.'**
+  String get errorCategoryNotFound;
+
+  /// No description provided for @errorCategoryMemberUserNotFound.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu e-posta ile kayıtlı kullanıcı bulunamadı.'**
+  String get errorCategoryMemberUserNotFound;
+
+  /// No description provided for @errorCategoryMemberAlreadyExists.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu kullanıcı zaten kategori üyesi.'**
+  String get errorCategoryMemberAlreadyExists;
+
+  /// No description provided for @errorCategoryMigrateSameCategory.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hedef kategori, kaynak kategoriyle aynı olamaz.'**
+  String get errorCategoryMigrateSameCategory;
+
+  /// No description provided for @errorDebtNotFound.
+  ///
+  /// In tr, this message translates to:
+  /// **'Borç bulunamadı.'**
+  String get errorDebtNotFound;
+
+  /// No description provided for @errorDebtAlreadyPaidThisPeriod.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu dönem için ödeme zaten yapılmış.'**
+  String get errorDebtAlreadyPaidThisPeriod;
+
+  /// No description provided for @errorDebtAutoPaymentEnabled.
+  ///
+  /// In tr, this message translates to:
+  /// **'Otomatik ödeme açıkken bu işlem yapılamaz.'**
+  String get errorDebtAutoPaymentEnabled;
+
+  /// No description provided for @errorDebtConcurrentRequest.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu borç için başka bir işlem sürüyor, lütfen tekrar deneyin.'**
+  String get errorDebtConcurrentRequest;
+
+  /// No description provided for @errorDebtPaymentBeforeStart.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ödeme, borcun başlangıç tarihinden önce olamaz.'**
+  String get errorDebtPaymentBeforeStart;
+
+  /// No description provided for @errorDebtPeriodAlreadyRecorded.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu dönem zaten kaydedilmiş.'**
+  String get errorDebtPeriodAlreadyRecorded;
+
+  /// No description provided for @errorDebtInstallmentCountExceeded.
+  ///
+  /// In tr, this message translates to:
+  /// **'Taksit sayısı sınırı aşıldı.'**
+  String get errorDebtInstallmentCountExceeded;
+
+  /// No description provided for @errorDebtMissingPeriodConfig.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ödeme periyodu bilgisi eksik.'**
+  String get errorDebtMissingPeriodConfig;
+
+  /// No description provided for @errorIncomeNotFound.
+  ///
+  /// In tr, this message translates to:
+  /// **'Gelir kaydı bulunamadı.'**
+  String get errorIncomeNotFound;
+
+  /// No description provided for @errorReminderDateOrTimeMissing.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hatırlatma tarihi veya saati eksik.'**
+  String get errorReminderDateOrTimeMissing;
+
+  /// No description provided for @errorSubscriptionVerificationFailed.
+  ///
+  /// In tr, this message translates to:
+  /// **'Abonelik doğrulaması başarısız oldu.'**
+  String get errorSubscriptionVerificationFailed;
+
+  /// No description provided for @errorSubscriptionNotFound.
+  ///
+  /// In tr, this message translates to:
+  /// **'Abonelik bulunamadı.'**
+  String get errorSubscriptionNotFound;
+
+  /// No description provided for @errorAuthEmailInUse.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu e-posta adresi zaten kullanımda.'**
+  String get errorAuthEmailInUse;
+
+  /// No description provided for @errorAuthTooManyLoginAttempts.
+  ///
+  /// In tr, this message translates to:
+  /// **'Çok fazla giriş denemesi yapıldı. Lütfen bir süre bekleyin.'**
+  String get errorAuthTooManyLoginAttempts;
+
+  /// No description provided for @errorAuthNotValid.
+  ///
+  /// In tr, this message translates to:
+  /// **'E-posta veya şifre hatalı.'**
+  String get errorAuthNotValid;
+
+  /// No description provided for @errorAuthTokenRevoked.
+  ///
+  /// In tr, this message translates to:
+  /// **'Oturumunuz sonlandırıldı. Lütfen tekrar giriş yapın.'**
+  String get errorAuthTokenRevoked;
+
+  /// No description provided for @errorAuthTokenInvalid.
+  ///
+  /// In tr, this message translates to:
+  /// **'Geçersiz oturum. Lütfen tekrar giriş yapın.'**
+  String get errorAuthTokenInvalid;
+
+  /// No description provided for @errorAuthCurrentPasswordInvalid.
+  ///
+  /// In tr, this message translates to:
+  /// **'Mevcut şifreniz hatalı.'**
+  String get errorAuthCurrentPasswordInvalid;
+
+  /// No description provided for @errorAuthTokenAlreadyUsed.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu bağlantı zaten kullanılmış. Lütfen tekrar deneyin.'**
+  String get errorAuthTokenAlreadyUsed;
+
+  /// No description provided for @errorAuthTooManyPasswordResetAttempts.
+  ///
+  /// In tr, this message translates to:
+  /// **'Çok fazla şifre sıfırlama denemesi yapıldı. Lütfen bir süre bekleyin.'**
+  String get errorAuthTooManyPasswordResetAttempts;
 
   /// No description provided for @retryButton.
   ///

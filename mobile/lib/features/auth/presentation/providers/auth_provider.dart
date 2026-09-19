@@ -119,19 +119,11 @@ class AuthNotifier extends _$AuthNotifier {
     }
   }
 
-  Future<void> register(
-    String email,
-    String password, {
-    bool premium = false,
-  }) async {
+  Future<void> register(String email, String password) async {
     state = const AuthState.loading();
     try {
       final repository = ref.read(authRepositoryProvider);
-      final tokens = await repository.register(
-        email,
-        password,
-        premium: premium,
-      );
+      final tokens = await repository.register(email, password);
       final storage = ref.read(secureStorageServiceProvider);
       await _safeWrite(storage.saveTokens(
         accessToken: tokens.accessToken,

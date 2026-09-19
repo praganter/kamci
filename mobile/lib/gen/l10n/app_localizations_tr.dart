@@ -112,12 +112,6 @@ class AppLocalizationsTr extends AppLocalizations {
   String get passwordUpdated => 'Şifreniz başarıyla güncellendi.';
 
   @override
-  String get premiumMembership => 'Premium Üyelik';
-
-  @override
-  String get premiumMembershipDesc => 'Daha fazla özelliğe erişin';
-
-  @override
   String get debts => 'Borçlar';
 
   @override
@@ -796,6 +790,93 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get errorCategoryMemberNotFound => 'Üye bulunamadı.';
+
+  @override
+  String get errorCategoryNotFound => 'Kategori bulunamadı.';
+
+  @override
+  String get errorCategoryMemberUserNotFound =>
+      'Bu e-posta ile kayıtlı kullanıcı bulunamadı.';
+
+  @override
+  String get errorCategoryMemberAlreadyExists =>
+      'Bu kullanıcı zaten kategori üyesi.';
+
+  @override
+  String get errorCategoryMigrateSameCategory =>
+      'Hedef kategori, kaynak kategoriyle aynı olamaz.';
+
+  @override
+  String get errorDebtNotFound => 'Borç bulunamadı.';
+
+  @override
+  String get errorDebtAlreadyPaidThisPeriod =>
+      'Bu dönem için ödeme zaten yapılmış.';
+
+  @override
+  String get errorDebtAutoPaymentEnabled =>
+      'Otomatik ödeme açıkken bu işlem yapılamaz.';
+
+  @override
+  String get errorDebtConcurrentRequest =>
+      'Bu borç için başka bir işlem sürüyor, lütfen tekrar deneyin.';
+
+  @override
+  String get errorDebtPaymentBeforeStart =>
+      'Ödeme, borcun başlangıç tarihinden önce olamaz.';
+
+  @override
+  String get errorDebtPeriodAlreadyRecorded => 'Bu dönem zaten kaydedilmiş.';
+
+  @override
+  String get errorDebtInstallmentCountExceeded =>
+      'Taksit sayısı sınırı aşıldı.';
+
+  @override
+  String get errorDebtMissingPeriodConfig => 'Ödeme periyodu bilgisi eksik.';
+
+  @override
+  String get errorIncomeNotFound => 'Gelir kaydı bulunamadı.';
+
+  @override
+  String get errorReminderDateOrTimeMissing =>
+      'Hatırlatma tarihi veya saati eksik.';
+
+  @override
+  String get errorSubscriptionVerificationFailed =>
+      'Abonelik doğrulaması başarısız oldu.';
+
+  @override
+  String get errorSubscriptionNotFound => 'Abonelik bulunamadı.';
+
+  @override
+  String get errorAuthEmailInUse => 'Bu e-posta adresi zaten kullanımda.';
+
+  @override
+  String get errorAuthTooManyLoginAttempts =>
+      'Çok fazla giriş denemesi yapıldı. Lütfen bir süre bekleyin.';
+
+  @override
+  String get errorAuthNotValid => 'E-posta veya şifre hatalı.';
+
+  @override
+  String get errorAuthTokenRevoked =>
+      'Oturumunuz sonlandırıldı. Lütfen tekrar giriş yapın.';
+
+  @override
+  String get errorAuthTokenInvalid =>
+      'Geçersiz oturum. Lütfen tekrar giriş yapın.';
+
+  @override
+  String get errorAuthCurrentPasswordInvalid => 'Mevcut şifreniz hatalı.';
+
+  @override
+  String get errorAuthTokenAlreadyUsed =>
+      'Bu bağlantı zaten kullanılmış. Lütfen tekrar deneyin.';
+
+  @override
+  String get errorAuthTooManyPasswordResetAttempts =>
+      'Çok fazla şifre sıfırlama denemesi yapıldı. Lütfen bir süre bekleyin.';
 
   @override
   String get retryButton => 'Tekrar Dene';

@@ -26,6 +26,42 @@ String? _businessCodeMessage(String? code, AppLocalizations l10n) =>
       'error.category.name_conflict' => l10n.errorCategoryNameConflict,
       'error.category.cannot_add_self' => l10n.errorCategoryCannotAddSelf,
       'error.category.member_not_found' => l10n.errorCategoryMemberNotFound,
+      'error.category.not_found' => l10n.errorCategoryNotFound,
+      'error.category.member_user_not_found' =>
+        l10n.errorCategoryMemberUserNotFound,
+      'error.category.member_already_exists' =>
+        l10n.errorCategoryMemberAlreadyExists,
+      'error.category.migrate_same_category' =>
+        l10n.errorCategoryMigrateSameCategory,
+      'error.debt.not_found' => l10n.errorDebtNotFound,
+      'error.debt.already_paid_this_period' =>
+        l10n.errorDebtAlreadyPaidThisPeriod,
+      'error.debt.auto_payment_enabled' => l10n.errorDebtAutoPaymentEnabled,
+      'error.debt.concurrent_request' => l10n.errorDebtConcurrentRequest,
+      'error.debt.payment_before_start' => l10n.errorDebtPaymentBeforeStart,
+      'error.debt.period_already_recorded' =>
+        l10n.errorDebtPeriodAlreadyRecorded,
+      'error.debt.installment_count_exceeded' =>
+        l10n.errorDebtInstallmentCountExceeded,
+      'error.debt.missing_period_config' =>
+        l10n.errorDebtMissingPeriodConfig,
+      'error.income.not_found' => l10n.errorIncomeNotFound,
+      'error.reminder.date_or_time_missing' =>
+        l10n.errorReminderDateOrTimeMissing,
+      'error.subscription.verification_failed' =>
+        l10n.errorSubscriptionVerificationFailed,
+      'error.subscription.not_found' => l10n.errorSubscriptionNotFound,
+      'error.auth.email_in_use' => l10n.errorAuthEmailInUse,
+      'error.auth.too_many_login_attempts' =>
+        l10n.errorAuthTooManyLoginAttempts,
+      'error.auth.not_valid' => l10n.errorAuthNotValid,
+      'error.auth.token_revoked' => l10n.errorAuthTokenRevoked,
+      'error.auth.token_invalid' => l10n.errorAuthTokenInvalid,
+      'error.auth.current_password_invalid' =>
+        l10n.errorAuthCurrentPasswordInvalid,
+      'error.auth.token_already_used' => l10n.errorAuthTokenAlreadyUsed,
+      'error.auth.too_many_password_reset_attempts' =>
+        l10n.errorAuthTooManyPasswordResetAttempts,
       _ => null,
     };
 

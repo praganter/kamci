@@ -20,7 +20,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
   final _confirmCtrl = TextEditingController();
-  bool _premium = false;
 
   @override
   void dispose() {
@@ -34,11 +33,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     if (!_formKey.currentState!.validate()) return;
     await ref
         .read(authNotifierProvider.notifier)
-        .register(
-          _emailCtrl.text.trim(),
-          _passwordCtrl.text,
-          premium: _premium,
-        );
+        .register(_emailCtrl.text.trim(), _passwordCtrl.text);
   }
 
   @override
@@ -91,14 +86,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   onFieldSubmitted: (_) => _submit(),
                   validator: (v) =>
                       Validators.confirmPassword(l10n, v, _passwordCtrl.text),
-                ),
-                const SizedBox(height: 16),
-                SwitchListTile(
-                  title: Text(l10n.premiumMembership),
-                  subtitle: Text(l10n.premiumMembershipDesc),
-                  value: _premium,
-                  onChanged: (v) => setState(() => _premium = v),
-                  contentPadding: EdgeInsets.zero,
                 ),
                 const SizedBox(height: 24),
                 AuthButton(

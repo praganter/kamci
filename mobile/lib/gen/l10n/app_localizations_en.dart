@@ -111,12 +111,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get passwordUpdated => 'Your password has been updated successfully.';
 
   @override
-  String get premiumMembership => 'Premium Membership';
-
-  @override
-  String get premiumMembershipDesc => 'Access more features';
-
-  @override
   String get debts => 'Debts';
 
   @override
@@ -795,6 +789,95 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorCategoryMemberNotFound => 'Member not found.';
+
+  @override
+  String get errorCategoryNotFound => 'Category not found.';
+
+  @override
+  String get errorCategoryMemberUserNotFound =>
+      'No user found with this email.';
+
+  @override
+  String get errorCategoryMemberAlreadyExists =>
+      'This user is already a member of the category.';
+
+  @override
+  String get errorCategoryMigrateSameCategory =>
+      'The target category can\'t be the same as the source category.';
+
+  @override
+  String get errorDebtNotFound => 'Debt not found.';
+
+  @override
+  String get errorDebtAlreadyPaidThisPeriod =>
+      'This period has already been paid.';
+
+  @override
+  String get errorDebtAutoPaymentEnabled =>
+      'This action isn\'t allowed while auto payment is enabled.';
+
+  @override
+  String get errorDebtConcurrentRequest =>
+      'Another operation is in progress for this debt. Please try again.';
+
+  @override
+  String get errorDebtPaymentBeforeStart =>
+      'The payment can\'t be before the debt\'s start date.';
+
+  @override
+  String get errorDebtPeriodAlreadyRecorded =>
+      'This period has already been recorded.';
+
+  @override
+  String get errorDebtInstallmentCountExceeded =>
+      'The installment count limit has been exceeded.';
+
+  @override
+  String get errorDebtMissingPeriodConfig =>
+      'Payment period information is missing.';
+
+  @override
+  String get errorIncomeNotFound => 'Income record not found.';
+
+  @override
+  String get errorReminderDateOrTimeMissing =>
+      'Reminder date or time is missing.';
+
+  @override
+  String get errorSubscriptionVerificationFailed =>
+      'Subscription verification failed.';
+
+  @override
+  String get errorSubscriptionNotFound => 'Subscription not found.';
+
+  @override
+  String get errorAuthEmailInUse => 'This email address is already in use.';
+
+  @override
+  String get errorAuthTooManyLoginAttempts =>
+      'Too many login attempts. Please wait a moment.';
+
+  @override
+  String get errorAuthNotValid => 'Incorrect email or password.';
+
+  @override
+  String get errorAuthTokenRevoked =>
+      'Your session has been ended. Please sign in again.';
+
+  @override
+  String get errorAuthTokenInvalid => 'Invalid session. Please sign in again.';
+
+  @override
+  String get errorAuthCurrentPasswordInvalid =>
+      'Your current password is incorrect.';
+
+  @override
+  String get errorAuthTokenAlreadyUsed =>
+      'This link has already been used. Please try again.';
+
+  @override
+  String get errorAuthTooManyPasswordResetAttempts =>
+      'Too many password reset attempts. Please wait a moment.';
 
   @override
   String get retryButton => 'Try Again';

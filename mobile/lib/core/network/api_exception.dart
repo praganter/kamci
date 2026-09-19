@@ -36,6 +36,30 @@ sealed class ApiException implements Exception {
     'error.category.name_conflict', // 409 — same owner, case-insensitive name
     'error.category.cannot_add_self', // 409 — owner adds themselves as member
     'error.category.member_not_found', // 404 — removing a non-member
+    'error.category.not_found',
+    'error.category.member_user_not_found',
+    'error.category.member_already_exists',
+    'error.category.migrate_same_category',
+    'error.debt.not_found',
+    'error.debt.already_paid_this_period',
+    'error.debt.auto_payment_enabled',
+    'error.debt.concurrent_request',
+    'error.debt.payment_before_start',
+    'error.debt.period_already_recorded',
+    'error.debt.installment_count_exceeded',
+    'error.debt.missing_period_config',
+    'error.income.not_found',
+    'error.reminder.date_or_time_missing',
+    'error.subscription.verification_failed',
+    'error.subscription.not_found',
+    'error.auth.email_in_use',
+    'error.auth.too_many_login_attempts',
+    'error.auth.not_valid',
+    'error.auth.token_revoked',
+    'error.auth.token_invalid',
+    'error.auth.current_password_invalid',
+    'error.auth.token_already_used',
+    'error.auth.too_many_password_reset_attempts',
   };
 
   factory ApiException.fromDioException(DioException e) {

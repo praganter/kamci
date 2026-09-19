@@ -3,11 +3,7 @@ import '../entities/user_detail.dart';
 
 abstract interface class AuthRepository {
   Future<AuthTokens> login(String email, String password);
-  Future<AuthTokens> register(
-    String email,
-    String password, {
-    bool premium = false,
-  });
+  Future<AuthTokens> register(String email, String password);
   Future<AuthTokens> refreshToken(String refreshToken);
   Future<void> logout(String refreshToken);
   Future<void> forgotPassword(String email);

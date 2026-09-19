@@ -30,13 +30,9 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<AuthTokens> register(
-    String email,
-    String password, {
-    bool premium = false,
-  }) async {
+  Future<AuthTokens> register(String email, String password) async {
     final response = await _datasource.register(
-      RegisterRequest(email: email, password: password, premium: premium),
+      RegisterRequest(email: email, password: password),
     );
     return AuthTokens(
       accessToken: response.accessToken,
