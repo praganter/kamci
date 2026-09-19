@@ -1,0 +1,5 @@
+# Test tag tanımları — bkz. test/integration/auth/auth_test.dart
+tags:
+  register:
+    # Gateway /auth/register çağrısı yapan tek test. Rate-limit kısıtlıysa
+    # `flutter test --exclude-tags register` ile atlanabilir.

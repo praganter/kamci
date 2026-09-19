@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart';
 import 'package:dt_mobile/features/category/data/datasources/category_remote_datasource.dart';
 import 'package:dt_mobile/features/category/domain/entities/member_embedded.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -6,56 +5,28 @@ import 'package:flutter_test/flutter_test.dart';
 import '../helpers/test_credentials.dart';
 import '../helpers/test_http_client.dart';
 
-/// Share testleri premium hesap gerektirir.
-/// Backend, yeni kaydedilen kullanıcılara premium vermez.
+/// Paylaşım testleri premium bir "owner" (A) + ikinci bir "member" (B)
+/// hesabı gerektirir; ikisi de login-only kalıcı hesaplardır.
 ///
-/// Çalıştırma:
-///   flutter test test/integration/category/category_share_test.dart \
-///     --dart-define=PREMIUM_EMAIL=premium@example.com \
-///     --dart-define=PREMIUM_PASSWORD=PremiumPass123!
+/// Çalıştırma: bkz. `test/integration/run.sh`
+///   --dart-define=TEST_A_EMAIL=… --dart-define=TEST_A_PASSWORD=…
+///   --dart-define=TEST_B_EMAIL=… --dart-define=TEST_B_PASSWORD=…
 void main() {
-  // Premium hesap yoksa tüm testleri skip et
-  if (!PremiumCredentials.available) {
-    group('share (premium gerekli — PREMIUM_EMAIL/PASSWORD verilmedi, skip)', () {
-      test('addMember', () {}, skip: 'PREMIUM_EMAIL ve PREMIUM_PASSWORD --dart-define ile verilmeli');
-      test('addMembersBulk', () {}, skip: 'PREMIUM_EMAIL ve PREMIUM_PASSWORD --dart-define ile verilmeli');
-      test('removeMember', () {}, skip: 'PREMIUM_EMAIL ve PREMIUM_PASSWORD --dart-define ile verilmeli');
+  if (!TestAccounts.hasAB) {
+    group('share (TEST_A_* / TEST_B_* verilmedi, skip)', () {
+      test('addMember', () {}, skip: TestAccounts.missingMessage);
+      test('addMembersBulk', () {}, skip: TestAccounts.missingMessage);
+      test('removeMember', () {}, skip: TestAccounts.missingMessage);
     });
     return;
   }
 
   late CategoryRemoteDatasource dsA; // premium sahip (kullanıcı A)
-  late CategoryRemoteDatasource dsB; // üye (kullanıcı B — auto-register)
+  late CategoryRemoteDatasource dsB; // üye (kullanıcı B)
 
   setUpAll(() async {
-    // Kullanıcı A: mevcut premium hesap
-    final plainDio = Dio(
-      BaseOptions(
-        baseUrl: 'http://198.51.100.10:30080',
-        connectTimeout: const Duration(seconds: 30),
-        receiveTimeout: const Duration(seconds: 30),
-        headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
-      ),
-    );
-    final respA = await plainDio.post('/auth/login', data: {
-      'email': PremiumCredentials.email,
-      'password': PremiumCredentials.password,
-    });
-    final tokenA = respA.data['token'] as String;
-    final authedA = Dio(
-      BaseOptions(
-        baseUrl: 'http://198.51.100.10:30080',
-        headers: {
-          'Authorization': 'Bearer $tokenA',
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-      ),
-    );
-    dsA = CategoryRemoteDatasource(authedA);
-
-    // Kullanıcı B: auto-register
-    await TestHttpClient.setUp();
+    await TestHttpClient.setUp(); // A + B login
+    dsA = CategoryRemoteDatasource(TestHttpClient.authed);
     dsB = CategoryRemoteDatasource(TestHttpClient.authedB);
   });
 

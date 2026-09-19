@@ -2,13 +2,21 @@ import 'package:dt_mobile/core/network/api_exception.dart';
 import 'package:dt_mobile/features/category/data/datasources/category_remote_datasource.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../helpers/test_credentials.dart';
 import '../helpers/test_http_client.dart';
 
 void main() {
+  if (!TestAccounts.hasA) {
+    test('category integration (skipped)', () {},
+        skip: TestAccounts.missingMessage);
+    return;
+  }
+
   late CategoryRemoteDatasource ds;
 
   setUpAll(() async {
-    await TestHttpClient.setUp();
+    await TestHttpClient.setUpAOnly();
+    await TestHttpClient.cleanupResidualCategories();
     ds = CategoryRemoteDatasource(TestHttpClient.authed);
   });
 

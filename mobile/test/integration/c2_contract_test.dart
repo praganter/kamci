@@ -7,23 +7,23 @@ import 'package:dt_mobile/features/debt/data/models/create_debt_request.dart';
 import 'package:dt_mobile/features/debt/data/models/debt_model.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'helpers/test_credentials.dart';
+
 /// C2 turu — backend (debt-service v0.0.20) artık 5 stabil `ErrorResponse.code`
 /// dönüyor. Bu suite mobile `ApiException.fromDioException` katmanının onları
 /// doğru tip + `code`'a çevirdiğini CANLI backend'e karşı doğrular.
 ///
 /// PREMIUM bir hesap gerekir (cannot_add_self kategori paylaşımını, dolayısıyla
 /// premium'u zorunlu kılıyor; ayrıca free 2-kategori limiti name_conflict'i
-/// gölgeler). Çalıştırma:
-///   cd maestro && set -a && . ./.env && set +a && cd .. && \
-///   flutter test test/integration/c2_contract_test.dart \
-///     --dart-define=C2_EMAIL=$USER_A_EMAIL --dart-define=C2_PASSWORD=$USER_A_PASSWORD
+/// gölgeler) — kalıcı "owner" hesabı TEST_A_*. Çalıştırma: bkz.
+/// `test/integration/run.sh`
 const _baseUrl = 'http://198.51.100.10:30080';
-const _email = String.fromEnvironment('C2_EMAIL');
-const _password = String.fromEnvironment('C2_PASSWORD');
+const _email = TestAccounts.emailA;
+const _password = TestAccounts.passwordA;
 
 void main() {
-  if (_email.isEmpty || _password.isEmpty) {
-    test('C2 contract (skipped)', () {}, skip: 'C2_EMAIL / C2_PASSWORD --dart-define ile verilmeli (premium hesap)');
+  if (!TestAccounts.hasA) {
+    test('C2 contract (skipped)', () {}, skip: TestAccounts.missingMessage);
     return;
   }
 

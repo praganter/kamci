@@ -2,19 +2,27 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 
+import 'test_credentials.dart';
+
 const _baseUrl = 'http://198.51.100.10:30080';
 
-/// Register edilen kullanıcıların ortak parolası
+/// `register` probe testinin (auth_test) yeni kullanıcı oluştururken
+/// kullandığı parola. Kalıcı A/B hesaplarının parolaları [TestAccounts]'tan
+/// gelir — bu sabit onlarla ilgisizdir.
 const testPassword = 'TestPass123!';
 
+/// Integration suite'leri için ortak HTTP istemcisi.
+///
+/// **Login-only:** kalıcı A/B hesaplarını ([TestAccounts]) login eder, her
+/// koşuda yeni kullanıcı register ETMEZ (gateway `/auth/register` rate-limit'i).
 abstract final class TestHttpClient {
-  /// Token'sız Dio — register / login / refresh-token endpoint'leri için
+  /// Token'sız Dio — login / register / refresh-token endpoint'leri için
   static late Dio plain;
 
-  /// Kullanıcı A'nın Dio'su (sahip)
+  /// Kullanıcı A'nın Dio'su (premium sahip)
   static late Dio authed;
 
-  /// Kullanıcı B'nin Dio'su (üye olarak eklenecek)
+  /// Kullanıcı B'nin Dio'su (paylaşım üyesi)
   static late Dio authedB;
 
   /// Kullanıcı A'nın e-postası
@@ -23,7 +31,7 @@ abstract final class TestHttpClient {
   /// Kullanıcı B'nin e-postası
   static late String emailB;
 
-  /// Kullanıcı A'nın ID'si (JWT'den parse edilir)
+  /// Kullanıcı A'nın ID'si (JWT `sub` claim'inden parse edilir)
   static late String userId;
 
   /// Kullanıcı B'nin ID'si
@@ -32,50 +40,83 @@ abstract final class TestHttpClient {
   /// Kullanıcı A'nın refresh token'ı (auth testleri için)
   static late String refreshTokenA;
 
-  /// Her test dosyasının setUpAll'ında çağrılır.
-  /// Timestamp'li benzersiz e-postalarla 2 yeni kullanıcı register + login eder.
+  /// Her test dosyasının `setUpAll`'ında çağrılır. Kalıcı A + B hesaplarını
+  /// login eder. [TestAccounts.hasAB] false ise çağıran suite zaten
+  /// top-level skip edilmiş olmalı.
   static Future<void> setUp() async {
     plain = _buildDio();
+    emailA = TestAccounts.emailA;
+    emailB = TestAccounts.emailB;
 
-    final ts = DateTime.now().millisecondsSinceEpoch;
-    emailA = 'test_a_$ts@testmail.com';
-    emailB = 'test_b_$ts@testmail.com';
-
-    final (dioA, tokenA, refreshA) = await _registerAndLogin(emailA);
+    final (dioA, tokenA, refreshA) =
+        await _login(emailA, TestAccounts.passwordA);
     authed = dioA;
     userId = _parseUserId(tokenA);
     refreshTokenA = refreshA;
 
-    final (dioB, tokenB, _) = await _registerAndLogin(emailB);
+    final (dioB, tokenB, _) = await _login(emailB, TestAccounts.passwordB);
     authedB = dioB;
     userIdB = _parseUserId(tokenB);
   }
 
-  static Future<(Dio, String, String)> _registerAndLogin(
-    String email, {
-    int retries = 3,
-  }) async {
-    for (var attempt = 0; attempt <= retries; attempt++) {
-      try {
-        // Register returns tokens directly — no separate login call needed.
-        final resp = await plain.post(
-          '/auth/register',
-          data: {'email': email, 'password': testPassword, 'premium': true},
-        );
-        final token = resp.data['token'] as String;
-        final refresh = resp.data['refreshToken'] as String;
-        final dio = _buildDio()
-          ..options.headers['Authorization'] = 'Bearer $token';
-        return (dio, token, refresh);
-      } on DioException catch (e) {
-        if (e.response?.statusCode == 429 && attempt < retries) {
-          await Future<void>.delayed(Duration(seconds: 5 * (attempt + 1)));
-          continue;
+  /// Yalnız A hesabını login eden suite'ler için (auth / category / debt).
+  static Future<void> setUpAOnly() async {
+    plain = _buildDio();
+    emailA = TestAccounts.emailA;
+
+    final (dioA, tokenA, refreshA) =
+        await _login(emailA, TestAccounts.passwordA);
+    authed = dioA;
+    userId = _parseUserId(tokenA);
+    refreshTokenA = refreshA;
+  }
+
+  static Future<(Dio, String, String)> _login(
+    String email,
+    String password,
+  ) async {
+    final resp = await plain.post(
+      '/auth/login',
+      data: {'email': email, 'password': password},
+    );
+    final data = resp.data as Map<String, dynamic>;
+    final token = data['token'] as String;
+    final refresh = data['refreshToken'] as String? ?? '';
+    final dio = _buildDio()..options.headers['Authorization'] = 'Bearer $token';
+    return (dio, token, refresh);
+  }
+
+  /// USER_A hesabında geçmiş (yarıda kalmış) koşulardan birikmiş test
+  /// kategorisi kalıntılarını siler. Yalnız suite'lerin ürettiği BİLİNEN
+  /// sabit isimleri hedefler — gerçek kullanıcı verisine / yabancı
+  /// kategorilere dokunmaz. Best-effort: hata yutulur.
+  static Future<void> cleanupResidualCategories() async {
+    const knownNames = {
+      'Test Kategori',
+      'Liste Test Kategori',
+      'Güncelleme Öncesi',
+      'Güncelleme Sonrası',
+      'Silinecek Kategori',
+      '__Test Borç Kategorisi__',
+    };
+    try {
+      final resp = await authed.get<dynamic>('/category/getAll');
+      final list = (resp.data as List).cast<dynamic>();
+      for (final raw in list) {
+        final c = raw as Map<String, dynamic>;
+        final name = c['name'] as String? ?? '';
+        final id = (c['id'] ?? c['_id']) as String? ?? '';
+        if (id.isNotEmpty && knownNames.contains(name)) {
+          await authed
+              .delete<dynamic>('/category/delete/$id')
+              .catchError((_) => Response<dynamic>(
+                    requestOptions: RequestOptions(path: ''),
+                  ));
         }
-        rethrow;
       }
+    } catch (_) {
+      // temizlik best-effort — asıl testleri bloklamasın
     }
-    throw StateError('_registerAndLogin: unreachable');
   }
 
   static Dio _buildDio() => Dio(
