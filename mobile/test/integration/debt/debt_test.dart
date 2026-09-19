@@ -5,9 +5,16 @@ import 'package:dt_mobile/features/debt/data/models/create_debt_request.dart';
 import 'package:dt_mobile/features/debt/data/models/debt_model.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../helpers/test_credentials.dart';
 import '../helpers/test_http_client.dart';
 
 void main() {
+  if (!TestAccounts.hasA) {
+    test('debt integration (skipped)', () {},
+        skip: TestAccounts.missingMessage);
+    return;
+  }
+
   late DebtRemoteDatasource ds;
   late CategoryRemoteDatasource categoryDs;
   late String testCategoryId;
@@ -23,7 +30,8 @@ void main() {
   );
 
   setUpAll(() async {
-    await TestHttpClient.setUp();
+    await TestHttpClient.setUpAOnly();
+    await TestHttpClient.cleanupResidualCategories();
     ds = DebtRemoteDatasource(TestHttpClient.authed);
     categoryDs = CategoryRemoteDatasource(TestHttpClient.authed);
 
@@ -32,7 +40,11 @@ void main() {
   });
 
   tearDownAll(() async {
-    await categoryDs.delete(testCategoryId).catchError((_) {});
+    // setUpAll yarıda kalırsa `late` alanlar atanmamış olur — ikincil
+    // LateInitializationError gürültüsünü bastır.
+    try {
+      await categoryDs.delete(testCategoryId).catchError((_) {});
+    } catch (_) {}
   });
 
   group('create', () {
