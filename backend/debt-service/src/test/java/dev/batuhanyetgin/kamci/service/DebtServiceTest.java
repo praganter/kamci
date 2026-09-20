@@ -125,6 +125,30 @@ class DebtServiceTest {
                 .build();
     }
 
+    private CategoryDocument buildCategoryWithEditMember(final String id, final String ownerId, final String memberId) {
+        return CategoryDocument.builder()
+                .id(id)
+                .ownerId(ownerId)
+                .name("Shared Category")
+                .members(List.of(MemberEmbedded.builder()
+                        .userId(memberId)
+                        .accessLevel(AccessLevelType.EDIT)
+                        .build()))
+                .build();
+    }
+
+    private CategoryDocument buildCategoryWithDeleteMember(final String id, final String ownerId, final String memberId) {
+        return CategoryDocument.builder()
+                .id(id)
+                .ownerId(ownerId)
+                .name("Shared Category")
+                .members(List.of(MemberEmbedded.builder()
+                        .userId(memberId)
+                        .accessLevel(AccessLevelType.DELETE)
+                        .build()))
+                .build();
+    }
+
     private DebtItemResponse buildDebtItemResponse() {
         return DebtItemResponse.builder()
                 .id(DEBT_ID)
@@ -411,6 +435,54 @@ class DebtServiceTest {
                         .matches(e -> e.getStatus() == HttpStatus.FORBIDDEN);
             }
         }
+
+        @Test
+        @DisplayName("write-only member (no edit access) → throws FORBIDDEN")
+        void writeOnlyMember_throwsForbidden() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OTHER_ID);
+
+                final DebtDocument existing = buildDebt(DEBT_ID, OWNER_ID, CAT_ID);
+                when(debtRS.findById(DEBT_ID)).thenReturn(existing);
+                when(categoryRS.findById(CAT_ID)).thenReturn(buildCategoryWithWriteMember(CAT_ID, OWNER_ID, OTHER_ID));
+
+                final UpdateDebtRequest request = UpdateDebtRequest.builder()
+                        .id(DEBT_ID).name("Updated").categoryId(CAT_ID)
+                        .amount(BigDecimal.TEN).paymentPeriodType(PaymentPeriodType.MONTHLY)
+                        .firstPaymentDate(LocalDateTime.now()).build();
+
+                assertThatExceptionOfType(BaseException.class)
+                        .isThrownBy(() -> debtService.update(request))
+                        .matches(e -> e.getStatus() == HttpStatus.FORBIDDEN);
+            }
+        }
+
+        @Test
+        @DisplayName("edit-level member updates debt in shared category → succeeds")
+        void editMember_succeeds() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OTHER_ID);
+                ctx.when(RequestContextUtil::isPremium).thenReturn(true);
+                ctx.when(RequestContextUtil::getLocale).thenReturn("en");
+
+                final DebtDocument existing = buildDebt(DEBT_ID, OWNER_ID, CAT_ID);
+                when(debtRS.findById(DEBT_ID)).thenReturn(existing);
+                when(categoryRS.findById(CAT_ID)).thenReturn(buildCategoryWithEditMember(CAT_ID, OWNER_ID, OTHER_ID));
+
+                final DebtDocument updated = buildDebt(DEBT_ID, OWNER_ID, CAT_ID);
+                when(debtMapper.convert(any(UpdateDebtRequest.class))).thenReturn(updated);
+                when(debtRS.update(updated)).thenReturn(updated);
+                when(debtMapper.convert(updated)).thenReturn(buildDebtItemResponse());
+
+                final UpdateDebtRequest request = UpdateDebtRequest.builder()
+                        .id(DEBT_ID).name("Updated").categoryId(CAT_ID)
+                        .amount(BigDecimal.TEN).paymentPeriodType(PaymentPeriodType.MONTHLY)
+                        .firstPaymentDate(LocalDateTime.now()).build();
+
+                assertThatNoException().isThrownBy(() -> debtService.update(request));
+                verify(debtRS).update(updated);
+            }
+        }
     }
 
     // ─── delete ───────────────────────────────────────────────────────────────
@@ -449,6 +521,37 @@ class DebtServiceTest {
                         .matches(e -> e.getStatus() == HttpStatus.FORBIDDEN);
 
                 verify(debtRS, never()).delete(any());
+            }
+        }
+
+        @Test
+        @DisplayName("edit-only member (no delete access) → throws FORBIDDEN")
+        void editOnlyMember_throwsForbidden() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OTHER_ID);
+
+                when(debtRS.findById(DEBT_ID)).thenReturn(buildDebt(DEBT_ID, OWNER_ID, CAT_ID));
+                when(categoryRS.findById(CAT_ID)).thenReturn(buildCategoryWithEditMember(CAT_ID, OWNER_ID, OTHER_ID));
+
+                assertThatExceptionOfType(BaseException.class)
+                        .isThrownBy(() -> debtService.delete(DEBT_ID))
+                        .matches(e -> e.getStatus() == HttpStatus.FORBIDDEN);
+
+                verify(debtRS, never()).delete(any());
+            }
+        }
+
+        @Test
+        @DisplayName("delete-level member deletes debt → calls debtRS.delete")
+        void deleteMember_succeeds() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OTHER_ID);
+
+                when(debtRS.findById(DEBT_ID)).thenReturn(buildDebt(DEBT_ID, OWNER_ID, CAT_ID));
+                when(categoryRS.findById(CAT_ID)).thenReturn(buildCategoryWithDeleteMember(CAT_ID, OWNER_ID, OTHER_ID));
+
+                debtService.delete(DEBT_ID);
+                verify(debtRS).delete(DEBT_ID);
             }
         }
     }
