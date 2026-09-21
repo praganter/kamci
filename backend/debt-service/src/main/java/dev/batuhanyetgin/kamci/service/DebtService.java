@@ -10,7 +10,9 @@ import dev.batuhanyetgin.kamci.document.embedded.PaymentEmbedded;
 import dev.batuhanyetgin.kamci.document.embedded.ReminderEmbedded;
 import dev.batuhanyetgin.kamci.dto.request.*;
 import dev.batuhanyetgin.kamci.dto.response.*;
+import dev.batuhanyetgin.kamci.client.ExchangeRateClient;
 import dev.batuhanyetgin.kamci.enums.AccessLevelType;
+import dev.batuhanyetgin.kamci.enums.CurrencyType;
 import dev.batuhanyetgin.kamci.enums.DebtStatus;
 import dev.batuhanyetgin.kamci.enums.PaymentPeriodType;
 import dev.batuhanyetgin.kamci.enums.PaymentStatus;
@@ -50,6 +52,7 @@ public class DebtService {
     private final DebtMapper debtMapper;
     private final DebtEventAsyncPublisher debtEventAsyncPublisher;
     private final UserIncomeRepositoryService incomeRS;
+    private final ExchangeRateClient exchangeRateClient;
     private final LockingTaskExecutor lockingTaskExecutor;
     @Qualifier("taskExecutor")
     private final Executor taskExecutor;
@@ -632,6 +635,11 @@ public class DebtService {
                 .collect(Collectors.toMap(BaseDocument::getId, c -> c));
         final List<DebtDocument> debts = debtRS.findByCategoryIdIn(new ArrayList<>(categoryById.keySet()));
 
+        final var incomeOpt = incomeRS.findByOwnerIdAsOf(userId, monthEnd);
+        final BigDecimal income = incomeOpt.map(UserIncomeDocument::getAmount).orElse(null);
+        final CurrencyType baseCurrency = incomeOpt.map(UserIncomeDocument::getCurrency).orElse(CurrencyType.TRY);
+        final Map<CurrencyType, BigDecimal> rateCache = new HashMap<>();
+
         BigDecimal totalPaid = BigDecimal.ZERO;
         int paidCount = 0;
         int skippedCount = 0;
@@ -655,7 +663,8 @@ public class DebtService {
                         && debt.getFirstPaymentDate() != null
                         && !debt.getFirstPaymentDate().isAfter(monthEnd)) {
                     pendingCount++;
-                    pendingAmount = pendingAmount.add(debt.getAmount() != null ? debt.getAmount() : BigDecimal.ZERO);
+                    pendingAmount = pendingAmount.add(
+                            convertToBase(debt.getAmount(), debt.getCurrency(), baseCurrency, rateCache));
                     items.add(DebtMonthlySummaryItem.builder()
                             .debtId(debt.getId())
                             .debtName(debt.getName())
@@ -680,13 +689,15 @@ public class DebtService {
                     .max(Comparator.naturalOrder()).orElse(null);
 
             if (isPaid) {
-                totalPaid = totalPaid.add(paidAmount);
+                final BigDecimal paidAmountInBase = convertToBase(paidAmount, debt.getCurrency(), baseCurrency, rateCache);
+                totalPaid = totalPaid.add(paidAmountInBase);
                 paidCount++;
-                categoryPaidMap.merge(debt.getCategoryId(), paidAmount, BigDecimal::add);
+                categoryPaidMap.merge(debt.getCategoryId(), paidAmountInBase, BigDecimal::add);
                 categoryDebtCountMap.merge(debt.getCategoryId(), 1, Integer::sum);
             } else {
                 skippedCount++;
-                skippedAmount = skippedAmount.add(debt.getAmount() != null ? debt.getAmount() : BigDecimal.ZERO);
+                skippedAmount = skippedAmount.add(
+                        convertToBase(debt.getAmount(), debt.getCurrency(), baseCurrency, rateCache));
             }
 
             items.add(DebtMonthlySummaryItem.builder()
@@ -701,8 +712,6 @@ public class DebtService {
                     .build());
         }
 
-        final var incomeOpt = incomeRS.findByOwnerIdAsOf(userId, monthEnd);
-        final BigDecimal income = incomeOpt.map(UserIncomeDocument::getAmount).orElse(null);
         BigDecimal ratio = null;
         if (income != null && income.compareTo(BigDecimal.ZERO) > 0) {
             ratio = totalPaid.divide(income, 4, RoundingMode.HALF_UP)
@@ -765,11 +774,12 @@ public class DebtService {
 
         final List<MonthlyTrendItem> trend = new ArrayList<>();
         for (int i = 5; i >= 0; i--) {
-            trend.add(computeTrendMonth(debts, yearMonth.minusMonths(i), userId));
+            trend.add(computeTrendMonth(debts, yearMonth.minusMonths(i), userId, baseCurrency, rateCache));
         }
 
         return MonthlySummaryResponse.builder()
                 .month(month)
+                .baseCurrency(baseCurrency)
                 .totalPaid(totalPaid)
                 .paidCount(paidCount)
                 .skippedCount(skippedCount)
@@ -787,7 +797,9 @@ public class DebtService {
 
     private MonthlyTrendItem computeTrendMonth(final List<DebtDocument> debts,
                                                final YearMonth yearMonth,
-                                               final String userId) {
+                                               final String userId,
+                                               final CurrencyType baseCurrency,
+                                               final Map<CurrencyType, BigDecimal> rateCache) {
         final LocalDateTime monthStart = yearMonth.atDay(1).atStartOfDay();
         final LocalDateTime monthEnd = yearMonth.atEndOfMonth().atTime(23, 59, 59);
 
@@ -819,7 +831,7 @@ public class DebtService {
                         .filter(PaymentEmbedded::isPaid)
                         .map(p -> p.getAmountPaid() != null ? p.getAmountPaid() : BigDecimal.ZERO)
                         .reduce(BigDecimal.ZERO, BigDecimal::add);
-                totalPaid = totalPaid.add(paidAmount);
+                totalPaid = totalPaid.add(convertToBase(paidAmount, debt.getCurrency(), baseCurrency, rateCache));
                 paidCount++;
             } else {
                 skippedCount++;
@@ -842,6 +854,21 @@ public class DebtService {
                 .pendingCount(pendingCount)
                 .debtToIncomeRatio(ratio)
                 .build();
+    }
+
+    private BigDecimal convertToBase(final BigDecimal amount,
+                                      final CurrencyType from,
+                                      final CurrencyType base,
+                                      final Map<CurrencyType, BigDecimal> rateCache) {
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) == 0) {
+            return BigDecimal.ZERO;
+        }
+        if (from == null || from == base) {
+            return amount;
+        }
+        final BigDecimal rate = rateCache.computeIfAbsent(from,
+                f -> BigDecimal.valueOf(exchangeRateClient.getRate(f.name(), base.name()).rate()));
+        return amount.multiply(rate);
     }
 
     private void backfillAutoPayments(final DebtDocument debt) {

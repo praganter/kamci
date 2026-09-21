@@ -1,5 +1,6 @@
 package dev.batuhanyetgin.kamci.dto.response;
 
+import dev.batuhanyetgin.kamci.enums.CurrencyType;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,6 +14,8 @@ import java.util.List;
 public class MonthlySummaryResponse {
 
     private String month;
+
+    private CurrencyType baseCurrency;
 
     private BigDecimal totalPaid;
 
