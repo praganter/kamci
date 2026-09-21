@@ -33,7 +33,7 @@ build/
 .vscode/
 .env
 .env.local
-.claude
+.claude/settings.local.json
 firebase-adminsdk.json
 .vexp
 vexp.toml
