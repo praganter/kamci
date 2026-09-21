@@ -10,6 +10,7 @@ import dev.batuhanyetgin.kamci.document.embedded.PaymentEmbedded;
 import dev.batuhanyetgin.kamci.document.embedded.ReminderEmbedded;
 import dev.batuhanyetgin.kamci.dto.request.*;
 import dev.batuhanyetgin.kamci.dto.response.*;
+import dev.batuhanyetgin.kamci.client.AuthClient;
 import dev.batuhanyetgin.kamci.client.ExchangeRateClient;
 import dev.batuhanyetgin.kamci.enums.AccessLevelType;
 import dev.batuhanyetgin.kamci.enums.CurrencyType;
@@ -53,6 +54,7 @@ public class DebtService {
     private final DebtEventAsyncPublisher debtEventAsyncPublisher;
     private final UserIncomeRepositoryService incomeRS;
     private final ExchangeRateClient exchangeRateClient;
+    private final AuthClient authClient;
     private final LockingTaskExecutor lockingTaskExecutor;
     @Qualifier("taskExecutor")
     private final Executor taskExecutor;
@@ -718,6 +720,24 @@ public class DebtService {
                     .multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP);
         }
 
+        final List<String> householdMemberIds = authClient.getHouseholdMemberIds(userId);
+        final boolean isHousehold = householdMemberIds.size() > 1;
+        BigDecimal householdIncome = null;
+        BigDecimal householdRatio = null;
+        if (isHousehold) {
+            BigDecimal combined = BigDecimal.ZERO;
+            for (final String memberId : householdMemberIds) {
+                combined = combined.add(incomeRS.findByOwnerIdAsOf(memberId, monthEnd)
+                        .map(inc -> convertToBase(inc.getAmount(), inc.getCurrency(), baseCurrency, rateCache))
+                        .orElse(BigDecimal.ZERO));
+            }
+            householdIncome = combined;
+            if (combined.compareTo(BigDecimal.ZERO) > 0) {
+                householdRatio = totalPaid.divide(combined, 4, RoundingMode.HALF_UP)
+                        .multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP);
+            }
+        }
+
         final BigDecimal finalTotalPaid = totalPaid;
         final List<CategoryBreakdownItem> categoryBreakdown = categoryPaidMap.entrySet().stream()
                 .map(e -> {
@@ -788,6 +808,9 @@ public class DebtService {
                 .pendingAmount(pendingAmount)
                 .incomeAtMonth(income)
                 .debtToIncomeRatio(ratio)
+                .household(isHousehold)
+                .householdIncomeAtMonth(householdIncome)
+                .householdDebtToIncomeRatio(householdRatio)
                 .debts(items)
                 .trend(trend)
                 .categoryBreakdown(categoryBreakdown)

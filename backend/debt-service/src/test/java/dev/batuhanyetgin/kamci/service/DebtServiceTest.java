@@ -7,6 +7,7 @@ import dev.batuhanyetgin.kamci.document.DebtDocument;
 import dev.batuhanyetgin.kamci.document.embedded.MemberEmbedded;
 import dev.batuhanyetgin.kamci.document.embedded.PaymentEmbedded;
 import dev.batuhanyetgin.kamci.document.UserIncomeDocument;
+import dev.batuhanyetgin.kamci.client.AuthClient;
 import dev.batuhanyetgin.kamci.client.ExchangeRateClient;
 import dev.batuhanyetgin.kamci.client.ExchangeRateDto;
 import dev.batuhanyetgin.kamci.dto.request.CreateDebtRequest;
@@ -45,6 +46,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.ArrayList;
@@ -65,6 +67,7 @@ class DebtServiceTest {
     @Mock private DebtEventAsyncPublisher debtEventAsyncPublisher;
     @Mock private UserIncomeRepositoryService incomeRS;
     @Mock private ExchangeRateClient exchangeRateClient;
+    @Mock private AuthClient authClient;
     @Mock private LockProvider lockProvider;
     @Mock private SimpleLock simpleLock;
 
@@ -82,9 +85,11 @@ class DebtServiceTest {
     @BeforeEach
     void setUp() throws Throwable {
         lenient().when(lockProvider.lock(any())).thenReturn(java.util.Optional.of(simpleLock));
+        lenient().when(authClient.getHouseholdMemberIds(anyString()))
+                .thenAnswer(inv -> List.of((String) inv.getArgument(0)));
         final LockingTaskExecutor lockingTaskExecutor = new DefaultLockingTaskExecutor(lockProvider);
         debtService = new DebtService(debtRS, categoryRS, debtMapper, debtEventAsyncPublisher, incomeRS,
-                exchangeRateClient, lockingTaskExecutor, taskExecutor);
+                exchangeRateClient, authClient, lockingTaskExecutor, taskExecutor);
     }
 
     private DebtDocument buildDebt(final String id, final String ownerId, final String catId) {
@@ -1701,6 +1706,77 @@ class DebtServiceTest {
                 assertThat(summary.getTotalPaid())
                         .isEqualByComparingTo(BigDecimal.valueOf(100).multiply(BigDecimal.valueOf(30.0))
                                 .add(BigDecimal.valueOf(50).multiply(BigDecimal.valueOf(35.0))));
+            }
+        }
+
+        @Test
+        @DisplayName("user in accepted household → household income is combined and ratio computed against it")
+        void household_combinesIncomeAcrossMembers() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+
+                final String partnerId = "partner456";
+                final YearMonth ym = YearMonth.now().minusMonths(1);
+                final LocalDateTime monthStart = ym.atDay(1).atStartOfDay();
+                final LocalDateTime monthEnd = ym.atEndOfMonth().atTime(23, 59, 59);
+
+                final CategoryDocument cat = buildCategory(CAT_ID, OWNER_ID);
+                final DebtDocument debt = buildDebt(DEBT_ID, OWNER_ID, CAT_ID);
+                debt.setFirstPaymentDate(monthStart);
+                debt.addPayment(monthStart.plusDays(5), monthStart, monthEnd, BigDecimal.valueOf(1000));
+
+                final UserIncomeDocument ownerIncome = UserIncomeDocument.builder()
+                        .ownerId(OWNER_ID)
+                        .amount(BigDecimal.valueOf(5000))
+                        .currency(CurrencyType.TRY)
+                        .effectiveFrom(monthStart.minusMonths(1))
+                        .build();
+                final UserIncomeDocument partnerIncome = UserIncomeDocument.builder()
+                        .ownerId(partnerId)
+                        .amount(BigDecimal.valueOf(7000))
+                        .currency(CurrencyType.TRY)
+                        .effectiveFrom(monthStart.minusMonths(1))
+                        .build();
+
+                when(categoryRS.findByOwnerId(OWNER_ID)).thenReturn(List.of(cat));
+                when(categoryRS.findByMemberUserId(OWNER_ID)).thenReturn(List.of());
+                when(debtRS.findByCategoryIdIn(List.of(CAT_ID))).thenReturn(List.of(debt));
+                when(incomeRS.findByOwnerIdAsOf(eq(OWNER_ID), any())).thenReturn(Optional.of(ownerIncome));
+                when(incomeRS.findByOwnerIdAsOf(eq(partnerId), any())).thenReturn(Optional.of(partnerIncome));
+                when(authClient.getHouseholdMemberIds(OWNER_ID)).thenReturn(List.of(OWNER_ID, partnerId));
+
+                final MonthlySummaryResponse summary = debtService.getMonthlySummary(ym.toString());
+
+                assertThat(summary.isHousehold()).isTrue();
+                assertThat(summary.getHouseholdIncomeAtMonth()).isEqualByComparingTo(BigDecimal.valueOf(12000));
+                assertThat(summary.getHouseholdDebtToIncomeRatio())
+                        .isEqualByComparingTo(BigDecimal.valueOf(1000)
+                                .divide(BigDecimal.valueOf(12000), 4, RoundingMode.HALF_UP)
+                                .multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP));
+                // Personal ratio unaffected — still computed against the caller's own income only
+                assertThat(summary.getDebtToIncomeRatio())
+                        .isEqualByComparingTo(BigDecimal.valueOf(1000)
+                                .divide(BigDecimal.valueOf(5000), 4, RoundingMode.HALF_UP)
+                                .multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP));
+            }
+        }
+
+        @Test
+        @DisplayName("no household → household flag false and household fields null")
+        void noHousehold_fieldsNull() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+
+                when(categoryRS.findByOwnerId(OWNER_ID)).thenReturn(List.of());
+                when(categoryRS.findByMemberUserId(OWNER_ID)).thenReturn(List.of());
+                when(debtRS.findByCategoryIdIn(List.of())).thenReturn(List.of());
+                when(incomeRS.findByOwnerIdAsOf(eq(OWNER_ID), any())).thenReturn(Optional.empty());
+
+                final MonthlySummaryResponse summary = debtService.getMonthlySummary(YearMonth.now().toString());
+
+                assertThat(summary.isHousehold()).isFalse();
+                assertThat(summary.getHouseholdIncomeAtMonth()).isNull();
+                assertThat(summary.getHouseholdDebtToIncomeRatio()).isNull();
             }
         }
     }

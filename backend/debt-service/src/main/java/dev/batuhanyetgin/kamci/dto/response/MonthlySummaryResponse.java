@@ -33,6 +33,12 @@ public class MonthlySummaryResponse {
 
     private BigDecimal debtToIncomeRatio;
 
+    private boolean household;
+
+    private BigDecimal householdIncomeAtMonth;
+
+    private BigDecimal householdDebtToIncomeRatio;
+
     private List<DebtMonthlySummaryItem> debts;
 
     private List<MonthlyTrendItem> trend;

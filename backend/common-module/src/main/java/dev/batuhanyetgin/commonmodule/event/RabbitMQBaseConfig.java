@@ -139,6 +139,26 @@ public class RabbitMQBaseConfig {
     }
 
     @Bean
+    public Queue householdInviteQueue() {
+        return QueueBuilder.durable(RabbitMQConstants.HOUSEHOLD_INVITE_QUEUE)
+                .withArgument("x-dead-letter-exchange", RabbitMQConstants.NOTIFICATION_DLX)
+                .withArgument("x-dead-letter-routing-key", RabbitMQConstants.HOUSEHOLD_INVITE_DLQ_ROUTING_KEY)
+                .build();
+    }
+
+    @Bean
+    public Queue householdInviteDlq() {
+        return QueueBuilder.durable(RabbitMQConstants.HOUSEHOLD_INVITE_DLQ).build();
+    }
+
+    @Bean
+    public Binding householdInviteBinding() {
+        return BindingBuilder.bind(householdInviteQueue())
+                .to(notificationExchange())
+                .with(RabbitMQConstants.HOUSEHOLD_INVITE_ROUTING_KEY);
+    }
+
+    @Bean
     public Binding passwordResetDlqBinding() {
         return BindingBuilder.bind(passwordResetDlq())
                 .to(notificationDlx())
@@ -171,5 +191,12 @@ public class RabbitMQBaseConfig {
         return BindingBuilder.bind(categoryMemberAddedDlq())
                 .to(notificationDlx())
                 .with(RabbitMQConstants.CATEGORY_MEMBER_ADDED_DLQ_ROUTING_KEY);
+    }
+
+    @Bean
+    public Binding householdInviteDlqBinding() {
+        return BindingBuilder.bind(householdInviteDlq())
+                .to(notificationDlx())
+                .with(RabbitMQConstants.HOUSEHOLD_INVITE_DLQ_ROUTING_KEY);
     }
 }
