@@ -131,7 +131,7 @@ public class HouseholdService {
                 .partnerId(household.getPartnerId())
                 .partnerEmail(household.getPartnerEmail())
                 .status(household.getStatus())
-                .isOwner(household.getOwnerId().equals(requestingUserId))
+                .owner(household.getOwnerId().equals(requestingUserId))
                 .build();
     }
 }

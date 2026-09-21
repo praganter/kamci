@@ -22,5 +22,5 @@ public class HouseholdResponse {
 
     private HouseholdStatus status;
 
-    private boolean isOwner;
+    private boolean owner;
 }
