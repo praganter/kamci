@@ -34,4 +34,4 @@ build/
 .env
 .vexp
 vexp.toml
-.claude
+.claude/settings.local.json
