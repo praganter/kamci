@@ -18,6 +18,8 @@ public final class RabbitMQConstants {
     public static final String CATEGORY_MEMBER_ADDED_DLQ = "notification.category_member_added.dlq";
     public static final String HOUSEHOLD_INVITE_QUEUE = "notification.household_invite.queue";
     public static final String HOUSEHOLD_INVITE_DLQ = "notification.household_invite.dlq";
+    public static final String WEEKLY_DIGEST_QUEUE = "notification.weekly_digest.queue";
+    public static final String WEEKLY_DIGEST_DLQ = "notification.weekly_digest.dlq";
     // Routing Keys
     public static final String PASSWORD_RESET_ROUTING_KEY = "notification.routing.password_reset";
     public static final String USER_REGISTERED_ROUTING_KEY = "notification.routing.user_registered";
@@ -25,6 +27,7 @@ public final class RabbitMQConstants {
     public static final String DEBT_REMINDER_ROUTING_KEY = "notification.routing.debt_reminder";
     public static final String CATEGORY_MEMBER_ADDED_ROUTING_KEY = "notification.routing.category_member_added";
     public static final String HOUSEHOLD_INVITE_ROUTING_KEY = "notification.routing.household_invite";
+    public static final String WEEKLY_DIGEST_ROUTING_KEY = "notification.routing.weekly_digest";
     // DLQ Routing Keys
     public static final String PASSWORD_RESET_DLQ_ROUTING_KEY = "notification.routing.password_reset.dlq";
     public static final String USER_REGISTERED_DLQ_ROUTING_KEY = "notification.routing.user_registered.dlq";
@@ -32,6 +35,7 @@ public final class RabbitMQConstants {
     public static final String DEBT_REMINDER_DLQ_ROUTING_KEY = "notification.routing.debt_reminder.dlq";
     public static final String CATEGORY_MEMBER_ADDED_DLQ_ROUTING_KEY = "notification.routing.category_member_added.dlq";
     public static final String HOUSEHOLD_INVITE_DLQ_ROUTING_KEY = "notification.routing.household_invite.dlq";
+    public static final String WEEKLY_DIGEST_DLQ_ROUTING_KEY = "notification.routing.weekly_digest.dlq";
     private RabbitMQConstants() {
     }
 }

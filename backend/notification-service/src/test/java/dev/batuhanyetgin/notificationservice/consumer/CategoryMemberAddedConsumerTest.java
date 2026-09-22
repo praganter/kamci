@@ -5,6 +5,7 @@ import dev.batuhanyetgin.notificationservice.document.DeviceTokenDocument;
 import dev.batuhanyetgin.notificationservice.repository.DeviceTokenRepository;
 import dev.batuhanyetgin.notificationservice.service.FcmService;
 import dev.batuhanyetgin.notificationservice.service.MailService;
+import dev.batuhanyetgin.notificationservice.service.NotificationService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -28,6 +29,7 @@ class CategoryMemberAddedConsumerTest {
     @Mock private FcmService fcmService;
     @Mock private MailService mailService;
     @Mock private MessageSource messageSource;
+    @Mock private NotificationService notificationService;
 
     @InjectMocks
     private CategoryMemberAddedConsumer consumer;
@@ -78,6 +80,7 @@ class CategoryMemberAddedConsumerTest {
         void emailRegistered_sendsEmail() {
             when(deviceTokenRepository.findByUserId(MEMBER_ID))
                     .thenReturn(Optional.of(buildTokenDoc(null, EMAIL, "en")));
+            when(messageSource.getMessage(anyString(), any(), any(Locale.class))).thenReturn("msg");
             when(messageSource.getMessage(eq("mail.category_member_added.subject"), any(Object[].class), any(Locale.class))).thenReturn("Subject");
             when(messageSource.getMessage(eq("mail.category_member_added.body"), any(Object[].class), any(Locale.class))).thenReturn("Body");
 
@@ -115,7 +118,7 @@ class CategoryMemberAddedConsumerTest {
         @DisplayName("no device token record but memberEmail set → sends fallback email with default locale")
         void noTokenRecord_memberEmailSet_sendsFallbackEmail() {
             when(deviceTokenRepository.findByUserId(MEMBER_ID)).thenReturn(Optional.empty());
-            when(messageSource.getMessage(anyString(), any(Object[].class), any(Locale.class))).thenReturn("msg");
+            when(messageSource.getMessage(anyString(), any(), any(Locale.class))).thenReturn("msg");
 
             final CategoryMemberAddedEvent eventWithEmail = CategoryMemberAddedEvent.builder()
                     .categoryId(CATEGORY_ID)
@@ -136,7 +139,7 @@ class CategoryMemberAddedConsumerTest {
         @DisplayName("no token record, memberEmail set, mail throws → caught silently")
         void noTokenRecord_mailThrows_caughtSilently() {
             when(deviceTokenRepository.findByUserId(MEMBER_ID)).thenReturn(Optional.empty());
-            when(messageSource.getMessage(anyString(), any(Object[].class), any(Locale.class))).thenReturn("msg");
+            when(messageSource.getMessage(anyString(), any(), any(Locale.class))).thenReturn("msg");
             doThrow(new RuntimeException("SMTP error")).when(mailService).send(any(), any(), any());
 
             final CategoryMemberAddedEvent eventWithEmail = CategoryMemberAddedEvent.builder()

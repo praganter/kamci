@@ -4,9 +4,11 @@ import dev.batuhanyetgin.commonmodule.constant.CommonConstants;
 import dev.batuhanyetgin.commonmodule.event.CategoryMemberAddedEvent;
 import dev.batuhanyetgin.commonmodule.event.EventConsumer;
 import dev.batuhanyetgin.commonmodule.event.RabbitMQConstants;
+import dev.batuhanyetgin.notificationservice.document.NotificationType;
 import dev.batuhanyetgin.notificationservice.repository.DeviceTokenRepository;
 import dev.batuhanyetgin.notificationservice.service.FcmService;
 import dev.batuhanyetgin.notificationservice.service.MailService;
+import dev.batuhanyetgin.notificationservice.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -26,6 +28,7 @@ public class CategoryMemberAddedConsumer implements EventConsumer<CategoryMember
     private final FcmService fcmService;
     private final MailService mailService;
     private final MessageSource messageSource;
+    private final NotificationService notificationService;
 
     @Override
     @RabbitListener(queues = RabbitMQConstants.CATEGORY_MEMBER_ADDED_QUEUE)
@@ -38,14 +41,16 @@ public class CategoryMemberAddedConsumer implements EventConsumer<CategoryMember
                     final Locale locale = Locale.forLanguageTag(
                             StringUtils.hasText(tokenDoc.getLocale()) ? tokenDoc.getLocale() : CommonConstants.DEFAULT_LOCALE
                     );
+                    final String title = messageSource.getMessage(
+                            "push.category_member_added.title", null, locale);
+                    final String body = messageSource.getMessage(
+                            "push.category_member_added.body",
+                            new Object[]{event.getCategoryName()},
+                            locale);
+                    notificationService.persist(event.getMemberUserId(), NotificationType.CATEGORY_MEMBER_ADDED,
+                            title, body, event.getCategoryId());
 
                     if (StringUtils.hasText(tokenDoc.getFcmToken())) {
-                        final String title = messageSource.getMessage(
-                                "push.category_member_added.title", null, locale);
-                        final String body = messageSource.getMessage(
-                                "push.category_member_added.body",
-                                new Object[]{event.getCategoryName()},
-                                locale);
                         fcmService.send(tokenDoc.getFcmToken(), title, body,
                                 Map.of("categoryId", event.getCategoryId()));
                         log.info("FCM category member added notification sent to userId: {}", event.getMemberUserId());
@@ -74,8 +79,17 @@ public class CategoryMemberAddedConsumer implements EventConsumer<CategoryMember
                 },
                 () -> {
                     log.warn("No device token record found for memberUserId: {}", event.getMemberUserId());
+                    final Locale locale = Locale.forLanguageTag(CommonConstants.DEFAULT_LOCALE);
+                    final String pushTitle = messageSource.getMessage(
+                            "push.category_member_added.title", null, locale);
+                    final String pushBody = messageSource.getMessage(
+                            "push.category_member_added.body",
+                            new Object[]{event.getCategoryName()},
+                            locale);
+                    notificationService.persist(event.getMemberUserId(), NotificationType.CATEGORY_MEMBER_ADDED,
+                            pushTitle, pushBody, event.getCategoryId());
+
                     if (StringUtils.hasText(event.getMemberEmail())) {
-                        final Locale locale = Locale.forLanguageTag(CommonConstants.DEFAULT_LOCALE);
                         final String subject = messageSource.getMessage(
                                 "mail.category_member_added.subject",
                                 new Object[]{event.getCategoryName()},

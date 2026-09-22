@@ -6,6 +6,7 @@ import dev.batuhanyetgin.notificationservice.document.DeviceTokenDocument;
 import dev.batuhanyetgin.notificationservice.repository.DeviceTokenRepository;
 import dev.batuhanyetgin.notificationservice.service.FcmService;
 import dev.batuhanyetgin.notificationservice.service.MailService;
+import dev.batuhanyetgin.notificationservice.service.NotificationService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -31,6 +32,7 @@ class DebtReminderConsumerTest {
     @Mock private FcmService fcmService;
     @Mock private MailService mailService;
     @Mock private MessageSource messageSource;
+    @Mock private NotificationService notificationService;
 
     @InjectMocks
     private DebtReminderConsumer consumer;
@@ -123,6 +125,7 @@ class DebtReminderConsumerTest {
         void emailRegistered_sendsEmail() {
             when(deviceTokenRepository.findByUserId(OWNER_ID))
                     .thenReturn(Optional.of(buildTokenDoc("en", EMAIL)));
+            when(messageSource.getMessage(anyString(), any(Object[].class), any(Locale.class))).thenReturn("msg");
             when(messageSource.getMessage(eq("mail.reminder.subject"), any(Object[].class), any(Locale.class))).thenReturn("Reminder Subject");
             when(messageSource.getMessage(eq("mail.reminder.body"), any(Object[].class), any(Locale.class))).thenReturn("Reminder Body");
 

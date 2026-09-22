@@ -7,9 +7,11 @@ import dev.batuhanyetgin.commonmodule.event.RabbitMQConstants;
 import dev.batuhanyetgin.commonmodule.event.ReminderChannelType;
 import dev.batuhanyetgin.commonmodule.util.DateTimeUtil;
 import dev.batuhanyetgin.notificationservice.document.DeviceTokenDocument;
+import dev.batuhanyetgin.notificationservice.document.NotificationType;
 import dev.batuhanyetgin.notificationservice.repository.DeviceTokenRepository;
 import dev.batuhanyetgin.notificationservice.service.FcmService;
 import dev.batuhanyetgin.notificationservice.service.MailService;
+import dev.batuhanyetgin.notificationservice.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -30,6 +32,7 @@ public class DebtReminderConsumer implements EventConsumer<DebtReminderEvent> {
     private final FcmService fcmService;
     private final MailService mailService;
     private final MessageSource messageSource;
+    private final NotificationService notificationService;
 
     @Override
     @RabbitListener(queues = RabbitMQConstants.DEBT_REMINDER_QUEUE)
@@ -45,21 +48,23 @@ public class DebtReminderConsumer implements EventConsumer<DebtReminderEvent> {
         final DeviceTokenDocument tokenDoc = deviceTokenRepository.findByUserId(event.getOwnerId())
                 .orElse(null);
 
+        final Locale locale = Locale.forLanguageTag(
+                tokenDoc != null && StringUtils.hasText(tokenDoc.getLocale())
+                        ? tokenDoc.getLocale() : CommonConstants.DEFAULT_LOCALE
+        );
+        final String formattedDate = DateTimeUtil.format(event.getNextReminderDate());
+        final String title = messageSource.getMessage(
+                "push.reminder.title", new Object[]{event.getDebtName()}, locale);
+        final String body = messageSource.getMessage(
+                "push.reminder.body", new Object[]{event.getDebtName(), formattedDate}, locale);
+        notificationService.persist(event.getOwnerId(), NotificationType.DEBT_REMINDER, title, body, event.getDebtId());
+
         if (tokenDoc == null) {
             log.warn("No device token record found for ownerId: {}", event.getOwnerId());
             return;
         }
 
-        final Locale locale = Locale.forLanguageTag(
-                StringUtils.hasText(tokenDoc.getLocale()) ? tokenDoc.getLocale() : CommonConstants.DEFAULT_LOCALE
-        );
-        final String formattedDate = DateTimeUtil.format(event.getNextReminderDate());
-
         if (channels.contains(ReminderChannelType.IN_APP) && StringUtils.hasText(tokenDoc.getFcmToken())) {
-            final String title = messageSource.getMessage(
-                    "push.reminder.title", new Object[]{event.getDebtName()}, locale);
-            final String body = messageSource.getMessage(
-                    "push.reminder.body", new Object[]{event.getDebtName(), formattedDate}, locale);
             fcmService.send(tokenDoc.getFcmToken(), title, body, Map.of("debtId", event.getDebtId()));
             log.info("FCM reminder sent for debtId: {}", event.getDebtId());
         }

@@ -4,9 +4,11 @@ import dev.batuhanyetgin.commonmodule.constant.CommonConstants;
 import dev.batuhanyetgin.commonmodule.event.EventConsumer;
 import dev.batuhanyetgin.commonmodule.event.HouseholdInviteEvent;
 import dev.batuhanyetgin.commonmodule.event.RabbitMQConstants;
+import dev.batuhanyetgin.notificationservice.document.NotificationType;
 import dev.batuhanyetgin.notificationservice.repository.DeviceTokenRepository;
 import dev.batuhanyetgin.notificationservice.service.FcmService;
 import dev.batuhanyetgin.notificationservice.service.MailService;
+import dev.batuhanyetgin.notificationservice.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -26,6 +28,7 @@ public class HouseholdInviteConsumer implements EventConsumer<HouseholdInviteEve
     private final FcmService fcmService;
     private final MailService mailService;
     private final MessageSource messageSource;
+    private final NotificationService notificationService;
 
     @Override
     @RabbitListener(queues = RabbitMQConstants.HOUSEHOLD_INVITE_QUEUE)
@@ -38,14 +41,16 @@ public class HouseholdInviteConsumer implements EventConsumer<HouseholdInviteEve
                     final Locale locale = Locale.forLanguageTag(
                             StringUtils.hasText(tokenDoc.getLocale()) ? tokenDoc.getLocale() : CommonConstants.DEFAULT_LOCALE
                     );
+                    final String title = messageSource.getMessage(
+                            "push.household_invite.title", null, locale);
+                    final String body = messageSource.getMessage(
+                            "push.household_invite.body",
+                            new Object[]{event.getInviterEmail()},
+                            locale);
+                    notificationService.persist(event.getInviteeUserId(), NotificationType.HOUSEHOLD_INVITE,
+                            title, body, event.getHouseholdId());
 
                     if (StringUtils.hasText(tokenDoc.getFcmToken())) {
-                        final String title = messageSource.getMessage(
-                                "push.household_invite.title", null, locale);
-                        final String body = messageSource.getMessage(
-                                "push.household_invite.body",
-                                new Object[]{event.getInviterEmail()},
-                                locale);
                         fcmService.send(tokenDoc.getFcmToken(), title, body,
                                 Map.of("householdId", event.getHouseholdId()));
                         log.info("FCM household invite notification sent to userId: {}", event.getInviteeUserId());
@@ -74,8 +79,17 @@ public class HouseholdInviteConsumer implements EventConsumer<HouseholdInviteEve
                 },
                 () -> {
                     log.warn("No device token record found for inviteeUserId: {}", event.getInviteeUserId());
+                    final Locale locale = Locale.forLanguageTag(CommonConstants.DEFAULT_LOCALE);
+                    final String pushTitle = messageSource.getMessage(
+                            "push.household_invite.title", null, locale);
+                    final String pushBody = messageSource.getMessage(
+                            "push.household_invite.body",
+                            new Object[]{event.getInviterEmail()},
+                            locale);
+                    notificationService.persist(event.getInviteeUserId(), NotificationType.HOUSEHOLD_INVITE,
+                            pushTitle, pushBody, event.getHouseholdId());
+
                     if (StringUtils.hasText(event.getInviteeEmail())) {
-                        final Locale locale = Locale.forLanguageTag(CommonConstants.DEFAULT_LOCALE);
                         final String subject = messageSource.getMessage(
                                 "mail.household_invite.subject",
                                 new Object[]{event.getInviterEmail()},
