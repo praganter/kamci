@@ -26,7 +26,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -36,8 +35,6 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -56,17 +53,13 @@ public class DebtService {
     private final ExchangeRateClient exchangeRateClient;
     private final AuthClient authClient;
     private final LockingTaskExecutor lockingTaskExecutor;
-    @Qualifier("taskExecutor")
-    private final Executor taskExecutor;
 
     public DebtResponse create(final CreateDebtRequest request) {
         final String userId = RequestContextUtil.getUserId();
         final String locale = RequestContextUtil.getLocale();
         final boolean isPremium = RequestContextUtil.isPremium();
 
-        final CategoryDocument category = CompletableFuture
-                .supplyAsync(() -> categoryRS.findById(request.getCategoryId()), taskExecutor)
-                .join();
+        final CategoryDocument category = categoryRS.findById(request.getCategoryId());
 
         if (lacksWriteAccess(category, userId)) {
             throw BaseException.forbidden("error.debt.permission_denied");

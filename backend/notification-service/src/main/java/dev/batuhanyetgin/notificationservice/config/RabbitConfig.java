@@ -29,6 +29,8 @@ public class RabbitConfig {
         factory.setMessageConverter(messageConverter);
         factory.setDefaultRequeueRejected(false);
         factory.setAdviceChain(retryInterceptor());
+        factory.setConcurrentConsumers(2);
+        factory.setMaxConcurrentConsumers(4);
         return factory;
     }
 }

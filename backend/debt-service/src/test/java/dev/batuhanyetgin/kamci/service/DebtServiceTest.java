@@ -52,7 +52,6 @@ import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.Executor;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -71,9 +70,6 @@ class DebtServiceTest {
     @Mock private LockProvider lockProvider;
     @Mock private SimpleLock simpleLock;
 
-    // Synchronous executor — runs tasks on the calling thread
-    private final Executor taskExecutor = Runnable::run;
-
     private DebtService debtService;
 
     private static final String OWNER_ID  = "owner123";
@@ -89,7 +85,7 @@ class DebtServiceTest {
                 .thenAnswer(inv -> List.of((String) inv.getArgument(0)));
         final LockingTaskExecutor lockingTaskExecutor = new DefaultLockingTaskExecutor(lockProvider);
         debtService = new DebtService(debtRS, categoryRS, debtMapper, debtEventAsyncPublisher, incomeRS,
-                exchangeRateClient, authClient, lockingTaskExecutor, taskExecutor);
+                exchangeRateClient, authClient, lockingTaskExecutor);
     }
 
     private DebtDocument buildDebt(final String id, final String ownerId, final String catId) {
