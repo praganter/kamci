@@ -41,6 +41,8 @@ metadata:
   namespace: kamci
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: prometheus
@@ -123,6 +125,8 @@ metadata:
   namespace: kamci
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: tempo
@@ -196,6 +200,8 @@ metadata:
   namespace: kamci
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: loki
