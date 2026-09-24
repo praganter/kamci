@@ -81,31 +81,37 @@ data:
             regex: __meta_kubernetes_node_label_(.+)
 
       - job_name: 'gateway-server'
+        scrape_interval: 30s
         metrics_path: '/actuator/prometheus'
         static_configs:
           - targets: ['gateway-server:8080']
 
       - job_name: 'eureka-server'
+        scrape_interval: 30s
         metrics_path: '/actuator/prometheus'
         static_configs:
           - targets: ['eureka-server:8761']
 
       - job_name: 'config-server'
+        scrape_interval: 30s
         metrics_path: '/actuator/prometheus'
         static_configs:
           - targets: ['config-server:8888']
 
       - job_name: 'auth-service'
+        scrape_interval: 30s
         metrics_path: '/actuator/prometheus'
         static_configs:
           - targets: ['auth-service:8082']
 
       - job_name: 'debt-service'
+        scrape_interval: 30s
         metrics_path: '/actuator/prometheus'
         static_configs:
           - targets: ['debt-service:8081']
 
       - job_name: 'notification-service'
+        scrape_interval: 30s
         metrics_path: '/actuator/prometheus'
         static_configs:
           - targets: ['notification-service:8083']

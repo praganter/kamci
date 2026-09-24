@@ -10,6 +10,9 @@ kubectl apply \
   -f sealed-firebase-secret.yaml \
   -f sealed-registry-credentials.yaml
 
+echo "==> PriorityClasses (must exist before any pod references them)"
+kubectl apply -f infra/priorityclass.yaml
+
 echo "==> Infra (ConfigMap once, then rest)"
 kubectl apply -f infra/prometheus-config.yaml
 kubectl apply -f infra/

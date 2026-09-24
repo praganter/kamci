@@ -13,6 +13,7 @@ spec:
       labels:
         app: debt-service
     spec:
+      priorityClassName: kamci-high-priority
       imagePullSecrets:
         - name: registry-credentials
       containers:
@@ -20,6 +21,13 @@ spec:
           image: 203.0.113.10:3000/kamci/debt-service:latest
           ports:
             - containerPort: 8081
+          resources:
+            requests:
+              cpu: 250m
+              memory: 384Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
           livenessProbe:
             httpGet:
               path: /actuator/health

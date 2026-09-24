@@ -1,6 +1,18 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
+  name: prometheus-pvc
+  namespace: kamci
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
   name: tempo-pvc
   namespace: kamci
 spec:
@@ -37,6 +49,7 @@ spec:
       labels:
         app: prometheus
     spec:
+      priorityClassName: kamci-low-priority
       serviceAccountName: prometheus
       imagePullSecrets:
         - name: registry-credentials
@@ -45,16 +58,46 @@ spec:
           image: 203.0.113.10:3000/kamci/prometheus:latest
           args:
             - --config.file=/etc/prometheus/prometheus.yml
+            - --storage.tsdb.retention.time=48h
+            - --storage.tsdb.retention.size=2GB
           ports:
             - containerPort: 9090
+          resources:
+            requests:
+              cpu: 300m
+              memory: 512Mi
+            limits:
+              cpu: 600m
+              memory: 768Mi
+          readinessProbe:
+            httpGet:
+              path: /-/ready
+              port: 9090
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 5
+          livenessProbe:
+            httpGet:
+              path: /-/healthy
+              port: 9090
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 5
           volumeMounts:
             - name: prometheus-config
               mountPath: /etc/prometheus/prometheus.yml
               subPath: prometheus.yml
+            - name: prometheus-data
+              mountPath: /prometheus
       volumes:
         - name: prometheus-config
           configMap:
             name: prometheus-config
+        - name: prometheus-data
+          persistentVolumeClaim:
+            claimName: prometheus-pvc
 ---
 apiVersion: v1
 kind: Service
@@ -83,6 +126,7 @@ spec:
       labels:
         app: tempo
     spec:
+      priorityClassName: kamci-low-priority
       imagePullSecrets:
         - name: registry-credentials
       containers:
@@ -93,6 +137,29 @@ spec:
           ports:
             - containerPort: 3200
             - containerPort: 9411
+          resources:
+            requests:
+              cpu: 150m
+              memory: 256Mi
+            limits:
+              cpu: 300m
+              memory: 384Mi
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 3200
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 5
+          livenessProbe:
+            httpGet:
+              path: /ready
+              port: 3200
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 5
           volumeMounts:
             - name: tempo-data
               mountPath: /var/tempo
@@ -132,6 +199,7 @@ spec:
       labels:
         app: loki
     spec:
+      priorityClassName: kamci-low-priority
       imagePullSecrets:
         - name: registry-credentials
       containers:
@@ -141,6 +209,29 @@ spec:
             - -config.file=/etc/loki/local-config.yaml
           ports:
             - containerPort: 3100
+          resources:
+            requests:
+              cpu: 150m
+              memory: 256Mi
+            limits:
+              cpu: 300m
+              memory: 384Mi
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 3100
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 5
+          livenessProbe:
+            httpGet:
+              path: /ready
+              port: 3100
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 5
           volumeMounts:
             - name: loki-data
               mountPath: /var/loki
@@ -204,6 +295,7 @@ spec:
       labels:
         app: promtail
     spec:
+      priorityClassName: kamci-low-priority
       serviceAccountName: promtail
       imagePullSecrets:
         - name: registry-credentials
@@ -212,6 +304,13 @@ spec:
           image: 203.0.113.10:3000/kamci/promtail:latest
           args:
             - -config.file=/etc/promtail/config.yml
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 150m
+              memory: 128Mi
           volumeMounts:
             - name: pods-logs
               mountPath: /var/log/pods
@@ -248,6 +347,7 @@ spec:
       labels:
         app: grafana
     spec:
+      priorityClassName: kamci-low-priority
       imagePullSecrets:
         - name: registry-credentials
       containers:
@@ -255,6 +355,29 @@ spec:
           image: 203.0.113.10:3000/kamci/grafana:latest
           ports:
             - containerPort: 3000
+          resources:
+            requests:
+              cpu: 100m
+              memory: 192Mi
+            limits:
+              cpu: 250m
+              memory: 384Mi
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 5
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 5
           env:
             - name: GF_SECURITY_ADMIN_PASSWORD
               valueFrom:

@@ -13,6 +13,7 @@ spec:
       labels:
         app: eureka-server
     spec:
+      priorityClassName: kamci-high-priority
       imagePullSecrets:
         - name: registry-credentials
       containers:
@@ -20,6 +21,13 @@ spec:
           image: 203.0.113.10:3000/kamci/eureka-server:latest
           ports:
             - containerPort: 8761
+          resources:
+            requests:
+              cpu: 150m
+              memory: 320Mi
+            limits:
+              cpu: 300m
+              memory: 448Mi
           env:
             - name: JAVA_OPTS
               valueFrom:

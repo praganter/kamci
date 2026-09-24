@@ -27,6 +27,7 @@ spec:
       labels:
         app: mongodb
     spec:
+      priorityClassName: kamci-high-priority
       containers:
         - name: mongodb
           image: mongo:8.2.5

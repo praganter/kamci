@@ -13,6 +13,7 @@ spec:
       labels:
         app: notification-service
     spec:
+      priorityClassName: kamci-high-priority
       imagePullSecrets:
         - name: registry-credentials
       containers:
@@ -20,6 +21,13 @@ spec:
           image: 203.0.113.10:3000/kamci/notification-service:latest
           ports:
             - containerPort: 8083
+          resources:
+            requests:
+              cpu: 200m
+              memory: 384Mi
+            limits:
+              cpu: 400m
+              memory: 512Mi
           livenessProbe:
             httpGet:
               path: /actuator/health
