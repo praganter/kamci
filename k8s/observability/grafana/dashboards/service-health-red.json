@@ -328,19 +328,19 @@
       "targets": [
         {
           "datasource": {"type": "prometheus", "uid": "${datasource}"},
-          "expr": "histogram_quantile(0.50, sum by(job, le) (rate(http_server_requests_seconds_bucket{job=~\"$service\"}[$__rate_interval])))",
+          "expr": "histogram_quantile(0.50, job:http_server_requests_seconds_bucket:rate5m{job=~\"$service\"})",
           "legendFormat": "{{job}} p50",
           "refId": "A"
         },
         {
           "datasource": {"type": "prometheus", "uid": "${datasource}"},
-          "expr": "histogram_quantile(0.95, sum by(job, le) (rate(http_server_requests_seconds_bucket{job=~\"$service\"}[$__rate_interval])))",
+          "expr": "histogram_quantile(0.95, job:http_server_requests_seconds_bucket:rate5m{job=~\"$service\"})",
           "legendFormat": "{{job}} p95",
           "refId": "B"
         },
         {
           "datasource": {"type": "prometheus", "uid": "${datasource}"},
-          "expr": "histogram_quantile(0.99, sum by(job, le) (rate(http_server_requests_seconds_bucket{job=~\"$service\"}[$__rate_interval])))",
+          "expr": "histogram_quantile(0.99, job:http_server_requests_seconds_bucket:rate5m{job=~\"$service\"})",
           "legendFormat": "{{job}} p99",
           "refId": "C"
         }
@@ -455,7 +455,7 @@
         },
         {
           "datasource": {"type": "prometheus", "uid": "${datasource}"},
-          "expr": "histogram_quantile(0.95, sum by(job, method, uri, le) (rate(http_server_requests_seconds_bucket{job=~\"$service\", uri=~\"$endpoint\"}[$__rate_interval])))",
+          "expr": "histogram_quantile(0.95, job_method_uri:http_server_requests_seconds_bucket:rate5m{job=~\"$service\", uri=~\"$endpoint\"})",
           "format": "table",
           "instant": true,
           "legendFormat": "",
