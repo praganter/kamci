@@ -101,6 +101,19 @@ services:
       timeout: 5s
       retries: 3
 
+  alertmanager:
+    build: ./alertmanager
+    container_name: alertmanager
+    ports:
+      - "9093:9093"
+    networks:
+      - dt-network
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:9093/-/healthy || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
   tempo:
     build: ./tempo
     container_name: tempo

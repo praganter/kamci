@@ -1,0 +1,51 @@
+groups:
+  - name: kamci_basic_alerts
+    rules:
+      - alert: PodRestartingFrequently
+        expr: changes(container_start_time_seconds{namespace="kamci", container!=""}[15m]) > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.pod }}/{{ $labels.container }} sık restart oluyor"
+          description: "Son 15 dakikada {{ $value }} kez restart oldu."
+
+      # DOGRULANMADI: kube-state-metrics cluster'da yok, bu yuzden OOMKill icin
+      # kube_pod_container_status_last_terminated_reason yerine cAdvisor'in
+      # container_oom_events_total metrigi kullanildi. Bu metrigin bu
+      # kubelet/cAdvisor surumunde expose edilip edilmedigi canli dogrulanmadi
+      # (deploy-agent /metrics/cadvisor ciktisinda kontrol etmeli). Yoksa bu
+      # alert hicbir zaman tetiklenmez (expr sonuc vermez, hata da vermez).
+      - alert: ContainerOOMKilled
+        expr: increase(container_oom_events_total{namespace="kamci"}[10m]) > 0
+        for: 0m
+        labels:
+          severity: critical
+        annotations:
+          summary: "{{ $labels.pod }}/{{ $labels.container }} OOMKill aldı"
+          description: "cAdvisor container_oom_events_total metriğinde artış tespit edildi."
+
+      # Kapsam: sadece PVC'li volume'ler (tempo-pvc, loki-pvc). Node root disk
+      # icin node-exporter yok, bu alert onu kapsamaz.
+      - alert: PVCDiskAlmostFull
+        expr: (kubelet_volume_stats_used_bytes{namespace="kamci"} / kubelet_volume_stats_capacity_bytes{namespace="kamci"}) > 0.85
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.persistentvolumeclaim }} %85 doluluğu aştı"
+          description: "Kullanım oranı {{ $value | humanizePercentage }}."
+
+      - alert: HighHttp5xxRate
+        expr: |
+          (
+            sum by (job) (rate(http_server_requests_seconds_count{status=~"5..", job=~"auth-service|debt-service|notification-service|gateway-server"}[5m]))
+            /
+            sum by (job) (rate(http_server_requests_seconds_count{job=~"auth-service|debt-service|notification-service|gateway-server"}[5m]))
+          ) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "{{ $labels.job }} 5xx oranı %5'i aştı"
+          description: "Son 5 dakikada 5xx oranı {{ $value | humanizePercentage }}."
