@@ -153,7 +153,7 @@ Tanımlı ama **kullanılmayan** sabit: `/auth` altında yok. `RefreshTokenReque
 | `paidCurrentPeriod` | `paidCurrentPeriod` | `bool` (def false) |
 | `hasReminder` | `hasReminder` | `bool` (def false) |
 
-Tanımlı ama kullanılmayan sabitler: `debtGetById`/`debtPayments` (=`/debt`), `debtBulkPay` (=`/debt/pay`).
+`debtGetById` (`getById` path'inde), `debtBulkPay` (`bulkPay`'de) kullanılıyor. `debtPayments` gerçekten kullanılmıyordu, silindi (2026-09-25).
 
 ---
 
@@ -189,7 +189,7 @@ Tanımlı ama kullanılmayan sabitler: `debtGetById`/`debtPayments` (=`/debt`), 
 | `accessLevel` | `accessLevel` | enum string `READ/WRITE/EDIT/DELETE` (zorunlu) |
 | `email` | `email` | `String?` |
 
-Tanımlı ama kullanılmayan sabitler: `categoryTransfer`, `categoryMemberRemove` (=`/category`; kod string'i elle kuruyor).
+`categoryMemberRemove` `removeMember`'da kullanılıyor (kod string'i elle kuruyor). `categoryTransfer` gerçekten kullanılmıyordu, silindi (2026-09-25).
 
 ---
 
@@ -282,7 +282,6 @@ Tanımlı ama kullanılmayan sabitler: `categoryTransfer`, `categoryMemberRemove
 | `unregisterToken` | `DELETE /notification/device-token` | — | sessiz `catch` |
 
 > Bu iki çağrı `ApiException` mapping **kullanmaz** — hata yutulur.
-> Tanımlı ama kullanılmayan sabit: `notificationTest` (`/notification/test`).
 
 ---
 

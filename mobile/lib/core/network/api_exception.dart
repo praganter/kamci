@@ -23,6 +23,7 @@ sealed class ApiException implements Exception {
     'error.debt.permission_denied',
     'error.category.permission_denied',
     'error.income.permission_denied',
+    'error.household.permission_denied',
   };
 
   /// `code` values that just need a specific localized message — no special
@@ -60,6 +61,12 @@ sealed class ApiException implements Exception {
     'error.auth.current_password_invalid',
     'error.auth.token_already_used',
     'error.auth.too_many_password_reset_attempts',
+    'error.household.invitee_not_found',
+    'error.household.cannot_invite_self',
+    'error.household.already_linked',
+    'error.household.invitee_already_linked',
+    'error.household.not_found',
+    'error.household.not_pending',
   };
 
   factory ApiException.fromDioException(DioException e) {

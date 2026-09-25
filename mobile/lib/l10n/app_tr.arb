@@ -423,6 +423,44 @@
   "errorAuthCurrentPasswordInvalid": "Mevcut şifreniz hatalı.",
   "errorAuthTokenAlreadyUsed": "Bu bağlantı zaten kullanılmış. Lütfen tekrar deneyin.",
   "errorAuthTooManyPasswordResetAttempts": "Çok fazla şifre sıfırlama denemesi yapıldı. Lütfen bir süre bekleyin.",
+  "errorHouseholdInviteeNotFound": "Bu e-posta ile kayıtlı bir kullanıcı bulunamadı.",
+  "errorHouseholdCannotInviteSelf": "Kendinizi davet edemezsiniz.",
+  "errorHouseholdAlreadyLinked": "Zaten aktif veya bekleyen bir haneniz var.",
+  "errorHouseholdInviteeAlreadyLinked": "Bu kullanıcının zaten aktif veya bekleyen bir hanesi var.",
+  "errorHouseholdNotFound": "Hane bulunamadı.",
+  "errorHouseholdNotPending": "Bu davet artık bekleyen durumda değil.",
+  "household": "Hane",
+  "householdDesc": "Eşinizle geliri birleştirip ortak borç/gelir oranını görün",
+  "householdInviteTitle": "Hane Daveti Gönder",
+  "householdInviteEmailLabel": "E-posta",
+  "householdInviteButton": "Davet Gönder",
+  "householdInviteSent": "Davet gönderildi",
+  "householdNoHousehold": "Henüz bir haneniz yok",
+  "householdPendingAsOwner": "{email} için davetiniz onay bekliyor",
+  "@householdPendingAsOwner": {
+    "placeholders": {
+      "email": {"type": "String"}
+    }
+  },
+  "householdPendingAsPartner": "{email} sizi hanesine davet etti",
+  "@householdPendingAsPartner": {
+    "placeholders": {
+      "email": {"type": "String"}
+    }
+  },
+  "householdActiveWith": "{email} ile ortak hane",
+  "@householdActiveWith": {
+    "placeholders": {
+      "email": {"type": "String"}
+    }
+  },
+  "householdAccept": "Kabul Et",
+  "householdDecline": "Reddet",
+  "householdLeave": "Haneden Ayrıl",
+  "householdLeaveConfirmTitle": "Haneden ayrıl?",
+  "householdLeaveConfirmBody": "Ortak gelir birleştirme durdurulacak.",
+  "householdIncomeLabel": "Hane Geliri",
+  "householdRatioLabel": "Hane B/G Oranı",
   "retryButton": "Tekrar Dene",
   "personCount": "{count} kişi",
   "@personCount": {

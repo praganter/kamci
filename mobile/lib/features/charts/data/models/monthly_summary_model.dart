@@ -25,6 +25,9 @@ class MonthlySummaryModel {
     required this.pendingAmount,
     this.incomeAtMonth,
     this.debtToIncomeRatio,
+    this.household = false,
+    this.householdIncomeAtMonth,
+    this.householdDebtToIncomeRatio,
     required this.debts,
     required this.trend,
     required this.categoryBreakdown,
@@ -40,6 +43,9 @@ class MonthlySummaryModel {
   final double pendingAmount;
   final double? incomeAtMonth;
   final double? debtToIncomeRatio;
+  final bool household;
+  final double? householdIncomeAtMonth;
+  final double? householdDebtToIncomeRatio;
   final List<MonthlyDebtItemModel> debts;
   final List<TrendPointModel> trend;
   final List<CategoryBreakdownItemModel> categoryBreakdown;
@@ -56,6 +62,10 @@ class MonthlySummaryModel {
       pendingAmount: _toDouble(json['pendingAmount']),
       incomeAtMonth: _toDoubleOrNull(json['incomeAtMonth']),
       debtToIncomeRatio: _toDoubleOrNull(json['debtToIncomeRatio']),
+      household: json['household'] as bool? ?? false,
+      householdIncomeAtMonth: _toDoubleOrNull(json['householdIncomeAtMonth']),
+      householdDebtToIncomeRatio:
+          _toDoubleOrNull(json['householdDebtToIncomeRatio']),
       debts: (json['debts'] as List<dynamic>? ?? [])
           .map((e) => MonthlyDebtItemModel.fromJson(e as Map<String, dynamic>))
           .toList(),
@@ -83,6 +93,9 @@ class MonthlySummaryModel {
         pendingAmount: pendingAmount,
         incomeAtMonth: incomeAtMonth,
         debtToIncomeRatio: debtToIncomeRatio,
+        household: household,
+        householdIncomeAtMonth: householdIncomeAtMonth,
+        householdDebtToIncomeRatio: householdDebtToIncomeRatio,
         debts: debts.map((e) => e.toDomain()).toList(),
         trend: trend.map((e) => e.toDomain()).toList(),
         categoryBreakdown: categoryBreakdown.map((e) => e.toDomain()).toList(),

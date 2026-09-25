@@ -393,6 +393,44 @@
   "errorAuthCurrentPasswordInvalid": "Your current password is incorrect.",
   "errorAuthTokenAlreadyUsed": "This link has already been used. Please try again.",
   "errorAuthTooManyPasswordResetAttempts": "Too many password reset attempts. Please wait a moment.",
+  "errorHouseholdInviteeNotFound": "No user is registered with this email.",
+  "errorHouseholdCannotInviteSelf": "You can't invite yourself.",
+  "errorHouseholdAlreadyLinked": "You already have an active or pending household.",
+  "errorHouseholdInviteeAlreadyLinked": "This user already has an active or pending household.",
+  "errorHouseholdNotFound": "Household not found.",
+  "errorHouseholdNotPending": "This invite is no longer pending.",
+  "household": "Household",
+  "householdDesc": "Combine income with your partner and see joint debt-to-income ratio",
+  "householdInviteTitle": "Send Household Invite",
+  "householdInviteEmailLabel": "Email",
+  "householdInviteButton": "Send Invite",
+  "householdInviteSent": "Invite sent",
+  "householdNoHousehold": "You don't have a household yet",
+  "householdPendingAsOwner": "Your invite to {email} is pending",
+  "@householdPendingAsOwner": {
+    "placeholders": {
+      "email": {"type": "String"}
+    }
+  },
+  "householdPendingAsPartner": "{email} invited you to their household",
+  "@householdPendingAsPartner": {
+    "placeholders": {
+      "email": {"type": "String"}
+    }
+  },
+  "householdActiveWith": "Shared household with {email}",
+  "@householdActiveWith": {
+    "placeholders": {
+      "email": {"type": "String"}
+    }
+  },
+  "householdAccept": "Accept",
+  "householdDecline": "Decline",
+  "householdLeave": "Leave Household",
+  "householdLeaveConfirmTitle": "Leave household?",
+  "householdLeaveConfirmBody": "Combined income will no longer be shared.",
+  "householdIncomeLabel": "Household Income",
+  "householdRatioLabel": "Household D/I Ratio",
   "retryButton": "Try Again",
   "personCount": "{count} people",
   "@personCount": {

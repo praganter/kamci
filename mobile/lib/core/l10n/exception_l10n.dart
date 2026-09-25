@@ -62,6 +62,15 @@ String? _businessCodeMessage(String? code, AppLocalizations l10n) =>
       'error.auth.token_already_used' => l10n.errorAuthTokenAlreadyUsed,
       'error.auth.too_many_password_reset_attempts' =>
         l10n.errorAuthTooManyPasswordResetAttempts,
+      'error.household.invitee_not_found' =>
+        l10n.errorHouseholdInviteeNotFound,
+      'error.household.cannot_invite_self' =>
+        l10n.errorHouseholdCannotInviteSelf,
+      'error.household.already_linked' => l10n.errorHouseholdAlreadyLinked,
+      'error.household.invitee_already_linked' =>
+        l10n.errorHouseholdInviteeAlreadyLinked,
+      'error.household.not_found' => l10n.errorHouseholdNotFound,
+      'error.household.not_pending' => l10n.errorHouseholdNotPending,
       _ => null,
     };
 

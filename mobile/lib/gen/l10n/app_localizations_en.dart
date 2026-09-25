@@ -880,6 +880,86 @@ class AppLocalizationsEn extends AppLocalizations {
       'Too many password reset attempts. Please wait a moment.';
 
   @override
+  String get errorHouseholdInviteeNotFound =>
+      'No user is registered with this email.';
+
+  @override
+  String get errorHouseholdCannotInviteSelf => 'You can\'t invite yourself.';
+
+  @override
+  String get errorHouseholdAlreadyLinked =>
+      'You already have an active or pending household.';
+
+  @override
+  String get errorHouseholdInviteeAlreadyLinked =>
+      'This user already has an active or pending household.';
+
+  @override
+  String get errorHouseholdNotFound => 'Household not found.';
+
+  @override
+  String get errorHouseholdNotPending => 'This invite is no longer pending.';
+
+  @override
+  String get household => 'Household';
+
+  @override
+  String get householdDesc =>
+      'Combine income with your partner and see joint debt-to-income ratio';
+
+  @override
+  String get householdInviteTitle => 'Send Household Invite';
+
+  @override
+  String get householdInviteEmailLabel => 'Email';
+
+  @override
+  String get householdInviteButton => 'Send Invite';
+
+  @override
+  String get householdInviteSent => 'Invite sent';
+
+  @override
+  String get householdNoHousehold => 'You don\'t have a household yet';
+
+  @override
+  String householdPendingAsOwner(String email) {
+    return 'Your invite to $email is pending';
+  }
+
+  @override
+  String householdPendingAsPartner(String email) {
+    return '$email invited you to their household';
+  }
+
+  @override
+  String householdActiveWith(String email) {
+    return 'Shared household with $email';
+  }
+
+  @override
+  String get householdAccept => 'Accept';
+
+  @override
+  String get householdDecline => 'Decline';
+
+  @override
+  String get householdLeave => 'Leave Household';
+
+  @override
+  String get householdLeaveConfirmTitle => 'Leave household?';
+
+  @override
+  String get householdLeaveConfirmBody =>
+      'Combined income will no longer be shared.';
+
+  @override
+  String get householdIncomeLabel => 'Household Income';
+
+  @override
+  String get householdRatioLabel => 'Household D/I Ratio';
+
+  @override
   String get retryButton => 'Try Again';
 
   @override

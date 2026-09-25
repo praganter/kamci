@@ -879,6 +879,87 @@ class AppLocalizationsTr extends AppLocalizations {
       'Çok fazla şifre sıfırlama denemesi yapıldı. Lütfen bir süre bekleyin.';
 
   @override
+  String get errorHouseholdInviteeNotFound =>
+      'Bu e-posta ile kayıtlı bir kullanıcı bulunamadı.';
+
+  @override
+  String get errorHouseholdCannotInviteSelf => 'Kendinizi davet edemezsiniz.';
+
+  @override
+  String get errorHouseholdAlreadyLinked =>
+      'Zaten aktif veya bekleyen bir haneniz var.';
+
+  @override
+  String get errorHouseholdInviteeAlreadyLinked =>
+      'Bu kullanıcının zaten aktif veya bekleyen bir hanesi var.';
+
+  @override
+  String get errorHouseholdNotFound => 'Hane bulunamadı.';
+
+  @override
+  String get errorHouseholdNotPending =>
+      'Bu davet artık bekleyen durumda değil.';
+
+  @override
+  String get household => 'Hane';
+
+  @override
+  String get householdDesc =>
+      'Eşinizle geliri birleştirip ortak borç/gelir oranını görün';
+
+  @override
+  String get householdInviteTitle => 'Hane Daveti Gönder';
+
+  @override
+  String get householdInviteEmailLabel => 'E-posta';
+
+  @override
+  String get householdInviteButton => 'Davet Gönder';
+
+  @override
+  String get householdInviteSent => 'Davet gönderildi';
+
+  @override
+  String get householdNoHousehold => 'Henüz bir haneniz yok';
+
+  @override
+  String householdPendingAsOwner(String email) {
+    return '$email için davetiniz onay bekliyor';
+  }
+
+  @override
+  String householdPendingAsPartner(String email) {
+    return '$email sizi hanesine davet etti';
+  }
+
+  @override
+  String householdActiveWith(String email) {
+    return '$email ile ortak hane';
+  }
+
+  @override
+  String get householdAccept => 'Kabul Et';
+
+  @override
+  String get householdDecline => 'Reddet';
+
+  @override
+  String get householdLeave => 'Haneden Ayrıl';
+
+  @override
+  String get householdLeaveConfirmTitle => 'Haneden ayrıl?';
+
+  @override
+  String get householdLeaveConfirmBody =>
+      'Ortak gelir birleştirme durdurulacak.';
+
+  @override
+  String get householdIncomeLabel => 'Hane Geliri';
+
+  @override
+  String get householdRatioLabel => 'Hane B/G Oranı';
+
+  @override
   String get retryButton => 'Tekrar Dene';
 
   @override

@@ -1670,6 +1670,144 @@ abstract class AppLocalizations {
   /// **'Çok fazla şifre sıfırlama denemesi yapıldı. Lütfen bir süre bekleyin.'**
   String get errorAuthTooManyPasswordResetAttempts;
 
+  /// No description provided for @errorHouseholdInviteeNotFound.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu e-posta ile kayıtlı bir kullanıcı bulunamadı.'**
+  String get errorHouseholdInviteeNotFound;
+
+  /// No description provided for @errorHouseholdCannotInviteSelf.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kendinizi davet edemezsiniz.'**
+  String get errorHouseholdCannotInviteSelf;
+
+  /// No description provided for @errorHouseholdAlreadyLinked.
+  ///
+  /// In tr, this message translates to:
+  /// **'Zaten aktif veya bekleyen bir haneniz var.'**
+  String get errorHouseholdAlreadyLinked;
+
+  /// No description provided for @errorHouseholdInviteeAlreadyLinked.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu kullanıcının zaten aktif veya bekleyen bir hanesi var.'**
+  String get errorHouseholdInviteeAlreadyLinked;
+
+  /// No description provided for @errorHouseholdNotFound.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hane bulunamadı.'**
+  String get errorHouseholdNotFound;
+
+  /// No description provided for @errorHouseholdNotPending.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu davet artık bekleyen durumda değil.'**
+  String get errorHouseholdNotPending;
+
+  /// No description provided for @household.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hane'**
+  String get household;
+
+  /// No description provided for @householdDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Eşinizle geliri birleştirip ortak borç/gelir oranını görün'**
+  String get householdDesc;
+
+  /// No description provided for @householdInviteTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hane Daveti Gönder'**
+  String get householdInviteTitle;
+
+  /// No description provided for @householdInviteEmailLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'E-posta'**
+  String get householdInviteEmailLabel;
+
+  /// No description provided for @householdInviteButton.
+  ///
+  /// In tr, this message translates to:
+  /// **'Davet Gönder'**
+  String get householdInviteButton;
+
+  /// No description provided for @householdInviteSent.
+  ///
+  /// In tr, this message translates to:
+  /// **'Davet gönderildi'**
+  String get householdInviteSent;
+
+  /// No description provided for @householdNoHousehold.
+  ///
+  /// In tr, this message translates to:
+  /// **'Henüz bir haneniz yok'**
+  String get householdNoHousehold;
+
+  /// No description provided for @householdPendingAsOwner.
+  ///
+  /// In tr, this message translates to:
+  /// **'{email} için davetiniz onay bekliyor'**
+  String householdPendingAsOwner(String email);
+
+  /// No description provided for @householdPendingAsPartner.
+  ///
+  /// In tr, this message translates to:
+  /// **'{email} sizi hanesine davet etti'**
+  String householdPendingAsPartner(String email);
+
+  /// No description provided for @householdActiveWith.
+  ///
+  /// In tr, this message translates to:
+  /// **'{email} ile ortak hane'**
+  String householdActiveWith(String email);
+
+  /// No description provided for @householdAccept.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kabul Et'**
+  String get householdAccept;
+
+  /// No description provided for @householdDecline.
+  ///
+  /// In tr, this message translates to:
+  /// **'Reddet'**
+  String get householdDecline;
+
+  /// No description provided for @householdLeave.
+  ///
+  /// In tr, this message translates to:
+  /// **'Haneden Ayrıl'**
+  String get householdLeave;
+
+  /// No description provided for @householdLeaveConfirmTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Haneden ayrıl?'**
+  String get householdLeaveConfirmTitle;
+
+  /// No description provided for @householdLeaveConfirmBody.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ortak gelir birleştirme durdurulacak.'**
+  String get householdLeaveConfirmBody;
+
+  /// No description provided for @householdIncomeLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hane Geliri'**
+  String get householdIncomeLabel;
+
+  /// No description provided for @householdRatioLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hane B/G Oranı'**
+  String get householdRatioLabel;
+
   /// No description provided for @retryButton.
   ///
   /// In tr, this message translates to:

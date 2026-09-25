@@ -13,6 +13,12 @@ abstract final class ApiConstants {
   static const String changePassword = '/auth/change-password';
   static const String userDetail = '/auth/user-detail';
 
+  static const String householdInvite = '/auth/household/invite';
+  static const String householdAccept = '/auth/household/accept';
+  static const String householdDecline = '/auth/household/decline';
+  static const String householdGet = '/auth/household';
+  static const String householdLeave = '/auth/household';
+
   static const String debtSave = '/debt/save';
   static const String debtUpdate = '/debt/update';
   static const String debtPay = '/debt/pay';
@@ -21,7 +27,6 @@ abstract final class ApiConstants {
   static const String debtDelete = '/debt/delete';
   static const String debtGetById = '/debt';
   static const String debtGet = '/debt/get';
-  static const String debtPayments = '/debt';
   static const String debtSummary = '/debt/summary';
 
   static const String categorySave = '/category/save';
@@ -31,7 +36,6 @@ abstract final class ApiConstants {
   static const String categoryMemberAdd = '/category';
   static const String categoryMemberRemove = '/category';
   static const String categoryMemberBulk = '/category/members/bulk';
-  static const String categoryTransfer = '/category';
   static const String categoryMigrate = '/category';
 
   static const String incomeSave = '/income/save';
@@ -43,7 +47,6 @@ abstract final class ApiConstants {
   static const String subscriptionStatus = '/subscription/status';
 
   static const String deviceToken = '/notification/device-token';
-  static const String notificationTest = '/notification/test';
 
   static const String exchangeRates = '/rates';
 }

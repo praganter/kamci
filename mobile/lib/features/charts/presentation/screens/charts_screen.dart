@@ -122,6 +122,12 @@ class _SummaryBody extends StatelessWidget {
         _StatsGrid(summary: summary),
         const SizedBox(height: 20),
 
+        // ── Hane geliri (varsa) ──────────────────────────────────────────────
+        if (summary.household) ...[
+          _HouseholdCard(summary: summary),
+          const SizedBox(height: 20),
+        ],
+
         // ── Trend çizgi grafiği ──────────────────────────────────────────────
         if (summary.trend.isNotEmpty) ...[
           _SectionHeader(title: l10n.trendLast6Months),
@@ -160,6 +166,76 @@ class _SummaryBody extends StatelessWidget {
             ),
           ),
       ],
+    );
+  }
+}
+
+// ── Hane geliri kartı ────────────────────────────────────────────────────────
+
+class _HouseholdCard extends StatelessWidget {
+  const _HouseholdCard({required this.summary});
+  final MonthlySummary summary;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final cs = Theme.of(context).colorScheme;
+    final ratioText = summary.householdDebtToIncomeRatio != null
+        ? '%${summary.householdDebtToIncomeRatio!.toStringAsFixed(1)}'
+        : l10n.noIncomeSet;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: cs.surfaceContainer,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: cs.primary.withValues(alpha: 0.2)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.family_restroom, color: cs.primary),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.householdIncomeLabel,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: cs.onSurfaceVariant,
+                      ),
+                ),
+                Text(
+                  summary.householdIncomeAtMonth != null
+                      ? _fmtAmount(summary.householdIncomeAtMonth!)
+                      : l10n.noIncomeSet,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                ),
+              ],
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                l10n.householdRatioLabel,
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: cs.onSurfaceVariant,
+                    ),
+              ),
+              Text(
+                ratioText,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: cs.primary,
+                    ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

@@ -9,6 +9,9 @@ class MonthlySummary {
     required this.pendingAmount,
     this.incomeAtMonth,
     this.debtToIncomeRatio,
+    this.household = false,
+    this.householdIncomeAtMonth,
+    this.householdDebtToIncomeRatio,
     required this.debts,
     required this.trend,
     required this.categoryBreakdown,
@@ -24,6 +27,9 @@ class MonthlySummary {
   final double pendingAmount;
   final double? incomeAtMonth;
   final double? debtToIncomeRatio;
+  final bool household;
+  final double? householdIncomeAtMonth;
+  final double? householdDebtToIncomeRatio;
   final List<MonthlyDebtItem> debts;
   final List<TrendPoint> trend;
   final List<CategoryBreakdownItem> categoryBreakdown;
