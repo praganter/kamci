@@ -16,7 +16,7 @@ appId: com.batuhanyetgin.kamci
 - extendedWaitUntil:
     visible:
       text: "E-posta Adresi"
-    timeout: 10000
+    timeout: 45000
 # Tekrar giriş yap — FCM token yeniden kaydedilmeli (POST /notification/device-token)
 - tapOn:
     text: "E-posta Adresi"

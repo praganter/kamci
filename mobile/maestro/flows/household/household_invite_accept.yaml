@@ -18,7 +18,6 @@ appId: com.batuhanyetgin.kamci
 - extendedWaitUntil:
     visible: "(?s).*için davetiniz onay bekliyor.*"
     timeout: 10000
-- takeScreenshot: household_pending_owner
 - back
 
 # B daveti görür ve kabul eder
@@ -32,12 +31,10 @@ appId: com.batuhanyetgin.kamci
 - extendedWaitUntil:
     visible: "(?s).*sizi hanesine davet etti.*"
     timeout: 15000
-- takeScreenshot: household_pending_partner
 - tapOn: "Kabul Et"
 - extendedWaitUntil:
     visible: "(?s).*ile ortak hane.*"
     timeout: 10000
-- takeScreenshot: household_active
 
 # Temizlik: B ayrılır
 - tapOn: "Haneden Ayrıl"

@@ -16,4 +16,3 @@ appId: com.batuhanyetgin.kamci
 - waitForAnimationToEnd:
     timeout: 10000
 - assertNotVisible: "(?s).*(Exception|DioException|Error).*"
-- takeScreenshot: notification_list

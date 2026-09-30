@@ -27,7 +27,6 @@ appId: com.batuhanyetgin.kamci
 - extendedWaitUntil:
     visible: "3 taksit ödenmiş olarak işaretlendi"
     timeout: 10000
-- takeScreenshot: set_paid_installments_done
 # Info kartı birleşik node: "...Taksit Sayısı\n3..."; geçmişte 3 ödeme kaydı
 - assertVisible:
     text: "[\\s\\S]*Taksit Sayısı\n3[\\s\\S]*"

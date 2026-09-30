@@ -77,7 +77,6 @@ appId: com.batuhanyetgin.kamci
 - extendedWaitUntil:
     visible: "(?s).*sizi hanesine davet etti.*"
     timeout: 10000
-- takeScreenshot: notification_to_household
 # Temizlik: daveti reddet
 - tapOn: "Reddet"
 - extendedWaitUntil:

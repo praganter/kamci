@@ -21,10 +21,23 @@ appId: com.batuhanyetgin.kamci
 # Validation hataları ayrı Text element olarak gösterilir
 - assertVisible:
     text: "(?s).*gerekli.*"
-# Geri gitmek için sağa kaydırma (iOS back gesture)
-- swipe:
-    direction: RIGHT
-    duration: 400
+# Formdan çık: iOS kenar kaydırma geri hareketi, Android sistem geri tuşu
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - swipe:
+          direction: RIGHT
+          duration: 400
+- runFlow:
+    when:
+      platform: Android
+    # AppBar geri butonu: klavye durumundan bağımsız. (hideKeyboard klavye
+    # kapalıyken back gönderip formu kapatıyor, ardından gelen back uygulamadan
+    # çıkıyordu.)
+    commands:
+      - tapOn: "Geri"
+- waitForAnimationToEnd
 
 # ── Login formu — geçersiz email ───────────────────────────
 - runFlow: "../../subflows/_logout.yaml"
@@ -36,7 +49,7 @@ appId: com.batuhanyetgin.kamci
 - extendedWaitUntil:
     visible:
       text: "E-posta Adresi"
-    timeout: 10000
+    timeout: 45000
 - tapOn:
     text: "E-posta Adresi"
 - inputText: "gecersizemail"
@@ -56,15 +69,25 @@ appId: com.batuhanyetgin.kamci
 - tapOn:
     text: "Şifre"
 - eraseText: 100
-- inputText: "kısa"
+- inputText: "kisa"
 - tapOn:
     text: "Giriş Yap"
 - assertVisible:
     text: "Şifre en az 8 karakter olmalı"
 
 # ── Register — şifre uyuşmuyor ─────────────────────────────
+# Android: açık klavye "Kayıt Ol" linkini örter; hideKeyboard klavye kapalıysa
+# back gönderip uygulamadan çıkabileceği için scroll ile görünür yap.
+- scrollUntilVisible:
+    element:
+      text: "Kayıt Ol"
+    direction: DOWN
+    timeout: 10000
 - tapOn:
     text: "Kayıt Ol"
+- extendedWaitUntil:
+    visible: "Şifre Tekrar"
+    timeout: 10000
 - tapOn:
     text: "E-posta Adresi"
 - inputText: "${USER_A_EMAIL}"

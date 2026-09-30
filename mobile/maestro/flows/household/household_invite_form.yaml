@@ -18,7 +18,6 @@ appId: com.batuhanyetgin.kamci
 - extendedWaitUntil:
     visible: "Kendinizi davet edemezsiniz."
     timeout: 10000
-- takeScreenshot: household_cannot_invite_self
 # Kayıtsız e-posta → error.household.invitee_not_found
 - waitForAnimationToEnd:
     timeout: 5000

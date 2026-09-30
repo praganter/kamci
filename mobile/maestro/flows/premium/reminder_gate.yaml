@@ -1,10 +1,19 @@
 appId: com.batuhanyetgin.kamci
+# User B'yi seed durumuna (5 borç) geri getir — debt_limit_gate buna bağlı.
+onFlowComplete:
+  - runScript:
+      file: "../../scripts/user_b_debt_slot.js"
+      env:
+        ACTION: "restore"
 ---
 # PREM-04: Hatırlatma premium engeli — freemium hesap
-# ⚠️ ÖNKOŞUL: User B'nin borç sayısı < 5 OLMALI (freeDebtLimit).
-# 5 borçta FAB borç formu yerine limit gate'i açar → bu test forma giremez.
-# debt_limit_gate TAM TERSİNİ ister (5 borç). İkisi aynı seed'le koşulamaz:
-# önce reminder_gate'i (<5 borç) koş, sonra 5. borcu ekleyip debt_limit_gate'i koş.
+# User B'nin borç sayısı < 5 olmalı (5'te FAB limit gate'i açar), debt_limit_gate
+# ise tam 5 ister. Sıra bağımsızlığı için: başta API ile bir borç silinir,
+# onFlowComplete'te 5'e tamamlanır (scripts/user_b_debt_slot.js).
+- runScript:
+    file: "../../scripts/user_b_debt_slot.js"
+    env:
+      ACTION: "free"
 - runFlow: "../../subflows/_login_as_user_b.yaml"
 - tapOn:
     text: "Borçlar"
@@ -32,11 +41,11 @@ appId: com.batuhanyetgin.kamci
           id: "categoryField"
       - scrollUntilVisible:
           element:
-            text: "Test Kategorisi"
+            text: "Test Kategori"
           direction: DOWN
           timeout: 10000
       - tapOn:
-          text: "Test Kategorisi"
+          text: "Test Kategori"
       - waitForAnimationToEnd
 - tapOn:
     text: "Borç Adı"
@@ -100,8 +109,18 @@ appId: com.batuhanyetgin.kamci
 - tapOn:
     id: "dateField"
 - waitForAnimationToEnd
-- tapOn:
-    id: "pickerOkBtn"
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: "pickerOkBtn"
+# Android: Material DatePicker onayı
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn: "Tamam"
 - waitForAnimationToEnd
 - scrollUntilVisible:
     element:

@@ -1,11 +1,18 @@
 appId: com.batuhanyetgin.kamci
+# Flow nasıl biterse bitsin ağı geri aç — açık kalan uçak modu sonraki tüm
+# flow'ları (login) kırar.
+onFlowComplete:
+  - runFlow:
+      when:
+        platform: Android
+      commands:
+        - setAirplaneMode: disabled
 ---
-# EDGE-01: Offline mod — ağ kesilince hata mesajı, "Tekrar Dene" çalışır
-# Ağ toggle için toggle_network.sh kullanılır (scripts/ altında)
-# Bu flow'u run_p2_edge_cases.sh wrapper scripti ile çalıştırın:
-#   ./scripts/toggle_network.sh off emulator-5554 android
-#   maestro test ... offline_mode.yaml
-#   ./scripts/toggle_network.sh on emulator-5554 android
+# EDGE-01: Offline mod — ağ kesilince lokalize hata + "Tekrar Dene" ile toparlanma
+# Android: ağ login'den SONRA Maestro setAirplaneMode ile kesilir (önceden ağ
+# flow başlamadan kapatılıyordu → login imkânsızdı).
+# iOS: setAirplaneMode desteklenmez — scripts/toggle_network.sh ile
+#   login sonrası ağı dışarıdan kesin (run_p2_edge_cases.sh).
 - runFlow: "../../subflows/_login_as_user_a.yaml"
 - tapOn:
     text: "Borçlar"
@@ -13,16 +20,34 @@ appId: com.batuhanyetgin.kamci
 - tapOn:
     id: "myDebtsTab"
 - waitForAnimationToEnd
-# Pull-to-refresh — ağ kapalıyken bağlantı hatası gösterilmeli
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - setAirplaneMode: enabled
+      - waitForAnimationToEnd:
+          timeout: 3000
+# Pull-to-refresh — ağ kapalıyken lokalize bağlantı hatası
 - swipe:
-    direction: DOWN
+    start: "50%, 35%"
+    end: "50%, 75%"
     duration: 500
+- extendedWaitUntil:
+    visible: "(?s).*İnternet bağlantısı yok.*"
+    timeout: 30000
+- assertVisible: "Tekrar Dene"
+- assertNotVisible: "(?s).*(Exception|DioException).*"
+# Ağ geri gelince "Tekrar Dene" listeyi yükler
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - setAirplaneMode: disabled
+      - waitForAnimationToEnd:
+          timeout: 5000
+- tapOn: "Tekrar Dene"
+- extendedWaitUntil:
+    notVisible: "(?s).*İnternet bağlantısı yok.*"
+    timeout: 30000
 - assertVisible:
-    text: "bağlantı"
-- assertVisible:
-    text: "Tekrar Dene"
-# Tekrar Dene butonuna bas
-- tapOn:
-    text: "Tekrar Dene"
-# Ağ hâlâ kapalıysa hata tekrar görünür, açıksa liste gelir
-- waitForAnimationToEnd
+    id: "myDebtsTab"

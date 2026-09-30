@@ -5,10 +5,13 @@ appId: com.batuhanyetgin.kamci
 - runFlow: "../../subflows/_create_default_category.yaml"
 - tapOn:
     text: "Borçlar"
+# Koordinat (89%, 80%) iPhone geometrisiydi; Pixel'de FAB'ın üstüne düşüyordu.
 - tapOn:
-    point: "89%, 80%"
-- assertVisible:
-    text: "Yeni Borç"
+    id: "addDebtFab"
+- extendedWaitUntil:
+    visible:
+      text: "Yeni Borç"
+    timeout: 8000
 - runFlow:
     when:
       platform: iOS
@@ -97,8 +100,18 @@ appId: com.batuhanyetgin.kamci
 - tapOn:
     id: "dateField"
 - waitForAnimationToEnd
-- tapOn:
-    id: "pickerOkBtn"
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: "pickerOkBtn"
+# Android: Material DatePicker onayı
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn: "Tamam"
 - waitForAnimationToEnd
 - scrollUntilVisible:
     element:

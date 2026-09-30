@@ -19,7 +19,6 @@ appId: com.batuhanyetgin.kamci
 - extendedWaitUntil:
     visible: "Taksit sayısı sınırı aşıldı."
     timeout: 10000
-- takeScreenshot: set_paid_installments_exceeded
 # Borç değişmemeli
 - assertVisible:
     text: "Ödeme Geçmişi \\(0\\)"

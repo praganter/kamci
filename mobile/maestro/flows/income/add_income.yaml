@@ -24,4 +24,3 @@ appId: com.batuhanyetgin.kamci
       text: "(?s)₺4\\.321,00.*"
     direction: DOWN
     timeout: 15000
-- takeScreenshot: income_added
