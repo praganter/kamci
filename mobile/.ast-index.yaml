@@ -1,8 +1,5 @@
 project_type: dart
 
-roots:
-  - ./lib
-
 exclude:
   - build
   - .dart_tool
