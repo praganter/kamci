@@ -181,7 +181,10 @@ class _DebtTabViewState extends ConsumerState<_DebtTabView>
               ),
               child: Row(
                 children: [
+                  // container: kendi node'u olmazsa identifier Row'da merge
+                  // olur ve test id'si (Android resource-id) kaybolur.
                   Semantics(
+                    container: true,
                     identifier: 'prevMonthBtn',
                     child: IconButton(
                       key: const Key('prevMonthBtn'),
@@ -230,6 +233,7 @@ class _DebtTabViewState extends ConsumerState<_DebtTabView>
                     ),
                   ),
                   Semantics(
+                    container: true,
                     identifier: 'nextMonthBtn',
                     child: IconButton(
                       key: const Key('nextMonthBtn'),

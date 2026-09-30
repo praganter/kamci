@@ -10,14 +10,32 @@ appId: com.batuhanyetgin.kamci
 - tapOn:
     id: "addDebtFab"
 - waitForAnimationToEnd
-- tapOn:
-    id: "categoryField"
-- extendedWaitUntil:
-    visible:
-      text: "Tamam"
-    timeout: 5000
-- tapOn:
-    text: "Tamam"
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: "categoryField"
+      - extendedWaitUntil:
+          visible:
+            text: "Tamam"
+          timeout: 5000
+      - tapOn:
+          text: "Tamam"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: "categoryField"
+      - scrollUntilVisible:
+          element:
+            text: "Test Kategorisi"
+          direction: DOWN
+          timeout: 10000
+      - tapOn:
+          text: "Test Kategorisi"
+      - waitForAnimationToEnd
 - tapOn:
     text: "Borç Adı"
 - inputText: "Test Borcu"
@@ -26,22 +44,58 @@ appId: com.batuhanyetgin.kamci
 - inputText: "500"
 - tapOn:
     text: "Yeni Borç"
-- tapOn:
-    id: "currencyField"
-- waitForAnimationToEnd
-- tapOn:
-    text: "Tamam"
-- tapOn:
-    id: "periodField"
-- waitForAnimationToEnd
-- repeat:
-    times: 4
+- runFlow:
+    when:
+      platform: iOS
     commands:
-      - runFlow: "_picker_wheel_next.yaml"
-- assertVisible:
-    text: "Aylık"
-- tapOn:
-    text: "Tamam"
+      - tapOn:
+          id: "currencyField"
+      - waitForAnimationToEnd
+      - tapOn:
+          text: "Tamam"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: "currencyField"
+      - scrollUntilVisible:
+          element:
+            text: "TRY ₺"
+          direction: DOWN
+          timeout: 10000
+      - tapOn:
+          text: "TRY ₺"
+      - waitForAnimationToEnd
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: "periodField"
+      - waitForAnimationToEnd
+      - repeat:
+          times: 4
+          commands:
+            - runFlow: "_picker_wheel_next.yaml"
+      - assertVisible:
+          text: "Aylık"
+      - tapOn:
+          text: "Tamam"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: "periodField"
+      - scrollUntilVisible:
+          element:
+            text: "Aylık"
+          direction: DOWN
+          timeout: 10000
+      - tapOn:
+          text: "Aylık"
+      - waitForAnimationToEnd
 - waitForAnimationToEnd
 - scrollUntilVisible:
     element:

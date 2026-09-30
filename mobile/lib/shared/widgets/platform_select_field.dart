@@ -135,7 +135,16 @@ class _PlatformSelectFieldState<T> extends State<PlatformSelectField<T>> {
       );
     }
 
-    // Android: native DropdownButtonFormField
+    // Android: native DropdownButtonFormField. container: kendi node'u olmazsa
+    // identifier üst node'a merge olur ve resource-id olarak görünmez (Maestro id:).
+    return Semantics(
+      container: widget.semanticsId != null,
+      identifier: widget.semanticsId ?? '',
+      child: _buildAndroidDropdown(),
+    );
+  }
+
+  Widget _buildAndroidDropdown() {
     return DropdownButtonFormField<T>(
       initialValue: widget.value,
       decoration: InputDecoration(

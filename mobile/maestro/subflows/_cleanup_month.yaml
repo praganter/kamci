@@ -1,0 +1,24 @@
+appId: com.batuhanyetgin.kamci
+---
+# Görünen aydaki "Kendi Borçlarım" borçlarını siler. Liste boşalınca
+# ("Henüz borç yok") hemen çıkar — sabit tekrar + optional "Sil" timeout'u
+# boş ayda her denemede ~saniyeler harcıyordu.
+- tapOn:
+    id: "myDebtsTab"
+- waitForAnimationToEnd
+- repeat:
+    while:
+      notVisible: "Henüz borç yok"
+    times: 6
+    commands:
+      - tapOn:
+          id: "myDebtsTab"
+      # Boş ayda swipe TabBarView'ü kaydırır — yukarıdaki while bunu önler.
+      - swipe:
+          start: "75%, 40%"
+          end: "5%, 40%"
+      - waitForAnimationToEnd
+      - tapOn:
+          text: "Sil"
+          optional: true
+      - waitForAnimationToEnd

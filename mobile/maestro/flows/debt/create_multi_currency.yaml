@@ -15,11 +15,29 @@ appId: com.batuhanyetgin.kamci
     visible:
       text: "Yeni Borç"
     timeout: 8000
-- tapOn:
-    id: "categoryField"
-- waitForAnimationToEnd
-- tapOn:
-    text: "Tamam"
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: "categoryField"
+      - waitForAnimationToEnd
+      - tapOn:
+          text: "Tamam"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: "categoryField"
+      - scrollUntilVisible:
+          element:
+            text: "Test Kategorisi"
+          direction: DOWN
+          timeout: 10000
+      - tapOn:
+          text: "Test Kategorisi"
+      - waitForAnimationToEnd
 - tapOn:
     text: "Borç Adı"
 - inputText: "USD Test Borcu"
@@ -28,24 +46,60 @@ appId: com.batuhanyetgin.kamci
 - inputText: "1200"
 - tapOn:
     text: "Yeni Borç"
-- tapOn:
-    id: "currencyField"
-- waitForAnimationToEnd
-- repeat:
-    times: 14
+- runFlow:
+    when:
+      platform: iOS
     commands:
-      - runFlow: "../../subflows/_picker_wheel_next.yaml"
-- assertVisible:
-    text: "USD[\\s\\S]*"
-- tapOn:
-    text: "Tamam"
-- tapOn:
-    id: "periodField"
-- waitForAnimationToEnd
-- tapOn:
-    text: "Tek Seferlik"
-- tapOn:
-    text: "Tamam"
+      - tapOn:
+          id: "currencyField"
+      - waitForAnimationToEnd
+      - repeat:
+          times: 14
+          commands:
+            - runFlow: "../../subflows/_picker_wheel_next.yaml"
+      - assertVisible:
+          text: "USD[\\s\\S]*"
+      - tapOn:
+          text: "Tamam"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: "currencyField"
+      - scrollUntilVisible:
+          element:
+            text: "USD[\\s\\S]*"
+          direction: DOWN
+          timeout: 10000
+      - tapOn:
+          text: "USD[\\s\\S]*"
+      - waitForAnimationToEnd
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: "periodField"
+      - waitForAnimationToEnd
+      - tapOn:
+          text: "Tek Seferlik"
+      - tapOn:
+          text: "Tamam"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: "periodField"
+      - scrollUntilVisible:
+          element:
+            text: "Tek Seferlik"
+          direction: DOWN
+          timeout: 10000
+      - tapOn:
+          text: "Tek Seferlik"
+      - waitForAnimationToEnd
 - waitForAnimationToEnd
 - scrollUntilVisible:
     element:
@@ -98,11 +152,29 @@ appId: com.batuhanyetgin.kamci
     visible:
       text: "Yeni Borç"
     timeout: 8000
-- tapOn:
-    id: "categoryField"
-- waitForAnimationToEnd
-- tapOn:
-    text: "Tamam"
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: "categoryField"
+      - waitForAnimationToEnd
+      - tapOn:
+          text: "Tamam"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: "categoryField"
+      - scrollUntilVisible:
+          element:
+            text: "Test Kategorisi"
+          direction: DOWN
+          timeout: 10000
+      - tapOn:
+          text: "Test Kategorisi"
+      - waitForAnimationToEnd
 - tapOn:
     text: "Borç Adı"
 - inputText: "EUR Test Borcu"
@@ -111,24 +183,60 @@ appId: com.batuhanyetgin.kamci
 - inputText: "900"
 - tapOn:
     text: "Yeni Borç"
-- tapOn:
-    id: "currencyField"
-- waitForAnimationToEnd
-- repeat:
-    times: 7
+- runFlow:
+    when:
+      platform: iOS
     commands:
-      - runFlow: "../../subflows/_picker_wheel_next.yaml"
-- assertVisible:
-    text: "EUR[\\s\\S]*"
-- tapOn:
-    text: "Tamam"
-- tapOn:
-    id: "periodField"
-- waitForAnimationToEnd
-- tapOn:
-    text: "Tek Seferlik"
-- tapOn:
-    text: "Tamam"
+      - tapOn:
+          id: "currencyField"
+      - waitForAnimationToEnd
+      - repeat:
+          times: 7
+          commands:
+            - runFlow: "../../subflows/_picker_wheel_next.yaml"
+      - assertVisible:
+          text: "EUR[\\s\\S]*"
+      - tapOn:
+          text: "Tamam"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: "currencyField"
+      - scrollUntilVisible:
+          element:
+            text: "EUR[\\s\\S]*"
+          direction: DOWN
+          timeout: 10000
+      - tapOn:
+          text: "EUR[\\s\\S]*"
+      - waitForAnimationToEnd
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: "periodField"
+      - waitForAnimationToEnd
+      - tapOn:
+          text: "Tek Seferlik"
+      - tapOn:
+          text: "Tamam"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: "periodField"
+      - scrollUntilVisible:
+          element:
+            text: "Tek Seferlik"
+          direction: DOWN
+          timeout: 10000
+      - tapOn:
+          text: "Tek Seferlik"
+      - waitForAnimationToEnd
 - waitForAnimationToEnd
 - scrollUntilVisible:
     element:

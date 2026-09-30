@@ -15,11 +15,29 @@ appId: com.batuhanyetgin.kamci
     visible:
       text: "Yeni Borç"
     timeout: 8000
-- tapOn:
-    id: "categoryField"
-- waitForAnimationToEnd
-- tapOn:
-    text: "Tamam"
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: "categoryField"
+      - waitForAnimationToEnd
+      - tapOn:
+          text: "Tamam"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: "categoryField"
+      - scrollUntilVisible:
+          element:
+            text: "Test Kategorisi"
+          direction: DOWN
+          timeout: 10000
+      - tapOn:
+          text: "Test Kategorisi"
+      - waitForAnimationToEnd
 - tapOn:
     text: "Borç Adı"
 - inputText: "Hatırlatma Test"
@@ -28,16 +46,52 @@ appId: com.batuhanyetgin.kamci
 - inputText: "100"
 - tapOn:
     text: "Yeni Borç"
-- tapOn:
-    id: "currencyField"
-- waitForAnimationToEnd
-- tapOn:
-    text: "Tamam"
-- tapOn:
-    id: "periodField"
-- waitForAnimationToEnd
-- tapOn:
-    text: "Tamam"
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: "currencyField"
+      - waitForAnimationToEnd
+      - tapOn:
+          text: "Tamam"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: "currencyField"
+      - scrollUntilVisible:
+          element:
+            text: "TRY ₺"
+          direction: DOWN
+          timeout: 10000
+      - tapOn:
+          text: "TRY ₺"
+      - waitForAnimationToEnd
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: "periodField"
+      - waitForAnimationToEnd
+      - tapOn:
+          text: "Tamam"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: "periodField"
+      - scrollUntilVisible:
+          element:
+            text: "Tek Seferlik"
+          direction: DOWN
+          timeout: 10000
+      - tapOn:
+          text: "Tek Seferlik"
+      - waitForAnimationToEnd
 - waitForAnimationToEnd
 - scrollUntilVisible:
     element:
