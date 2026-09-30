@@ -1,0 +1,33 @@
+appId: com.batuhanyetgin.kamci
+---
+# HH-01: Hane davet formu — boş e-posta, kendini davet, kayıtsız e-posta hataları
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- runFlow: "../../subflows/_open_household.yaml"
+- assertVisible: "Hane Daveti Gönder"
+- assertVisible: "Davet Gönder"
+# Boş e-posta → istek atılmaz, ekran değişmez
+- tapOn: "Davet Gönder"
+- waitForAnimationToEnd
+- assertNotVisible: "Davet gönderildi"
+- assertVisible: "Henüz bir haneniz yok"
+# Kendini davet → error.household.cannot_invite_self lokalize mesajı
+- tapOn: "E-posta"
+- inputText: "${USER_A_EMAIL}"
+- hideKeyboard
+- tapOn: "Davet Gönder"
+- extendedWaitUntil:
+    visible: "Kendinizi davet edemezsiniz."
+    timeout: 10000
+- takeScreenshot: household_cannot_invite_self
+# Kayıtsız e-posta → error.household.invitee_not_found
+- waitForAnimationToEnd:
+    timeout: 5000
+- tapOn: "E-posta"
+- eraseText: 60
+- inputText: "maestro-nobody@example.com"
+- hideKeyboard
+- tapOn: "Davet Gönder"
+- extendedWaitUntil:
+    visible: "Bu e-posta ile kayıtlı bir kullanıcı bulunamadı."
+    timeout: 10000
+- assertVisible: "Henüz bir haneniz yok"

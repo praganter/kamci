@@ -121,6 +121,9 @@ class _PlatformDateFieldState extends State<PlatformDateField> {
           triggerMode: TooltipTriggerMode.longPress,
           preferBelow: false,
           child: Semantics(
+            // container: kendi node'u olmazsa identifier Android'de üst
+            // node'a merge olur ve resource-id olarak görünmez (Maestro id:).
+            container: widget.semanticsId != null,
             identifier: widget.semanticsId ?? '',
             child: InkWell(
               onTap: () => isIOS

@@ -13,6 +13,11 @@ appId: com.batuhanyetgin.kamci
 - tapOn:
     text: "Vazgeç"
     optional: true
+# Android: clearKeychain etkisiz (token flutter_secure_storage'da kalır) ve
+# clearState per-app locale'i (tr-TR) sildiği için UI üzerinden çıkış yapılır.
+- runFlow:
+    file: "_safe_logout.yaml"
+    optional: true
 - extendedWaitUntil:
     visible:
       text: "E-posta Adresi"

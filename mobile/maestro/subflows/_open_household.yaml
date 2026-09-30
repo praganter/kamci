@@ -1,0 +1,41 @@
+appId: com.batuhanyetgin.kamci
+---
+# Ayarlar > Hane ekranını açar. Önceki koşudan kalan hane/davet varsa temizler,
+# böylece ekran her zaman "Henüz bir haneniz yok" durumunda bırakılır.
+- tapOn:
+    text: "Ayarlar"
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "(?s)Hane\n.*"
+    direction: DOWN
+- tapOn:
+    text: "(?s)Hane\n.*"
+- extendedWaitUntil:
+    visible:
+      text: "(?s).*(Henüz bir haneniz yok|Haneden Ayrıl|Reddet).*"
+    timeout: 15000
+# Bekleyen davetin partneri → reddet
+- runFlow:
+    when:
+      visible: "Reddet"
+    commands:
+      - tapOn: "Reddet"
+      - waitForAnimationToEnd
+# Aktif hane ya da gönderilmiş davet (owner) → ayrıl + onayla
+- runFlow:
+    when:
+      visible: "Haneden Ayrıl"
+    commands:
+      - tapOn: "Haneden Ayrıl"
+      - extendedWaitUntil:
+          visible: "Haneden ayrıl?"
+          timeout: 3000
+      # Android'de dialog açıkken arkadaki buton a11y ağacından çıkar — index yerine konum
+      - tapOn:
+          text: "Haneden Ayrıl"
+          below: "Ortak gelir birleştirme durdurulacak."
+      - waitForAnimationToEnd
+- extendedWaitUntil:
+    visible: "Henüz bir haneniz yok"
+    timeout: 10000

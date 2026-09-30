@@ -1,0 +1,19 @@
+appId: com.batuhanyetgin.kamci
+---
+# NOT-01: Ayarlar > Bildirimler — liste ya da boş durum yüklenir, ham hata basılmaz
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- tapOn: "Ayarlar"
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "(?s)Bildirimler\n.*"
+    direction: DOWN
+- tapOn: "(?s)Bildirimler\n.*"
+- extendedWaitUntil:
+    visible: "Bildirimler"
+    timeout: 5000
+# Yükleme bitince ya boş durum ya da en az bir bildirim satırı olmalı
+- waitForAnimationToEnd:
+    timeout: 10000
+- assertNotVisible: "(?s).*(Exception|DioException|Error).*"
+- takeScreenshot: notification_list
