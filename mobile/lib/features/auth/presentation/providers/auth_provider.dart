@@ -171,19 +171,36 @@ class AuthNotifier extends _$AuthNotifier {
     }
   }
 
+  bool _loggingOut = false;
+
   Future<void> logout() async {
-    final storage = ref.read(secureStorageServiceProvider);
-    // Best-effort: sunucuda refresh token'ı blacklist'le. Başarısız olsa bile
-    // (offline / token zaten geçersiz) yerel logout devam eder.
-    final refreshToken = await storage.getRefreshToken();
-    if (refreshToken != null) {
-      try {
-        await ref.read(authRepositoryProvider).logout(refreshToken);
-      } catch (_) {}
+    // Re-entrancy guard: unregisterToken() 401 alırsa AuthInterceptor refresh
+    // dener, başarısız olursa tekrar logout() çağırır. Guard olmadan bu
+    // logout → DELETE device-token → 401 → logout döngüsü sonsuza kadar sürer
+    // ve kullanıcının yeni login'ini de siler (Maestro P0, 2026-09-26).
+    // Zaten çıkış yapılmışsa (logout sonrası gecikmiş bir isteğin 401'i
+    // interceptor'dan buraya düşer) token'sız DELETE atmaya gerek yok.
+    if (_loggingOut || state is AuthStateUnauthenticated) return;
+    _loggingOut = true;
+    try {
+      final storage = ref.read(secureStorageServiceProvider);
+      // Cihaz token'ı, oturum token'ları hâlâ geçerliyken silinmeli — sunucu
+      // logout'u refresh token'ı blacklist'ledikten sonra 401'de refresh
+      // yapılamaz.
+      await ref.read(notificationServiceProvider).unregisterToken();
+      // Best-effort: sunucuda refresh token'ı blacklist'le. Başarısız olsa bile
+      // (offline / token zaten geçersiz) yerel logout devam eder.
+      final refreshToken = await storage.getRefreshToken();
+      if (refreshToken != null) {
+        try {
+          await ref.read(authRepositoryProvider).logout(refreshToken);
+        } catch (_) {}
+      }
+      await storage.clearAll();
+      state = const AuthState.unauthenticated();
+    } finally {
+      _loggingOut = false;
     }
-    await ref.read(notificationServiceProvider).unregisterToken();
-    await storage.clearAll();
-    state = const AuthState.unauthenticated();
   }
 
   Future<void> _saveUserIdFromToken(AuthTokens tokens) async {
