@@ -10,6 +10,13 @@ class AppShell extends ConsumerWidget {
   const AppShell({super.key, required this.child});
   final Widget child;
 
+  static const _navIds = [
+    'navDebts',
+    'navCategories',
+    'navCharts',
+    'navSettings',
+  ];
+
   int _selectedIndex(BuildContext context, WidgetRef ref) {
     final location = GoRouterState.of(context).matchedLocation;
     if (location.startsWith(RoutePaths.categories)) return 1;
@@ -75,74 +82,86 @@ class AppShell extends ConsumerWidget {
                 final (icon, selectedIcon, label) = items[i];
                 final isSelected = selectedIndex == i;
                 return Expanded(
-                  child: GestureDetector(
-                    onTap: () => _onTap(context, ref, i),
-                    behavior: HitTestBehavior.opaque,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        AnimatedContainer(
-                          duration: const Duration(milliseconds: 220),
-                          curve: Curves.easeInOut,
-                          padding: EdgeInsets.symmetric(
-                            horizontal: isSelected ? 14 : 0,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? cs.primaryContainer
-                                : Colors.transparent,
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: isSelected
-                                ? [
-                                    BoxShadow(
-                                      color: cs.primary.withValues(alpha: 0.28),
-                                      blurRadius: 12,
-                                      offset: const Offset(0, 4),
-                                    ),
-                                  ]
-                                : [],
-                          ),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                isSelected ? selectedIcon : icon,
-                                size: 22,
-                                color: isSelected
-                                    ? cs.onPrimaryContainer
-                                    : cs.onSurfaceVariant,
-                              ),
-                              if (isSelected) ...[
-                                const SizedBox(height: 3),
-                                Text(
-                                  label,
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w600,
-                                    color: cs.onPrimaryContainer,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
-                        if (!isSelected) ...[
-                          const SizedBox(height: 3),
-                          Text(
-                            label,
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w400,
-                              color: cs.onSurfaceVariant,
+                  // button/selected: ekran okuyucu sekmeyi buton + seçili
+                  // durumuyla duyurur. identifier: E2E testleri metin yerine
+                  // id ile basar (Android'de Gboard'un "Ayarlar" butonu da
+                  // aynı metni taşıyor).
+                  child: Semantics(
+                    container: true,
+                    button: true,
+                    selected: isSelected,
+                    identifier: _navIds[i],
+                    child: GestureDetector(
+                      onTap: () => _onTap(context, ref, i),
+                      behavior: HitTestBehavior.opaque,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 220),
+                            curve: Curves.easeInOut,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: isSelected ? 14 : 0,
+                              vertical: 4,
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? cs.primaryContainer
+                                  : Colors.transparent,
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: isSelected
+                                  ? [
+                                      BoxShadow(
+                                        color: cs.primary.withValues(
+                                          alpha: 0.28,
+                                        ),
+                                        blurRadius: 12,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ]
+                                  : [],
+                            ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  isSelected ? selectedIcon : icon,
+                                  size: 22,
+                                  color: isSelected
+                                      ? cs.onPrimaryContainer
+                                      : cs.onSurfaceVariant,
+                                ),
+                                if (isSelected) ...[
+                                  const SizedBox(height: 3),
+                                  Text(
+                                    label,
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w600,
+                                      color: cs.onPrimaryContainer,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ],
+                            ),
                           ),
+                          if (!isSelected) ...[
+                            const SizedBox(height: 3),
+                            Text(
+                              label,
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w400,
+                                color: cs.onSurfaceVariant,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
                         ],
-                      ],
+                      ),
                     ),
                   ),
                 );
