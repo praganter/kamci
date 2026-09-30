@@ -45,9 +45,10 @@ appId: com.batuhanyetgin.kamci
     clearKeychain: false
     permissions:
       all: allow
+# Android emülatörde debug build soğuk açılışı 5–21 sn ölçüldü → geniş timeout.
 - extendedWaitUntil:
     visible:
       text: "E-posta Adresi"
-    timeout: 15000
+    timeout: 45000
 - assertNotVisible:
     text: "Borçlar"

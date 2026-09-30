@@ -18,7 +18,8 @@ appId: com.batuhanyetgin.kamci
 - runFlow:
     file: "_safe_logout.yaml"
     optional: true
+# Android emülatörde debug build soğuk açılışı 5–21 sn ölçüldü.
 - extendedWaitUntil:
     visible:
       text: "E-posta Adresi"
-    timeout: 10000
+    timeout: 30000

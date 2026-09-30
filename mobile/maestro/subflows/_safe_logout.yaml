@@ -9,9 +9,11 @@ appId: com.batuhanyetgin.kamci
 # login ekranı ya da ana shell gelene kadar bekle.
 - extendedWaitUntil:
     visible: "E-posta Adresi|Ayarlar"
-    timeout: 20000
+    timeout: 30000
+# Metin değil id: Android'de önceki flow'dan açık kalan Gboard'un araç
+# çubuğunda da "Ayarlar" butonu var — metinle basınca klavye ayarları açılıyordu.
 - tapOn:
-    text: "Ayarlar"
+    id: "navSettings"
 - scrollUntilVisible:
     element:
       text: "Çıkış Yap"

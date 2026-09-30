@@ -14,6 +14,8 @@ set -a; source "$ENV_FILE"; set +a
 
 BASE_URL="http://198.51.100.10:30080"
 TODAY=$(date +%Y-%m-%d)
+# /debt/save firstPaymentDate LocalDateTime bekler; tarih-only → 400 body_not_readable
+TODAY_DT="${TODAY}T00:00:00"
 
 need_jq() {
   if ! command -v jq &>/dev/null; then
@@ -61,7 +63,7 @@ create_debt() {
       \"amount\":$AMOUNT,
       \"currency\":\"TRY\",
       \"paymentPeriodType\":\"$PERIOD\",
-      \"firstPaymentDate\":\"$TODAY\",
+      \"firstPaymentDate\":\"$TODAY_DT\",
       \"autoPayment\":false
     }" | jq -r '.debt.id // empty'
 }

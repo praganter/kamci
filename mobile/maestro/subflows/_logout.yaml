@@ -2,7 +2,7 @@ appId: com.batuhanyetgin.kamci
 ---
 # Settings > "Çıkış Yap" butonuna basar, confirm dialog'da onaylar
 - tapOn:
-    text: "Ayarlar"
+    id: "navSettings"
 - waitForAnimationToEnd
 - scrollUntilVisible:
     element:
