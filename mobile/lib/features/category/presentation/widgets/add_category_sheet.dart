@@ -18,6 +18,7 @@ class AddCategorySheet extends ConsumerStatefulWidget {
 class _AddCategorySheetState extends ConsumerState<AddCategorySheet> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _nameCtrl;
+  String? _serverError;
 
   @override
   void initState() {
@@ -46,11 +47,11 @@ class _AddCategorySheetState extends ConsumerState<AddCategorySheet> {
     ref.listen(categoryFormProvider, (_, state) {
       if (!context.mounted) return;
       if (state.isSuccess) Navigator.of(context).pop(state.createdId);
+      // Sheet'in context'inden gösterilen SnackBar kök Scaffold'a düşüyor ve
+      // modal sheet'in arkasında kalıyordu — hata alanın altında gösterilir.
       if (state.error != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(state.error!.toLocalizedMessage(context.l10n)),
-          ),
+        setState(
+          () => _serverError = state.error!.toLocalizedMessage(context.l10n),
         );
       }
     });
@@ -81,7 +82,11 @@ class _AddCategorySheetState extends ConsumerState<AddCategorySheet> {
               decoration: InputDecoration(
                 labelText: l10n.categoryName,
                 prefixIcon: const Icon(Icons.folder_outlined),
+                errorText: _serverError,
               ),
+              onChanged: (_) {
+                if (_serverError != null) setState(() => _serverError = null);
+              },
               textInputAction: TextInputAction.done,
               onFieldSubmitted: (_) => _submit(),
               validator: (v) =>

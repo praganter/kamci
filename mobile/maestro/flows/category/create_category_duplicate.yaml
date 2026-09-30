@@ -1,0 +1,31 @@
+appId: com.batuhanyetgin.kamci
+---
+# CAT-05 (edge): Aynı isimle kategori → 409 error.category.name_conflict
+# Hata sheet içinde, isim alanının altında görünmeli (önceden SnackBar modal
+# sheet'in arkasında kalıyor, kullanıcı hiçbir geri bildirim görmüyordu).
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- runFlow:
+    file: "../../subflows/_ensure_category.yaml"
+    env:
+      NAME: "Test Kategorisi"
+- tapOn:
+    id: "addCategoryFab"
+- extendedWaitUntil:
+    visible:
+      text: "Yeni Kategori"
+    timeout: 5000
+- tapOn:
+    text: "Kategori Adı"
+- inputText: "test kategorisi"
+- tapOn:
+    text: "Oluştur"
+# Backend isim karşılaştırması case-insensitive
+- extendedWaitUntil:
+    visible: "Bu isimde bir kategori zaten var."
+    timeout: 10000
+- assertVisible: "Yeni Kategori"
+# Yazmaya başlayınca hata temizlenir
+- inputText: "x"
+- assertNotVisible: "Bu isimde bir kategori zaten var."
+- hideKeyboard
+- back
