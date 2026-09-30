@@ -68,31 +68,29 @@ class AuthInterceptor extends QueuedInterceptorsWrapper {
     '/auth/reset-password',
   ];
 
-  /// F5 (2026-09-01): gateway is rolling out stable error codes for
-  /// auth/rate-limit failures (`TOKEN_EXPIRED`, `TOKEN_INVALID`,
-  /// `AUTH_HEADER_MISSING`, `AUTH_HEADER_INVALID`, `RATE_LIMITED`) to replace
-  /// the old free-text `"JWT is invalid or expired"` / `JWT_EXPIRED` /
-  /// `INVALID_JWT` strings. Gateway and mobile deploy independently, so this
-  /// interceptor recognizes BOTH: the new codes take priority, the old
-  /// substring match stays as a fallback for as long as any backend instance
-  /// still speaks the old shape. Drop the fallback once the rollout is
-  /// confirmed complete on all environments.
+  /// Gateway 401 `code`'ları (2026-09-30, infra-agent: dotted format kanonik,
+  /// F5'teki `TOKEN_EXPIRED`/`AUTH_HEADER_MISSING` isimlerinin yerine geçti).
+  /// 429 `error.ratelimit.exceeded` status ile
+  /// `RateLimitException`'a düşer. Eski free-text `"JWT ..."` 403 fallback'i
+  /// aşağıda, `code` gelmeyen eski servis instance'ları için duruyor.
   static const _tokenExpiredCodes = {
-    'TOKEN_EXPIRED',
+    'error.auth.token_expired',
     // A missing/malformed Authorization header is most likely a stale or
     // corrupted in-memory/Keychain token — the same recovery as an expired
     // token (attempt refresh; retry naturally re-attaches a fresh header)
     // fixes it, and falls through to the existing "no refresh token → logout"
     // path if there's nothing to refresh with.
-    'AUTH_HEADER_MISSING',
-    'AUTH_HEADER_INVALID',
+    'error.auth.header_missing',
+    'error.auth.header_invalid',
   };
 
-  /// A refresh token was sent where an access token was expected (wrong
-  /// `type` claim). Retrying with a freshly refreshed access token won't fix
-  /// a structurally wrong request that already proves the client's token
+  /// Bad signature/format, or a refresh token sent where an access token was
+  /// expected (wrong `type` claim). Retrying with a freshly refreshed access
+  /// token won't fix a request that already proves the client's token
   /// bookkeeping is broken — end the session instead of looping on refresh.
-  static const _tokenInvalidCode = 'TOKEN_INVALID';
+  /// (auth-service de reset-password için aynı kodu döner; o path
+  /// `_credentialCheckPaths`'te olduğu için buraya gelmez.)
+  static const _tokenInvalidCode = 'error.auth.token_invalid';
 
   _TokenErrorAction _tokenErrorAction(DioException err) {
     final path = err.requestOptions.path;
