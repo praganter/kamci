@@ -1,19 +1,41 @@
 appId: com.batuhanyetgin.kamci
 ---
-# INC-04: Gelir sil
-# ⚠️ BLOCKED: Income screen (/income route) uygulamada hiçbir UI elementine bağlı değil.
-# Bu test, IncomeScreen'e navigasyon eklendikten sonra aktif edilebilir.
-# İlgili route: lib/core/router/app_router.dart:101
-#
-# Beklenen akış:
-# - runFlow: "../../subflows/_login_as_user_a.yaml"
-# - tapOn:
-#     text: "Gelir"
-# - swipe:
-#     direction: LEFT
-#     element:
-#       text: "5000"
-# - tapOn:
-#     text: "Evet"
-# - assertNotVisible:
-#     text: "5000"
+# INC-04: Gelir sil — iptal (edge: kayıt kalır) + onay ile listeyi boşalt.
+# Aynı zamanda income/* testlerinin temizliği (alfabetik olarak son değil ama
+# add/history kendi kayıtlarını scroll ile bulur, boş listeye bağımlı değil).
+# `swipe: from: <öğe>` Dismissible eşiğini geçmiyor → ilk satırın sabit
+# koordinatından (appbar altı ≈ %15) ekran kenarına kaydırılır.
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- runFlow: "../../subflows/_open_income.yaml"
+- runFlow:
+    file: "../../subflows/_add_income.yaml"
+    env:
+      AMOUNT: "1234"
+- assertNotVisible: "Henüz gelir kaydı yok"
+# Edge: iptal → kayıt yerinde kalır
+- swipe:
+    start: "85%, 15%"
+    end: "5%, 15%"
+    duration: 600
+- extendedWaitUntil:
+    visible: "Geliri Sil"
+    timeout: 5000
+- tapOn: "İptal"
+- waitForAnimationToEnd
+- assertNotVisible: "Henüz gelir kaydı yok"
+# Onay → liste boşalana kadar sil
+- repeat:
+    while:
+      notVisible: "Henüz gelir kaydı yok"
+    times: 15
+    commands:
+      - swipe:
+          start: "85%, 15%"
+          end: "5%, 15%"
+          duration: 600
+      - extendedWaitUntil:
+          visible: "Geliri Sil"
+          timeout: 5000
+      - tapOn: "Sil"
+      - waitForAnimationToEnd
+- assertVisible: "Henüz gelir kaydı yok"

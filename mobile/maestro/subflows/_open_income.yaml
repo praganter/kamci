@@ -1,0 +1,15 @@
+appId: com.batuhanyetgin.kamci
+---
+# Ayarlar > Gelir ekranını açar.
+- tapOn:
+    text: "Ayarlar"
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "(?s)Gelir\n.*"
+    direction: DOWN
+- tapOn:
+    text: "(?s)Gelir\n.*"
+- extendedWaitUntil:
+    visible: "Gelir Geçmişi"
+    timeout: 10000

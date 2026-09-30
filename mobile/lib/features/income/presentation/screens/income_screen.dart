@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/utils/date_formatter.dart';
+import '../../../../core/utils/snackbar_utils.dart';
 import '../../../../core/utils/validators.dart';
 import '../../../../shared/widgets/app_error_widget.dart';
 import '../../../../features/debt/presentation/providers/debt_providers.dart';
@@ -60,6 +61,7 @@ class IncomeScreen extends ConsumerWidget {
         },
       ),
       floatingActionButton: FloatingActionButton(
+        tooltip: l10n.addIncome,
         onPressed: () => _showAddIncomeSheet(context, ref),
         child: const Icon(Icons.add),
       ),
@@ -130,11 +132,7 @@ class _IncomeTile extends ConsumerWidget {
           ref.invalidate(incomeHistoryProvider);
           ref.invalidate(currentIncomeProvider);
         } catch (e) {
-          if (context.mounted) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(e.toString())));
-          }
+          if (context.mounted) showErrorSnackBar(context, e);
         }
       },
       child: ListTile(
@@ -199,14 +197,8 @@ class _AddIncomeSheetState extends ConsumerState<_AddIncomeSheet> {
   }
 
   Future<void> _submit() async {
+    // _effectiveFrom de FormField validator'ında — boşsa alanın altında hata.
     if (!_formKey.currentState!.validate()) return;
-    final l10n = context.l10n;
-    if (_effectiveFrom == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l10n.effectiveFrom)));
-      return;
-    }
 
     try {
       final request = SaveIncomeRequest(
@@ -220,11 +212,7 @@ class _AddIncomeSheetState extends ConsumerState<_AddIncomeSheet> {
       ref.invalidate(currentIncomeProvider);
       if (mounted) Navigator.pop(context);
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(e.toString())));
-      }
+      if (mounted) showErrorSnackBar(context, e);
     }
   }
 
@@ -297,25 +285,38 @@ class _AddIncomeSheetState extends ConsumerState<_AddIncomeSheet> {
             const SizedBox(height: 16),
 
             // Effective From
-            InkWell(
-              onTap: () async {
-                final picked = await showDatePicker(
-                  context: context,
-                  initialDate: _effectiveFrom ?? DateTime.now(),
-                  firstDate: DateTime(2000),
-                  lastDate: DateTime(2100),
-                );
-                if (picked != null) setState(() => _effectiveFrom = picked);
-              },
-              child: InputDecorator(
-                decoration: InputDecoration(
-                  labelText: l10n.effectiveFrom,
-                  prefixIcon: const Icon(Icons.calendar_today),
-                ),
-                child: Text(
-                  _effectiveFrom != null
-                      ? DateFormatter.formatDate(_effectiveFrom!)
-                      : l10n.select,
+            FormField<DateTime>(
+              validator: (_) => _effectiveFrom == null
+                  ? Validators.required(
+                      l10n,
+                      null,
+                      fieldName: l10n.effectiveFrom,
+                    )
+                  : null,
+              builder: (field) => InkWell(
+                onTap: () async {
+                  final picked = await showDatePicker(
+                    context: context,
+                    initialDate: _effectiveFrom ?? DateTime.now(),
+                    firstDate: DateTime(2000),
+                    lastDate: DateTime(2100),
+                  );
+                  if (picked != null) {
+                    setState(() => _effectiveFrom = picked);
+                    field.didChange(picked);
+                  }
+                },
+                child: InputDecorator(
+                  decoration: InputDecoration(
+                    labelText: l10n.effectiveFrom,
+                    prefixIcon: const Icon(Icons.calendar_today),
+                    errorText: field.errorText,
+                  ),
+                  child: Text(
+                    _effectiveFrom != null
+                        ? DateFormatter.formatDate(_effectiveFrom!)
+                        : l10n.select,
+                  ),
                 ),
               ),
             ),

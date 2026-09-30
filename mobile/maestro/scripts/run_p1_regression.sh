@@ -34,13 +34,14 @@ SUITES=(
   "auth"
   "debt"
   "category"
-  # "income"  # BLOCKED: IncomeScreen'e UI navigasyon yok — lib/core/router/app_router.dart:101
+  "income"
   "charts"
   "settings"
   "premium"
   # "deeplink"  # BLOCKED: Gerçek reset token gerektirir — manuel test (deeplink/*.yaml dosyalarındaki NOT bakınız)
   "edge_cases"
   "notifications"
+  "household"
 )
 
 # Sonuçları geçici dosyaya yaz (paralel subshell'den FAILED array'e yazamayız)

@@ -38,7 +38,7 @@ P0_FLOWS=(
   "premium/debt_limit_gate.yaml"
   "premium/premium_screen.yaml"
   # deeplink/* — real token gerektirir, manuel çalıştırılır
-  # income/* BLOCKED: IncomeScreen'e UI navigasyon yok
+  "income/add_income.yaml"
 )
 
 run_flows() {

@@ -60,6 +60,13 @@ class SettingsScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 10),
                 _SettingsTile(
+                  icon: Icons.savings_outlined,
+                  title: l10n.income,
+                  subtitle: l10n.incomeDesc,
+                  onTap: () => context.pushNamed(RouteNames.income),
+                ),
+                const SizedBox(height: 10),
+                _SettingsTile(
                   icon: Icons.family_restroom,
                   title: l10n.household,
                   subtitle: l10n.householdDesc,

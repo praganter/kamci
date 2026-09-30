@@ -1,0 +1,29 @@
+appId: com.batuhanyetgin.kamci
+---
+# Gelir ekranındayken ${AMOUNT} TRY gelir ekler (bugünün tarihiyle).
+- tapOn: "Gelir Ekle"
+- extendedWaitUntil:
+    visible: "Gelir Tutarı"
+    timeout: 5000
+- tapOn: "Gelir Tutarı"
+- inputText: "${AMOUNT}"
+- hideKeyboard
+- tapOn:
+    text: "Para Birimi[\\s\\S]*"
+- scrollUntilVisible:
+    element:
+      text: "TRY.*"
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    text: "TRY.*"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Geçerlilik Tarihi[\\s\\S]*"
+- waitForAnimationToEnd
+- tapOn: "Tamam"
+- waitForAnimationToEnd
+- tapOn: "Kaydet"
+- extendedWaitUntil:
+    notVisible: "Gelir Tutarı"
+    timeout: 10000

@@ -1,22 +1,27 @@
 appId: com.batuhanyetgin.kamci
 ---
-# INC-01: Gelir ekle
-# ⚠️ BLOCKED: Income screen (/income route) uygulamada hiçbir UI elementine bağlı değil.
-# Settings ekranında, bottom nav'da veya başka bir ekranda "Gelir" butonu/linki yok.
-# Bu test, IncomeScreen'e navigasyon eklendikten sonra aktif edilebilir.
-# İlgili route: lib/core/router/app_router.dart:101 (RoutePaths.income)
-# İlgili screen: lib/features/income/presentation/screens/income_screen.dart
-#
-# Aşağıdaki adımlar, navigasyon eklendikten sonraki beklenen akışı gösterir:
-# - runFlow: "../../subflows/_login_as_user_a.yaml"
-# - tapOn:
-#     text: "Gelir"         # <-- navigasyon entry point buraya eklenecek
-# - tapOn:
-#     point: "89%, 80%"
-# - tapOn:
-#     text: "Gelir Tutarı"
-# - inputText: "5000"
-# - tapOn:
-#     text: "Kaydet"
-# - assertVisible:
-#     text: "5000"
+# INC-01: Gelir ekle — boş form validasyonu (edge) + başarılı kayıt
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- runFlow: "../../subflows/_open_income.yaml"
+# Edge: boş form → tutar ve tarih zorunlu hataları, istek atılmaz
+- tapOn: "Gelir Ekle"
+- extendedWaitUntil:
+    visible: "Gelir Tutarı"
+    timeout: 5000
+- hideKeyboard
+- tapOn: "Kaydet"
+- assertVisible: "Tutar gerekli"
+- assertVisible: "Geçerlilik Tarihi gerekli"
+- back
+- waitForAnimationToEnd
+# Happy path
+- runFlow:
+    file: "../../subflows/_add_income.yaml"
+    env:
+      AMOUNT: "4321"
+- scrollUntilVisible:
+    element:
+      text: "(?s)₺4\\.321,00.*"
+    direction: DOWN
+    timeout: 15000
+- takeScreenshot: income_added
