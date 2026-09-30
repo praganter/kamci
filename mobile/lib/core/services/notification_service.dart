@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -6,6 +8,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../constants/api_constants.dart';
 import '../network/dio_client.dart';
+import 'notification_routing.dart';
 
 part 'notification_service.g.dart';
 
@@ -61,7 +64,10 @@ class NotificationService {
         requestSoundPermission: false,
       ),
     );
-    await _localNotifications.initialize(initSettings);
+    await _localNotifications.initialize(
+      initSettings,
+      onDidReceiveNotificationResponse: _handleLocalNotificationTap,
+    );
 
     // iOS: show notification banner even when app is in foreground
     await FirebaseMessaging.instance
@@ -85,9 +91,24 @@ class NotificationService {
     });
   }
 
+  /// Dokunulan push'un hedefi. Servis statik ve router'a erişemez — `App`
+  /// bunu dinleyip oturum açıkken ilgili ekrana gider, sonra null'lar.
+  static final pendingTarget = ValueNotifier<NotificationTarget?>(null);
+
   static void _handleNotificationClick(RemoteMessage message) {
     debugPrint('Notification clicked: ${message.data}');
-    // TODO: Add navigation logic based on message.data if needed
+    pendingTarget.value = notificationTargetFromPush(message.data);
+  }
+
+  static void _handleLocalNotificationTap(NotificationResponse response) {
+    final payload = response.payload;
+    if (payload == null || payload.isEmpty) return;
+    try {
+      final data = jsonDecode(payload);
+      if (data is Map<String, dynamic>) {
+        pendingTarget.value = notificationTargetFromPush(data);
+      }
+    } catch (_) {}
   }
 
   static void _showForegroundNotification(RemoteMessage message) {
@@ -111,6 +132,7 @@ class NotificationService {
           presentSound: true,
         ),
       ),
+      payload: jsonEncode(message.data),
     );
   }
 

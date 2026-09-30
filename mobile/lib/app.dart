@@ -10,6 +10,10 @@ import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/constants/app_constants.dart';
 import 'core/router/route_names.dart';
+import 'core/services/notification_routing.dart';
+import 'core/services/notification_service.dart';
+import 'features/auth/presentation/providers/auth_provider.dart';
+import 'features/auth/presentation/providers/auth_state.dart';
 
 class App extends ConsumerStatefulWidget {
   const App({super.key});
@@ -25,6 +29,25 @@ class _AppState extends ConsumerState<App> {
   void initState() {
     super.initState();
     _initDeepLinks();
+    NotificationService.pendingTarget.addListener(_openPendingTarget);
+    // Cold start: getInitialMessage listener eklenmeden önce dolmuş olabilir.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _openPendingTarget());
+  }
+
+  /// Push/deep link ile gelen bildirim hedefini açar. Oturum yoksa bekletir;
+  /// login sonrası `ref.listen(authNotifierProvider)` tekrar dener.
+  void _openPendingTarget() {
+    final target = NotificationService.pendingTarget.value;
+    if (target == null) return;
+    if (ref.read(authNotifierProvider) is! AuthStateAuthenticated) return;
+    NotificationService.pendingTarget.value = null;
+
+    final router = ref.read(appRouterProvider);
+    if (target.isTab) {
+      router.goNamed(target.name, pathParameters: target.pathParameters);
+    } else {
+      router.pushNamed(target.name, pathParameters: target.pathParameters);
+    }
   }
 
   Future<void> _initDeepLinks() async {
@@ -57,17 +80,35 @@ class _AppState extends ConsumerState<App> {
         queryParameters: token != null ? {'token': token} : {},
       );
     }
+
+    // debttracker://notification?type=DEBT_REMINDER&id=xxx — push tıklamasıyla
+    // aynı yönlendirme (in-app bildirim linkleri + E2E testleri için).
+    if (uri.host == 'notification') {
+      NotificationService.pendingTarget.value = notificationTarget(
+        type: uri.queryParameters['type'],
+        entityId: uri.queryParameters['id'],
+      );
+    }
   }
 
   @override
   void dispose() {
     _linkSub?.cancel();
+    NotificationService.pendingTarget.removeListener(_openPendingTarget);
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final router = ref.watch(appRouterProvider);
+    ref.listen(authNotifierProvider, (_, state) {
+      if (state is AuthStateAuthenticated) {
+        // Login'in router redirect'i bitsin, sonra hedefi aç.
+        WidgetsBinding.instance.addPostFrameCallback(
+          (_) => _openPendingTarget(),
+        );
+      }
+    });
     final themeMode = ref.watch(themeModeProvider);
     final locale = ref.watch(localeProvider);
 

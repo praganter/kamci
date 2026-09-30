@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart' hide TextDirection;
 import '../../../../core/l10n/l10n.dart';
+import '../../../../core/services/notification_routing.dart';
 import '../../domain/entities/notification_item.dart';
 import '../providers/notification_providers.dart';
 
@@ -75,9 +77,21 @@ class _NotificationTile extends ConsumerWidget {
               ).textTheme.labelSmall?.copyWith(color: cs.onSurfaceVariant),
             )
           : null,
-      onTap: item.read
-          ? null
-          : () => ref.read(notificationListProvider.notifier).markRead(item.id),
+      onTap: () {
+        if (!item.read) {
+          ref.read(notificationListProvider.notifier).markRead(item.id);
+        }
+        final target = notificationTarget(
+          type: item.type,
+          entityId: item.entityId,
+        );
+        if (target == null) return;
+        if (target.isTab) {
+          context.goNamed(target.name, pathParameters: target.pathParameters);
+        } else {
+          context.pushNamed(target.name, pathParameters: target.pathParameters);
+        }
+      },
     );
   }
 

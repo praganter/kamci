@@ -1,0 +1,85 @@
+appId: com.batuhanyetgin.kamci
+---
+# NOT-02: Bildirim → ilgili ekrana yönlendirme
+# a) Push yönlendirmesi: debttracker://notification deep link'i push tıklamasıyla
+#    aynı kod yolunu (NotificationService.pendingTarget) kullanır.
+# b) In-app liste: HOUSEHOLD_INVITE satırına dokununca Hane ekranı açılır.
+# Edge: bilinmeyen tip → yönlendirme yok; geçersiz id → detay yerine liste.
+# USER_B_EMAIL/PASSWORD gerekir.
+
+# ── a) Deep link / push yönlendirmesi ──────────────────────────────────────
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- tapOn: "Ayarlar"
+- waitForAnimationToEnd
+- openLink: "debttracker://notification?type=HOUSEHOLD_INVITE&id=x"
+- extendedWaitUntil:
+    visible: "Hane"
+    timeout: 10000
+- assertVisible: "(?s).*(Henüz bir haneniz yok|Haneden Ayrıl|Reddet).*"
+- back
+- waitForAnimationToEnd
+# WEEKLY_DIGEST → Borçlar sekmesi
+- openLink: "debttracker://notification?type=WEEKLY_DIGEST"
+- extendedWaitUntil:
+    visible:
+      id: "myDebtsTab"
+    timeout: 10000
+# Edge: bilinmeyen tip → ekran değişmez
+- tapOn: "Ayarlar"
+- waitForAnimationToEnd
+- openLink: "debttracker://notification?type=SOMETHING_NEW&id=x"
+- waitForAnimationToEnd
+- assertVisible: "Uygulama Ayarları"
+# Edge: geçersiz (path injection) id → detay yerine borç listesi
+- openLink: "debttracker://notification?type=DEBT_REMINDER&id=..%2Fsettings"
+- extendedWaitUntil:
+    visible:
+      id: "myDebtsTab"
+    timeout: 10000
+
+# ── b) In-app liste satırı → Hane ─────────────────────────────────────────
+# A, B'yi davet eder
+- runFlow: "../../subflows/_login_as_user_b.yaml"
+- runFlow: "../../subflows/_open_household.yaml"
+- back
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- runFlow: "../../subflows/_open_household.yaml"
+- tapOn: "E-posta"
+- inputText: "${USER_B_EMAIL}"
+- hideKeyboard
+- tapOn: "Davet Gönder"
+- extendedWaitUntil:
+    visible: "(?s).*için davetiniz onay bekliyor.*"
+    timeout: 10000
+- back
+# B bildirim listesini açar; bildirim RabbitMQ ile asenkron düşer → yeniden aç
+- runFlow: "../../subflows/_login_as_user_b.yaml"
+- tapOn: "Ayarlar"
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "(?s)Bildirimler\n.*"
+    direction: DOWN
+- tapOn: "(?s)Bildirimler\n.*"
+- repeat:
+    while:
+      notVisible: "(?s)(Hane Daveti|Household Invite).*"
+    times: 5
+    commands:
+      - back
+      - waitForAnimationToEnd
+      - tapOn: "(?s)Bildirimler\n.*"
+      - waitForAnimationToEnd:
+          timeout: 3000
+- tapOn:
+    text: "(?s)(Hane Daveti|Household Invite).*"
+    index: 0
+- extendedWaitUntil:
+    visible: "(?s).*sizi hanesine davet etti.*"
+    timeout: 10000
+- takeScreenshot: notification_to_household
+# Temizlik: daveti reddet
+- tapOn: "Reddet"
+- extendedWaitUntil:
+    visible: "Henüz bir haneniz yok"
+    timeout: 10000
