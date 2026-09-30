@@ -18,7 +18,9 @@ import '../../features/charts/presentation/screens/charts_screen.dart';
 import '../../features/debt/presentation/screens/debt_detail_screen.dart';
 import '../../features/debt/presentation/screens/debt_form_screen.dart';
 import '../../features/debt/presentation/screens/debt_list_screen.dart';
+import '../../features/household/presentation/screens/household_screen.dart';
 import '../../features/income/presentation/screens/income_screen.dart';
+import '../../features/notifications/presentation/screens/notification_list_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../../features/subscription/presentation/screens/premium_screen.dart';
 import '../../shared/widgets/bottom_nav_bar.dart';
@@ -120,6 +122,18 @@ GoRouter appRouter(Ref ref) {
         name: RouteNames.premium,
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, _) => const PremiumScreen(),
+      ),
+      GoRoute(
+        path: RoutePaths.household,
+        name: RouteNames.household,
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, _) => const HouseholdScreen(),
+      ),
+      GoRoute(
+        path: RoutePaths.notifications,
+        name: RouteNames.notifications,
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, _) => const NotificationListScreen(),
       ),
       GoRoute(
         path: RoutePaths.forgotPassword,

@@ -960,6 +960,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get householdRatioLabel => 'Household D/I Ratio';
 
   @override
+  String get notifications => 'Notifications';
+
+  @override
+  String get notificationsDesc =>
+      'Reminders, household invites and weekly digest';
+
+  @override
+  String get notificationsEmpty => 'No notifications yet';
+
+  @override
   String get retryButton => 'Try Again';
 
   @override

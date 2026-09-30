@@ -59,6 +59,20 @@ class SettingsScreen extends ConsumerWidget {
                   onTap: () => context.pushNamed(RouteNames.changePassword),
                 ),
                 const SizedBox(height: 10),
+                _SettingsTile(
+                  icon: Icons.family_restroom,
+                  title: l10n.household,
+                  subtitle: l10n.householdDesc,
+                  onTap: () => context.pushNamed(RouteNames.household),
+                ),
+                const SizedBox(height: 10),
+                _SettingsTile(
+                  icon: Icons.notifications_outlined,
+                  title: l10n.notifications,
+                  subtitle: l10n.notificationsDesc,
+                  onTap: () => context.pushNamed(RouteNames.notifications),
+                ),
+                const SizedBox(height: 10),
                 _LogoutTile(),
                 const SizedBox(height: 20),
 

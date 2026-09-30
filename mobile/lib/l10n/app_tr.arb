@@ -461,6 +461,9 @@
   "householdLeaveConfirmBody": "Ortak gelir birleştirme durdurulacak.",
   "householdIncomeLabel": "Hane Geliri",
   "householdRatioLabel": "Hane B/G Oranı",
+  "notifications": "Bildirimler",
+  "notificationsDesc": "Hatırlatıcılar, hane davetleri ve haftalık özet",
+  "notificationsEmpty": "Henüz bildirim yok",
   "retryButton": "Tekrar Dene",
   "personCount": "{count} kişi",
   "@personCount": {

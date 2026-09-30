@@ -431,6 +431,9 @@
   "householdLeaveConfirmBody": "Combined income will no longer be shared.",
   "householdIncomeLabel": "Household Income",
   "householdRatioLabel": "Household D/I Ratio",
+  "notifications": "Notifications",
+  "notificationsDesc": "Reminders, household invites and weekly digest",
+  "notificationsEmpty": "No notifications yet",
   "retryButton": "Try Again",
   "personCount": "{count} people",
   "@personCount": {

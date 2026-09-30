@@ -960,6 +960,16 @@ class AppLocalizationsTr extends AppLocalizations {
   String get householdRatioLabel => 'Hane B/G Oranı';
 
   @override
+  String get notifications => 'Bildirimler';
+
+  @override
+  String get notificationsDesc =>
+      'Hatırlatıcılar, hane davetleri ve haftalık özet';
+
+  @override
+  String get notificationsEmpty => 'Henüz bildirim yok';
+
+  @override
   String get retryButton => 'Tekrar Dene';
 
   @override

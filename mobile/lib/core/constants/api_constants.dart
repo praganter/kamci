@@ -16,8 +16,10 @@ abstract final class ApiConstants {
   static const String householdInvite = '/auth/household/invite';
   static const String householdAccept = '/auth/household/accept';
   static const String householdDecline = '/auth/household/decline';
-  static const String householdGet = '/auth/household';
-  static const String householdLeave = '/auth/household';
+  // Controller @RequestMapping("auth/household/") — trailing slash required
+  // for the base path (GET current / DELETE leave), confirmed live: without
+  // it Spring Boot 3.2 returns 404.
+  static const String household = '/auth/household/';
 
   static const String debtSave = '/debt/save';
   static const String debtUpdate = '/debt/update';
@@ -47,6 +49,8 @@ abstract final class ApiConstants {
   static const String subscriptionStatus = '/subscription/status';
 
   static const String deviceToken = '/notification/device-token';
+  static const String notificationList = '/notification/list';
+  static const String notificationRead = '/notification'; // used as: /$id/read
 
   static const String exchangeRates = '/rates';
 }

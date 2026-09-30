@@ -1808,6 +1808,24 @@ abstract class AppLocalizations {
   /// **'Hane B/G Oranı'**
   String get householdRatioLabel;
 
+  /// No description provided for @notifications.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bildirimler'**
+  String get notifications;
+
+  /// No description provided for @notificationsDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hatırlatıcılar, hane davetleri ve haftalık özet'**
+  String get notificationsDesc;
+
+  /// No description provided for @notificationsEmpty.
+  ///
+  /// In tr, this message translates to:
+  /// **'Henüz bildirim yok'**
+  String get notificationsEmpty;
+
   /// No description provided for @retryButton.
   ///
   /// In tr, this message translates to:

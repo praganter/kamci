@@ -18,6 +18,8 @@ abstract final class RouteNames {
   static const String income = 'income';
   static const String charts = 'charts';
   static const String premium = 'premium';
+  static const String household = 'household';
+  static const String notifications = 'notifications';
 }
 
 abstract final class RoutePaths {
@@ -40,4 +42,6 @@ abstract final class RoutePaths {
   static const String income = '/income';
   static const String charts = '/charts';
   static const String premium = '/premium';
+  static const String household = '/household';
+  static const String notifications = '/notifications';
 }
