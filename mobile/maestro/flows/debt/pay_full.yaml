@@ -21,12 +21,9 @@ appId: com.batuhanyetgin.kamci
     text: "Tam Ödeme"
 - assertVisible:
     text: "[\\s\\S]*kayıt edildi[\\s\\S]*"
-# Cleanup: borcu sil
-- swipe:
-    start: "75%, 40%"
-    end: "5%, 40%"
-- waitForAnimationToEnd
-- assertVisible:
-    text: "Borcu Sil"
-- tapOn:
-    text: "Sil"
+# Cleanup: borcu sil. Tam ödemeden sonra liste yeniden düzenlenir; sabit %40
+# swipe boş alana düşüp TabBarView'ü "Paylaşılan"a kaydırabiliyor (Android).
+- extendedWaitUntil:
+    notVisible: "[\\s\\S]*kayıt edildi[\\s\\S]*"
+    timeout: 10000
+- runFlow: "../../subflows/_cleanup_all_debts.yaml"
