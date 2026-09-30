@@ -109,6 +109,18 @@ class DebtRemoteDatasource {
     }
   }
 
+  Future<DebtModel> setPaidInstallments(String id, int count) async {
+    try {
+      final response = await _dio.post(
+        '${ApiConstants.debtSetPaidInstallments}/$id/set-paid-installments',
+        data: {'count': count},
+      );
+      return DebtModel.fromJson(_extractDebt(response.data));
+    } on DioException catch (e) {
+      throw _mapException(e);
+    }
+  }
+
   Future<DebtModel> bulkPay(
     String id,
     List<Map<String, dynamic>> payments,

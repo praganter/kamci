@@ -97,6 +97,12 @@ class DebtList extends _$DebtList {
     ref.invalidate(debtDetailProvider(debtId));
   }
 
+  Future<void> setPaidInstallments(String debtId, int count) async {
+    await ref.read(debtRepositoryProvider).setPaidInstallments(debtId, count);
+    _invalidateAll();
+    ref.invalidate(debtDetailProvider(debtId));
+  }
+
   Future<void> bulkPay(
     String debtId,
     List<BulkPaymentEntry> payments,

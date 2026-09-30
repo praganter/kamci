@@ -26,6 +26,7 @@ abstract final class ApiConstants {
   static const String debtPay = '/debt/pay';
   static const String debtBulkPay = '/debt/pay'; // used as: /$id/bulk
   static const String debtSkip = '/debt/skip';
+  static const String debtSetPaidInstallments = '/debt'; // used as: /$id/set-paid-installments
   static const String debtDelete = '/debt/delete';
   static const String debtGetById = '/debt';
   static const String debtGet = '/debt/get';

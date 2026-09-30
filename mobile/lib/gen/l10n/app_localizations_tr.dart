@@ -554,6 +554,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get incomeHistory => 'Gelir Geçmişi';
 
   @override
+  String get incomeDesc => 'Aylık gelirini kaydet, borç/gelir oranını takip et';
+
+  @override
   String get addIncome => 'Gelir Ekle';
 
   @override
@@ -596,6 +599,24 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get bulkPayment => 'Toplu Ödeme';
+
+  @override
+  String get setPaidInstallments => 'Ödenmiş Taksitleri Ayarla';
+
+  @override
+  String get setPaidInstallmentsDesc =>
+      'Başka bir uygulamadan geçiyorsan, bu borç için daha önce ödediğin taksit sayısını gir.';
+
+  @override
+  String get paidInstallmentsCountLabel => 'Ödenmiş taksit sayısı';
+
+  @override
+  String get paidInstallmentsCountInvalid => '1 veya daha büyük bir sayı girin';
+
+  @override
+  String setPaidInstallmentsSuccess(int count) {
+    return '$count taksit ödenmiş olarak işaretlendi';
+  }
 
   @override
   String get enterAmount => 'Tutar Girin';

@@ -277,6 +277,7 @@
 
   "income": "Gelir",
   "incomeHistory": "Gelir Geçmişi",
+  "incomeDesc": "Aylık gelirini kaydet, borç/gelir oranını takip et",
   "addIncome": "Gelir Ekle",
   "noIncomeYet": "Henüz gelir kaydı yok",
   "incomeAmount": "Gelir Tutarı",
@@ -293,6 +294,16 @@
   "partialPayment": "Parçalı Ödeme",
   "fullPayment": "Tam Ödeme",
   "bulkPayment": "Toplu Ödeme",
+  "setPaidInstallments": "Ödenmiş Taksitleri Ayarla",
+  "setPaidInstallmentsDesc": "Başka bir uygulamadan geçiyorsan, bu borç için daha önce ödediğin taksit sayısını gir.",
+  "paidInstallmentsCountLabel": "Ödenmiş taksit sayısı",
+  "paidInstallmentsCountInvalid": "1 veya daha büyük bir sayı girin",
+  "setPaidInstallmentsSuccess": "{count} taksit ödenmiş olarak işaretlendi",
+  "@setPaidInstallmentsSuccess": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
   "enterAmount": "Tutar Girin",
   "partialPaymentHint": "Boş bırakılırsa tam tutar kullanılır",
   "bulkPayTitle": "Toplu Ödeme Seç",

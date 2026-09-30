@@ -247,6 +247,7 @@
 
   "income": "Income",
   "incomeHistory": "Income History",
+  "incomeDesc": "Record your monthly income and track your debt-to-income ratio",
   "addIncome": "Add Income",
   "noIncomeYet": "No income records yet",
   "incomeAmount": "Income Amount",
@@ -263,6 +264,16 @@
   "partialPayment": "Partial Payment",
   "fullPayment": "Full Payment",
   "bulkPayment": "Bulk Payment",
+  "setPaidInstallments": "Set Paid Installments",
+  "setPaidInstallmentsDesc": "Coming from another app? Enter how many installments of this debt you've already paid.",
+  "paidInstallmentsCountLabel": "Paid installments",
+  "paidInstallmentsCountInvalid": "Enter a number of 1 or more",
+  "setPaidInstallmentsSuccess": "{count} installments marked as paid",
+  "@setPaidInstallmentsSuccess": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
   "enterAmount": "Enter Amount",
   "partialPaymentHint": "Leave empty to use full amount",
   "bulkPayTitle": "Select Bulk Payments",

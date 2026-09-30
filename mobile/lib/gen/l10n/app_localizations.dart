@@ -1106,6 +1106,12 @@ abstract class AppLocalizations {
   /// **'Gelir Geçmişi'**
   String get incomeHistory;
 
+  /// No description provided for @incomeDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Aylık gelirini kaydet, borç/gelir oranını takip et'**
+  String get incomeDesc;
+
   /// No description provided for @addIncome.
   ///
   /// In tr, this message translates to:
@@ -1189,6 +1195,36 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Toplu Ödeme'**
   String get bulkPayment;
+
+  /// No description provided for @setPaidInstallments.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ödenmiş Taksitleri Ayarla'**
+  String get setPaidInstallments;
+
+  /// No description provided for @setPaidInstallmentsDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Başka bir uygulamadan geçiyorsan, bu borç için daha önce ödediğin taksit sayısını gir.'**
+  String get setPaidInstallmentsDesc;
+
+  /// No description provided for @paidInstallmentsCountLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ödenmiş taksit sayısı'**
+  String get paidInstallmentsCountLabel;
+
+  /// No description provided for @paidInstallmentsCountInvalid.
+  ///
+  /// In tr, this message translates to:
+  /// **'1 veya daha büyük bir sayı girin'**
+  String get paidInstallmentsCountInvalid;
+
+  /// No description provided for @setPaidInstallmentsSuccess.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} taksit ödenmiş olarak işaretlendi'**
+  String setPaidInstallmentsSuccess(int count);
 
   /// No description provided for @enterAmount.
   ///

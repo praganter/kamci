@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -8,10 +9,12 @@ import '../../../../core/router/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/utils/permission_utils.dart';
+import '../../../../core/utils/snackbar_utils.dart';
 import '../../../../shared/widgets/app_error_widget.dart';
 import '../../../../shared/providers/current_user_provider.dart';
 import '../../../category/presentation/providers/category_providers.dart';
 import '../../../category/domain/entities/member_embedded.dart';
+import '../../domain/entities/debt.dart';
 import '../../domain/entities/payment_embedded.dart';
 import '../providers/debt_providers.dart';
 
@@ -84,6 +87,16 @@ class _DebtDetailScreenState extends ConsumerState<DebtDetailScreen> {
           appBar: AppBar(
             title: Text(debt.name),
             actions: [
+              // Backend 409 döner: tamamlanmış ya da otomatik ödemeli borç.
+              if (debt.status == DebtStatus.active && !debt.autoPayment)
+                IconButton(
+                  icon: const Icon(Icons.playlist_add_check),
+                  tooltip: l10n.setPaidInstallments,
+                  onPressed: () => _setPaidInstallments(
+                    isOwner: isOwner,
+                    level: level,
+                  ),
+                ),
               IconButton(
                 icon: const Icon(Icons.edit_outlined),
                 tooltip: l10n.edit,
@@ -164,6 +177,103 @@ class _DebtDetailScreenState extends ConsumerState<DebtDetailScreen> {
           ),
         );
       },
+    );
+  }
+
+  Future<void> _setPaidInstallments({
+    required bool isOwner,
+    required AccessLevel? level,
+  }) async {
+    final hasWrite = PermissionUtils.check(
+      context,
+      isOwner: isOwner,
+      level: level,
+      action: (l) => l.canWrite,
+    );
+    if (!hasWrite) return;
+
+    final count = await showDialog<int>(
+      context: context,
+      builder: (_) => const _PaidInstallmentsDialog(),
+    );
+    if (count == null || !mounted) return;
+    try {
+      await ref
+          .read(debtListProvider.notifier)
+          .setPaidInstallments(widget.id, count);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(context.l10n.setPaidInstallmentsSuccess(count))),
+        );
+      }
+    } catch (e) {
+      if (mounted) showErrorSnackBar(context, e);
+    }
+  }
+}
+
+class _PaidInstallmentsDialog extends StatefulWidget {
+  const _PaidInstallmentsDialog();
+
+  @override
+  State<_PaidInstallmentsDialog> createState() =>
+      _PaidInstallmentsDialogState();
+}
+
+class _PaidInstallmentsDialogState extends State<_PaidInstallmentsDialog> {
+  final _formKey = GlobalKey<FormState>();
+  final _ctrl = TextEditingController();
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    if (!_formKey.currentState!.validate()) return;
+    Navigator.of(context).pop(int.parse(_ctrl.text.trim()));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return AlertDialog(
+      title: Text(l10n.setPaidInstallments),
+      content: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l10n.setPaidInstallmentsDesc),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _ctrl,
+              autofocus: true,
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              decoration: InputDecoration(
+                labelText: l10n.paidInstallmentsCountLabel,
+              ),
+              validator: (v) {
+                final n = int.tryParse(v?.trim() ?? '');
+                return n == null || n < 1
+                    ? l10n.paidInstallmentsCountInvalid
+                    : null;
+              },
+              onFieldSubmitted: (_) => _submit(),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(l10n.cancel),
+        ),
+        FilledButton(onPressed: _submit, child: Text(l10n.save)),
+      ],
     );
   }
 }

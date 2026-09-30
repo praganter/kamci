@@ -1,0 +1,26 @@
+appId: com.batuhanyetgin.kamci
+---
+# DEBT-16: Ödenmiş taksit sayısı, borcun taksit sayısını aşarsa
+# backend 400 error.debt.installment_count_exceeded → lokalize hata.
+# Tek seferlik borç = 1 taksit; 5 girilir.
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- runFlow: "../../subflows/_cleanup_all_debts.yaml"
+- runFlow: "../../subflows/_create_default_category.yaml"
+- runFlow: "../../subflows/_create_default_debt.yaml"
+- tapOn:
+    text: "Test Borcu[\\s\\S]*"
+- waitForAnimationToEnd
+- tapOn: "Ödenmiş Taksitleri Ayarla"
+- extendedWaitUntil:
+    visible: "Ödenmiş taksit sayısı"
+    timeout: 5000
+- inputText: "5"
+- tapOn: "Kaydet"
+- extendedWaitUntil:
+    visible: "Taksit sayısı sınırı aşıldı."
+    timeout: 10000
+- takeScreenshot: set_paid_installments_exceeded
+# Borç değişmemeli
+- assertVisible:
+    text: "Ödeme Geçmişi \\(0\\)"
+- runFlow: "../../subflows/_cleanup_all_debts.yaml"

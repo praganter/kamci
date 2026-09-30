@@ -553,6 +553,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get incomeHistory => 'Income History';
 
   @override
+  String get incomeDesc =>
+      'Record your monthly income and track your debt-to-income ratio';
+
+  @override
   String get addIncome => 'Add Income';
 
   @override
@@ -595,6 +599,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get bulkPayment => 'Bulk Payment';
+
+  @override
+  String get setPaidInstallments => 'Set Paid Installments';
+
+  @override
+  String get setPaidInstallmentsDesc =>
+      'Coming from another app? Enter how many installments of this debt you\'ve already paid.';
+
+  @override
+  String get paidInstallmentsCountLabel => 'Paid installments';
+
+  @override
+  String get paidInstallmentsCountInvalid => 'Enter a number of 1 or more';
+
+  @override
+  String setPaidInstallmentsSuccess(int count) {
+    return '$count installments marked as paid';
+  }
 
   @override
   String get enterAmount => 'Enter Amount';

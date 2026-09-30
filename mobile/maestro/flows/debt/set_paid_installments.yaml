@@ -1,0 +1,37 @@
+appId: com.batuhanyetgin.kamci
+---
+# DEBT-15: Ödenmiş taksitleri ayarla (POST /debt/{id}/set-paid-installments)
+# Happy path: açık uçlu aylık borçta 3 taksit ödenmiş işaretlenir.
+# Edge: 0 girilince istemci validasyonu, istek atılmaz.
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- runFlow: "../../subflows/_cleanup_all_debts.yaml"
+- runFlow: "../../subflows/_create_default_category.yaml"
+- runFlow: "../../subflows/_create_monthly_debt.yaml"
+- tapOn:
+    text: "Test Borcu[\\s\\S]*"
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Ödeme Geçmişi.*"
+- tapOn: "Ödenmiş Taksitleri Ayarla"
+- extendedWaitUntil:
+    visible: "Ödenmiş taksit sayısı"
+    timeout: 5000
+# Edge: 0 → validasyon hatası, diyalog açık kalır
+- inputText: "0"
+- tapOn: "Kaydet"
+- assertVisible: "1 veya daha büyük bir sayı girin"
+# Happy path: 3
+- eraseText: 5
+- inputText: "3"
+- tapOn: "Kaydet"
+- extendedWaitUntil:
+    visible: "3 taksit ödenmiş olarak işaretlendi"
+    timeout: 10000
+- takeScreenshot: set_paid_installments_done
+# Info kartı birleşik node: "...Taksit Sayısı\n3..."; geçmişte 3 ödeme kaydı
+- assertVisible:
+    text: "[\\s\\S]*Taksit Sayısı\n3[\\s\\S]*"
+- assertVisible:
+    text: "Ödeme Geçmişi \\(3\\)"
+# Cleanup
+- runFlow: "../../subflows/_cleanup_all_debts.yaml"

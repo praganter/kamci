@@ -87,6 +87,12 @@ class DebtRepositoryImpl implements DebtRepository {
   }
 
   @override
+  Future<Debt> setPaidInstallments(String id, int count) async {
+    final model = await _datasource.setPaidInstallments(id, count);
+    return model.toDomain();
+  }
+
+  @override
   Future<Debt> bulkPay(String id, List<BulkPaymentEntry> payments) async {
     final raw = payments
         .map(
