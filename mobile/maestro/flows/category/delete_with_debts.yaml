@@ -13,8 +13,10 @@ appId: com.batuhanyetgin.kamci
 - waitForAnimationToEnd
 - runFlow: "../../subflows/_create_default_debt.yaml"
 # Borçlar ekranında kategori grup başlığına uzun bas → PopupMenu
+# Android ExpansionTile label'ı başa/sona durum ekler:
+# "0, Test Kategorisi\n₺500\n1, Genişletildi" → baştan da [\s\S]*
 - longPressOn:
-    text: "Test Kategorisi[\\s\\S]*"
+    text: "[\\s\\S]*Test Kategorisi[\\s\\S]*"
 - extendedWaitUntil:
     visible:
       text: "Borçları ile Kategoriyi Sil"

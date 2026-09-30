@@ -48,6 +48,7 @@ class CategoryDetailScreen extends ConsumerWidget {
             actions: [
               if (isOwner) ...[
                 Semantics(
+                  container: true,
                   identifier: 'editCategoryBtn',
                   child: IconButton(
                     icon: const Icon(Icons.edit_outlined),
@@ -68,6 +69,7 @@ class CategoryDetailScreen extends ConsumerWidget {
                   ),
                 ),
                 Semantics(
+                  container: true,
                   identifier: 'deleteCategoryBtn',
                   child: IconButton(
                     icon: const Icon(Icons.delete_outline),

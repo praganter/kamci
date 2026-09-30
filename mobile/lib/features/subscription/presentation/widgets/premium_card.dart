@@ -235,6 +235,7 @@ class _UpgradeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Semantics(
+      container: true,
       identifier: 'upgradeCard',
       child: Container(
       decoration: BoxDecoration(

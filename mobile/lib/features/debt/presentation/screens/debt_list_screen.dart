@@ -89,10 +89,12 @@ class _DebtListScreenState extends ConsumerState<DebtListScreen>
                 overlayColor: WidgetStateProperty.all(Colors.transparent),
                 tabs: [
                   Semantics(
+                    container: true,
                     identifier: 'myDebtsTab',
                     child: Tab(text: l10n.myDebts),
                   ),
                   Semantics(
+                    container: true,
                     identifier: 'sharedDebtsTab',
                     child: Tab(text: l10n.sharedDebts),
                   ),
@@ -108,6 +110,7 @@ class _DebtListScreenState extends ConsumerState<DebtListScreen>
       ),
       floatingActionButton: _tabController.index == 0
           ? Semantics(
+              container: true,
               identifier: 'addDebtFab',
               child: FloatingActionButton(
                 onPressed: () async {

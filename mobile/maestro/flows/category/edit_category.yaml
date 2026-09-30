@@ -2,27 +2,15 @@ appId: com.batuhanyetgin.kamci
 ---
 # CAT-02: Kategori düzenle
 - runFlow: "../../subflows/_login_as_user_a.yaml"
-- tapOn:
-    text: "Kategoriler"
-- waitForAnimationToEnd
-- tapOn:
-    id: "addCategoryFab"
-- extendedWaitUntil:
-    visible:
-      text: "Yeni Kategori"
-    timeout: 5000
-- tapOn:
-    text: "Kategori Adı"
-- inputText: "Test Kategorisi"
-- tapOn:
-    text: "Oluştur"
-- extendedWaitUntil:
-    visible:
-      text: "Test Kategorisi"
-    timeout: 10000
+# Önceki koşulardan kalmış olabilir → idempotent (409 name_conflict'te
+# sheet açık kalıyor ve sonraki dokunuş sheet'e düşüyordu).
+- runFlow:
+    file: "../../subflows/_ensure_category.yaml"
+    env:
+      NAME: "Test Kategorisi"
 # Detay sayfasına git
 - tapOn:
-    text: "Test Kategorisi"
+    text: "(?s)Test Kategorisi.*"
 - extendedWaitUntil:
     visible:
       text: "Test Kategorisi"

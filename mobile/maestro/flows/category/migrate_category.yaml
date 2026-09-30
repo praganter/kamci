@@ -7,36 +7,21 @@ appId: com.batuhanyetgin.kamci
 - runFlow: "../../subflows/_login_as_user_a.yaml"
 - runFlow: "../../subflows/_cleanup_all_debts.yaml"
 - runFlow: "../../subflows/_create_default_category.yaml"
-# Hedef kategori oluştur (migrate için 2. kategori gerekli)
-- tapOn:
-    text: "Kategoriler"
-- waitForAnimationToEnd
-- tapOn:
-    id: "addCategoryFab"
-- extendedWaitUntil:
-    visible:
-      text: "Yeni Kategori"
-    timeout: 5000
-- tapOn:
-    text: "Kategori Adı"
-- inputText: "Hedef Kategori"
-- tapOn:
-    text: "Oluştur"
-# Kategoriler test koşumları arasında birikir → yeni kategori listenin altında
-# kalabilir; extendedWaitUntil scroll etmez.
-- scrollUntilVisible:
-    element:
-      text: "Hedef Kategori[\\s\\S]*"
-    direction: DOWN
-    timeout: 15000
+# Hedef kategori (migrate için 2. kategori gerekli) — önceki koşulardan
+# kalmış olabilir, idempotent oluştur.
+- runFlow:
+    file: "../../subflows/_ensure_category.yaml"
+    env:
+      NAME: "Hedef Kategori"
 # Kaynak kategoriye (Test Kategorisi) borç ekle → Borçlar'da görünsün
 - tapOn:
     text: "Borçlar"
 - waitForAnimationToEnd
 - runFlow: "../../subflows/_create_default_debt.yaml"
 # Borçlar ekranında kaynak kategori başlığına longPress → PopupMenu
+# Android ExpansionTile label'ı başa durum ekler ("0, Test Kategorisi\n...")
 - longPressOn:
-    text: "Test Kategorisi[\\s\\S]*"
+    text: "[\\s\\S]*Test Kategorisi[\\s\\S]*"
 - extendedWaitUntil:
     visible:
       text: "Borçları Aktarıp Kategoriyi Sil"

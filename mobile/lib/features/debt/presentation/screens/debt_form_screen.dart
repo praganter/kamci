@@ -437,6 +437,7 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
 
               // ── Hatırlatma ──────────────────────────────────────────
               Semantics(
+                container: true,
                 identifier: 'reminderToggle',
                 child: Theme(
                   data: Theme.of(context).copyWith(

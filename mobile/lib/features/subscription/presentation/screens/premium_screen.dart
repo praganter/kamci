@@ -142,6 +142,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: Semantics(
+          container: true,
           identifier: 'close',
           child: IconButton(
             icon: Icon(Icons.close_rounded, color: cs.onSurface),

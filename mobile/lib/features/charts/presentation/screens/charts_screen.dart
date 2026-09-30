@@ -71,6 +71,7 @@ class _MonthSelector extends ConsumerWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Semantics(
+            container: true,
             identifier: 'chartPrevMonthBtn',
             child: IconButton(
               key: const Key('chartPrevMonthBtn'),
@@ -87,6 +88,7 @@ class _MonthSelector extends ConsumerWidget {
                 ),
           ),
           Semantics(
+            container: true,
             identifier: 'chartNextMonthBtn',
             child: IconButton(
               key: const Key('chartNextMonthBtn'),

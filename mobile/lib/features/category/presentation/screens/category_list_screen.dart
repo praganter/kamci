@@ -128,6 +128,7 @@ class _CategoryListScreenState extends ConsumerState<CategoryListScreen>
                 ),
                 const SizedBox(height: 8),
                 Semantics(
+                  container: true,
                   identifier: 'addCategoryFab',
                   child: FloatingActionButton(
                     heroTag: 'add_category',
@@ -526,6 +527,7 @@ class _CategoryCard extends StatelessWidget {
               child: Align(
                 alignment: Alignment.center,
                 child: Semantics(
+                  container: true,
                   identifier: 'categoryMoreBtn',
                   child: Builder(
                     builder: (ctx) => IconButton(
