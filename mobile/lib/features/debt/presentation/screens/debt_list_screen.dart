@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import '../../../../core/theme/theme_helpers.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/l10n/enum_l10n.dart';
 import '../../../../core/router/route_names.dart';
@@ -84,7 +85,9 @@ class _DebtListScreenState extends ConsumerState<DebtListScreen>
                   borderRadius: BorderRadius.circular(20),
                 ),
                 dividerColor: Colors.transparent,
-                labelColor: cs.primary,
+                labelColor: cs.brightness == Brightness.light
+                    ? cs.onPrimaryContainer
+                    : cs.primary,
                 unselectedLabelColor: cs.onSurfaceVariant,
                 labelStyle: const TextStyle(fontWeight: FontWeight.w600),
                 overlayColor: WidgetStateProperty.all(Colors.transparent),
@@ -403,20 +406,28 @@ class _MonthSummaryCard extends ConsumerWidget {
     }
     final paid = items.where((i) => i.debt.paidCurrentPeriod).length;
     const tabular = [FontFeature.tabularFigures()];
+    final light = cs.brightness == Brightness.light;
 
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 4, 16, 8),
       padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
-      decoration: BoxDecoration(
-        color: cs.surface,
-        borderRadius: BorderRadius.circular(14),
-      ),
+      // Açık temada koyu "çapa" kart (koyu temanın havası); koyu tema aynı.
+      decoration: light
+          ? BoxDecoration(
+              color: cs.inverseSurface,
+              borderRadius: BorderRadius.circular(14),
+            )
+          : altBCard(cs),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             l10n.summaryTotal,
-            style: tt.labelMedium?.copyWith(color: cs.onSurfaceVariant),
+            style: tt.labelMedium?.copyWith(
+              color: light
+                  ? cs.onInverseSurface.withValues(alpha: 0.6)
+                  : cs.onSurfaceVariant,
+            ),
           ),
           const SizedBox(height: 4),
           for (final e in totals.entries)
@@ -427,6 +438,7 @@ class _MonthSummaryCard extends ConsumerWidget {
                 decimalDigits: 0,
               ).format(e.value),
               style: tt.displayMedium?.copyWith(
+                color: light ? cs.onInverseSurface : null,
                 fontWeight: FontWeight.w800,
                 letterSpacing: -1,
                 fontFeatures: tabular,
@@ -565,10 +577,7 @@ class _CategoryPeriodSection extends ConsumerWidget {
       child: Container(
         margin: const EdgeInsets.fromLTRB(16, 4, 16, 8),
         // alt-b: çerçevesiz düz yüzey (Monarch/iOS grouped list)
-        decoration: BoxDecoration(
-          color: cs.surface,
-          borderRadius: BorderRadius.circular(14),
-        ),
+        decoration: altBCard(cs),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(14),
           child: ExpansionTile(

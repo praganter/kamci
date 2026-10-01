@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../../core/theme/theme_helpers.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/providers/app_settings_provider.dart';
@@ -144,10 +145,7 @@ class _ProfileCard extends ConsumerWidget {
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      decoration: BoxDecoration(
-        color: cs.surface,
-        borderRadius: BorderRadius.circular(14),
-      ),
+      decoration: altBCard(cs),
       child: userAsync.when(
         loading: () => const SizedBox(
           height: 48,
@@ -280,10 +278,7 @@ class _SettingsTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Container(
-      decoration: BoxDecoration(
-        color: cs.surface,
-        borderRadius: BorderRadius.circular(14),
-      ),
+      decoration: altBCard(cs),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(14),
@@ -298,7 +293,13 @@ class _SettingsTile extends StatelessWidget {
                   color: cs.primaryContainer,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(icon, size: 20, color: cs.primary),
+                child: Icon(
+                  icon,
+                  size: 20,
+                  color: cs.brightness == Brightness.light
+                      ? cs.onPrimaryContainer
+                      : cs.primary,
+                ),
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -341,10 +342,7 @@ class _LogoutTile extends ConsumerWidget {
     final cs = Theme.of(context).colorScheme;
 
     return Container(
-      decoration: BoxDecoration(
-        color: cs.surface,
-        borderRadius: BorderRadius.circular(14),
-      ),
+      decoration: altBCard(cs),
       child: InkWell(
         onTap: () async {
           final confirm = await showConfirmDialog(
@@ -407,10 +405,7 @@ class _SegmentCard extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: BoxDecoration(
-        color: cs.surface,
-        borderRadius: BorderRadius.circular(14),
-      ),
+      decoration: altBCard(cs),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
