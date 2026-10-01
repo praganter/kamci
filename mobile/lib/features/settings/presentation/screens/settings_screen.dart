@@ -146,8 +146,7 @@ class _ProfileCard extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       decoration: BoxDecoration(
         color: cs.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: cs.outlineVariant),
+        borderRadius: BorderRadius.circular(14),
       ),
       child: userAsync.when(
         loading: () => const SizedBox(
@@ -253,9 +252,9 @@ class _SectionHeader extends StatelessWidget {
       child: Text(
         label.toUpperCase(),
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-          color: cs.primary,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 1.1,
+          color: cs.onSurfaceVariant,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.6,
         ),
       ),
     );
@@ -283,12 +282,11 @@ class _SettingsTile extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: cs.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: cs.outlineVariant),
+        borderRadius: BorderRadius.circular(14),
       ),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           child: Row(
@@ -345,8 +343,7 @@ class _LogoutTile extends ConsumerWidget {
     return Container(
       decoration: BoxDecoration(
         color: cs.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: cs.outlineVariant),
+        borderRadius: BorderRadius.circular(14),
       ),
       child: InkWell(
         onTap: () async {
@@ -361,7 +358,7 @@ class _LogoutTile extends ConsumerWidget {
             await ref.read(authNotifierProvider.notifier).logout();
           }
         },
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           child: Row(
@@ -412,8 +409,7 @@ class _SegmentCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
         color: cs.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: cs.outlineVariant),
+        borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/l10n/enum_l10n.dart';
 import '../../../../core/router/route_names.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/permission_utils.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/utils/snackbar_utils.dart';
@@ -294,7 +295,14 @@ class _DebtTabViewState extends ConsumerState<_DebtTabView>
                       },
                     ),
                     data: (groupedByPeriod) {
-                      final List<Widget> slivers = [];
+                      final List<Widget> slivers = [
+                        _MonthSummaryCard(
+                          items: [
+                            for (final cats in groupedByPeriod.values)
+                              for (final g in cats.values) ...g.items,
+                          ],
+                        ),
+                      ];
 
                       bool hasAny = false;
                       for (final period in PaymentPeriodType.values) {
@@ -309,11 +317,11 @@ class _DebtTabViewState extends ConsumerState<_DebtTabView>
                             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                             child: Text(
                               period.l10nLabel(context.l10n).toUpperCase(),
-                              style: Theme.of(context).textTheme.labelLarge
+                              style: Theme.of(context).textTheme.labelMedium
                                   ?.copyWith(
-                                    color: cs.primary,
-                                    fontWeight: FontWeight.bold,
-                                    letterSpacing: 1.2,
+                                    color: cs.onSurfaceVariant,
+                                    fontWeight: FontWeight.w600,
+                                    letterSpacing: 0.8,
                                   ),
                             ),
                           ),
@@ -361,6 +369,110 @@ class _DebtTabViewState extends ConsumerState<_DebtTabView>
                   ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// alt-b: ayın özeti — büyük toplam (Copilot/Monarch "hero number"),
+/// altında ödenen / bekleyen sayıları (YNAB durum renkleri).
+class _MonthSummaryCard extends ConsumerWidget {
+  const _MonthSummaryCard({required this.items});
+
+  final List<DebtListItem> items;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+    final l10n = context.l10n;
+    final symbols = ref
+        .watch(currencyListProvider)
+        .maybeWhen(
+          data: (list) => {for (final c in list) c.code: c.symbol},
+          orElse: () => <String, String>{},
+        );
+
+    final totals = <String, double>{};
+    for (final i in items) {
+      totals.update(
+        i.debt.currency,
+        (v) => v + i.debt.amount,
+        ifAbsent: () => i.debt.amount,
+      );
+    }
+    final paid = items.where((i) => i.debt.paidCurrentPeriod).length;
+    const tabular = [FontFeature.tabularFigures()];
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+      padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
+      decoration: BoxDecoration(
+        color: cs.surface,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.summaryTotal,
+            style: tt.labelMedium?.copyWith(color: cs.onSurfaceVariant),
+          ),
+          const SizedBox(height: 4),
+          for (final e in totals.entries)
+            Text(
+              NumberFormat.currency(
+                locale: 'tr_TR',
+                symbol: symbols[e.key] ?? e.key,
+                decimalDigits: 0,
+              ).format(e.value),
+              style: tt.displayMedium?.copyWith(
+                fontWeight: FontWeight.w800,
+                letterSpacing: -1,
+                fontFeatures: tabular,
+              ),
+            ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              _StatusPill(
+                label: '${l10n.paid} $paid',
+                color: AppColors.success,
+              ),
+              const SizedBox(width: 8),
+              _StatusPill(
+                label: '${l10n.pendingLabel} ${items.length - paid}',
+                color: AppColors.warning,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatusPill extends StatelessWidget {
+  const _StatusPill({required this.label, required this.color});
+
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+        ),
       ),
     );
   }
@@ -451,21 +563,18 @@ class _CategoryPeriodSection extends ConsumerWidget {
       onLongPressStart: (details) =>
           _showCategoryMenu(context, ref, details.globalPosition),
       child: Container(
-        margin: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+        margin: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+        // alt-b: çerçevesiz düz yüzey (Monarch/iOS grouped list)
         decoration: BoxDecoration(
           color: cs.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: cs.primary.withValues(alpha: 0.5),
-            width: 1.5,
-          ),
+          borderRadius: BorderRadius.circular(14),
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(15),
+          borderRadius: BorderRadius.circular(14),
           child: ExpansionTile(
             initiallyExpanded: true,
-            tilePadding: const EdgeInsets.fromLTRB(12, 4, 12, 4),
-            backgroundColor: cs.primary.withValues(alpha: 0.04),
+            tilePadding: const EdgeInsets.fromLTRB(16, 4, 12, 4),
+            backgroundColor: Colors.transparent,
             title: Text(
               categoryName,
               style: Theme.of(
@@ -894,7 +1003,9 @@ class _DebtInstanceTile extends ConsumerWidget {
             '${debt.amount} ${debt.currency}',
             style: TextStyle(
               fontWeight: FontWeight.w700,
-              color: isPaid ? cs.onSurfaceVariant : cs.primary,
+              fontFeatures: const [FontFeature.tabularFigures()],
+              // alt-b: ödenen yeşil, bekleyen nötr (vurgu rengi sadece durum)
+              color: isPaid ? AppColors.success : cs.onSurface,
             ),
           ),
         ),
