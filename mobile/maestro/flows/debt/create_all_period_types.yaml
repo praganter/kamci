@@ -134,8 +134,10 @@ tags: [debt]
 - assertVisible:
     text: "Günlük Borç[\\s\\S]*"
 - swipe:
-    start: "75%, 40%"
-    end: "5%, 40%"
+    from:
+      text: "[\\s\\S]*\\d+\\.\\d+ [A-Z]{3}"
+      index: 0
+    direction: LEFT
 - waitForAnimationToEnd
 - assertVisible:
     text: "Borcu Sil"
@@ -267,8 +269,10 @@ tags: [debt]
 - assertVisible:
     text: "Haftalık Borç[\\s\\S]*"
 - swipe:
-    start: "75%, 40%"
-    end: "5%, 40%"
+    from:
+      text: "[\\s\\S]*\\d+\\.\\d+ [A-Z]{3}"
+      index: 0
+    direction: LEFT
 - waitForAnimationToEnd
 - assertVisible:
     text: "Borcu Sil"
@@ -400,8 +404,10 @@ tags: [debt]
 - assertVisible:
     text: "İki Haftalık Borç[\\s\\S]*"
 - swipe:
-    start: "75%, 40%"
-    end: "5%, 40%"
+    from:
+      text: "[\\s\\S]*\\d+\\.\\d+ [A-Z]{3}"
+      index: 0
+    direction: LEFT
 - waitForAnimationToEnd
 - assertVisible:
     text: "Borcu Sil"
@@ -533,8 +539,10 @@ tags: [debt]
 - assertVisible:
     text: "Üç Aylık Borç[\\s\\S]*"
 - swipe:
-    start: "75%, 40%"
-    end: "5%, 40%"
+    from:
+      text: "[\\s\\S]*\\d+\\.\\d+ [A-Z]{3}"
+      index: 0
+    direction: LEFT
 - waitForAnimationToEnd
 - assertVisible:
     text: "Borcu Sil"
@@ -666,8 +674,10 @@ tags: [debt]
 - assertVisible:
     text: "Altı Aylık Borç[\\s\\S]*"
 - swipe:
-    start: "75%, 40%"
-    end: "5%, 40%"
+    from:
+      text: "[\\s\\S]*\\d+\\.\\d+ [A-Z]{3}"
+      index: 0
+    direction: LEFT
 - waitForAnimationToEnd
 - assertVisible:
     text: "Borcu Sil"
@@ -799,8 +809,10 @@ tags: [debt]
 - assertVisible:
     text: "Yıllık Borç[\\s\\S]*"
 - swipe:
-    start: "75%, 40%"
-    end: "5%, 40%"
+    from:
+      text: "[\\s\\S]*\\d+\\.\\d+ [A-Z]{3}"
+      index: 0
+    direction: LEFT
 - waitForAnimationToEnd
 - assertVisible:
     text: "Borcu Sil"

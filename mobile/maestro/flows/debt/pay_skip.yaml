@@ -12,8 +12,10 @@ tags: [debt]
     id: "myDebtsTab"
 - waitForAnimationToEnd
 - swipe:
-    start: "25%, 40%"
-    end: "95%, 40%"
+    from:
+      text: "[\\s\\S]*\\d+\\.\\d+ [A-Z]{3}"
+      index: 0
+    direction: RIGHT
 - waitForAnimationToEnd
 - assertVisible:
     text: "Ödeme İşlemleri"

@@ -137,8 +137,10 @@ tags: [debt]
     text: "USD Test Borcu[\\s\\S]*USD"
 # Cleanup USD borcu
 - swipe:
-    start: "75%, 40%"
-    end: "5%, 40%"
+    from:
+      text: "[\\s\\S]*\\d+\\.\\d+ [A-Z]{3}"
+      index: 0
+    direction: LEFT
 - waitForAnimationToEnd
 - assertVisible:
     text: "Borcu Sil"
@@ -274,8 +276,10 @@ tags: [debt]
     text: "EUR Test Borcu[\\s\\S]*EUR"
 # Cleanup EUR borcu
 - swipe:
-    start: "75%, 40%"
-    end: "5%, 40%"
+    from:
+      text: "[\\s\\S]*\\d+\\.\\d+ [A-Z]{3}"
+      index: 0
+    direction: LEFT
 - waitForAnimationToEnd
 - assertVisible:
     text: "Borcu Sil"

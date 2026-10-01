@@ -143,8 +143,10 @@ tags: [debt]
     timeout: 20000
 # Aylık borç üzerinde sağa swipe
 - swipe:
-    start: "25%, 40%"
-    end: "95%, 40%"
+    from:
+      text: "[\\s\\S]*\\d+\\.\\d+ [A-Z]{3}"
+      index: 0
+    direction: RIGHT
 - waitForAnimationToEnd
 - assertVisible:
     text: "Ödeme İşlemleri"
@@ -166,8 +168,10 @@ tags: [debt]
     text: "[\\s\\S]*ödeme kaydedildi[\\s\\S]*"
 # Cleanup
 - swipe:
-    start: "75%, 40%"
-    end: "5%, 40%"
+    from:
+      text: "[\\s\\S]*\\d+\\.\\d+ [A-Z]{3}"
+      index: 0
+    direction: LEFT
 - waitForAnimationToEnd
 - assertVisible:
     text: "Borcu Sil"
