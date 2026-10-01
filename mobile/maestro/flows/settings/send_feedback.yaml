@@ -1,0 +1,25 @@
+appId: com.batuhanyetgin.kamci
+tags: [settings]
+---
+# SET-08: Geri bildirim — "Öneri / Şikayet Gönder" mailto: ile e-posta
+# uygulamasını açmalı (uygulama arka plana düşer).
+# NOT: canLaunchUrl(mailto) Android 11+'da manifest <queries>, iOS'ta
+# LSApplicationQueriesSchemes içinde "mailto" ister; yoksa buton sessizce
+# hiçbir şey yapmaz ve bu test o hatayı yakalar.
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- tapOn:
+    text: "Ayarlar"
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "(?s)Öneri / Şikayet Gönder.*"
+    direction: DOWN
+- tapOn:
+    text: "(?s)Öneri / Şikayet Gönder.*"
+- waitForAnimationToEnd
+# Mail uygulaması / seçici üstte → Ayarlar listesi artık görünmez
+- assertNotVisible:
+    text: "(?s)Öneri / Şikayet Gönder.*"
+# Uygulamaya geri dön (sonraki flow'lar için)
+- launchApp:
+    stopApp: false

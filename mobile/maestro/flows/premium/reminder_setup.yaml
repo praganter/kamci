@@ -1,0 +1,105 @@
+appId: com.batuhanyetgin.kamci
+tags: [premium, debt]
+---
+# PREM-09: Premium kullanıcı hatırlatıcı kurar — kanal zorunluluğu (edge),
+# kanal + tarih + saat ile kayıt, düzenle ekranında ayarın kalıcı olduğu.
+# User A premium (setup_test_accounts.sh). Testten sonra borcu siler.
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- runFlow: "../../subflows/_cleanup_all_debts.yaml"
+- runFlow: "../../subflows/_create_default_category.yaml"
+- runFlow: "../../subflows/_create_default_debt.yaml"
+- tapOn:
+    text: "Test Borcu[\\s\\S]*"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Düzenle"
+- assertVisible:
+    text: "Borcu Düzenle"
+- scrollUntilVisible:
+    element:
+      id: "reminderToggle"
+    direction: DOWN
+- tapOn:
+    id: "reminderToggle"
+# Premium → gate yok, hatırlatma alanları açılır
+- assertNotVisible:
+    text: "Premium Gerekli"
+- scrollUntilVisible:
+    element:
+      text: "Güncelle"
+    direction: DOWN
+- assertVisible:
+    text: "Bildirim Kanalları"
+# Edge: kanal seçmeden kaydet → uyarı
+- tapOn:
+    text: "Güncelle"
+- assertVisible:
+    text: "En az bir bildirim kanalı seçilmelidir"
+- tapOn:
+    text: "Uygulama İçi"
+- tapOn:
+    text: "(?s)Hatırlatma Tarihi.*"
+- waitForAnimationToEnd
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: "pickerOkBtn"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn: "Tamam"
+- waitForAnimationToEnd
+- tapOn:
+    text: "(?s)Hatırlatma Saati.*"
+- waitForAnimationToEnd
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: "pickerOkBtn"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn: "Tamam"
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "Güncelle"
+    direction: DOWN
+- tapOn:
+    text: "Güncelle"
+# Detaya dönüldü → tekrar düzenle: hatırlatma açık kalmış olmalı
+- extendedWaitUntil:
+    visible:
+      text: "Düzenle"
+    timeout: 10000
+- tapOn:
+    text: "Düzenle"
+- assertVisible:
+    text: "Borcu Düzenle"
+- scrollUntilVisible:
+    element:
+      text: "Bildirim Kanalları"
+    direction: DOWN
+- assertVisible:
+    text: "Bildirim Kanalları"
+# Cleanup: form → detay → liste, borcu sil
+- tapOn:
+    text: "Geri"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Geri"
+- waitForAnimationToEnd
+- swipe:
+    start: "75%, 40%"
+    end: "5%, 40%"
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Borcu Sil"
+- tapOn:
+    text: "Sil"

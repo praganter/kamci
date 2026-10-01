@@ -1,0 +1,39 @@
+appId: com.batuhanyetgin.kamci
+tags: [premium]
+---
+# PREM-08: Satın alımları geri yükle — aboneliği olmayan freemium hesap.
+# Beklenen: çökme yok, ekran kapanmaz (premium verilmez), yükleniyor durumu
+# biter ve butonlar tekrar kullanılabilir olur. Sandbox hesabı gerekmez.
+- runFlow: "../../subflows/_login_as_user_b.yaml"
+- tapOn:
+    text: "Ayarlar"
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: "upgradeCard"
+    direction: DOWN
+- tapOn:
+    id: "upgradeCard"
+- extendedWaitUntil:
+    visible:
+      text: "Satın Alımları Geri Yükle"
+    timeout: 15000
+- tapOn:
+    text: "Satın Alımları Geri Yükle"
+# Restore sonucu gelince spinner biter → "Premium Al" metni geri gelir.
+# Store hiçbir şey döndürmezse spinner takılı kalır ve test burada düşer.
+- extendedWaitUntil:
+    visible:
+      text: "Premium Al"
+    timeout: 15000
+- assertVisible:
+    text: "Satın Alımları Geri Yükle"
+    enabled: true
+# Hâlâ premium ekranındayız (geri yüklenecek abonelik yok)
+- assertVisible:
+    id: "close"
+- tapOn:
+    id: "close"
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Ayarlar"
