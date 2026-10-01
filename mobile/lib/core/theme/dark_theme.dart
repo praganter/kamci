@@ -95,8 +95,8 @@ ThemeData buildDarkTheme() {
       color: AppColors.surfaceDark,
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(16)),
-        side: BorderSide(color: Color(0xFF2C2C2E), width: 1),
+        borderRadius: BorderRadius.all(Radius.circular(14)),
+        // alt-b koyu: kartlar siyah zeminde #1C1C1E ile ayrışır, çerçeve yok
       ),
     ),
     listTileTheme: const ListTileThemeData(

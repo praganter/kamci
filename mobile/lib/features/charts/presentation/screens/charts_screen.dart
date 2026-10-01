@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart' hide TextDirection;
 
 import '../../../../core/l10n/l10n.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/theme_helpers.dart';
 import '../../../../shared/widgets/app_error_widget.dart';
 import '../../../debt/presentation/providers/debt_providers.dart';
 import '../../domain/entities/monthly_summary.dart';
@@ -12,15 +14,16 @@ import '../providers/charts_providers.dart';
 
 // ── Renk paleti (donut & trend) ───────────────────────────────────────────────
 
+// alt-b: zümrüt öncelikli, sakin ve ayrışan tonlar (mor yok)
 const _kChartColors = [
-  Color(0xFF7C3AED),
-  Color(0xFF06B6D4),
-  Color(0xFF10B981),
-  Color(0xFFF59E0B),
-  Color(0xFFEF4444),
-  Color(0xFF8B5CF6),
-  Color(0xFF3B82F6),
-  Color(0xFFEC4899),
+  Color(0xFF059669), // zümrüt
+  Color(0xFF0EA5E9), // gök mavisi
+  Color(0xFFF59E0B), // kehribar
+  Color(0xFF6366F1), // indigo
+  Color(0xFFEF4444), // kırmızı
+  Color(0xFF14B8A6), // camgöbeği
+  Color(0xFF64748B), // arduvaz
+  Color(0xFFEC4899), // pembe
 ];
 
 // ── Ana ekran ─────────────────────────────────────────────────────────────────
@@ -60,10 +63,13 @@ class _MonthSelector extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final month = ref.watch(selectedMonthProvider);
     final cs = Theme.of(context).colorScheme;
-    final label = DateFormat('MMMM yyyy', Localizations.localeOf(context).languageCode)
-        .format(month);
+    final label = DateFormat(
+      'MMMM yyyy',
+      Localizations.localeOf(context).languageCode,
+    ).format(month);
     final isCurrentMonth =
-        month.year == DateTime.now().year && month.month == DateTime.now().month;
+        month.year == DateTime.now().year &&
+        month.month == DateTime.now().month;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
@@ -83,9 +89,9 @@ class _MonthSelector extends ConsumerWidget {
           Text(
             label,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: cs.onSurface,
-                ),
+              fontWeight: FontWeight.w600,
+              color: cs.onSurface,
+            ),
           ),
           Semantics(
             container: true,
@@ -94,7 +100,9 @@ class _MonthSelector extends ConsumerWidget {
               key: const Key('chartNextMonthBtn'),
               icon: Icon(
                 Icons.chevron_right,
-                color: isCurrentMonth ? cs.onSurfaceVariant.withValues(alpha: 0.3) : null,
+                color: isCurrentMonth
+                    ? cs.onSurfaceVariant.withValues(alpha: 0.3)
+                    : null,
               ),
               onPressed: isCurrentMonth
                   ? null
@@ -162,8 +170,8 @@ class _SummaryBody extends StatelessWidget {
               child: Text(
                 l10n.noDataForMonth,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
             ),
           ),
@@ -188,11 +196,7 @@ class _HouseholdCard extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: cs.surfaceContainer,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: cs.primary.withValues(alpha: 0.2)),
-      ),
+      decoration: altBCard(cs),
       child: Row(
         children: [
           Icon(Icons.family_restroom, color: cs.primary),
@@ -203,17 +207,17 @@ class _HouseholdCard extends StatelessWidget {
               children: [
                 Text(
                   l10n.householdIncomeLabel,
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: cs.onSurfaceVariant,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.labelSmall?.copyWith(color: cs.onSurfaceVariant),
                 ),
                 Text(
                   summary.householdIncomeAtMonth != null
                       ? _fmtAmount(summary.householdIncomeAtMonth!)
                       : l10n.noIncomeSet,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ],
             ),
@@ -223,16 +227,16 @@ class _HouseholdCard extends StatelessWidget {
             children: [
               Text(
                 l10n.householdRatioLabel,
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: cs.onSurfaceVariant,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.labelSmall?.copyWith(color: cs.onSurfaceVariant),
               ),
               Text(
                 ratioText,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: cs.primary,
-                    ),
+                  fontWeight: FontWeight.w700,
+                  color: cs.primary,
+                ),
               ),
             ],
           ),
@@ -269,14 +273,14 @@ class _StatsGrid extends StatelessWidget {
           label: l10n.totalPaidAmount,
           value: _fmtAmount(summary.totalPaid),
           sub: '${summary.paidCount} borç',
-          color: const Color(0xFF10B981),
+          color: AppColors.success,
           icon: Icons.check_circle_outline,
         ),
         _StatCard(
           label: l10n.pendingLabel,
           value: _fmtAmount(summary.pendingAmount),
           sub: '${summary.pendingCount} borç',
-          color: const Color(0xFFF59E0B),
+          color: AppColors.warning,
           icon: Icons.hourglass_empty_outlined,
         ),
         _StatCard(
@@ -321,11 +325,7 @@ class _StatCard extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: cs.surfaceContainer,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withValues(alpha: 0.2)),
-      ),
+      decoration: altBCard(cs),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -338,9 +338,9 @@ class _StatCard extends StatelessWidget {
                 child: Text(
                   label,
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: cs.onSurfaceVariant,
-                        fontSize: 10,
-                      ),
+                    color: cs.onSurfaceVariant,
+                    fontSize: 10,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -353,10 +353,10 @@ class _StatCard extends StatelessWidget {
               Text(
                 value,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: color,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 15,
-                    ),
+                  color: color,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 15,
+                ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -364,9 +364,9 @@ class _StatCard extends StatelessWidget {
                 Text(
                   sub,
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: cs.onSurfaceVariant,
-                        fontSize: 10,
-                      ),
+                    color: cs.onSurfaceVariant,
+                    fontSize: 10,
+                  ),
                 ),
             ],
           ),
@@ -387,9 +387,9 @@ class _SectionHeader extends StatelessWidget {
     return Text(
       title,
       style: Theme.of(context).textTheme.titleSmall?.copyWith(
-            fontWeight: FontWeight.w700,
-            letterSpacing: 0.3,
-          ),
+        fontWeight: FontWeight.w700,
+        letterSpacing: 0.3,
+      ),
     );
   }
 }
@@ -409,10 +409,7 @@ class _TrendChartCard extends StatelessWidget {
     return Container(
       height: 200,
       padding: const EdgeInsets.fromLTRB(8, 16, 16, 8),
-      decoration: BoxDecoration(
-        color: cs.surfaceContainer,
-        borderRadius: BorderRadius.circular(16),
-      ),
+      decoration: altBCard(cs),
       child: CustomPaint(
         painter: _TrendPainter(
           values: values,
@@ -480,10 +477,18 @@ class _TrendPainter extends CustomPainter {
     for (int i = 0; i <= 4; i++) {
       final y = _topPad + (i / 4) * chartH;
       canvas.drawLine(
-          Offset(_leftPad, y), Offset(size.width - _rightPad, y), gridPaint);
+        Offset(_leftPad, y),
+        Offset(size.width - _rightPad, y),
+        gridPaint,
+      );
       final val = maxVal * (1 - i / 4);
-      _drawText(canvas, _fmtAmount(val), Offset(0, y - 5), labelStyle,
-          maxWidth: _leftPad - 4);
+      _drawText(
+        canvas,
+        _fmtAmount(val),
+        Offset(0, y - 5),
+        labelStyle,
+        maxWidth: _leftPad - 4,
+      );
     }
 
     // Positions
@@ -495,8 +500,7 @@ class _TrendPainter extends CustomPainter {
     });
 
     // Area fill
-    final fillPath = Path()
-      ..moveTo(positions.first.dx, _topPad + chartH);
+    final fillPath = Path()..moveTo(positions.first.dx, _topPad + chartH);
     for (final p in positions) {
       fillPath.lineTo(p.dx, p.dy);
     }
@@ -514,9 +518,7 @@ class _TrendPainter extends CustomPainter {
             lineColor.withValues(alpha: 0.25),
             lineColor.withValues(alpha: 0.0),
           ],
-        ).createShader(
-          Rect.fromLTWH(_leftPad, _topPad, chartW, chartH),
-        ),
+        ).createShader(Rect.fromLTWH(_leftPad, _topPad, chartW, chartH)),
     );
 
     // Line
@@ -556,8 +558,13 @@ class _TrendPainter extends CustomPainter {
     }
   }
 
-  void _drawText(Canvas canvas, String text, Offset offset, TextStyle style,
-      {double maxWidth = 80}) {
+  void _drawText(
+    Canvas canvas,
+    String text,
+    Offset offset,
+    TextStyle style, {
+    double maxWidth = 80,
+  }) {
     final tp = TextPainter(
       text: TextSpan(text: text, style: style),
       textDirection: TextDirection.ltr,
@@ -582,10 +589,7 @@ class _CategoryDonutCard extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: cs.surfaceContainer,
-        borderRadius: BorderRadius.circular(16),
-      ),
+      decoration: altBCard(cs),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -623,22 +627,18 @@ class _CategoryDonutCard extends StatelessWidget {
                         Expanded(
                           child: Text(
                             items[i].categoryName,
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodySmall
-                                ?.copyWith(fontSize: 11),
+                            style: Theme.of(
+                              context,
+                            ).textTheme.bodySmall?.copyWith(fontSize: 11),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         Text(
                           '%${items[i].percentage.toStringAsFixed(1)}',
-                          style: Theme.of(context)
-                              .textTheme
-                              .labelSmall
+                          style: Theme.of(context).textTheme.labelSmall
                               ?.copyWith(
                                 fontWeight: FontWeight.w700,
-                                color:
-                                    _kChartColors[i % _kChartColors.length],
+                                color: _kChartColors[i % _kChartColors.length],
                                 fontSize: 11,
                               ),
                         ),
@@ -707,19 +707,17 @@ class _DebtProgressCard extends StatelessWidget {
     final l10n = context.l10n;
 
     return Container(
-      decoration: BoxDecoration(
-        color: cs.surfaceContainer,
-        borderRadius: BorderRadius.circular(16),
-      ),
+      decoration: altBCard(cs),
       child: Column(
         children: [
           for (int i = 0; i < items.length; i++) ...[
             if (i > 0)
               Divider(
-                  height: 1,
-                  indent: 16,
-                  endIndent: 16,
-                  color: cs.outlineVariant),
+                height: 1,
+                indent: 16,
+                endIndent: 16,
+                color: cs.outlineVariant,
+              ),
             _ProgressTile(item: items[i], l10n: l10n),
           ],
         ],
@@ -736,14 +734,17 @@ class _ProgressTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final progress =
-        item.completionPercentage != null ? item.completionPercentage! / 100 : null;
-    final progressColor = item.isCompleted ? const Color(0xFF10B981) : cs.primary;
+    final progress = item.completionPercentage != null
+        ? item.completionPercentage! / 100
+        : null;
+    final progressColor = item.isCompleted ? AppColors.success : cs.primary;
 
     final installmentText = item.isOpenEnded
         ? l10n.openEndedInstallments(item.paidInstallments)
         : l10n.installmentsLabel(
-            item.paidInstallments, item.totalInstallments!);
+            item.paidInstallments,
+            item.totalInstallments!,
+          );
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
@@ -755,25 +756,27 @@ class _ProgressTile extends StatelessWidget {
               Expanded(
                 child: Text(
                   item.debtName,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
               const SizedBox(width: 8),
               if (item.isCompleted)
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF10B981).withValues(alpha: 0.12),
+                    color: AppColors.success.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
                     l10n.statusCompleted,
                     style: const TextStyle(
-                      color: Color(0xFF10B981),
+                      color: AppColors.success,
                       fontSize: 10,
                       fontWeight: FontWeight.w600,
                     ),
@@ -819,16 +822,16 @@ class _ProgressTile extends StatelessWidget {
               Text(
                 installmentText,
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: cs.onSurfaceVariant,
-                      fontSize: 10,
-                    ),
+                  color: cs.onSurfaceVariant,
+                  fontSize: 10,
+                ),
               ),
               Text(
                 '${_fmtAmount(item.totalPaid)} ${item.currency}',
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: cs.onSurfaceVariant,
-                      fontSize: 10,
-                    ),
+                  color: cs.onSurfaceVariant,
+                  fontSize: 10,
+                ),
               ),
             ],
           ),

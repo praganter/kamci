@@ -99,8 +99,8 @@ ThemeData buildLightTheme() {
       color: AppColors.surfaceLight,
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(16)),
-        side: BorderSide(color: Color(0xFFE5E5EA), width: 1),
+        borderRadius: BorderRadius.all(Radius.circular(14)),
+        side: BorderSide(color: Color(0xFFE3E3E8), width: 1),
       ),
     ),
     listTileTheme: const ListTileThemeData(

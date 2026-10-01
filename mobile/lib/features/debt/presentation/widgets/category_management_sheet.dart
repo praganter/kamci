@@ -209,10 +209,14 @@ class _CategoryManagementSheetState
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                     subtitle: Text(switch (m.accessLevel) {
-                      AccessLevel.read => '${l10n.accessRead} — ${l10n.accessReadDesc}',
-                      AccessLevel.write => '${l10n.accessWrite} — ${l10n.accessWriteDesc}',
-                      AccessLevel.edit => '${l10n.accessEdit} — ${l10n.accessEditDesc}',
-                      AccessLevel.admin => '${l10n.accessDelete} — ${l10n.accessDeleteDesc}',
+                      AccessLevel.read =>
+                        '${l10n.accessRead} — ${l10n.accessReadDesc}',
+                      AccessLevel.write =>
+                        '${l10n.accessWrite} — ${l10n.accessWriteDesc}',
+                      AccessLevel.edit =>
+                        '${l10n.accessEdit} — ${l10n.accessEditDesc}',
+                      AccessLevel.admin =>
+                        '${l10n.accessDelete} — ${l10n.accessDeleteDesc}',
                     }),
                     trailing: widget.owned
                         ? IconButton(
@@ -220,7 +224,8 @@ class _CategoryManagementSheetState
                               Icons.person_remove_outlined,
                               color: Colors.red,
                             ),
-                            onPressed: () => _removeMember(m.userId ?? m.email ?? ''),
+                            onPressed: () =>
+                                _removeMember(m.userId ?? m.email ?? ''),
                           )
                         : null,
                   ),

@@ -271,7 +271,7 @@ class _FeatureList extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: cs.surfaceContainerHighest.withValues(alpha: 0.4),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
       ),
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Column(
@@ -401,7 +401,7 @@ class _PlanCard extends StatelessWidget {
           color: selected
               ? AppColors.primary.withValues(alpha: 0.08)
               : cs.surfaceContainerHighest.withValues(alpha: 0.4),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: selected ? AppColors.primary : cs.outlineVariant,
             width: selected ? 2 : 1,
@@ -579,7 +579,7 @@ class _StoreErrorCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: cs.errorContainer.withValues(alpha: 0.4),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(color: cs.error.withValues(alpha: 0.3)),
       ),
       child: Row(
