@@ -12,6 +12,7 @@ import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../debt/data/models/currency_model.dart';
 import '../../../debt/presentation/providers/debt_providers.dart';
 import '../../../subscription/presentation/widgets/premium_card.dart';
+import '../../../../shared/widgets/confirm_dialog.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -349,27 +350,14 @@ class _LogoutTile extends ConsumerWidget {
       ),
       child: InkWell(
         onTap: () async {
-          final confirm = await showDialog<bool>(
-            context: context,
-            builder: (ctx) => AlertDialog(
-              title: Text(l10n.signOut),
-              content: Text(l10n.signOutConfirm),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(ctx).pop(false),
-                  child: Text(l10n.cancel),
-                ),
-                TextButton(
-                  onPressed: () => Navigator.of(ctx).pop(true),
-                  child: Text(
-                    l10n.signOut,
-                    style: TextStyle(color: cs.error),
-                  ),
-                ),
-              ],
-            ),
+          final confirm = await showConfirmDialog(
+            context,
+            title: l10n.signOut,
+            content: l10n.signOutConfirm,
+            confirmText: l10n.signOut,
+            cancelText: l10n.cancel,
           );
-          if (confirm == true) {
+          if (confirm) {
             await ref.read(authNotifierProvider.notifier).logout();
           }
         },

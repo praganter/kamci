@@ -332,7 +332,7 @@ class _DebtTabViewState extends ConsumerState<_DebtTabView>
                       }
 
                       if (!hasAny) {
-                        return RefreshIndicator(
+                        return RefreshIndicator.adaptive(
                           onRefresh: () async {
                             ref.invalidate(debtGroupedProvider(true));
                             ref.invalidate(debtGroupedProvider(false));
@@ -347,7 +347,7 @@ class _DebtTabViewState extends ConsumerState<_DebtTabView>
                         );
                       }
 
-                      return RefreshIndicator(
+                      return RefreshIndicator.adaptive(
                         onRefresh: () async {
                           ref.invalidate(debtGroupedProvider(true));
                           ref.invalidate(debtGroupedProvider(false));

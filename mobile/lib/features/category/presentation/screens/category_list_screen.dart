@@ -252,7 +252,7 @@ class _CategoryTabViewState extends ConsumerState<_CategoryTabView> {
 
         return Stack(
           children: [
-            RefreshIndicator(
+            RefreshIndicator.adaptive(
               onRefresh: () => ref.refresh(categoryListProvider.future),
               child: ListView.builder(
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 80),

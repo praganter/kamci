@@ -6,6 +6,9 @@ import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/utils/snackbar_utils.dart';
 import '../../../../core/utils/validators.dart';
 import '../../../../shared/widgets/app_error_widget.dart';
+import '../../../../shared/widgets/confirm_dialog.dart';
+import '../../../../shared/widgets/platform_date_field.dart';
+import '../../../../shared/widgets/platform_select_field.dart';
 import '../../../../features/debt/presentation/providers/debt_providers.dart';
 import '../../data/models/save_income_request.dart';
 import '../../data/repositories/income_repository_impl.dart';
@@ -50,7 +53,7 @@ class IncomeScreen extends ConsumerWidget {
               ),
             );
           }
-          return RefreshIndicator(
+          return RefreshIndicator.adaptive(
             onRefresh: () async => ref.invalidate(incomeHistoryProvider),
             child: ListView.builder(
               padding: const EdgeInsets.only(bottom: 88),
@@ -108,22 +111,12 @@ class _IncomeTile extends ConsumerWidget {
         child: Icon(Icons.delete_outline, color: cs.onError),
       ),
       confirmDismiss: (_) async {
-        return await showDialog<bool>(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            title: Text(l10n.deleteIncome),
-            content: Text(l10n.deleteIncomeConfirm),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, false),
-                child: Text(l10n.cancel),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, true),
-                child: Text(l10n.delete, style: TextStyle(color: cs.error)),
-              ),
-            ],
-          ),
+        return showConfirmDialog(
+          context,
+          title: l10n.deleteIncome,
+          content: l10n.deleteIncomeConfirm,
+          confirmText: l10n.delete,
+          cancelText: l10n.cancel,
         );
       },
       onDismissed: (_) async {
@@ -261,18 +254,16 @@ class _AddIncomeSheetState extends ConsumerState<_AddIncomeSheet> {
             currenciesAsync.when(
               loading: () => const LinearProgressIndicator(),
               error: (_, e) => const SizedBox.shrink(),
-              data: (currencies) => DropdownButtonFormField<String>(
-                initialValue: _selectedCurrency,
-                decoration: InputDecoration(
-                  labelText: l10n.currency,
-                  prefixIcon: const Icon(Icons.currency_exchange),
-                ),
-                hint: Text(l10n.select),
+              data: (currencies) => PlatformSelectField<String>(
+                label: l10n.currency,
+                prefixIcon: const Icon(Icons.currency_exchange),
+                hint: l10n.select,
+                value: _selectedCurrency,
                 items: currencies
                     .map(
-                      (c) => DropdownMenuItem(
+                      (c) => PlatformSelectItem(
                         value: c.code,
-                        child: Text('${c.code}  ${c.symbol}'),
+                        label: '${c.code}  ${c.symbol}',
                       ),
                     )
                     .toList(),
@@ -284,41 +275,22 @@ class _AddIncomeSheetState extends ConsumerState<_AddIncomeSheet> {
             ),
             const SizedBox(height: 16),
 
-            // Effective From
-            FormField<DateTime>(
-              validator: (_) => _effectiveFrom == null
+            // Effective From — iOS: CupertinoDatePicker, Android: showDatePicker
+            PlatformDateField(
+              label: l10n.effectiveFrom,
+              prefixIcon: const Icon(Icons.calendar_today),
+              hint: l10n.select,
+              value: _effectiveFrom,
+              firstDate: DateTime(2000),
+              lastDate: DateTime(2100),
+              onChanged: (d) => setState(() => _effectiveFrom = d),
+              validator: (v) => v == null
                   ? Validators.required(
                       l10n,
                       null,
                       fieldName: l10n.effectiveFrom,
                     )
                   : null,
-              builder: (field) => InkWell(
-                onTap: () async {
-                  final picked = await showDatePicker(
-                    context: context,
-                    initialDate: _effectiveFrom ?? DateTime.now(),
-                    firstDate: DateTime(2000),
-                    lastDate: DateTime(2100),
-                  );
-                  if (picked != null) {
-                    setState(() => _effectiveFrom = picked);
-                    field.didChange(picked);
-                  }
-                },
-                child: InputDecorator(
-                  decoration: InputDecoration(
-                    labelText: l10n.effectiveFrom,
-                    prefixIcon: const Icon(Icons.calendar_today),
-                    errorText: field.errorText,
-                  ),
-                  child: Text(
-                    _effectiveFrom != null
-                        ? DateFormatter.formatDate(_effectiveFrom!)
-                        : l10n.select,
-                  ),
-                ),
-              ),
             ),
             const SizedBox(height: 16),
 

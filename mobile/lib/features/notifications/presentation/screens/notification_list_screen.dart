@@ -29,7 +29,7 @@ class NotificationListScreen extends ConsumerWidget {
                   ),
                 ),
               )
-            : RefreshIndicator(
+            : RefreshIndicator.adaptive(
                 onRefresh: () => ref.refresh(notificationListProvider.future),
                 child: ListView.separated(
                   itemCount: items.length,
