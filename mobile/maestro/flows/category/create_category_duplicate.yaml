@@ -1,4 +1,5 @@
 appId: com.batuhanyetgin.kamci
+tags: [category]
 ---
 # CAT-05 (edge): Aynı isimle kategori → 409 error.category.name_conflict
 # Hata sheet içinde, isim alanının altında görünmeli (önceden SnackBar modal

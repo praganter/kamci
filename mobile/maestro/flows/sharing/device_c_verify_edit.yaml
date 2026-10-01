@@ -1,4 +1,5 @@
 appId: com.batuhanyetgin.kamci
+tags: [sharing, multi-device]
 ---
 # SHARE-03 (Device C): EDIT yetkisi doğrulama
 # EDIT = canWrite ✓, canEdit ✓, canDelete ✗

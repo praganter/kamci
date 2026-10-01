@@ -1,4 +1,5 @@
 appId: com.batuhanyetgin.kamci
+tags: [premium]
 # User B'yi seed durumuna (5 borç) geri getir — debt_limit_gate buna bağlı.
 onFlowComplete:
   - runScript:

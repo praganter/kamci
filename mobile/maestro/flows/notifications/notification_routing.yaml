@@ -1,4 +1,5 @@
 appId: com.batuhanyetgin.kamci
+tags: [notifications]
 ---
 # NOT-02: Bildirim → ilgili ekrana yönlendirme
 # a) Push yönlendirmesi: debttracker://notification deep link'i push tıklamasıyla

@@ -1,4 +1,5 @@
 appId: com.batuhanyetgin.kamci
+tags: [edge_cases]
 ---
 # EDGE-06/07: Özel karakter ve uzun string — UI kırılmamalı
 - runFlow: "../../subflows/_login_as_user_a.yaml"

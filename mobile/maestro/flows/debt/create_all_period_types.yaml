@@ -1,4 +1,5 @@
 appId: com.batuhanyetgin.kamci
+tags: [debt]
 ---
 # DEBT-03a..f: Tüm payment period tipleri
 # Her borç oluşturulduktan hemen sonra silinir — 5-borç limitini aşmamak için

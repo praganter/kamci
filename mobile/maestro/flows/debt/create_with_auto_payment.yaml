@@ -1,4 +1,5 @@
 appId: com.batuhanyetgin.kamci
+tags: [debt]
 ---
 # DEBT-15: Auto Payment flag — testten sonra siler (test izolasyonu)
 - runFlow: "../../subflows/_login_as_user_a.yaml"

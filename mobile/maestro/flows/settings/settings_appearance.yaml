@@ -1,4 +1,5 @@
 appId: com.batuhanyetgin.kamci
+tags: [settings]
 ---
 # SET-05/06/07: Görünüm ayarları — Tema, Dil, Baz Para Birimi
 - runFlow: "../../subflows/_login_as_user_a.yaml"

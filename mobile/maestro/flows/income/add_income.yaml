@@ -1,4 +1,5 @@
 appId: com.batuhanyetgin.kamci
+tags: [income, smoke]
 ---
 # INC-01: Gelir ekle — boş form validasyonu (edge) + başarılı kayıt
 - runFlow: "../../subflows/_login_as_user_a.yaml"

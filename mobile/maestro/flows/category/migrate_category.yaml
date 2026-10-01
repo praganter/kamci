@@ -1,4 +1,5 @@
 appId: com.batuhanyetgin.kamci
+tags: [category]
 ---
 # CAT-04: Kategori migrate — borçları taşı ve kaynak kategoriyi sil
 # NOT: "Borçları Aktarıp Kategoriyi Sil" seçeneği BORÇLAR ekranındaki kategori

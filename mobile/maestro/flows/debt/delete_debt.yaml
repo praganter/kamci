@@ -1,4 +1,5 @@
 appId: com.batuhanyetgin.kamci
+tags: [debt, smoke]
 ---
 # DEBT-11: Borç silme — sola swipe → confirm dialog
 - runFlow: "../../subflows/_login_as_user_a.yaml"

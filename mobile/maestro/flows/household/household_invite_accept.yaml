@@ -1,4 +1,5 @@
 appId: com.batuhanyetgin.kamci
+tags: [household]
 ---
 # HH-02: A → B davet, B kabul eder, ortak hane görünür, B ayrılır (temizlik dahil)
 # Tek cihazda kullanıcı değiştirerek çalışır. USER_B_EMAIL/PASSWORD gerekir.

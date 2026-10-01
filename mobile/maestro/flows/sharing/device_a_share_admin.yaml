@@ -1,4 +1,5 @@
 appId: com.batuhanyetgin.kamci
+tags: [sharing, multi-device]
 ---
 # SHARE-04 (Device A): User C'yi ADMIN yetkisiyle paylaşıma al
 # Önceki hâli "Erişim Seviyesini Değiştir" ekranını kullanıyordu — öyle bir ekran

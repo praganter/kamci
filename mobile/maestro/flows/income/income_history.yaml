@@ -1,4 +1,5 @@
 appId: com.batuhanyetgin.kamci
+tags: [income]
 ---
 # INC-02: Gelir geçmişi — liste yüklenir, eklenen gelir görünür, ham hata basılmaz
 - runFlow: "../../subflows/_login_as_user_a.yaml"
