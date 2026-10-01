@@ -410,15 +410,22 @@ class _TrendChartCard extends StatelessWidget {
       height: 200,
       padding: const EdgeInsets.fromLTRB(8, 16, 16, 8),
       decoration: altBCard(cs),
-      child: CustomPaint(
-        painter: _TrendPainter(
-          values: values,
-          months: months,
-          lineColor: cs.primary,
-          gridColor: cs.outlineVariant,
-          labelColor: cs.onSurfaceVariant,
+      // Giriş animasyonu: çizgi tabandan yükselir
+      child: TweenAnimationBuilder<double>(
+        tween: Tween(begin: 0, end: 1),
+        duration: const Duration(milliseconds: 800),
+        curve: Curves.easeOutCubic,
+        builder: (context, t, _) => CustomPaint(
+          painter: _TrendPainter(
+            values: values,
+            months: months,
+            lineColor: cs.primary,
+            gridColor: cs.outlineVariant,
+            labelColor: cs.onSurfaceVariant,
+            progress: t,
+          ),
+          size: Size.infinite,
         ),
-        size: Size.infinite,
       ),
     );
   }
@@ -441,6 +448,7 @@ class _TrendPainter extends CustomPainter {
     required this.lineColor,
     required this.gridColor,
     required this.labelColor,
+    this.progress = 1,
   });
 
   final List<double> values;
@@ -448,6 +456,9 @@ class _TrendPainter extends CustomPainter {
   final Color lineColor;
   final Color gridColor;
   final Color labelColor;
+
+  /// 0→1 giriş animasyonu ilerlemesi (değerler tabandan yükselir).
+  final double progress;
 
   static const _leftPad = 48.0;
   static const _rightPad = 8.0;
@@ -495,7 +506,7 @@ class _TrendPainter extends CustomPainter {
     final n = values.length;
     final positions = List.generate(n, (i) {
       final x = _leftPad + (n == 1 ? chartW / 2 : (i / (n - 1)) * chartW);
-      final y = _topPad + chartH - (values[i] / maxVal) * chartH;
+      final y = _topPad + chartH - (values[i] / maxVal) * chartH * progress;
       return Offset(x, y);
     });
 
@@ -574,7 +585,9 @@ class _TrendPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_TrendPainter old) =>
-      old.values != values || old.lineColor != lineColor;
+      old.values != values ||
+      old.lineColor != lineColor ||
+      old.progress != progress;
 }
 
 // ── Kategori donut ────────────────────────────────────────────────────────────
@@ -596,11 +609,18 @@ class _CategoryDonutCard extends StatelessWidget {
           SizedBox(
             width: 120,
             height: 120,
-            child: CustomPaint(
-              painter: _DonutPainter(
-                items: items,
-                colors: _kChartColors,
-                bgColor: cs.surfaceContainer,
+            // Giriş animasyonu: dilimler saat yönünde açılır
+            child: TweenAnimationBuilder<double>(
+              tween: Tween(begin: 0, end: 1),
+              duration: const Duration(milliseconds: 800),
+              curve: Curves.easeOutCubic,
+              builder: (context, t, _) => CustomPaint(
+                painter: _DonutPainter(
+                  items: items,
+                  colors: _kChartColors,
+                  bgColor: cs.surfaceContainer,
+                  progress: t,
+                ),
               ),
             ),
           ),
@@ -659,11 +679,15 @@ class _DonutPainter extends CustomPainter {
     required this.items,
     required this.colors,
     required this.bgColor,
+    this.progress = 1,
   });
 
   final List<CategoryBreakdownItem> items;
   final List<Color> colors;
   final Color bgColor;
+
+  /// 0→1 giriş animasyonu ilerlemesi (toplam açı bununla ölçeklenir).
+  final double progress;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -674,7 +698,7 @@ class _DonutPainter extends CustomPainter {
 
     double startAngle = -pi / 2;
     for (int i = 0; i < items.length; i++) {
-      final sweep = (items[i].percentage / 100) * 2 * pi;
+      final sweep = (items[i].percentage / 100) * 2 * pi * progress;
       final gap = items.length > 1 ? 0.04 : 0.0;
       canvas.drawArc(
         Rect.fromCircle(center: center, radius: arcRadius),
@@ -692,7 +716,8 @@ class _DonutPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_DonutPainter old) => old.items != items;
+  bool shouldRepaint(_DonutPainter old) =>
+      old.items != items || old.progress != progress;
 }
 
 // ── Borç ilerleme listesi ─────────────────────────────────────────────────────

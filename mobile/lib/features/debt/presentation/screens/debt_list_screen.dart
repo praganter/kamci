@@ -13,6 +13,7 @@ import '../../../../core/utils/snackbar_utils.dart';
 import '../../../category/presentation/providers/category_providers.dart';
 import '../../../category/domain/entities/member_embedded.dart';
 import '../../../../shared/widgets/app_error_widget.dart';
+import '../../../../shared/widgets/list_skeleton.dart';
 import '../../../../shared/widgets/confirm_dialog.dart';
 import '../../../../shared/widgets/premium_required_sheet.dart';
 import '../../../../shared/widgets/pro_badge.dart';
@@ -224,13 +225,29 @@ class _DebtTabViewState extends ConsumerState<_DebtTabView>
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text(
-                              DateFormat(
-                                'MMMM yyyy',
-                                Localizations.localeOf(context).languageCode,
-                              ).format(selectedMonth),
-                              style: Theme.of(context).textTheme.titleSmall
-                                  ?.copyWith(fontWeight: FontWeight.bold),
+                            // Ay değişince etiket kısa kayma + fade ile değişir
+                            AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 250),
+                              transitionBuilder: (child, anim) =>
+                                  FadeTransition(
+                                    opacity: anim,
+                                    child: SlideTransition(
+                                      position: Tween(
+                                        begin: const Offset(0, 0.4),
+                                        end: Offset.zero,
+                                      ).animate(anim),
+                                      child: child,
+                                    ),
+                                  ),
+                              child: Text(
+                                DateFormat(
+                                  'MMMM yyyy',
+                                  Localizations.localeOf(context).languageCode,
+                                ).format(selectedMonth),
+                                key: ValueKey(selectedMonth),
+                                style: Theme.of(context).textTheme.titleSmall
+                                    ?.copyWith(fontWeight: FontWeight.bold),
+                              ),
                             ),
                             const SizedBox(width: 4),
                             Icon(
@@ -295,8 +312,7 @@ class _DebtTabViewState extends ConsumerState<_DebtTabView>
                     ),
                   )
                 : groupedAsync.when(
-                    loading: () =>
-                        const Center(child: CircularProgressIndicator()),
+                    loading: () => const ListSkeleton(),
                     error: (e, _) => AppErrorWidget(
                       error: e,
                       onRetry: () {
@@ -459,17 +475,23 @@ class _MonthSummaryCard extends ConsumerWidget {
           ),
           const SizedBox(height: 4),
           for (final e in totals.entries)
-            Text(
-              NumberFormat.currency(
-                locale: 'tr_TR',
-                symbol: symbols[e.key] ?? e.key,
-                decimalDigits: 0,
-              ).format(e.value),
-              style: tt.displayMedium?.copyWith(
-                color: light ? cs.onInverseSurface : null,
-                fontWeight: FontWeight.w800,
-                letterSpacing: -1,
-                fontFeatures: tabular,
+            // Count-up: ilk açılışta 0'dan, sonra eski değerden yeniye sayar
+            TweenAnimationBuilder<double>(
+              tween: Tween(begin: 0, end: e.value),
+              duration: const Duration(milliseconds: 700),
+              curve: Curves.easeOutCubic,
+              builder: (context, v, _) => Text(
+                NumberFormat.currency(
+                  locale: 'tr_TR',
+                  symbol: symbols[e.key] ?? e.key,
+                  decimalDigits: 0,
+                ).format(v),
+                style: tt.displayMedium?.copyWith(
+                  color: light ? cs.onInverseSurface : null,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -1,
+                  fontFeatures: tabular,
+                ),
               ),
             ),
           const SizedBox(height: 12),

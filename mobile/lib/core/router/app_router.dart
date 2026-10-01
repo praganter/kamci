@@ -153,7 +153,8 @@ GoRouter appRouter(Ref ref) {
           GoRoute(
             path: RoutePaths.debts,
             name: RouteNames.debts,
-            builder: (context, _) => const DebtListScreen(),
+            pageBuilder: (context, state) =>
+                _fadePage(state, const DebtListScreen()),
             routes: [
               GoRoute(
                 path: 'new',
@@ -179,7 +180,8 @@ GoRouter appRouter(Ref ref) {
           GoRoute(
             path: RoutePaths.categories,
             name: RouteNames.categories,
-            builder: (context, _) => const CategoryListScreen(),
+            pageBuilder: (context, state) =>
+                _fadePage(state, const CategoryListScreen()),
             routes: [
               GoRoute(
                 path: ':id',
@@ -192,10 +194,26 @@ GoRouter appRouter(Ref ref) {
           GoRoute(
             path: RoutePaths.charts,
             name: RouteNames.charts,
-            builder: (context, _) => const ChartsScreen(),
+            pageBuilder: (context, state) =>
+                _fadePage(state, const ChartsScreen()),
           ),
         ],
       ),
     ],
+  );
+}
+
+/// Alt nav sekme kökleri arası geçiş: kısa fade (detay sayfalarının push
+/// geçişi platform varsayılanında kalır).
+Page<void> _fadePage(GoRouterState state, Widget child) {
+  return CustomTransitionPage<void>(
+    key: state.pageKey,
+    child: child,
+    transitionDuration: const Duration(milliseconds: 200),
+    reverseTransitionDuration: const Duration(milliseconds: 150),
+    transitionsBuilder: (context, animation, _, child) => FadeTransition(
+      opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
+      child: child,
+    ),
   );
 }
