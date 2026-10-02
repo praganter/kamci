@@ -39,7 +39,7 @@ public class WeeklyDigestScheduler {
     @Autowired
     public WeeklyDigestScheduler(final DebtRepositoryService debtRS,
                                  final DebtEventProducer debtEventProducer) {
-        this(debtRS, debtEventProducer, Clock.systemDefaultZone());
+        this(debtRS, debtEventProducer, Clock.system(PaymentPeriodUtil.APP_ZONE));
     }
 
     WeeklyDigestScheduler(final DebtRepositoryService debtRS,

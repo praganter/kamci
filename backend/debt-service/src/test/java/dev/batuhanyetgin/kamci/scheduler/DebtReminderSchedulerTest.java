@@ -19,9 +19,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.Clock;
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.concurrent.Executor;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -499,6 +502,35 @@ class DebtReminderSchedulerTest {
             final LocalDateTime feb28 = LocalDateTime.of(2026, 2, 28, 10, 0);
             final LocalDateTime result = captureNextAutoPaymentDate(PaymentPeriodType.MONTHLY, JAN_31, feb28);
             assertThat(result).isEqualTo(LocalDateTime.of(2026, 3, 31, 10, 0));
+        }
+    }
+
+    @Nested
+    @DisplayName("default (Autowired) constructor")
+    class DefaultConstructor {
+
+        @Test
+        @DisplayName("JVM default timezone is UTC → scheduler still clocks 'now' in Europe/Istanbul")
+        void jvmDefaultTimezoneUtc_clockStillReadsIstanbulTime() {
+            // Regression: the @Autowired constructor used to build Clock.systemDefaultZone(), which
+            // in prod (no TZ set, default UTC) made every reminder/auto-payment comparison run 3
+            // hours behind Turkey wall-clock time — the same root cause as the payment_before_start bug.
+            final TimeZone originalDefault = TimeZone.getDefault();
+            try {
+                TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+
+                final DebtReminderScheduler prodScheduler =
+                        new DebtReminderScheduler(debtRS, debtEventProducer, taskExecutor);
+                final Clock injectedClock = (Clock) org.springframework.test.util.ReflectionTestUtils
+                        .getField(prodScheduler, "clock");
+
+                final LocalDateTime schedulerNow = LocalDateTime.now(injectedClock);
+                final LocalDateTime istanbulNow = LocalDateTime.now(ZoneId.of("Europe/Istanbul"));
+
+                assertThat(Duration.between(schedulerNow, istanbulNow).abs()).isLessThan(Duration.ofSeconds(5));
+            } finally {
+                TimeZone.setDefault(originalDefault);
+            }
         }
     }
 }

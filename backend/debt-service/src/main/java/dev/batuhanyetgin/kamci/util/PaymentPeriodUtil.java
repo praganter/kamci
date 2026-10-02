@@ -3,9 +3,16 @@ package dev.batuhanyetgin.kamci.util;
 import dev.batuhanyetgin.kamci.enums.PaymentPeriodType;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 
 public final class PaymentPeriodUtil {
+
+    // ponytail: all users are Turkey-based today; firstPaymentDate/paidTime are naive timestamps
+    // the client sends as its own local wall-clock time, so "now" must be computed in that same
+    // zone everywhere it's compared against them — not the JVM's default (prod runs UTC).
+    // Revisit if we ever need per-user timezones.
+    public static final ZoneId APP_ZONE = ZoneId.of("Europe/Istanbul");
 
     private PaymentPeriodUtil() {}
 

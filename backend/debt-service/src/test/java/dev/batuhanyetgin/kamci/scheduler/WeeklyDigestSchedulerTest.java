@@ -8,6 +8,7 @@ import dev.batuhanyetgin.kamci.producer.DebtEventProducer;
 import dev.batuhanyetgin.kamci.repositoryservice.DebtRepositoryService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -16,9 +17,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.Clock;
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.TimeZone;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNoException;
@@ -212,5 +216,33 @@ class WeeklyDigestSchedulerTest {
         assertThatNoException().isThrownBy(() -> scheduler.processWeeklyDigest());
 
         verify(debtEventProducer, times(2)).produce(anyString(), anyString(), any());
+    }
+
+    @Nested
+    @DisplayName("default (Autowired) constructor")
+    class DefaultConstructor {
+
+        @Test
+        @DisplayName("JVM default timezone is UTC → scheduler still clocks 'now' in Europe/Istanbul")
+        void jvmDefaultTimezoneUtc_clockStillReadsIstanbulTime() {
+            // Same root cause as the payment_before_start bug: Clock.systemDefaultZone() in the
+            // @Autowired constructor followed the JVM's zone (UTC in prod), not Turkey wall-clock time.
+            final TimeZone originalDefault = TimeZone.getDefault();
+            try {
+                TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+
+                final WeeklyDigestScheduler prodScheduler =
+                        new WeeklyDigestScheduler(debtRS, debtEventProducer);
+                final Clock injectedClock = (Clock) org.springframework.test.util.ReflectionTestUtils
+                        .getField(prodScheduler, "clock");
+
+                final LocalDateTime schedulerNow = LocalDateTime.now(injectedClock);
+                final LocalDateTime istanbulNow = LocalDateTime.now(ZoneId.of("Europe/Istanbul"));
+
+                assertThat(Duration.between(schedulerNow, istanbulNow).abs()).isLessThan(Duration.ofSeconds(5));
+            } finally {
+                TimeZone.setDefault(originalDefault);
+            }
+        }
     }
 }

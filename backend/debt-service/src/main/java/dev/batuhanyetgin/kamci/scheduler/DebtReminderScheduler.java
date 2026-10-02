@@ -35,7 +35,7 @@ public class DebtReminderScheduler {
     public DebtReminderScheduler(final DebtRepositoryService debtRS,
                                  final DebtEventProducer debtEventProducer,
                                  @Qualifier("taskExecutor") final Executor taskExecutor) {
-        this(debtRS, debtEventProducer, taskExecutor, Clock.systemDefaultZone());
+        this(debtRS, debtEventProducer, taskExecutor, Clock.system(PaymentPeriodUtil.APP_ZONE));
     }
 
     DebtReminderScheduler(final DebtRepositoryService debtRS,

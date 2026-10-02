@@ -34,7 +34,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
-import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -45,11 +44,6 @@ public class DebtService {
 
     private static final int FREE_MAX_DEBTS = 5;
     private static final int PREMIUM_MAX_DEBTS = 500;
-    // ponytail: all users are Turkey-based today; firstPaymentDate/paidTime are naive timestamps
-    // the client sends as its own local wall-clock time. "now" must be computed in that same zone,
-    // not the JVM's (prod runs UTC), or payment windows are off by the zone offset. Revisit if we
-    // ever need per-user timezones.
-    private static final ZoneId APP_ZONE = ZoneId.of("Europe/Istanbul");
 
     private final DebtRepositoryService debtRS;
     private final CategoryRepositoryService categoryRS;
@@ -136,7 +130,7 @@ public class DebtService {
         request.setOwnerId(existing.getOwnerId());
 
         if (!Objects.equals(request.getAmount(), existing.getAmount())) {
-            existing.updateAmount(request.getAmount(), LocalDateTime.now(APP_ZONE));
+            existing.updateAmount(request.getAmount(), LocalDateTime.now(PaymentPeriodUtil.APP_ZONE));
         }
 
         DebtDocument debtDocument = debtMapper.convert(request);
@@ -168,7 +162,7 @@ public class DebtService {
             throw BaseException.forbidden("error.debt.permission_denied");
         }
 
-        final LocalDateTime now = LocalDateTime.now(APP_ZONE);
+        final LocalDateTime now = LocalDateTime.now(PaymentPeriodUtil.APP_ZONE);
         final LocalDateTime effectiveTime = (request != null && request.getPaidTime() != null)
                 ? request.getPaidTime() : now;
         final boolean isHistorical = effectiveTime.isBefore(now.minusSeconds(1));
@@ -236,7 +230,7 @@ public class DebtService {
             throw BaseException.forbidden("error.debt.permission_denied");
         }
 
-        final LocalDateTime now = LocalDateTime.now(APP_ZONE);
+        final LocalDateTime now = LocalDateTime.now(PaymentPeriodUtil.APP_ZONE);
         final LocalDateTime effectiveTime = (request != null && request.getSkippedAt() != null)
                 ? request.getSkippedAt() : now;
         final boolean isHistorical = effectiveTime.isBefore(now.minusSeconds(1));
@@ -287,7 +281,7 @@ public class DebtService {
             throw BaseException.forbidden("error.debt.permission_denied");
         }
 
-        final LocalDateTime now = LocalDateTime.now(APP_ZONE);
+        final LocalDateTime now = LocalDateTime.now(PaymentPeriodUtil.APP_ZONE);
         final int originalDay = existing.getFirstPaymentDate() != null
                 ? existing.getFirstPaymentDate().getDayOfMonth() : 1;
 
@@ -438,7 +432,7 @@ public class DebtService {
         final Map<String, List<DebtDocument>> byCategory = debtRS.findByCategoryIdIn(categoryIds)
                 .stream().collect(Collectors.groupingBy(DebtDocument::getCategoryId));
 
-        final LocalDateTime now = LocalDateTime.now(APP_ZONE);
+        final LocalDateTime now = LocalDateTime.now(PaymentPeriodUtil.APP_ZONE);
         final LocalDateTime monthStart;
         final LocalDateTime monthEnd;
         final LocalDateTime referenceTime;
@@ -899,7 +893,7 @@ public class DebtService {
             return;
         }
 
-        final LocalDateTime now = LocalDateTime.now(APP_ZONE);
+        final LocalDateTime now = LocalDateTime.now(PaymentPeriodUtil.APP_ZONE);
         if (debt.getFirstPaymentDate().isAfter(now)) {
             return;
         }
