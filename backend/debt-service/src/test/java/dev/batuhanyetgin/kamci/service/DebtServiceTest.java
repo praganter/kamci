@@ -1063,6 +1063,34 @@ class DebtServiceTest {
                 verify(debtRS, never()).update(any());
             }
         }
+
+        @Test
+        @DisplayName("JVM default timezone is UTC → payment at Istanbul 'now' is still not rejected as before-start")
+        void jvmDefaultTimezoneUtc_doesNotRejectIstanbulNow() {
+            // Regression for a prod bug: debt-service ran with no TZ set (JVM default = UTC), while
+            // firstPaymentDate/paidTime are naive timestamps meaning Turkey wall-clock time. Comparing
+            // against a UTC-based "now" rejected legitimate payments between 00:00-03:00 Istanbul time
+            // every single day. DebtService must compute "now" in Europe/Istanbul regardless of the
+            // JVM's default zone.
+            final java.util.TimeZone originalDefault = java.util.TimeZone.getDefault();
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+
+                final LocalDateTime nowIstanbul = LocalDateTime.now(java.time.ZoneId.of("Europe/Istanbul"));
+                final DebtDocument existing = buildDebt(DEBT_ID, OWNER_ID, CAT_ID);
+                existing.setFirstPaymentDate(nowIstanbul.minusMinutes(1));
+                when(debtRS.findById(DEBT_ID)).thenReturn(existing);
+                when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
+                when(debtRS.update(any())).thenReturn(existing);
+                when(debtMapper.convert(existing)).thenReturn(buildDebtItemResponse());
+
+                java.util.TimeZone.setDefault(java.util.TimeZone.getTimeZone("UTC"));
+
+                assertThatNoException().isThrownBy(() -> debtService.pay(DEBT_ID, null));
+            } finally {
+                java.util.TimeZone.setDefault(originalDefault);
+            }
+        }
     }
 
     // ─── skip ─────────────────────────────────────────────────────────────────
