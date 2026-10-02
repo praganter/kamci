@@ -214,7 +214,10 @@ Future<GroupedDebtsByPeriod> groupedDebtInstancesByOwner(
 
 // ── Currency list ────────────────────────────────────────────────────────────
 
-@riverpod
+// keepAlive: statik asset — bir kez yüklenip tutulur. autoDispose iken ay
+// geçişinde (liste iskelete düşünce) atılıp yeniden yükleniyor, o arada
+// sembol haritası boş kalıp tutarlar bir an "TRY" koduyla görünüyordu.
+@Riverpod(keepAlive: true)
 Future<List<CurrencyModel>> currencyList(Ref ref) async {
   final data = await rootBundle.loadString('assets/currencies.json');
   final list = jsonDecode(data) as List<dynamic>;
