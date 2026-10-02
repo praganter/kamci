@@ -103,10 +103,7 @@ class DebtList extends _$DebtList {
     ref.invalidate(debtDetailProvider(debtId));
   }
 
-  Future<void> bulkPay(
-    String debtId,
-    List<BulkPaymentEntry> payments,
-  ) async {
+  Future<void> bulkPay(String debtId, List<BulkPaymentEntry> payments) async {
     await ref.read(debtRepositoryProvider).bulkPay(debtId, payments);
     _invalidateAll();
     ref.invalidate(debtDetailProvider(debtId));
@@ -217,7 +214,10 @@ Future<GroupedDebtsByPeriod> groupedDebtInstancesByOwner(
 
 // ── Currency list ────────────────────────────────────────────────────────────
 
-@riverpod
+// keepAlive: statik asset — bir kez yüklenip tutulur. autoDispose iken ay
+// geçişinde (liste iskelete düşünce) atılıp yeniden yükleniyor, o arada
+// sembol haritası boş kalıp tutarlar bir an "TRY" koduyla görünüyordu.
+@Riverpod(keepAlive: true)
 Future<List<CurrencyModel>> currencyList(Ref ref) async {
   final data = await rootBundle.loadString('assets/currencies.json');
   final list = jsonDecode(data) as List<dynamic>;

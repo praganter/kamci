@@ -92,10 +92,8 @@ class _DebtDetailScreenState extends ConsumerState<DebtDetailScreen> {
                 IconButton(
                   icon: const Icon(Icons.playlist_add_check),
                   tooltip: l10n.setPaidInstallments,
-                  onPressed: () => _setPaidInstallments(
-                    isOwner: isOwner,
-                    level: level,
-                  ),
+                  onPressed: () =>
+                      _setPaidInstallments(isOwner: isOwner, level: level),
                 ),
               IconButton(
                 icon: const Icon(Icons.edit_outlined),
@@ -203,7 +201,9 @@ class _DebtDetailScreenState extends ConsumerState<DebtDetailScreen> {
           .setPaidInstallments(widget.id, count);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(context.l10n.setPaidInstallmentsSuccess(count))),
+          SnackBar(
+            content: Text(context.l10n.setPaidInstallmentsSuccess(count)),
+          ),
         );
       }
     } catch (e) {

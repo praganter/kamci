@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../../core/theme/theme_helpers.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/providers/app_settings_provider.dart';
@@ -39,70 +40,83 @@ class SettingsScreen extends ConsumerWidget {
                 _ProfileCard(),
                 const SizedBox(height: 20),
 
-                // ── Uygulama Ayarları ──────────────────────────────────────
+                // ── Uygulama Ayarları — inset-grouped tek blok ─────────────
                 _SectionHeader(label: l10n.appearance),
-                _SegmentCard(label: l10n.theme, child: _ThemeSegmented()),
-                const SizedBox(height: 10),
-                _SegmentCard(label: l10n.language, child: _LocaleSegmented()),
-                const SizedBox(height: 10),
-                _SegmentCard(
-                  label: l10n.baseCurrency,
-                  child: _BaseCurrencyPicker(),
+                _Group(
+                  dividerIndent: 16,
+                  children: [
+                    _SegmentRow(label: l10n.theme, child: _ThemeSegmented()),
+                    _SegmentRow(
+                      label: l10n.language,
+                      child: _LocaleSegmented(),
+                    ),
+                    _SegmentRow(
+                      label: l10n.baseCurrency,
+                      child: _BaseCurrencyPicker(),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 24),
 
                 // ── Hesap ──────────────────────────────────────────────────
                 _SectionHeader(label: l10n.account),
-                _SettingsTile(
-                  icon: Icons.lock_reset_outlined,
-                  title: l10n.changePassword,
-                  subtitle: l10n.changePasswordDesc,
-                  onTap: () => context.pushNamed(RouteNames.changePassword),
+                _Group(
+                  children: [
+                    _SettingsTile(
+                      icon: Icons.lock_reset_outlined,
+                      title: l10n.changePassword,
+                      subtitle: l10n.changePasswordDesc,
+                      onTap: () => context.pushNamed(RouteNames.changePassword),
+                    ),
+                    _SettingsTile(
+                      icon: Icons.savings_outlined,
+                      title: l10n.income,
+                      subtitle: l10n.incomeDesc,
+                      onTap: () => context.pushNamed(RouteNames.income),
+                    ),
+                    _SettingsTile(
+                      icon: Icons.family_restroom,
+                      title: l10n.household,
+                      subtitle: l10n.householdDesc,
+                      onTap: () => context.pushNamed(RouteNames.household),
+                    ),
+                    _SettingsTile(
+                      icon: Icons.notifications_outlined,
+                      title: l10n.notifications,
+                      subtitle: l10n.notificationsDesc,
+                      onTap: () => context.pushNamed(RouteNames.notifications),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 10),
-                _SettingsTile(
-                  icon: Icons.savings_outlined,
-                  title: l10n.income,
-                  subtitle: l10n.incomeDesc,
-                  onTap: () => context.pushNamed(RouteNames.income),
-                ),
-                const SizedBox(height: 10),
-                _SettingsTile(
-                  icon: Icons.family_restroom,
-                  title: l10n.household,
-                  subtitle: l10n.householdDesc,
-                  onTap: () => context.pushNamed(RouteNames.household),
-                ),
-                const SizedBox(height: 10),
-                _SettingsTile(
-                  icon: Icons.notifications_outlined,
-                  title: l10n.notifications,
-                  subtitle: l10n.notificationsDesc,
-                  onTap: () => context.pushNamed(RouteNames.notifications),
-                ),
-                const SizedBox(height: 10),
-                _LogoutTile(),
-                const SizedBox(height: 20),
+                const SizedBox(height: 24),
 
                 // ── Geri Bildirim ──────────────────────────────────────────
                 _SectionHeader(label: l10n.feedback),
-                _SettingsTile(
-                  icon: Icons.mail_outline_rounded,
-                  title: l10n.sendFeedback,
-                  subtitle: l10n.feedbackDesc,
-                  onTap: () async {
-                    final uri = Uri(
-                      scheme: 'mailto',
-                      path: AppConstants.supportEmail,
-                      queryParameters: {
-                        'subject': '[${AppConstants.appName}] Feedback',
+                _Group(
+                  children: [
+                    _SettingsTile(
+                      icon: Icons.mail_outline_rounded,
+                      title: l10n.sendFeedback,
+                      subtitle: l10n.feedbackDesc,
+                      onTap: () async {
+                        final uri = Uri(
+                          scheme: 'mailto',
+                          path: AppConstants.supportEmail,
+                          queryParameters: {
+                            'subject': '[${AppConstants.appName}] Feedback',
+                          },
+                        );
+                        if (await canLaunchUrl(uri)) {
+                          await launchUrl(uri);
+                        }
                       },
-                    );
-                    if (await canLaunchUrl(uri)) {
-                      await launchUrl(uri);
-                    }
-                  },
+                    ),
+                  ],
                 ),
+                const SizedBox(height: 24),
+
+                // ── Çıkış — iOS'taki gibi ayrı blok ────────────────────────
+                _Group(children: [_LogoutTile()]),
               ],
             ),
           ),
@@ -144,11 +158,7 @@ class _ProfileCard extends ConsumerWidget {
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      decoration: BoxDecoration(
-        color: cs.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: cs.outlineVariant),
-      ),
+      decoration: altBCard(cs),
       child: userAsync.when(
         loading: () => const SizedBox(
           height: 48,
@@ -253,11 +263,72 @@ class _SectionHeader extends StatelessWidget {
       child: Text(
         label.toUpperCase(),
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-          color: cs.primary,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 1.1,
+          color: cs.onSurfaceVariant,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.6,
         ),
       ),
+    );
+  }
+}
+
+// ── Group — inset-grouped blok ───────────────────────────────────────────────
+
+/// Bir bölümün satırlarını tek kartta toplar, aralarına ince ayraç koyar.
+/// Şeffaf Material: satırlardaki InkWell dalgası kart zemininin üstünde görünür.
+class _Group extends StatelessWidget {
+  const _Group({required this.children, this.dividerIndent = 62});
+
+  final List<Widget> children;
+
+  /// İkonlu satırlarda ayraç metinden başlar (16 + 32 ikon + 14 boşluk).
+  final double dividerIndent;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Container(
+      decoration: altBCard(cs),
+      clipBehavior: Clip.antiAlias,
+      child: Material(
+        type: MaterialType.transparency,
+        child: Column(
+          children: [
+            for (var i = 0; i < children.length; i++) ...[
+              if (i > 0)
+                Divider(
+                  height: 1,
+                  thickness: 1,
+                  indent: dividerIndent,
+                  color: cs.outlineVariant,
+                ),
+              children[i],
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// iOS ayarlarındaki gibi küçük dolgulu ikon kutusu.
+class _IconBox extends StatelessWidget {
+  const _IconBox({required this.icon, required this.bg, required this.fg});
+
+  final IconData icon;
+  final Color bg;
+  final Color fg;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 32,
+      height: 32,
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Icon(icon, size: 18, color: fg),
     );
   }
 }
@@ -280,54 +351,41 @@ class _SettingsTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return Container(
-      decoration: BoxDecoration(
-        color: cs.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: cs.outlineVariant),
-      ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          child: Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: cs.primaryContainer,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(icon, size: 20, color: cs.primary),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            _IconBox(
+              icon: icon,
+              bg: cs.primaryContainer,
+              fg: cs.brightness == Brightness.light
+                  ? cs.onPrimaryContainer
+                  : cs.primary,
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle,
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
+                ],
               ),
-              Icon(
-                Icons.chevron_right_rounded,
-                size: 20,
-                color: cs.onSurfaceVariant,
-              ),
-            ],
-          ),
+            ),
+            Icon(
+              Icons.chevron_right_rounded,
+              size: 20,
+              color: cs.onSurfaceVariant,
+            ),
+          ],
         ),
       ),
     );
@@ -342,91 +400,75 @@ class _LogoutTile extends ConsumerWidget {
     final l10n = context.l10n;
     final cs = Theme.of(context).colorScheme;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: cs.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: cs.outlineVariant),
-      ),
-      child: InkWell(
-        onTap: () async {
-          final confirm = await showConfirmDialog(
-            context,
-            title: l10n.signOut,
-            content: l10n.signOutConfirm,
-            confirmText: l10n.signOut,
-            cancelText: l10n.cancel,
-          );
-          if (confirm) {
-            await ref.read(authNotifierProvider.notifier).logout();
-          }
-        },
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          child: Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: cs.errorContainer,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  Icons.logout_rounded,
-                  size: 20,
+    return InkWell(
+      onTap: () async {
+        final confirm = await showConfirmDialog(
+          context,
+          title: l10n.signOut,
+          content: l10n.signOutConfirm,
+          confirmText: l10n.signOut,
+          cancelText: l10n.cancel,
+        );
+        if (confirm) {
+          await ref.read(authNotifierProvider.notifier).logout();
+        }
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(
+          children: [
+            _IconBox(
+              icon: Icons.logout_rounded,
+              bg: cs.errorContainer,
+              fg: cs.error,
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Text(
+                l10n.signOut,
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w600,
                   color: cs.error,
                 ),
               ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Text(
-                  l10n.signOut,
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: cs.error,
-                  ),
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
-// ── Segment card ─────────────────────────────────────────────────────────────
+// ── Segment row ──────────────────────────────────────────────────────────────
 
-class _SegmentCard extends StatelessWidget {
-  const _SegmentCard({required this.label, required this.child});
+class _SegmentRow extends StatelessWidget {
+  const _SegmentRow({required this.label, required this.child});
 
   final String label;
   final Widget child;
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: BoxDecoration(
-        color: cs.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: cs.outlineVariant),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: Theme.of(
-              context,
-            ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: 12),
-          SizedBox(width: double.infinity, child: child),
-        ],
+    // container: aynı gruptaki satırların etiketleri tek erişilebilirlik
+    // düğümünde birleşmesin ("Tema\nDil\n..."); ekran okuyucu ve E2E her
+    // satırı ayrı görür.
+    return Semantics(
+      container: true,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(width: double.infinity, child: child),
+          ],
+        ),
       ),
     );
   }
@@ -487,9 +529,9 @@ class _BaseCurrencyPicker extends ConsumerWidget {
           children: [
             Text(
               _label(current, currenciesAsync.valueOrNull),
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
             ),
             Icon(Icons.arrow_drop_down_rounded, color: cs.onSurfaceVariant),
           ],

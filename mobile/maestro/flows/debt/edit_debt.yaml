@@ -45,8 +45,10 @@ tags: [debt]
     text: "Geri"
 - waitForAnimationToEnd
 - swipe:
-    start: "75%, 40%"
-    end: "5%, 40%"
+    from:
+      text: "[\\s\\S]*\\d+\\.\\d+ [A-Z]{3}"
+      index: 0
+    direction: LEFT
 - waitForAnimationToEnd
 - assertVisible:
     text: "Borcu Sil"

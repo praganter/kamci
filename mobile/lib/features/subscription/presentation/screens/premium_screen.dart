@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 
+import '../../../../shared/widgets/glow_border.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/snackbar_utils.dart';
@@ -29,8 +30,9 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
   @override
   void initState() {
     super.initState();
-    _purchaseSub =
-        InAppPurchase.instance.purchaseStream.listen(_onPurchaseUpdate);
+    _purchaseSub = InAppPurchase.instance.purchaseStream.listen(
+      _onPurchaseUpdate,
+    );
     _loadProducts();
   }
 
@@ -50,14 +52,16 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
       return;
     }
 
-    final response = await InAppPurchase.instance
-        .queryProductDetails(SubscriptionConstants.productIds);
+    final response = await InAppPurchase.instance.queryProductDetails(
+      SubscriptionConstants.productIds,
+    );
 
     if (!mounted) return;
     setState(() {
       _products = response.productDetails;
       if (_products.isEmpty) {
-        _storeError = response.error?.message ??
+        _storeError =
+            response.error?.message ??
             (response.notFoundIDs.isNotEmpty
                 ? 'not_found:${response.notFoundIDs.join(',')}'
                 : 'no_products');
@@ -116,8 +120,9 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
   }
 
   Future<void> _purchase() async {
-    final product =
-        _products.where((p) => p.id == _selectedProductId).firstOrNull;
+    final product = _products
+        .where((p) => p.id == _selectedProductId)
+        .firstOrNull;
     if (product == null) return;
     setState(() => _purchasing = true);
     await InAppPurchase.instance.buyNonConsumable(
@@ -167,7 +172,11 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
                           _FeatureList(l10n: l10n, tt: tt, cs: cs),
                           const SizedBox(height: 32),
                           if (_storeError != null)
-                            _StoreErrorCard(errorCode: _storeError!, cs: cs, tt: tt)
+                            _StoreErrorCard(
+                              errorCode: _storeError!,
+                              cs: cs,
+                              tt: tt,
+                            )
                           else
                             _PlanSelector(
                               products: _products,
@@ -249,11 +258,7 @@ class _Header extends StatelessWidget {
 // ── Feature list ──────────────────────────────────────────────────────────────
 
 class _FeatureList extends StatelessWidget {
-  const _FeatureList({
-    required this.l10n,
-    required this.tt,
-    required this.cs,
-  });
+  const _FeatureList({required this.l10n, required this.tt, required this.cs});
 
   final dynamic l10n;
   final TextTheme tt;
@@ -271,15 +276,17 @@ class _FeatureList extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: cs.surfaceContainerHighest.withValues(alpha: 0.4),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
       ),
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Column(
         children: features
             .map(
               (f) => Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 10,
+                ),
                 child: Row(
                   children: [
                     Container(
@@ -401,7 +408,7 @@ class _PlanCard extends StatelessWidget {
           color: selected
               ? AppColors.primary.withValues(alpha: 0.08)
               : cs.surfaceContainerHighest.withValues(alpha: 0.4),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: selected ? AppColors.primary : cs.outlineVariant,
             width: selected ? 2 : 1,
@@ -505,33 +512,38 @@ class _Footer extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
       child: Column(
         children: [
-          SizedBox(
-            width: double.infinity,
-            height: 52,
-            child: FilledButton(
-              onPressed: (purchasing || !canPurchase) ? null : onPurchase,
-              style: FilledButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
+          // Premium vurgusu: aktifken dönen gradient çerçeve + glow
+          GlowBorder(
+            enabled: canPurchase && !purchasing,
+            radius: 16,
+            child: SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: FilledButton(
+                onPressed: (purchasing || !canPurchase) ? null : onPurchase,
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                 ),
+                child: purchasing
+                    ? const SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.5,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Text(
+                        l10n.getPremium,
+                        style: tt.titleSmall?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
               ),
-              child: purchasing
-                  ? const SizedBox(
-                      width: 22,
-                      height: 22,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.5,
-                        color: Colors.white,
-                      ),
-                    )
-                  : Text(
-                      l10n.getPremium,
-                      style: tt.titleSmall?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
             ),
           ),
           const SizedBox(height: 12),
@@ -572,14 +584,14 @@ class _StoreErrorCard extends StatelessWidget {
     final message = isUnavailable
         ? 'App Store\'a bağlanılamadı. İnternet bağlantını kontrol et.'
         : errorCode.startsWith('not_found:')
-            ? 'Abonelik planları bulunamadı.\nUygulama kimliği: ${errorCode.replaceFirst('not_found:', '')}'
-            : 'Abonelik planları yüklenemedi: $errorCode';
+        ? 'Abonelik planları bulunamadı.\nUygulama kimliği: ${errorCode.replaceFirst('not_found:', '')}'
+        : 'Abonelik planları yüklenemedi: $errorCode';
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: cs.errorContainer.withValues(alpha: 0.4),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(color: cs.error.withValues(alpha: 0.3)),
       ),
       child: Row(

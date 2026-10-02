@@ -25,8 +25,10 @@ tags: [sharing, multi-device]
 # Sola swipe = sil → canDelete VAR → onay diyaloğu
 # element-swipe yerine koordinat swipe (TabBarView çakışması).
 - swipe:
-    start: "75%, 40%"
-    end: "5%, 40%"
+    from:
+      text: "[\\s\\S]*\\d+\\.\\d+ [A-Z]{3}"
+      index: 0
+    direction: LEFT
     duration: 400
 - extendedWaitUntil:
     visible:

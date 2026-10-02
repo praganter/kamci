@@ -41,8 +41,10 @@ tags: [sharing, multi-device]
 # 2) Sola swipe = silme → canDelete YOK → "yetkiniz yok"
 # element-swipe yerine koordinat swipe (TabBarView çakışması).
 - swipe:
-    start: "75%, 40%"
-    end: "5%, 40%"
+    from:
+      text: "[\\s\\S]*\\d+\\.\\d+ [A-Z]{3}"
+      index: 0
+    direction: LEFT
     duration: 400
 - extendedWaitUntil:
     visible:
@@ -50,8 +52,10 @@ tags: [sharing, multi-device]
     timeout: 8000
 # 3) Sağa swipe = ödeme → canWrite VAR
 - swipe:
-    start: "25%, 40%"
-    end: "95%, 40%"
+    from:
+      text: "[\\s\\S]*\\d+\\.\\d+ [A-Z]{3}"
+      index: 0
+    direction: RIGHT
     duration: 400
 - extendedWaitUntil:
     visible:

@@ -2,15 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import '../../../../core/theme/theme_helpers.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/l10n/enum_l10n.dart';
 import '../../../../core/router/route_names.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/permission_utils.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/utils/snackbar_utils.dart';
 import '../../../category/presentation/providers/category_providers.dart';
 import '../../../category/domain/entities/member_embedded.dart';
 import '../../../../shared/widgets/app_error_widget.dart';
+import '../../../../shared/widgets/list_skeleton.dart';
 import '../../../../shared/widgets/confirm_dialog.dart';
 import '../../../../shared/widgets/premium_required_sheet.dart';
 import '../../../../shared/widgets/pro_badge.dart';
@@ -83,7 +86,9 @@ class _DebtListScreenState extends ConsumerState<DebtListScreen>
                   borderRadius: BorderRadius.circular(20),
                 ),
                 dividerColor: Colors.transparent,
-                labelColor: cs.primary,
+                labelColor: cs.brightness == Brightness.light
+                    ? cs.onPrimaryContainer
+                    : cs.primary,
                 unselectedLabelColor: cs.onSurfaceVariant,
                 labelStyle: const TextStyle(fontWeight: FontWeight.w600),
                 overlayColor: WidgetStateProperty.all(Colors.transparent),
@@ -119,8 +124,9 @@ class _DebtListScreenState extends ConsumerState<DebtListScreen>
                     // debtGroupedProvider(true) üzerinden say. (Önceki hâli
                     // debtListProvider'ı okuyordu; o provider ekranda hiç
                     // watch edilmediğinden null dönüp limiti bypass ediyordu.)
-                    final grouped =
-                        await ref.read(debtGroupedProvider(true).future);
+                    final grouped = await ref.read(
+                      debtGroupedProvider(true).future,
+                    );
                     final debtCount = grouped.fold<int>(
                       0,
                       (sum, cat) => sum + cat.debts.length,
@@ -193,7 +199,10 @@ class _DebtTabViewState extends ConsumerState<_DebtTabView>
                       key: const Key('prevMonthBtn'),
                       onPressed: () =>
                           ref.read(selectedMonthProvider.notifier).previous(),
-                      icon: Icon(Icons.chevron_left, color: cs.onSurfaceVariant),
+                      icon: Icon(
+                        Icons.chevron_left,
+                        color: cs.onSurfaceVariant,
+                      ),
                     ),
                   ),
                   Expanded(
@@ -216,13 +225,29 @@ class _DebtTabViewState extends ConsumerState<_DebtTabView>
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text(
-                              DateFormat(
-                                'MMMM yyyy',
-                                Localizations.localeOf(context).languageCode,
-                              ).format(selectedMonth),
-                              style: Theme.of(context).textTheme.titleSmall
-                                  ?.copyWith(fontWeight: FontWeight.bold),
+                            // Ay değişince etiket kısa kayma + fade ile değişir
+                            AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 250),
+                              transitionBuilder: (child, anim) =>
+                                  FadeTransition(
+                                    opacity: anim,
+                                    child: SlideTransition(
+                                      position: Tween(
+                                        begin: const Offset(0, 0.4),
+                                        end: Offset.zero,
+                                      ).animate(anim),
+                                      child: child,
+                                    ),
+                                  ),
+                              child: Text(
+                                DateFormat(
+                                  'MMMM yyyy',
+                                  Localizations.localeOf(context).languageCode,
+                                ).format(selectedMonth),
+                                key: ValueKey(selectedMonth),
+                                style: Theme.of(context).textTheme.titleSmall
+                                    ?.copyWith(fontWeight: FontWeight.bold),
+                              ),
                             ),
                             const SizedBox(width: 4),
                             Icon(
@@ -242,7 +267,10 @@ class _DebtTabViewState extends ConsumerState<_DebtTabView>
                       key: const Key('nextMonthBtn'),
                       onPressed: () =>
                           ref.read(selectedMonthProvider.notifier).next(),
-                      icon: Icon(Icons.chevron_right, color: cs.onSurfaceVariant),
+                      icon: Icon(
+                        Icons.chevron_right,
+                        color: cs.onSurfaceVariant,
+                      ),
                     ),
                   ),
                 ],
@@ -284,8 +312,7 @@ class _DebtTabViewState extends ConsumerState<_DebtTabView>
                     ),
                   )
                 : groupedAsync.when(
-                    loading: () =>
-                        const Center(child: CircularProgressIndicator()),
+                    loading: () => const ListSkeleton(),
                     error: (e, _) => AppErrorWidget(
                       error: e,
                       onRetry: () {
@@ -294,7 +321,14 @@ class _DebtTabViewState extends ConsumerState<_DebtTabView>
                       },
                     ),
                     data: (groupedByPeriod) {
-                      final List<Widget> slivers = [];
+                      final List<Widget> slivers = [
+                        _MonthSummaryCard(
+                          items: [
+                            for (final cats in groupedByPeriod.values)
+                              for (final g in cats.values) ...g.items,
+                          ],
+                        ),
+                      ];
 
                       bool hasAny = false;
                       for (final period in PaymentPeriodType.values) {
@@ -309,26 +343,47 @@ class _DebtTabViewState extends ConsumerState<_DebtTabView>
                             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                             child: Text(
                               period.l10nLabel(context.l10n).toUpperCase(),
-                              style: Theme.of(context).textTheme.labelLarge
+                              style: Theme.of(context).textTheme.labelMedium
                                   ?.copyWith(
-                                    color: cs.primary,
-                                    fontWeight: FontWeight.bold,
-                                    letterSpacing: 1.2,
+                                    color: cs.onSurfaceVariant,
+                                    fontWeight: FontWeight.w600,
+                                    letterSpacing: 0.8,
                                   ),
                             ),
                           ),
                         );
 
-                        for (final entry in entries) {
-                          slivers.add(
-                            _CategoryPeriodSection(
-                              categoryId: entry.key,
-                              categoryName: entry.value.categoryName,
-                              owned: entry.value.owned,
-                              items: entry.value.items,
+                        // alt-b: dönem başına tek kart, kategoriler içinde
+                        // alt başlık + düz satırlar (Monarch tarzı)
+                        slivers.add(
+                          Container(
+                            margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                            decoration: altBCard(cs),
+                            clipBehavior: Clip.antiAlias,
+                            child: Material(
+                              type: MaterialType.transparency,
+                              child: Column(
+                                children: [
+                                  for (var i = 0; i < entries.length; i++) ...[
+                                    if (i > 0)
+                                      Divider(
+                                        height: 1,
+                                        thickness: 1,
+                                        color: cs.outlineVariant,
+                                      ),
+                                    _CategoryPeriodSection(
+                                      categoryId: entries[i].key,
+                                      categoryName:
+                                          entries[i].value.categoryName,
+                                      owned: entries[i].value.owned,
+                                      items: entries[i].value.items,
+                                    ),
+                                  ],
+                                ],
+                              ),
                             ),
-                          );
-                        }
+                          ),
+                        );
                       }
 
                       if (!hasAny) {
@@ -361,6 +416,125 @@ class _DebtTabViewState extends ConsumerState<_DebtTabView>
                   ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// alt-b: ayın özeti — büyük toplam (Copilot/Monarch "hero number"),
+/// altında ödenen / bekleyen sayıları (YNAB durum renkleri).
+class _MonthSummaryCard extends ConsumerWidget {
+  const _MonthSummaryCard({required this.items});
+
+  final List<DebtListItem> items;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+    final l10n = context.l10n;
+    final symbols = ref
+        .watch(currencyListProvider)
+        .maybeWhen(
+          data: (list) => {for (final c in list) c.code: c.symbol},
+          orElse: () => <String, String>{},
+        );
+
+    final totals = <String, double>{};
+    for (final i in items) {
+      totals.update(
+        i.debt.currency,
+        (v) => v + i.debt.amount,
+        ifAbsent: () => i.debt.amount,
+      );
+    }
+    final paid = items.where((i) => i.debt.paidCurrentPeriod).length;
+    const tabular = [FontFeature.tabularFigures()];
+    final light = cs.brightness == Brightness.light;
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+      padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
+      // Açık temada koyu "çapa" kart (koyu temanın havası); koyu tema aynı.
+      decoration: light
+          ? BoxDecoration(
+              color: cs.inverseSurface,
+              borderRadius: BorderRadius.circular(14),
+            )
+          : altBCard(cs),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.summaryTotal,
+            style: tt.labelMedium?.copyWith(
+              color: light
+                  ? cs.onInverseSurface.withValues(alpha: 0.6)
+                  : cs.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 4),
+          for (final e in totals.entries)
+            // Count-up: ilk açılışta 0'dan, sonra eski değerden yeniye sayar
+            TweenAnimationBuilder<double>(
+              tween: Tween(begin: 0, end: e.value),
+              duration: const Duration(milliseconds: 700),
+              curve: Curves.easeOutCubic,
+              builder: (context, v, _) => Text(
+                NumberFormat.currency(
+                  locale: 'tr_TR',
+                  symbol: symbols[e.key] ?? e.key,
+                  decimalDigits: 0,
+                ).format(v),
+                style: tt.displayMedium?.copyWith(
+                  color: light ? cs.onInverseSurface : null,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -1,
+                  fontFeatures: tabular,
+                ),
+              ),
+            ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              _StatusPill(
+                label: '${l10n.paid} $paid',
+                color: AppColors.success,
+              ),
+              const SizedBox(width: 8),
+              _StatusPill(
+                label: '${l10n.pendingLabel} ${items.length - paid}',
+                color: AppColors.warning,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatusPill extends StatelessWidget {
+  const _StatusPill({required this.label, required this.color});
+
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+        ),
       ),
     );
   }
@@ -450,95 +624,74 @@ class _CategoryPeriodSection extends ConsumerWidget {
     return GestureDetector(
       onLongPressStart: (details) =>
           _showCategoryMenu(context, ref, details.globalPosition),
-      child: Container(
-        margin: const EdgeInsets.fromLTRB(16, 4, 16, 4),
-        decoration: BoxDecoration(
-          color: cs.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: cs.primary.withValues(alpha: 0.5),
-            width: 1.5,
+      // alt-b: kart dönem seviyesinde (üst Container) — burada sadece
+      // kategori alt başlığı + düz satırlar
+      child: ExpansionTile(
+        initiallyExpanded: true,
+        tilePadding: const EdgeInsets.fromLTRB(16, 2, 12, 2),
+        backgroundColor: Colors.transparent,
+        title: Text(
+          categoryName,
+          style: Theme.of(
+            context,
+          ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+        ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              amountSummary,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: cs.onSurfaceVariant,
+                fontWeight: FontWeight.w600,
+                fontFeatures: const [FontFeature.tabularFigures()],
+              ),
+            ),
+            if (convertedTotal != null)
+              Text(
+                convertedTotal,
+                style: Theme.of(
+                  context,
+                ).textTheme.labelSmall?.copyWith(color: cs.onSurfaceVariant),
+              ),
+            const SizedBox(height: 4),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(2),
+              child: LinearProgressIndicator(
+                value: completionRatio,
+                minHeight: 3,
+                backgroundColor: cs.surfaceContainerHighest,
+                valueColor: AlwaysStoppedAnimation(cs.primary),
+              ),
+            ),
+          ],
+        ),
+        trailing: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+          decoration: BoxDecoration(
+            color: cs.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Text(
+            '$totalCount',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: cs.onSurfaceVariant,
+            ),
           ),
         ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(15),
-          child: ExpansionTile(
-            initiallyExpanded: true,
-            tilePadding: const EdgeInsets.fromLTRB(12, 4, 12, 4),
-            backgroundColor: cs.primary.withValues(alpha: 0.04),
-            title: Text(
-              categoryName,
-              style: Theme.of(
-                context,
-              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+        children: [
+          for (int i = 0; i < items.length; i++) ...[
+            Divider(
+              height: 1,
+              thickness: 1,
+              indent: 68,
+              color: cs.outlineVariant,
             ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  amountSummary,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: cs.primary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                if (convertedTotal != null)
-                  Text(
-                    convertedTotal,
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: cs.onSurfaceVariant,
-                    ),
-                  ),
-                const SizedBox(height: 4),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(2),
-                  child: LinearProgressIndicator(
-                    value: completionRatio,
-                    minHeight: 3,
-                    backgroundColor: cs.surfaceContainerHighest,
-                    valueColor: AlwaysStoppedAnimation(cs.primary),
-                  ),
-                ),
-              ],
-            ),
-            trailing: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
-              decoration: BoxDecoration(
-                color: cs.primaryContainer,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(
-                '$totalCount',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: cs.onPrimaryContainer,
-                ),
-              ),
-            ),
-            children: [
-              Divider(
-                height: 1,
-                thickness: 1,
-                color: cs.primary.withValues(alpha: 0.2),
-              ),
-              for (int i = 0; i < items.length; i++) ...[
-                _DebtInstanceTile(
-                  item: items[i],
-                  isLast: i == items.length - 1,
-                ),
-                if (i < items.length - 1)
-                  Divider(
-                    height: 1,
-                    thickness: 0.5,
-                    indent: 52,
-                    endIndent: 16,
-                    color: cs.outlineVariant.withValues(alpha: 0.5),
-                  ),
-              ],
-            ],
-          ),
-        ),
+            _DebtInstanceTile(item: items[i], isLast: i == items.length - 1),
+          ],
+        ],
       ),
     );
   }
@@ -830,35 +983,27 @@ class _DebtInstanceTile extends ConsumerWidget {
         padding: const EdgeInsets.only(right: 20),
         child: const Icon(Icons.delete_rounded, color: Colors.white, size: 26),
       ),
-      child: Container(
-        decoration: BoxDecoration(
-          border: Border(
-            left: BorderSide(
-              color: (isPaid ? Colors.green : cs.primary).withValues(
-                alpha: 0.45,
-              ),
-              width: 3,
-            ),
-          ),
-        ),
+      // alt-b: renkli sol şerit yok — düz satır, durum sadece ikon/tutar renginde
+      child: Material(
+        type: MaterialType.transparency,
         child: ListTile(
           onTap: () => context.pushNamed(
             RouteNames.debtDetail,
             pathParameters: {'id': debt.id},
           ),
-          contentPadding: const EdgeInsets.fromLTRB(14, 4, 16, 4),
+          contentPadding: const EdgeInsets.fromLTRB(16, 2, 16, 2),
           leading: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: (isPaid ? Colors.green : cs.primary).withValues(
-                alpha: 0.1,
-              ),
+              color: isPaid
+                  ? AppColors.success.withValues(alpha: 0.14)
+                  : cs.surfaceContainerHighest,
               shape: BoxShape.circle,
             ),
             child: Icon(
-              isPaid ? Icons.check_circle_outline : Icons.access_time,
-              color: isPaid ? Colors.green : cs.primary,
-              size: 20,
+              isPaid ? Icons.check_rounded : Icons.schedule_rounded,
+              color: isPaid ? AppColors.success : cs.onSurfaceVariant,
+              size: 18,
             ),
           ),
           title: Row(
@@ -894,7 +1039,9 @@ class _DebtInstanceTile extends ConsumerWidget {
             '${debt.amount} ${debt.currency}',
             style: TextStyle(
               fontWeight: FontWeight.w700,
-              color: isPaid ? cs.onSurfaceVariant : cs.primary,
+              fontFeatures: const [FontFeature.tabularFigures()],
+              // alt-b: ödenen yeşil, bekleyen nötr (vurgu rengi sadece durum)
+              color: isPaid ? AppColors.success : cs.onSurface,
             ),
           ),
         ),
@@ -1010,9 +1157,9 @@ Future<void> _showPaymentOptions(
             builder: (ctx2) {
               final isPremium = ref.read(isPremiumProvider);
               return ListTile(
-                leading: const Icon(
+                leading: Icon(
                   Icons.playlist_add_check,
-                  color: Colors.purple,
+                  color: Theme.of(context).colorScheme.primary,
                 ),
                 title: Text(l10n.bulkPayment),
                 trailing: isPremium ? null : const ProBadge(),

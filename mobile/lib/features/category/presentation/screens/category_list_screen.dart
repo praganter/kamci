@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/theme/theme_helpers.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/router/route_names.dart';
 import '../../../../shared/providers/current_user_provider.dart';
 import '../../../../shared/widgets/app_error_widget.dart';
+import '../../../../shared/widgets/list_skeleton.dart';
 import '../../../../shared/widgets/confirm_dialog.dart';
 import '../../../../shared/widgets/premium_required_sheet.dart';
 import '../../../subscription/presentation/providers/subscription_providers.dart';
@@ -103,7 +105,9 @@ class _CategoryListScreenState extends ConsumerState<CategoryListScreen>
                   borderRadius: BorderRadius.circular(20),
                 ),
                 dividerColor: Colors.transparent,
-                labelColor: cs.primary,
+                labelColor: cs.brightness == Brightness.light
+                    ? cs.onPrimaryContainer
+                    : cs.primary,
                 unselectedLabelColor: cs.onSurfaceVariant,
                 labelStyle: const TextStyle(fontWeight: FontWeight.w600),
                 overlayColor: WidgetStateProperty.all(Colors.transparent),
@@ -196,7 +200,7 @@ class _CategoryTabViewState extends ConsumerState<_CategoryTabView> {
     debugPrint('🟡 _CategoryTabView(isOwner=${widget.isOwner}) build: cats=${categoriesAsync.runtimeType}, userId=${currentUserAsync.valueOrNull}');
 
     return categoriesAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const ListSkeleton(),
       error: (e, _) => AppErrorWidget(
         error: e,
         onRetry: () => ref.invalidate(categoryListProvider),
@@ -443,21 +447,19 @@ class _CategoryCard extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      decoration: BoxDecoration(
-        color: cs.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isSelected ? cs.primary : cs.outlineVariant,
-          width: isSelected ? 2 : 1,
-        ),
-      ),
+      margin: const EdgeInsets.only(bottom: 8),
+      // alt-b kart; seçim modunda kalın vurgu çerçevesi
+      decoration: isSelected
+          ? altBCard(cs).copyWith(
+              border: Border.all(color: cs.primary, width: 2),
+            )
+          : altBCard(cs),
       child: Stack(
         children: [
           InkWell(
             onTap: onTap,
             onLongPress: onLongPress,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(14),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               child: Row(

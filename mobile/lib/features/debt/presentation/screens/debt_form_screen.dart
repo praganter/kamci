@@ -110,18 +110,21 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
     final l10n = context.l10n;
     if (_reminderEnabled) {
       if (_reminderChannels.isEmpty) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(l10n.reminderChannelRequired)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.reminderChannelRequired)));
         return;
       }
       if (_reminderDate == null) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(l10n.reminderDateRequired)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.reminderDateRequired)));
         return;
       }
       if (_reminderTime == null) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(l10n.reminderTimeRequired)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.reminderTimeRequired)));
         return;
       }
     }
@@ -235,7 +238,8 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                       value: _selectedCategoryId,
                       hint: l10n.select,
                       semanticsId: 'categoryField',
-                      items: categoriesAsync.valueOrNull
+                      items:
+                          categoriesAsync.valueOrNull
                               ?.map(
                                 (c) => PlatformSelectItem(
                                   value: c.id,
@@ -244,8 +248,7 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                               )
                               .toList() ??
                           [],
-                      onChanged: (v) =>
-                          setState(() => _selectedCategoryId = v),
+                      onChanged: (v) => setState(() => _selectedCategoryId = v),
                       validator: (v) => v == null
                           ? Validators.required(
                               l10n,
@@ -258,10 +261,10 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                   const SizedBox(width: 12),
                   Material(
                     color: Theme.of(context).colorScheme.primaryContainer,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(14),
                     child: InkWell(
                       onTap: _openAddCategorySheet,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(14),
                       child: SizedBox(
                         width: 56,
                         height: 56,
@@ -339,7 +342,11 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                         .toList(),
                     onChanged: (v) => setState(() => _selectedCurrency = v),
                     validator: (v) => v == null
-                        ? Validators.required(l10n, null, fieldName: l10n.currency)
+                        ? Validators.required(
+                            l10n,
+                            null,
+                            fieldName: l10n.currency,
+                          )
                         : null,
                   );
                 },
@@ -363,7 +370,11 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                     .toList(),
                 onChanged: (v) => setState(() => _periodType = v),
                 validator: (v) => v == null
-                    ? Validators.required(l10n, null, fieldName: l10n.paymentPeriod)
+                    ? Validators.required(
+                        l10n,
+                        null,
+                        fieldName: l10n.paymentPeriod,
+                      )
                     : null,
               ),
               const SizedBox(height: 16),
@@ -460,7 +471,9 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                         context,
                         featureName: l10n.reminder.toLowerCase(),
                         message: l10n.premiumFeatureRequired(l10n.reminder),
-                      )) { return; }
+                      )) {
+                        return;
+                      }
                       setState(() => _reminderEnabled = v ?? false);
                     },
                     controlAffinity: ListTileControlAffinity.trailing,
@@ -480,10 +493,15 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                       child: CheckboxListTile(
                         contentPadding: EdgeInsets.zero,
                         title: Text(l10n.channelEmail),
-                        value: _reminderChannels.contains(ReminderChannel.email),
+                        value: _reminderChannels.contains(
+                          ReminderChannel.email,
+                        ),
                         onChanged: (v) => setState(() {
                           if (v == true) {
-                            _reminderChannels = [..._reminderChannels, ReminderChannel.email];
+                            _reminderChannels = [
+                              ..._reminderChannels,
+                              ReminderChannel.email,
+                            ];
                           } else {
                             _reminderChannels = _reminderChannels
                                 .where((c) => c != ReminderChannel.email)
@@ -496,7 +514,9 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                       child: CheckboxListTile(
                         contentPadding: EdgeInsets.zero,
                         title: Text(l10n.channelInApp),
-                        value: _reminderChannels.contains(ReminderChannel.inApp),
+                        value: _reminderChannels.contains(
+                          ReminderChannel.inApp,
+                        ),
                         onChanged: (v) => setState(() {
                           if (v == true) {
                             _reminderChannels = [

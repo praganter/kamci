@@ -64,8 +64,9 @@ class MonthlySummaryModel {
       debtToIncomeRatio: _toDoubleOrNull(json['debtToIncomeRatio']),
       household: json['household'] as bool? ?? false,
       householdIncomeAtMonth: _toDoubleOrNull(json['householdIncomeAtMonth']),
-      householdDebtToIncomeRatio:
-          _toDoubleOrNull(json['householdDebtToIncomeRatio']),
+      householdDebtToIncomeRatio: _toDoubleOrNull(
+        json['householdDebtToIncomeRatio'],
+      ),
       debts: (json['debts'] as List<dynamic>? ?? [])
           .map((e) => MonthlyDebtItemModel.fromJson(e as Map<String, dynamic>))
           .toList(),
@@ -73,34 +74,35 @@ class MonthlySummaryModel {
           .map((e) => TrendPointModel.fromJson(e as Map<String, dynamic>))
           .toList(),
       categoryBreakdown: (json['categoryBreakdown'] as List<dynamic>? ?? [])
-          .map((e) =>
-              CategoryBreakdownItemModel.fromJson(e as Map<String, dynamic>))
+          .map(
+            (e) =>
+                CategoryBreakdownItemModel.fromJson(e as Map<String, dynamic>),
+          )
           .toList(),
       debtProgress: (json['debtProgress'] as List<dynamic>? ?? [])
-          .map((e) =>
-              DebtProgressItemModel.fromJson(e as Map<String, dynamic>))
+          .map((e) => DebtProgressItemModel.fromJson(e as Map<String, dynamic>))
           .toList(),
     );
   }
 
   MonthlySummary toDomain() => MonthlySummary(
-        month: month,
-        totalPaid: totalPaid,
-        paidCount: paidCount,
-        skippedCount: skippedCount,
-        skippedAmount: skippedAmount,
-        pendingCount: pendingCount,
-        pendingAmount: pendingAmount,
-        incomeAtMonth: incomeAtMonth,
-        debtToIncomeRatio: debtToIncomeRatio,
-        household: household,
-        householdIncomeAtMonth: householdIncomeAtMonth,
-        householdDebtToIncomeRatio: householdDebtToIncomeRatio,
-        debts: debts.map((e) => e.toDomain()).toList(),
-        trend: trend.map((e) => e.toDomain()).toList(),
-        categoryBreakdown: categoryBreakdown.map((e) => e.toDomain()).toList(),
-        debtProgress: debtProgress.map((e) => e.toDomain()).toList(),
-      );
+    month: month,
+    totalPaid: totalPaid,
+    paidCount: paidCount,
+    skippedCount: skippedCount,
+    skippedAmount: skippedAmount,
+    pendingCount: pendingCount,
+    pendingAmount: pendingAmount,
+    incomeAtMonth: incomeAtMonth,
+    debtToIncomeRatio: debtToIncomeRatio,
+    household: household,
+    householdIncomeAtMonth: householdIncomeAtMonth,
+    householdDebtToIncomeRatio: householdDebtToIncomeRatio,
+    debts: debts.map((e) => e.toDomain()).toList(),
+    trend: trend.map((e) => e.toDomain()).toList(),
+    categoryBreakdown: categoryBreakdown.map((e) => e.toDomain()).toList(),
+    debtProgress: debtProgress.map((e) => e.toDomain()).toList(),
+  );
 }
 
 class MonthlyDebtItemModel {
@@ -139,15 +141,15 @@ class MonthlyDebtItemModel {
       );
 
   MonthlyDebtItem toDomain() => MonthlyDebtItem(
-        debtId: debtId,
-        debtName: debtName,
-        currency: currency,
-        amountPaid: amountPaid,
-        paid: paid,
-        skipped: skipped,
-        pending: pending,
-        paidTime: paidTime,
-      );
+    debtId: debtId,
+    debtName: debtName,
+    currency: currency,
+    amountPaid: amountPaid,
+    paid: paid,
+    skipped: skipped,
+    pending: pending,
+    paidTime: paidTime,
+  );
 }
 
 class TrendPointModel {
@@ -178,13 +180,13 @@ class TrendPointModel {
       );
 
   TrendPoint toDomain() => TrendPoint(
-        month: month,
-        totalPaid: totalPaid,
-        paidCount: paidCount,
-        skippedCount: skippedCount,
-        pendingCount: pendingCount,
-        debtToIncomeRatio: debtToIncomeRatio,
-      );
+    month: month,
+    totalPaid: totalPaid,
+    paidCount: paidCount,
+    skippedCount: skippedCount,
+    pendingCount: pendingCount,
+    debtToIncomeRatio: debtToIncomeRatio,
+  );
 }
 
 class CategoryBreakdownItemModel {
@@ -212,12 +214,12 @@ class CategoryBreakdownItemModel {
       );
 
   CategoryBreakdownItem toDomain() => CategoryBreakdownItem(
-        categoryId: categoryId,
-        categoryName: categoryName,
-        totalPaid: totalPaid,
-        debtCount: debtCount,
-        percentage: percentage,
-      );
+    categoryId: categoryId,
+    categoryName: categoryName,
+    totalPaid: totalPaid,
+    debtCount: debtCount,
+    percentage: percentage,
+  );
 }
 
 class DebtProgressItemModel {
@@ -260,15 +262,15 @@ class DebtProgressItemModel {
       );
 
   DebtProgressItem toDomain() => DebtProgressItem(
-        debtId: debtId,
-        debtName: debtName,
-        currency: currency,
-        totalAmount: totalAmount,
-        totalPaid: totalPaid,
-        remainingAmount: remainingAmount,
-        paidInstallments: paidInstallments,
-        totalInstallments: totalInstallments,
-        completionPercentage: completionPercentage,
-        status: status,
-      );
+    debtId: debtId,
+    debtName: debtName,
+    currency: currency,
+    totalAmount: totalAmount,
+    totalPaid: totalPaid,
+    remainingAmount: remainingAmount,
+    paidInstallments: paidInstallments,
+    totalInstallments: totalInstallments,
+    completionPercentage: completionPercentage,
+    status: status,
+  );
 }

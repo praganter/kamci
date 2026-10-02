@@ -145,8 +145,10 @@ tags: [debt]
     text: "Aylık Taksit Borcu[\\s\\S]*0 / 12[\\s\\S]*"
 # Cleanup: borcu sil
 - swipe:
-    start: "75%, 40%"
-    end: "5%, 40%"
+    from:
+      text: "[\\s\\S]*\\d+\\.\\d+ [A-Z]{3}"
+      index: 0
+    direction: LEFT
 - waitForAnimationToEnd
 - assertVisible:
     text: "Borcu Sil"
