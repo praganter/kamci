@@ -5,6 +5,7 @@ import '../../../../core/utils/validators.dart';
 import '../../data/repositories/category_repository_impl.dart';
 import '../../domain/entities/member_embedded.dart';
 import '../providers/category_providers.dart';
+import 'access_level_field.dart';
 
 class BulkShareSheet extends ConsumerStatefulWidget {
   const BulkShareSheet({
@@ -178,46 +179,9 @@ class _BulkShareSheetState extends ConsumerState<BulkShareSheet> {
             onSubmitted: (_) => _addEmail(),
           ),
           const SizedBox(height: 16),
-          DropdownButtonFormField<AccessLevel>(
-            initialValue: _selectedLevel,
-            decoration: InputDecoration(labelText: l10n.accessLevel),
-            items: AccessLevel.values.map((level) {
-              final label = switch (level) {
-                AccessLevel.read => l10n.accessRead,
-                AccessLevel.write => l10n.accessWrite,
-                AccessLevel.edit => l10n.accessEdit,
-                AccessLevel.admin => l10n.accessDelete,
-              };
-              final desc = switch (level) {
-                AccessLevel.read => l10n.accessReadDesc,
-                AccessLevel.write => l10n.accessWriteDesc,
-                AccessLevel.edit => l10n.accessEditDesc,
-                AccessLevel.admin => l10n.accessDeleteDesc,
-              };
-              return DropdownMenuItem(
-                value: level,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      label,
-                      style: const TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                    Text(
-                      desc,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }).toList(),
-            onChanged: (v) => setState(() => _selectedLevel = v!),
+          AccessLevelField(
+            value: _selectedLevel,
+            onChanged: (v) => setState(() => _selectedLevel = v),
           ),
           const SizedBox(height: 24),
           FilledButton(

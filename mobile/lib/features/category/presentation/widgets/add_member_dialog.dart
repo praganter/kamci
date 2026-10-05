@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/utils/validators.dart';
 import '../../domain/entities/member_embedded.dart';
+import 'access_level_field.dart';
 
 class AddMemberDialog extends StatefulWidget {
   const AddMemberDialog({super.key});
@@ -36,46 +37,9 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
             keyboardType: TextInputType.emailAddress,
           ),
           const SizedBox(height: 16),
-          DropdownButtonFormField<AccessLevel>(
-            initialValue: _selectedLevel,
-            decoration: InputDecoration(labelText: context.l10n.accessLevel),
-            items: AccessLevel.values.map((l) {
-              final label = switch (l) {
-                AccessLevel.read => context.l10n.accessRead,
-                AccessLevel.write => context.l10n.accessWrite,
-                AccessLevel.edit => context.l10n.accessEdit,
-                AccessLevel.admin => context.l10n.accessDelete,
-              };
-              final desc = switch (l) {
-                AccessLevel.read => context.l10n.accessReadDesc,
-                AccessLevel.write => context.l10n.accessWriteDesc,
-                AccessLevel.edit => context.l10n.accessEditDesc,
-                AccessLevel.admin => context.l10n.accessDeleteDesc,
-              };
-              return DropdownMenuItem(
-                value: l,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      label,
-                      style: const TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                    Text(
-                      desc,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }).toList(),
-            onChanged: (v) => setState(() => _selectedLevel = v!),
+          AccessLevelField(
+            value: _selectedLevel,
+            onChanged: (v) => setState(() => _selectedLevel = v),
           ),
         ],
       ),

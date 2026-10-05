@@ -5,6 +5,7 @@ import '../../../../shared/widgets/confirm_dialog.dart';
 import '../../../category/data/repositories/category_repository_impl.dart';
 import '../../../category/domain/entities/member_embedded.dart';
 import '../../../category/presentation/providers/category_providers.dart';
+import '../../../category/presentation/widgets/access_level_field.dart';
 import '../providers/debt_providers.dart';
 
 enum _SheetPage { main, editName, addMember }
@@ -318,47 +319,10 @@ class _CategoryManagementSheetState
           ),
         ),
         const SizedBox(height: 12),
-        DropdownButtonFormField<AccessLevel>(
-          initialValue: _accessLevel,
-          decoration: InputDecoration(
-            labelText: l10n.accessLevel,
-            prefixIcon: const Icon(Icons.security_outlined),
-          ),
-          items: AccessLevel.values.map((a) {
-            final label = switch (a) {
-              AccessLevel.read => l10n.accessRead,
-              AccessLevel.write => l10n.accessWrite,
-              AccessLevel.edit => l10n.accessEdit,
-              AccessLevel.admin => l10n.accessDelete,
-            };
-            final desc = switch (a) {
-              AccessLevel.read => l10n.accessReadDesc,
-              AccessLevel.write => l10n.accessWriteDesc,
-              AccessLevel.edit => l10n.accessEditDesc,
-              AccessLevel.admin => l10n.accessDeleteDesc,
-            };
-            return DropdownMenuItem(
-              value: a,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    label,
-                    style: const TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                  Text(
-                    desc,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }).toList(),
-          onChanged: (v) => setState(() => _accessLevel = v!),
+        AccessLevelField(
+          value: _accessLevel,
+          prefixIcon: const Icon(Icons.security_outlined),
+          onChanged: (v) => setState(() => _accessLevel = v),
         ),
         const SizedBox(height: 20),
         ElevatedButton(
