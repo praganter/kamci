@@ -213,7 +213,7 @@ class _HouseholdCard extends StatelessWidget {
                 ),
                 Text(
                   summary.householdIncomeAtMonth != null
-                      ? _fmtAmount(summary.householdIncomeAtMonth!)
+                      ? _fmtMoney(summary.baseCurrency, summary.householdIncomeAtMonth!)
                       : l10n.noIncomeSet,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w700,
@@ -271,21 +271,21 @@ class _StatsGrid extends StatelessWidget {
       children: [
         _StatCard(
           label: l10n.totalPaidAmount,
-          value: _fmtAmount(summary.totalPaid),
+          value: _fmtMoney(summary.baseCurrency, summary.totalPaid),
           sub: '${summary.paidCount} borç',
           color: AppColors.success,
           icon: Icons.check_circle_outline,
         ),
         _StatCard(
           label: l10n.pendingLabel,
-          value: _fmtAmount(summary.pendingAmount),
+          value: _fmtMoney(summary.baseCurrency, summary.pendingAmount),
           sub: '${summary.pendingCount} borç',
           color: AppColors.warning,
           icon: Icons.hourglass_empty_outlined,
         ),
         _StatCard(
           label: l10n.skippedLabel,
-          value: _fmtAmount(summary.skippedAmount),
+          value: _fmtMoney(summary.baseCurrency, summary.skippedAmount),
           sub: '${summary.skippedCount} borç',
           color: cs.error,
           icon: Icons.skip_next_outlined,
@@ -294,7 +294,7 @@ class _StatsGrid extends StatelessWidget {
           label: l10n.debtToIncomeRatioLabel,
           value: ratioText,
           sub: summary.incomeAtMonth != null
-              ? _fmtAmount(summary.incomeAtMonth!)
+              ? _fmtMoney(summary.baseCurrency, summary.incomeAtMonth!)
               : '',
           color: cs.primary,
           icon: Icons.pie_chart_outline,
@@ -873,3 +873,8 @@ String _fmtAmount(double amount) {
   if (amount >= 1000) return '${(amount / 1000).toStringAsFixed(1)}K';
   return amount.toStringAsFixed(0);
 }
+
+/// Summary aggregates come converted to [currency] (debt/summary baseCurrency);
+/// older backends omit it, so the amount stays unlabelled as before.
+String _fmtMoney(String? currency, double amount) =>
+    currency == null ? _fmtAmount(amount) : '${_fmtAmount(amount)} $currency';

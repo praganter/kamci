@@ -17,6 +17,7 @@ double? _toDoubleOrNull(dynamic v) {
 class MonthlySummaryModel {
   const MonthlySummaryModel({
     required this.month,
+    this.baseCurrency,
     required this.totalPaid,
     required this.paidCount,
     required this.skippedCount,
@@ -35,6 +36,7 @@ class MonthlySummaryModel {
   });
 
   final String month;
+  final String? baseCurrency;
   final double totalPaid;
   final int paidCount;
   final int skippedCount;
@@ -54,6 +56,7 @@ class MonthlySummaryModel {
   factory MonthlySummaryModel.fromJson(Map<String, dynamic> json) {
     return MonthlySummaryModel(
       month: json['month'] as String? ?? '',
+      baseCurrency: json['baseCurrency'] as String?,
       totalPaid: _toDouble(json['totalPaid']),
       paidCount: (json['paidCount'] as num?)?.toInt() ?? 0,
       skippedCount: (json['skippedCount'] as num?)?.toInt() ?? 0,
@@ -87,6 +90,7 @@ class MonthlySummaryModel {
 
   MonthlySummary toDomain() => MonthlySummary(
     month: month,
+    baseCurrency: baseCurrency,
     totalPaid: totalPaid,
     paidCount: paidCount,
     skippedCount: skippedCount,
