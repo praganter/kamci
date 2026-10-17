@@ -20,6 +20,10 @@
   "signUp": "Kayıt Ol",
   "signOut": "Çıkış Yap",
   "signOutConfirm": "Hesabınızdan çıkış yapmak istediğinize emin misiniz?",
+  "deleteAccount": "Hesabı Sil",
+  "deleteAccountConfirmTitle": "Hesabınız kalıcı olarak silinsin mi?",
+  "deleteAccountConfirm": "Hesabınız ve tüm borç, kategori, gelir ve bildirim verileriniz kalıcı olarak silinecek. Bu işlem geri alınamaz.\n\nAktif bir aboneliğiniz varsa, ücretlendirmenin durması için App Store veya Google Play üzerinden ayrıca iptal etmeniz gerekir.",
+  "deleteAccountConfirmButton": "Kalıcı Olarak Sil",
   "email": "E-posta Adresi",
   "password": "Şifre",
   "confirmPassword": "Şifre Tekrar",
@@ -523,5 +527,11 @@
       "value": { "type": "String" }
     }
   },
-  "trendNoPayments": "Son 6 ayda ödeme yok"
+  "trendNoPayments": "Son 6 ayda ödeme yok",
+  "dueOn": "Vade {date}",
+  "@dueOn": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  }
 }

@@ -1100,9 +1100,19 @@ class _DebtInstanceTile extends ConsumerWidget {
             ],
           ),
           subtitle: Text(
-            debt.installmentCount != null
-                ? '${debt.paidCount} / ${debt.installmentCount}'
-                : '${debt.paidCount}',
+            [
+              debt.installmentCount != null
+                  ? '${debt.paidCount} / ${debt.installmentCount}'
+                  : '${debt.paidCount}',
+              // Bu dönem ödendiyse sıradaki vade bilgisi gürültü olur.
+              if (!isPaid && debt.nextDueDate != null)
+                context.l10n.dueOn(
+                  DateFormat(
+                    'd MMM',
+                    Localizations.localeOf(context).languageCode,
+                  ).format(debt.nextDueDate!),
+                ),
+            ].join(' · '),
             style: Theme.of(context).textTheme.bodySmall,
           ),
           trailing: Text(

@@ -12,6 +12,7 @@ abstract final class ApiConstants {
   static const String resetPassword = '/auth/reset-password';
   static const String changePassword = '/auth/change-password';
   static const String userDetail = '/auth/user-detail';
+  static const String deleteAccount = '/auth/account';
 
   static const String householdInvite = '/auth/household/invite';
   static const String householdAccept = '/auth/household/accept';

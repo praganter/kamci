@@ -21,6 +21,7 @@ sealed class DebtSummaryModel with _$DebtSummaryModel {
     @Default(false) bool autoPayment,
     @Default(false) bool paidCurrentPeriod,
     @Default(false) bool hasReminder,
+    DateTime? nextDueDate,
   }) = _DebtSummaryModel;
 
   factory DebtSummaryModel.fromJson(Map<String, dynamic> json) =>
@@ -48,5 +49,6 @@ extension DebtSummaryModelMapper on DebtSummaryModel {
     autoPayment: autoPayment,
     paidCurrentPeriod: paidCurrentPeriod,
     hasReminder: hasReminder,
+    nextDueDate: nextDueDate,
   );
 }

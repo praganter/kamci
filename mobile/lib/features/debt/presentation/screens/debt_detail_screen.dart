@@ -215,7 +215,11 @@ class _DebtDetailScreenState extends ConsumerState<DebtDetailScreen> {
                   )
                 else
                   ...debt.payments.map(
-                    (p) => _PaymentTile(payment: p, l10n: l10n),
+                    (p) => _PaymentTile(
+                      payment: p,
+                      l10n: l10n,
+                      currencySymbol: currencySymbol,
+                    ),
                   ),
               ],
             ),
@@ -406,9 +410,14 @@ class _InfoRow extends StatelessWidget {
 }
 
 class _PaymentTile extends StatelessWidget {
-  const _PaymentTile({required this.payment, required this.l10n});
+  const _PaymentTile({
+    required this.payment,
+    required this.l10n,
+    required this.currencySymbol,
+  });
   final PaymentEmbedded payment;
   final AppLocalizations l10n;
+  final String currencySymbol;
 
   @override
   Widget build(BuildContext context) {
@@ -432,6 +441,19 @@ class _PaymentTile extends StatelessWidget {
       title: Text(payment.paid ? l10n.paid : l10n.pendingPayment),
       subtitle: payment.paidTime != null
           ? Text(DateFormatter.formatDateTime(payment.paidTime!))
+          : null,
+      trailing: payment.paid && payment.amountPaid != null
+          ? Text(
+              NumberFormat.currency(
+                locale: Intl.defaultLocale,
+                symbol: currencySymbol,
+                decimalDigits: payment.amountPaid! % 1 == 0 ? 0 : 2,
+              ).format(payment.amountPaid),
+              style: const TextStyle(
+                fontWeight: FontWeight.w600,
+                fontFeatures: [FontFeature.tabularFigures()],
+              ),
+            )
           : null,
     );
   }

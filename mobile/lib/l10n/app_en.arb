@@ -20,6 +20,10 @@
   "signUp": "Sign Up",
   "signOut": "Sign Out",
   "signOutConfirm": "Are you sure you want to sign out?",
+  "deleteAccount": "Delete Account",
+  "deleteAccountConfirmTitle": "Permanently delete your account?",
+  "deleteAccountConfirm": "Your account and all of your debts, categories, income and notifications will be permanently deleted. This cannot be undone.\n\nIf you have an active subscription, cancel it separately in the App Store or Google Play to stop billing.",
+  "deleteAccountConfirmButton": "Delete Permanently",
   "email": "Email Address",
   "password": "Password",
   "confirmPassword": "Confirm Password",
@@ -483,5 +487,6 @@
   "subscriptionPlansLoadFailed": "Subscription plans couldn't be loaded right now.",
   "debtCountLabel": "{count, plural, =1{1 debt} other{{count} debts}}",
   "percentValue": "{value}%",
-  "trendNoPayments": "No payments in the last 6 months"
+  "trendNoPayments": "No payments in the last 6 months",
+  "dueOn": "Due {date}"
 }

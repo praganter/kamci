@@ -200,6 +200,30 @@ abstract class AppLocalizations {
   /// **'Hesabınızdan çıkış yapmak istediğinize emin misiniz?'**
   String get signOutConfirm;
 
+  /// No description provided for @deleteAccount.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hesabı Sil'**
+  String get deleteAccount;
+
+  /// No description provided for @deleteAccountConfirmTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hesabınız kalıcı olarak silinsin mi?'**
+  String get deleteAccountConfirmTitle;
+
+  /// No description provided for @deleteAccountConfirm.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hesabınız ve tüm borç, kategori, gelir ve bildirim verileriniz kalıcı olarak silinecek. Bu işlem geri alınamaz.\n\nAktif bir aboneliğiniz varsa, ücretlendirmenin durması için App Store veya Google Play üzerinden ayrıca iptal etmeniz gerekir.'**
+  String get deleteAccountConfirm;
+
+  /// No description provided for @deleteAccountConfirmButton.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kalıcı Olarak Sil'**
+  String get deleteAccountConfirmButton;
+
   /// No description provided for @email.
   ///
   /// In tr, this message translates to:
@@ -1987,6 +2011,12 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Son 6 ayda ödeme yok'**
   String get trendNoPayments;
+
+  /// No description provided for @dueOn.
+  ///
+  /// In tr, this message translates to:
+  /// **'Vade {date}'**
+  String dueOn(String date);
 }
 
 class _AppLocalizationsDelegate

@@ -61,6 +61,20 @@ class AppLocalizationsTr extends AppLocalizations {
       'Hesabınızdan çıkış yapmak istediğinize emin misiniz?';
 
   @override
+  String get deleteAccount => 'Hesabı Sil';
+
+  @override
+  String get deleteAccountConfirmTitle =>
+      'Hesabınız kalıcı olarak silinsin mi?';
+
+  @override
+  String get deleteAccountConfirm =>
+      'Hesabınız ve tüm borç, kategori, gelir ve bildirim verileriniz kalıcı olarak silinecek. Bu işlem geri alınamaz.\n\nAktif bir aboneliğiniz varsa, ücretlendirmenin durması için App Store veya Google Play üzerinden ayrıca iptal etmeniz gerekir.';
+
+  @override
+  String get deleteAccountConfirmButton => 'Kalıcı Olarak Sil';
+
+  @override
   String get email => 'E-posta Adresi';
 
   @override
@@ -1064,4 +1078,9 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get trendNoPayments => 'Son 6 ayda ödeme yok';
+
+  @override
+  String dueOn(String date) {
+    return 'Vade $date';
+  }
 }

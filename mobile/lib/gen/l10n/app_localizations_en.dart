@@ -60,6 +60,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get signOutConfirm => 'Are you sure you want to sign out?';
 
   @override
+  String get deleteAccount => 'Delete Account';
+
+  @override
+  String get deleteAccountConfirmTitle => 'Permanently delete your account?';
+
+  @override
+  String get deleteAccountConfirm =>
+      'Your account and all of your debts, categories, income and notifications will be permanently deleted. This cannot be undone.\n\nIf you have an active subscription, cancel it separately in the App Store or Google Play to stop billing.';
+
+  @override
+  String get deleteAccountConfirmButton => 'Delete Permanently';
+
+  @override
   String get email => 'Email Address';
 
   @override
@@ -1071,4 +1084,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get trendNoPayments => 'No payments in the last 6 months';
+
+  @override
+  String dueOn(String date) {
+    return 'Due $date';
+  }
 }

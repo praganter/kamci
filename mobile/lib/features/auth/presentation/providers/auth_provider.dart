@@ -203,6 +203,20 @@ class AuthNotifier extends _$AuthNotifier {
     }
   }
 
+  /// Hesabı sunucuda kalıcı olarak siler, sonra yerel oturumu temizler.
+  /// Sunucu silmesi başarısız olursa hata fırlatır ve oturum açık kalır —
+  /// kullanıcı hesabının silindiğini sanıp çıkmamalı.
+  Future<void> deleteAccount() async {
+    // Cihaz token kaydı access token geçerliyken silinmeli (logout ile aynı
+    // sıra). Best-effort: hesap zaten silinecek.
+    try {
+      await ref.read(notificationServiceProvider).unregisterToken();
+    } catch (_) {}
+    await ref.read(authRepositoryProvider).deleteAccount();
+    await ref.read(secureStorageServiceProvider).clearAll();
+    state = const AuthState.unauthenticated();
+  }
+
   Future<void> _saveUserIdFromToken(AuthTokens tokens) async {
     final userId = tokens.userId;
     if (userId != null) {

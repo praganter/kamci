@@ -64,6 +64,15 @@ class AuthRemoteDatasource {
     }
   }
 
+  /// Hard delete — geri dönüşsüz. JWT korumalı (access token interceptor'dan).
+  Future<void> deleteAccount() async {
+    try {
+      await _dio.delete(ApiConstants.deleteAccount);
+    } on DioException catch (e) {
+      throw _mapException(e);
+    }
+  }
+
   /// Server-side refresh-token blacklist. Gateway'de public endpoint;
   /// refresh token'ı `Authorization: Bearer` ile gönderiyoruz (refreshToken ile
   /// aynı sözleşme — hem gateway hem auth-service "Bearer " prefix'i şart koşar).

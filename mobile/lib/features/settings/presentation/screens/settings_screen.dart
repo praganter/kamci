@@ -8,6 +8,7 @@ import '../../../../core/l10n/l10n.dart';
 import '../../../../core/providers/app_settings_provider.dart';
 import '../../../../core/router/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/snackbar_utils.dart';
 import '../../../auth/domain/entities/user_detail.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../debt/data/models/currency_model.dart';
@@ -117,6 +118,10 @@ class SettingsScreen extends ConsumerWidget {
 
                 // ── Çıkış — iOS'taki gibi ayrı blok ────────────────────────
                 _Group(children: [_LogoutTile()]),
+                const SizedBox(height: 24),
+
+                // ── Hesap silme — App Store zorunluluğu, en altta ayrı blok ──
+                _Group(children: [_DeleteAccountTile()]),
               ],
             ),
           ),
@@ -432,6 +437,77 @@ class _LogoutTile extends ConsumerWidget {
                 ),
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Delete account tile ──────────────────────────────────────────────────────
+
+class _DeleteAccountTile extends ConsumerStatefulWidget {
+  @override
+  ConsumerState<_DeleteAccountTile> createState() => _DeleteAccountTileState();
+}
+
+class _DeleteAccountTileState extends ConsumerState<_DeleteAccountTile> {
+  bool _deleting = false;
+
+  Future<void> _onTap() async {
+    final l10n = context.l10n;
+    final confirm = await showConfirmDialog(
+      context,
+      title: l10n.deleteAccountConfirmTitle,
+      content: l10n.deleteAccountConfirm,
+      confirmText: l10n.deleteAccountConfirmButton,
+      cancelText: l10n.cancel,
+    );
+    if (!confirm || !mounted) return;
+
+    setState(() => _deleting = true);
+    try {
+      // Başarılıysa auth state unauthenticated olur, router login'e atar.
+      await ref.read(authNotifierProvider.notifier).deleteAccount();
+    } catch (e) {
+      if (mounted) {
+        setState(() => _deleting = false);
+        showErrorSnackBar(context, e);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final cs = Theme.of(context).colorScheme;
+
+    return InkWell(
+      onTap: _deleting ? null : _onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(
+          children: [
+            _IconBox(
+              icon: Icons.delete_forever_outlined,
+              bg: cs.errorContainer,
+              fg: cs.error,
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Text(
+                l10n.deleteAccount,
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: cs.error,
+                ),
+              ),
+            ),
+            if (_deleting)
+              const SizedBox.square(
+                dimension: 18,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
           ],
         ),
       ),
