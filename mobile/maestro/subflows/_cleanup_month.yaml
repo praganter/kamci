@@ -14,9 +14,11 @@ appId: com.batuhanyetgin.kamci
       - tapOn:
           id: "myDebtsTab"
       # Boş ayda swipe TabBarView'ü kaydırır — yukarıdaki while bunu önler.
+      # Borç satırı: "Ad\n0 / 6\n₺500" (tek seferlikte ikinci satır "0").
+      # Özet kartı ve kategori başlığı ikinci satırda tutar taşıdığı için eşleşmez.
       - swipe:
           from:
-            text: "[\\s\\S]*\\d+\\.\\d+ [A-Z]{3}"
+            text: "[^\\n]+\\n\\d+( / \\d+)?\\n[^\\n]+"
             index: 0
           direction: LEFT
       - waitForAnimationToEnd
