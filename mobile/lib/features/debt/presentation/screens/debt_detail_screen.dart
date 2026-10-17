@@ -12,6 +12,7 @@ import '../../../../core/utils/permission_utils.dart';
 import '../../../../core/utils/snackbar_utils.dart';
 import '../../../../shared/widgets/app_error_widget.dart';
 import '../../../../shared/widgets/confirm_dialog.dart';
+import '../../../../shared/widgets/empty_state.dart';
 import '../../../../shared/providers/current_user_provider.dart';
 import '../../../category/presentation/providers/category_providers.dart';
 import '../../../category/domain/entities/member_embedded.dart';
@@ -208,7 +209,10 @@ class _DebtDetailScreenState extends ConsumerState<DebtDetailScreen> {
                 ),
                 const SizedBox(height: 12),
                 if (debt.payments.isEmpty)
-                  Center(child: Text(l10n.noPaymentsYet))
+                  EmptyState(
+                    icon: Icons.receipt_long_outlined,
+                    title: l10n.noPaymentsYet,
+                  )
                 else
                   ...debt.payments.map(
                     (p) => _PaymentTile(payment: p, l10n: l10n),
@@ -373,8 +377,9 @@ class _InfoRow extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            width: 140,
+          // Sabit genişlik büyük yazı / uzun İngilizce etiketlerde taşıyordu.
+          Expanded(
+            flex: 2,
             child: Text(
               label,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -384,7 +389,9 @@ class _InfoRow extends StatelessWidget {
               ),
             ),
           ),
+          const SizedBox(width: 12),
           Expanded(
+            flex: 3,
             child: Text(
               value,
               style: Theme.of(

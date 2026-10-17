@@ -15,6 +15,11 @@ abstract final class AppColors {
   static const Color success = Color(0xFF22C55E);
   static const Color warning = Color(0xFFF59E0B);
 
+  // Açık zeminde metin olarak kullanılacak koyu tonlar (WCAG AA ≥4.5:1);
+  // success/warning parlak tonları beyazda ~2:1 kalıyor.
+  static const Color successTextLight = Color(0xFF15803D);
+  static const Color warningTextLight = Color(0xFFB45309);
+
   static const Color textPrimaryLight = Color(0xFF111827);
   static const Color textSecondaryLight = Color(0xFF6B7280);
   static const Color textPrimaryDark = Color(0xFFF5F5F7);

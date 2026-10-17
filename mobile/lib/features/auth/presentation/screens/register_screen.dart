@@ -62,6 +62,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 AuthTextField(
                   controller: _emailCtrl,
                   label: l10n.email,
+                  autofillHints: const [AutofillHints.email],
                   prefixIcon: Icons.email_outlined,
                   keyboardType: TextInputType.emailAddress,
                   textInputAction: TextInputAction.next,
@@ -71,6 +72,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 AuthTextField(
                   controller: _passwordCtrl,
                   label: l10n.password,
+                  autofillHints: const [AutofillHints.newPassword],
                   prefixIcon: Icons.lock_outline_rounded,
                   isPassword: true,
                   textInputAction: TextInputAction.next,
@@ -80,6 +82,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 AuthTextField(
                   controller: _confirmCtrl,
                   label: l10n.confirmPassword,
+                  autofillHints: const [AutofillHints.newPassword],
                   prefixIcon: Icons.lock_outline_rounded,
                   isPassword: true,
                   textInputAction: TextInputAction.done,

@@ -1,5 +1,15 @@
 import 'package:flutter/material.dart';
+import 'app_colors.dart';
 import 'app_text_styles.dart';
+
+/// Durum renkleri metin/ikon olarak: açık temada okunur koyu ton.
+Color successText(ColorScheme cs) => cs.brightness == Brightness.light
+    ? AppColors.successTextLight
+    : AppColors.success;
+
+Color warningText(ColorScheme cs) => cs.brightness == Brightness.light
+    ? AppColors.warningTextLight
+    : AppColors.warning;
 
 TextTheme buildTextTheme(Color primaryColor, Color secondaryColor) {
   return TextTheme(

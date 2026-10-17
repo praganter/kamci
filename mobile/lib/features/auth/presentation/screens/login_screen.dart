@@ -86,6 +86,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 AuthTextField(
                   controller: _emailCtrl,
                   label: l10n.email,
+                  autofillHints: const [AutofillHints.email],
                   prefixIcon: Icons.email_outlined,
                   keyboardType: TextInputType.emailAddress,
                   textInputAction: TextInputAction.next,
@@ -95,6 +96,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 AuthTextField(
                   controller: _passwordCtrl,
                   label: l10n.password,
+                  autofillHints: const [AutofillHints.password],
                   prefixIcon: Icons.lock_outline_rounded,
                   isPassword: true,
                   textInputAction: TextInputAction.done,

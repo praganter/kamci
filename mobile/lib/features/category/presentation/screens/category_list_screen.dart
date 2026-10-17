@@ -578,9 +578,7 @@ class _CategoryCard extends StatelessWidget {
                                 value: 'delete',
                                 child: Text(
                                   l10n.delete,
-                                  style: const TextStyle(
-                                    color: Colors.red,
-                                  ),
+                                  style: TextStyle(color: cs.error),
                                 ),
                               ),
                             if (onLeaveCategory != null)
@@ -588,9 +586,7 @@ class _CategoryCard extends StatelessWidget {
                                 value: 'leave',
                                 child: Text(
                                   l10n.leaveCategory,
-                                  style: const TextStyle(
-                                    color: Colors.red,
-                                  ),
+                                  style: TextStyle(color: cs.error),
                                 ),
                               ),
                           ],

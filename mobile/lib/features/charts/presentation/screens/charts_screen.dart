@@ -269,20 +269,20 @@ class _StatsGrid extends StatelessWidget {
       physics: const NeverScrollableScrollPhysics(),
       crossAxisSpacing: 12,
       mainAxisSpacing: 12,
-      childAspectRatio: 1.55,
+      childAspectRatio: 1.75,
       children: [
         _StatCard(
           label: l10n.totalPaidAmount,
           value: _fmtMoney(summary.baseCurrency, summary.totalPaid),
           sub: l10n.debtCountLabel(summary.paidCount),
-          color: AppColors.success,
+          color: successText(cs),
           icon: Icons.check_circle_outline,
         ),
         _StatCard(
           label: l10n.pendingLabel,
           value: _fmtMoney(summary.baseCurrency, summary.pendingAmount),
           sub: l10n.debtCountLabel(summary.pendingCount),
-          color: AppColors.warning,
+          color: warningText(cs),
           icon: Icons.hourglass_empty_outlined,
         ),
         _StatCard(
@@ -341,7 +341,7 @@ class _StatCard extends StatelessWidget {
                   label,
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
                     color: cs.onSurfaceVariant,
-                    fontSize: 10,
+                    fontSize: 11,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -367,7 +367,7 @@ class _StatCard extends StatelessWidget {
                   sub,
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
                     color: cs.onSurfaceVariant,
-                    fontSize: 10,
+                    fontSize: 11,
                   ),
                 ),
             ],
@@ -425,18 +425,27 @@ class _TrendChartCard extends StatelessWidget {
           // Giriş animasyonu: çizgi tabandan yükselir
           : TweenAnimationBuilder<double>(
               tween: Tween(begin: 0, end: 1),
-              duration: const Duration(milliseconds: 800),
+              duration: MediaQuery.disableAnimationsOf(context)
+                  ? Duration.zero
+                  : const Duration(milliseconds: 800),
               curve: Curves.easeOutCubic,
-              builder: (context, t, _) => CustomPaint(
-                painter: _TrendPainter(
-                  values: values,
-                  months: months,
-                  lineColor: cs.primary,
-                  gridColor: cs.outlineVariant,
-                  labelColor: cs.onSurfaceVariant,
-                  progress: t,
+              // Çizim ekran okuyucuya görünmez; değerleri metin olarak ver.
+              builder: (context, t, _) => Semantics(
+                label: [
+                  for (var i = 0; i < values.length; i++)
+                    '${months[i]} ${_fmtAmount(values[i])}',
+                ].join(', '),
+                child: CustomPaint(
+                  painter: _TrendPainter(
+                    values: values,
+                    months: months,
+                    lineColor: cs.primary,
+                    gridColor: cs.outlineVariant,
+                    labelColor: cs.onSurfaceVariant,
+                    progress: t,
+                  ),
+                  size: Size.infinite,
                 ),
-                size: Size.infinite,
               ),
             ),
     );
@@ -488,7 +497,7 @@ class _TrendPainter extends CustomPainter {
 
     final labelStyle = TextStyle(
       color: labelColor,
-      fontSize: 9,
+      fontSize: 11,
       fontWeight: FontWeight.w500,
     );
 
@@ -624,7 +633,9 @@ class _CategoryDonutCard extends StatelessWidget {
             // Giriş animasyonu: dilimler saat yönünde açılır
             child: TweenAnimationBuilder<double>(
               tween: Tween(begin: 0, end: 1),
-              duration: const Duration(milliseconds: 800),
+              duration: MediaQuery.disableAnimationsOf(context)
+                  ? Duration.zero
+                  : const Duration(milliseconds: 800),
               curve: Curves.easeOutCubic,
               builder: (context, t, _) => CustomPaint(
                 painter: _DonutPainter(
@@ -814,9 +825,9 @@ class _ProgressTile extends StatelessWidget {
                   ),
                   child: Text(
                     l10n.statusCompleted,
-                    style: const TextStyle(
-                      color: AppColors.success,
-                      fontSize: 10,
+                    style: TextStyle(
+                      color: successText(cs),
+                      fontSize: 11,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -864,14 +875,14 @@ class _ProgressTile extends StatelessWidget {
                 installmentText,
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
                   color: cs.onSurfaceVariant,
-                  fontSize: 10,
+                  fontSize: 11,
                 ),
               ),
               Text(
                 '${_fmtAmount(item.totalPaid)} ${item.currency}',
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
                   color: cs.onSurfaceVariant,
-                  fontSize: 10,
+                  fontSize: 11,
                 ),
               ),
             ],

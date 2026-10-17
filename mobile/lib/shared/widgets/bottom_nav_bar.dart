@@ -89,7 +89,9 @@ class AppShell extends ConsumerWidget {
                         -1 + 2 * selectedIndex / (items.length - 1),
                         0,
                       ),
-                      duration: const Duration(milliseconds: 320),
+                      duration: MediaQuery.disableAnimationsOf(context)
+                          ? Duration.zero
+                          : const Duration(milliseconds: 320),
                       curve: Curves.easeOutCubic,
                       child: FractionallySizedBox(
                         widthFactor: 1 / items.length,
@@ -182,7 +184,9 @@ class _NavBeam extends StatelessWidget {
   Widget build(BuildContext context) {
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0, end: 1),
-      duration: const Duration(milliseconds: 320),
+      duration: MediaQuery.disableAnimationsOf(context)
+          ? Duration.zero
+          : const Duration(milliseconds: 320),
       curve: Curves.easeOutCubic,
       builder: (context, t, _) {
         // t: 0→1; ortada en uzun (ışın), sonda 20px'e oturur

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -15,6 +16,7 @@ import '../../../../core/utils/validators.dart';
 import '../../../category/presentation/providers/category_providers.dart';
 import '../../../category/domain/entities/member_embedded.dart';
 import '../../../../shared/widgets/app_error_widget.dart';
+import '../../../../shared/widgets/empty_state.dart';
 import '../../../../shared/widgets/list_skeleton.dart';
 import '../../../../shared/widgets/confirm_dialog.dart';
 import '../../../../shared/widgets/premium_required_sheet.dart';
@@ -398,7 +400,17 @@ class _DebtTabViewState extends ConsumerState<_DebtTabView>
                             physics: const AlwaysScrollableScrollPhysics(),
                             child: SizedBox(
                               height: MediaQuery.of(context).size.height * 0.6,
-                              child: _EmptyState(owned: owned),
+                              child: EmptyState(
+                                icon: owned
+                                    ? Icons.account_balance_wallet_outlined
+                                    : Icons.people_outline,
+                                title: owned
+                                    ? context.l10n.noDebtsYet
+                                    : context.l10n.noSharedDebts,
+                                subtitle: owned
+                                    ? context.l10n.addDebtHint
+                                    : context.l10n.joinSharedHint,
+                              ),
                             ),
                           ),
                         );
@@ -480,7 +492,9 @@ class _MonthSummaryCard extends ConsumerWidget {
             // Count-up: ilk açılışta 0'dan, sonra eski değerden yeniye sayar
             TweenAnimationBuilder<double>(
               tween: Tween(begin: 0, end: e.value),
-              duration: const Duration(milliseconds: 700),
+              duration: MediaQuery.disableAnimationsOf(context)
+                  ? Duration.zero
+                  : const Duration(milliseconds: 700),
               curve: Curves.easeOutCubic,
               builder: (context, v, _) => Text(
                 NumberFormat.currency(
@@ -760,11 +774,15 @@ class _CategoryPeriodSection extends ConsumerWidget {
           value: 'delete',
           child: Row(
             children: [
-              Icon(Icons.delete_outline, size: 18, color: Colors.red.shade400),
+              Icon(
+                Icons.delete_outline,
+                size: 18,
+                color: Theme.of(context).colorScheme.error,
+              ),
               const SizedBox(width: 10),
               Text(
                 l10n.deleteWithDebts,
-                style: TextStyle(color: Colors.red.shade400),
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
               ),
             ],
           ),
@@ -969,6 +987,10 @@ class _DebtInstanceTile extends ConsumerWidget {
     return Dismissible(
       key: Key(debt.id),
       direction: DismissDirection.horizontal,
+      // Eşik geçildiğinde hissedilir geri bildirim: bırakınca eylem olacak.
+      onUpdate: (d) {
+        if (d.reached && !d.previousReached) HapticFeedback.selectionClick();
+      },
       confirmDismiss: (direction) async {
         final accessLevels = ref.read(categoryAccessLevelsProvider).valueOrNull;
         final level = accessLevels?[debt.categoryId];
@@ -1016,7 +1038,7 @@ class _DebtInstanceTile extends ConsumerWidget {
         }
       },
       background: Container(
-        color: Colors.green,
+        color: AppColors.success,
         alignment: Alignment.centerLeft,
         padding: const EdgeInsets.only(left: 20),
         child: const Icon(
@@ -1026,7 +1048,7 @@ class _DebtInstanceTile extends ConsumerWidget {
         ),
       ),
       secondaryBackground: Container(
-        color: const Color(0xFFEF4444),
+        color: AppColors.error,
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20),
         child: const Icon(Icons.delete_rounded, color: Colors.white, size: 26),
@@ -1050,7 +1072,7 @@ class _DebtInstanceTile extends ConsumerWidget {
             ),
             child: Icon(
               isPaid ? Icons.check_rounded : Icons.schedule_rounded,
-              color: isPaid ? AppColors.success : cs.onSurfaceVariant,
+              color: isPaid ? successText(cs) : cs.onSurfaceVariant,
               size: 18,
             ),
           ),
@@ -1093,7 +1115,7 @@ class _DebtInstanceTile extends ConsumerWidget {
               fontWeight: FontWeight.w700,
               fontFeatures: const [FontFeature.tabularFigures()],
               // alt-b: ödenen yeşil, bekleyen nötr (vurgu rengi sadece durum)
-              color: isPaid ? AppColors.success : cs.onSurface,
+              color: isPaid ? successText(cs) : cs.onSurface,
             ),
           ),
         ),
@@ -1146,7 +1168,10 @@ Future<void> showPaymentOptions(
           const Divider(height: 1),
           // ── Ödemeyi Atla ─────────────────────────────────────────────
           ListTile(
-            leading: const Icon(Icons.skip_next_outlined, color: Colors.orange),
+            leading: Icon(
+              Icons.skip_next_outlined,
+              color: warningText(Theme.of(ctx).colorScheme),
+            ),
             title: Text(l10n.skipPayment),
             onTap: () async {
               Navigator.of(ctx).pop();
@@ -1164,7 +1189,10 @@ Future<void> showPaymentOptions(
           ),
           // ── Parçalı Ödeme ─────────────────────────────────────────────
           ListTile(
-            leading: const Icon(Icons.payments_outlined, color: Colors.blue),
+            leading: Icon(
+              Icons.payments_outlined,
+              color: Theme.of(ctx).colorScheme.primary,
+            ),
             title: Text(l10n.partialPayment),
             onTap: () async {
               Navigator.of(ctx).pop();
@@ -1187,9 +1215,9 @@ Future<void> showPaymentOptions(
           ),
           // ── Tam Ödeme ─────────────────────────────────────────────────
           ListTile(
-            leading: const Icon(
+            leading: Icon(
               Icons.check_circle_outline,
-              color: Colors.green,
+              color: successText(Theme.of(ctx).colorScheme),
             ),
             title: Text(l10n.fullPayment),
             onTap: () async {
@@ -1684,68 +1712,4 @@ class _BulkEntry {
   final DateTime date;
   final TextEditingController controller;
   bool selected;
-}
-
-// ── Empty State ──────────────────────────────────────────────────────────────
-
-class _EmptyState extends StatelessWidget {
-  const _EmptyState({required this.owned});
-
-  final bool owned;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final cs = Theme.of(context).colorScheme;
-
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 40),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 88,
-              height: 88,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    cs.primary.withValues(alpha: 0.15),
-                    cs.primary.withValues(alpha: 0.05),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                shape: BoxShape.circle,
-                border: Border.all(color: cs.primary.withValues(alpha: 0.2)),
-              ),
-              child: Icon(
-                owned
-                    ? Icons.account_balance_wallet_outlined
-                    : Icons.people_outline,
-                size: 40,
-                color: cs.primary,
-              ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              owned ? l10n.noDebtsYet : l10n.noSharedDebts,
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              owned ? l10n.addDebtHint : l10n.joinSharedHint,
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }

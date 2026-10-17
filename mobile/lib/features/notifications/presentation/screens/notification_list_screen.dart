@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart' hide TextDirection;
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/services/notification_routing.dart';
+import '../../../../shared/widgets/empty_state.dart';
 import '../../domain/entities/notification_item.dart';
 import '../providers/notification_providers.dart';
 
@@ -21,13 +22,9 @@ class NotificationListScreen extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('$e')),
         data: (items) => items.isEmpty
-            ? Center(
-                child: Text(
-                  l10n.notificationsEmpty,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                ),
+            ? EmptyState(
+                icon: Icons.notifications_none_rounded,
+                title: l10n.notificationsEmpty,
               )
             : RefreshIndicator.adaptive(
                 onRefresh: () => ref.refresh(notificationListProvider.future),
