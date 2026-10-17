@@ -465,10 +465,13 @@ public class DebtService {
                                             .filter(PaymentEmbedded::isPaid).count();
                                     final boolean hasReminder = debt.getNextReminderDate() != null
                                             && debt.getNextReminderDate().isAfter(now);
+                                    final LocalDateTime nextDueDate = PaymentPeriodUtil.getNextDueDate(
+                                            debt.getFirstPaymentDate(), debt.getPaymentPeriodType(), now);
                                     return DebtSummaryResponse.builder()
                                             .id(debt.getId())
                                             .name(debt.getName())
                                             .categoryId(debt.getCategoryId())
+                                            .nextDueDate(nextDueDate)
                                             .installmentCount(debt.getInstallmentCount())
                                             .paidCount(paidCount)
                                             .paymentPeriodType(debt.getPaymentPeriodType())

@@ -4,7 +4,6 @@ import dev.batuhanyetgin.commonmodule.event.RabbitMQConstants;
 import dev.batuhanyetgin.commonmodule.event.WeeklyDigestEvent;
 import dev.batuhanyetgin.commonmodule.event.WeeklyDigestItem;
 import dev.batuhanyetgin.kamci.document.DebtDocument;
-import dev.batuhanyetgin.kamci.enums.PaymentPeriodType;
 import dev.batuhanyetgin.kamci.producer.DebtEventProducer;
 import dev.batuhanyetgin.kamci.repositoryservice.DebtRepositoryService;
 import dev.batuhanyetgin.kamci.util.PaymentPeriodUtil;
@@ -85,16 +84,7 @@ public class WeeklyDigestScheduler {
     }
 
     private LocalDateTime computeDueDate(final DebtDocument debt, final LocalDateTime now) {
-        if (debt.getFirstPaymentDate() == null) {
-            return null;
-        }
-        if (debt.getPaymentPeriodType() == PaymentPeriodType.ONE_TIME) {
-            return debt.getFirstPaymentDate();
-        }
-        final LocalDateTime periodStart = PaymentPeriodUtil.getPeriodStart(
-                debt.getFirstPaymentDate(), debt.getPaymentPeriodType(), now);
-        final int originalDay = debt.getFirstPaymentDate().getDayOfMonth();
-        return PaymentPeriodUtil.getPeriodEnd(periodStart, debt.getPaymentPeriodType(), originalDay);
+        return PaymentPeriodUtil.getNextDueDate(debt.getFirstPaymentDate(), debt.getPaymentPeriodType(), now);
     }
 
     private boolean isCurrentPeriodUnpaid(final DebtDocument debt, final LocalDateTime now) {

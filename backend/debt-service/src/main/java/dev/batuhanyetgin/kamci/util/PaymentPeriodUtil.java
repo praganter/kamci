@@ -80,4 +80,18 @@ public final class PaymentPeriodUtil {
         final int maxDay = dt.toLocalDate().lengthOfMonth();
         return dt.withDayOfMonth(Math.min(targetDay, maxDay));
     }
+
+    public static LocalDateTime getNextDueDate(final LocalDateTime firstPaymentDate,
+                                               final PaymentPeriodType periodType,
+                                               final LocalDateTime now) {
+        if (firstPaymentDate == null) {
+            return null;
+        }
+        if (periodType == PaymentPeriodType.ONE_TIME) {
+            return firstPaymentDate;
+        }
+        final LocalDateTime periodStart = getPeriodStart(firstPaymentDate, periodType, now);
+        final int originalDay = firstPaymentDate.getDayOfMonth();
+        return getPeriodEnd(periodStart, periodType, originalDay);
+    }
 }

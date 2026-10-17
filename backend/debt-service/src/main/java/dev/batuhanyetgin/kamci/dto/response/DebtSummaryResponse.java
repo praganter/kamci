@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -20,6 +21,8 @@ public class DebtSummaryResponse {
     private String name;
 
     private String categoryId;
+
+    private LocalDateTime nextDueDate;
 
     private Integer installmentCount;
 

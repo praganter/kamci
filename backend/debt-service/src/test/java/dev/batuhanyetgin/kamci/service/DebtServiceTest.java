@@ -676,6 +676,26 @@ class DebtServiceTest {
         }
 
         @Test
+        @DisplayName("debt with firstPaymentDate → summary includes nextDueDate")
+        void get_populatesNextDueDate() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(OWNER_ID);
+                ctx.when(RequestContextUtil::isPremium).thenReturn(true);
+                ctx.when(RequestContextUtil::getLocale).thenReturn("en");
+
+                final CategoryDocument owned = buildCategory(CAT_ID, OWNER_ID);
+                when(categoryRS.findByOwnerId(OWNER_ID)).thenReturn(List.of(owned));
+
+                final DebtDocument debt = buildDebt(DEBT_ID, OWNER_ID, CAT_ID);
+                when(debtRS.findByCategoryIdIn(List.of(CAT_ID))).thenReturn(List.of(debt));
+
+                final GetDebtResponse response = debtService.get(null, true);
+
+                assertThat(response.getCategories().get(0).getDebts().get(0).getNextDueDate()).isNotNull();
+            }
+        }
+
+        @Test
         @DisplayName("no categories → returns empty list")
         void get_noCategories_returnsEmpty() {
             try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {

@@ -205,4 +205,33 @@ class PaymentPeriodUtilTest {
                     .isEqualTo(BASE.plusWeeks(1));
         }
     }
+
+    // ─── getNextDueDate ───────────────────────────────────────────────────────
+
+    @Nested
+    @DisplayName("getNextDueDate")
+    class GetNextDueDate {
+
+        @Test
+        @DisplayName("null firstPaymentDate → returns null")
+        void nullFirstPaymentDate_returnsNull() {
+            assertThat(PaymentPeriodUtil.getNextDueDate(null, PaymentPeriodType.MONTHLY, BASE)).isNull();
+        }
+
+        @Test
+        @DisplayName("ONE_TIME → returns firstPaymentDate itself")
+        void oneTime_returnsFirstPaymentDate() {
+            final LocalDateTime now = BASE.plusDays(10);
+            assertThat(PaymentPeriodUtil.getNextDueDate(BASE, PaymentPeriodType.ONE_TIME, now)).isEqualTo(BASE);
+        }
+
+        @Test
+        @DisplayName("MONTHLY, mid-period → returns end of the current period")
+        void monthly_midPeriod_returnsCurrentPeriodEnd() {
+            final LocalDateTime firstPayment = LocalDateTime.of(2025, 1, 15, 0, 0);
+            final LocalDateTime now = LocalDateTime.of(2025, 3, 20, 0, 0);
+            final LocalDateTime due = PaymentPeriodUtil.getNextDueDate(firstPayment, PaymentPeriodType.MONTHLY, now);
+            assertThat(due).isEqualTo(LocalDateTime.of(2025, 4, 15, 0, 0));
+        }
+    }
 }
