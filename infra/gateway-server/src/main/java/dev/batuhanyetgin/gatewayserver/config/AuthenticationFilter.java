@@ -9,6 +9,7 @@ import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.server.PathContainer;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
@@ -25,6 +26,15 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         ServerHttpRequest request = exchange.getRequest();
+
+        // Inter-service endpoints (e.g. debt/internal/**) must never be reachable from outside.
+        // Checks decoded segments so %-encoding / matrix params / discovery-locator prefixes can't bypass it.
+        boolean isInternal = request.getPath().pathWithinApplication().elements().stream()
+                .anyMatch(e -> e instanceof PathContainer.PathSegment s && "internal".equalsIgnoreCase(s.valueToMatch()));
+        if (isInternal) {
+            return errorResponseWriter.write(exchange, HttpStatus.NOT_FOUND,
+                    "error.route.not_found", "Not found");
+        }
 
         if (validator.isSecured().test(request)) {
             if (!request.getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
