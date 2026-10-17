@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/l10n/l10n.dart';
+import '../../../../core/l10n/exception_l10n.dart';
 import '../../../../core/utils/validators.dart';
 import '../../data/repositories/category_repository_impl.dart';
 import '../../domain/entities/member_embedded.dart';
@@ -98,7 +99,7 @@ class _BulkShareSheetState extends ConsumerState<BulkShareSheet> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(context.l10n.errorWithMessage(e.toString()))),
+          SnackBar(content: Text(context.l10n.errorWithMessage(e.toLocalizedMessage(context.l10n)))),
         );
         setState(() => _isLoading = false);
       }

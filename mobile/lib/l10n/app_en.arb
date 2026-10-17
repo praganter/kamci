@@ -477,5 +477,11 @@
     "placeholders": {
       "count": { "type": "int" }
     }
-  }
+  },
+  "purchaseFailed": "Something went wrong during the purchase.",
+  "storeUnavailable": "Couldn't connect to the store. Check your internet connection.",
+  "subscriptionPlansLoadFailed": "Subscription plans couldn't be loaded right now.",
+  "debtCountLabel": "{count, plural, =1{1 debt} other{{count} debts}}",
+  "percentValue": "{value}%",
+  "trendNoPayments": "No payments in the last 6 months"
 }

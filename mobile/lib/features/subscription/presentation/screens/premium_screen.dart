@@ -44,7 +44,8 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
 
   Future<void> _loadProducts() async {
     final available = await InAppPurchase.instance.isAvailable();
-    if (!available || !mounted) {
+    if (!mounted) return;
+    if (!available) {
       setState(() {
         _loading = false;
         _storeError = 'store_unavailable';
@@ -94,7 +95,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
           await InAppPurchase.instance.completePurchase(p);
           final subState = ref.read(subscriptionNotifierProvider);
           if (subState.hasError && mounted) {
-            showErrorSnackBar(context, subState.error.toString());
+            showErrorSnackBar(context, subState.error!);
           } else if (mounted) {
             Navigator.of(context).pop();
           }
@@ -105,7 +106,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
           if (mounted) {
             showErrorSnackBar(
               context,
-              p.error?.message ?? 'Satın alma sırasında bir hata oluştu.',
+              p.error?.message ?? context.l10n.purchaseFailed,
             );
           }
         case PurchaseStatus.canceled:
@@ -176,6 +177,13 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
                               errorCode: _storeError!,
                               cs: cs,
                               tt: tt,
+                              onRetry: () {
+                                setState(() {
+                                  _loading = true;
+                                  _storeError = null;
+                                });
+                                _loadProducts();
+                              },
                             )
                           else
                             _PlanSelector(
@@ -572,39 +580,46 @@ class _StoreErrorCard extends StatelessWidget {
     required this.errorCode,
     required this.cs,
     required this.tt,
+    required this.onRetry,
   });
 
   final String errorCode;
   final ColorScheme cs;
   final TextTheme tt;
+  final VoidCallback onRetry;
 
   @override
   Widget build(BuildContext context) {
-    final isUnavailable = errorCode == 'store_unavailable';
-    final message = isUnavailable
-        ? 'App Store\'a bağlanılamadı. İnternet bağlantını kontrol et.'
-        : errorCode.startsWith('not_found:')
-        ? 'Abonelik planları bulunamadı.\nUygulama kimliği: ${errorCode.replaceFirst('not_found:', '')}'
-        : 'Abonelik planları yüklenemedi: $errorCode';
+    final l10n = context.l10n;
+    // Ürün kimlikleri / ham mağaza hatası kullanıcıya gösterilmez.
+    final message = errorCode == 'store_unavailable'
+        ? l10n.storeUnavailable
+        : l10n.subscriptionPlansLoadFailed;
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 16, 8, 8),
       decoration: BoxDecoration(
         color: cs.errorContainer.withValues(alpha: 0.4),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: cs.error.withValues(alpha: 0.3)),
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          Icon(Icons.warning_amber_rounded, color: cs.error, size: 20),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              message,
-              style: tt.bodySmall?.copyWith(color: cs.onErrorContainer),
-            ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(Icons.warning_amber_rounded, color: cs.error, size: 20),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  message,
+                  style: tt.bodySmall?.copyWith(color: cs.onErrorContainer),
+                ),
+              ),
+            ],
           ),
+          TextButton(onPressed: onRetry, child: Text(l10n.retry)),
         ],
       ),
     );

@@ -36,7 +36,7 @@ class CompactDebtTile extends ConsumerWidget {
     );
     final decimalDigits = debt.amount % 1 == 0 ? 0 : 2;
     final currencyFormat = NumberFormat.currency(
-      locale: 'tr_TR',
+      locale: Intl.defaultLocale,
       symbol: currencySymbol,
       decimalDigits: decimalDigits,
     );
@@ -62,7 +62,7 @@ class CompactDebtTile extends ConsumerWidget {
           orElse: () => baseCurrency,
         );
         final baseFmt = NumberFormat.currency(
-          locale: 'tr_TR',
+          locale: Intl.defaultLocale,
           symbol: baseSymbol,
           decimalDigits: 0,
         );

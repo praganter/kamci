@@ -1040,4 +1040,28 @@ class AppLocalizationsTr extends AppLocalizations {
   String openEndedInstallments(int count) {
     return '$count taksit (açık uçlu)';
   }
+
+  @override
+  String get purchaseFailed => 'Satın alma sırasında bir hata oluştu.';
+
+  @override
+  String get storeUnavailable =>
+      'Mağazaya bağlanılamadı. İnternet bağlantını kontrol et.';
+
+  @override
+  String get subscriptionPlansLoadFailed =>
+      'Abonelik planları şu an yüklenemedi.';
+
+  @override
+  String debtCountLabel(int count) {
+    return '$count borç';
+  }
+
+  @override
+  String percentValue(String value) {
+    return '%$value';
+  }
+
+  @override
+  String get trendNoPayments => 'Son 6 ayda ödeme yok';
 }

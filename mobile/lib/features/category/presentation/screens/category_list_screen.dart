@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/theme_helpers.dart';
 import '../../../../core/l10n/l10n.dart';
+import '../../../../core/l10n/exception_l10n.dart';
 import '../../../../core/router/route_names.dart';
 import '../../../../shared/providers/current_user_provider.dart';
 import '../../../../shared/widgets/app_error_widget.dart';
@@ -328,7 +329,7 @@ class _CategoryTabViewState extends ConsumerState<_CategoryTabView> {
                                     SnackBar(
                                       content: Text(
                                         context.l10n.errorWithMessage(
-                                          e.toString(),
+                                          e.toLocalizedMessage(context.l10n),
                                         ),
                                       ),
                                     ),
@@ -381,7 +382,7 @@ class _CategoryTabViewState extends ConsumerState<_CategoryTabView> {
                                       SnackBar(
                                         content: Text(
                                           context.l10n.errorWithMessage(
-                                            e.toString(),
+                                            e.toLocalizedMessage(context.l10n),
                                           ),
                                         ),
                                       ),
@@ -713,7 +714,7 @@ class _CategorySharePickerSheetState
               padding: EdgeInsets.symmetric(vertical: 32),
               child: Center(child: CircularProgressIndicator()),
             ),
-            error: (e, _) => Text(e.toString()),
+            error: (e, _) => Text(e.toLocalizedMessage(context.l10n)),
             data: (categories) {
               final owned = categories
                   .where((c) => c.ownerId == currentUserId)

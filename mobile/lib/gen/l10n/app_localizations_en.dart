@@ -1041,4 +1041,34 @@ class AppLocalizationsEn extends AppLocalizations {
   String openEndedInstallments(int count) {
     return '$count installments (open-ended)';
   }
+
+  @override
+  String get purchaseFailed => 'Something went wrong during the purchase.';
+
+  @override
+  String get storeUnavailable =>
+      'Couldn\'t connect to the store. Check your internet connection.';
+
+  @override
+  String get subscriptionPlansLoadFailed =>
+      'Subscription plans couldn\'t be loaded right now.';
+
+  @override
+  String debtCountLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count debts',
+      one: '1 debt',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String percentValue(String value) {
+    return '$value%';
+  }
+
+  @override
+  String get trendNoPayments => 'No payments in the last 6 months';
 }

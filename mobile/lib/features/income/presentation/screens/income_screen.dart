@@ -144,7 +144,7 @@ class _IncomeTile extends ConsumerWidget {
         ),
         title: Text(
           NumberFormat.currency(
-            locale: 'tr_TR',
+            locale: Intl.defaultLocale,
             symbol: symbol,
             decimalDigits: 2,
           ).format(income.amount),

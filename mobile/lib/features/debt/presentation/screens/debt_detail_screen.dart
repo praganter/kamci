@@ -36,7 +36,7 @@ class _DebtDetailScreenState extends ConsumerState<DebtDetailScreen> {
       _cachedSymbol = symbol;
       _cachedDecimalDigits = decimalDigits;
       _currencyFormat = NumberFormat.currency(
-        locale: 'tr_TR',
+        locale: Intl.defaultLocale,
         symbol: symbol,
         decimalDigits: decimalDigits,
       );

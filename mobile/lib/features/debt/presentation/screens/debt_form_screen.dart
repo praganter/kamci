@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../domain/entities/reminder_channel.dart';
 import '../../domain/entities/reminder_embedded.dart';
 import '../../../../core/l10n/l10n.dart';
+import '../../../../core/l10n/exception_l10n.dart';
 import '../../../../core/l10n/enum_l10n.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../shared/widgets/pro_badge.dart';
@@ -313,7 +314,7 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
               currenciesAsync.when(
                 loading: () => const LinearProgressIndicator(),
                 error: (e, _) => Text(
-                  e.toString(),
+                  e.toLocalizedMessage(context.l10n),
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.error,
                     fontSize: 12,
@@ -411,7 +412,9 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                   validator: (v) {
                     if (v == null || v.trim().isEmpty) return null;
                     final n = int.tryParse(v.trim());
-                    if (n == null || n < 1) return '≥ 1';
+                    if (n == null || n < 1) {
+                      return l10n.paidInstallmentsCountInvalid;
+                    }
                     return null;
                   },
                 ),
@@ -421,7 +424,7 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
               // ── Açıklama ────────────────────────────────────────────
               TextFormField(
                 controller: _descCtrl,
-                textCapitalization: TextCapitalization.words,
+                textCapitalization: TextCapitalization.sentences,
                 decoration: InputDecoration(
                   labelText: l10n.descriptionOptional,
                   prefixIcon: const Icon(Icons.notes),

@@ -4,12 +4,14 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/theme_helpers.dart';
 import '../../../../core/l10n/l10n.dart';
+import '../../../../core/l10n/exception_l10n.dart';
 import '../../../../core/l10n/enum_l10n.dart';
 import '../../../../core/router/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/permission_utils.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/utils/snackbar_utils.dart';
+import '../../../../core/utils/validators.dart';
 import '../../../category/presentation/providers/category_providers.dart';
 import '../../../category/domain/entities/member_embedded.dart';
 import '../../../../shared/widgets/app_error_widget.dart';
@@ -482,7 +484,7 @@ class _MonthSummaryCard extends ConsumerWidget {
               curve: Curves.easeOutCubic,
               builder: (context, v, _) => Text(
                 NumberFormat.currency(
-                  locale: 'tr_TR',
+                  locale: Intl.defaultLocale,
                   symbol: symbols[e.key] ?? e.key,
                   decimalDigits: 0,
                 ).format(v),
@@ -580,7 +582,7 @@ class _CategoryPeriodSection extends ConsumerWidget {
         .map((e) {
           final symbol = currencySymbols[e.key] ?? e.key;
           final fmt = NumberFormat.currency(
-            locale: 'tr_TR',
+            locale: Intl.defaultLocale,
             symbol: symbol,
             decimalDigits: 0,
           );
@@ -609,7 +611,7 @@ class _CategoryPeriodSection extends ConsumerWidget {
       if (canConvert) {
         final baseSymbol = currencySymbols[baseCurrency] ?? baseCurrency;
         final fmt = NumberFormat.currency(
-          locale: 'tr_TR',
+          locale: Intl.defaultLocale,
           symbol: baseSymbol,
           decimalDigits: 0,
         );
@@ -929,6 +931,17 @@ class _DebtInstanceTile extends ConsumerWidget {
     final debt = item.debt;
     final isPaid = debt.paidCurrentPeriod;
     final cs = Theme.of(context).colorScheme;
+    final symbol =
+        ref
+            .watch(currencyListProvider)
+            .maybeWhen(
+              data: (list) => list
+                  .where((c) => c.code == debt.currency)
+                  .map((c) => c.symbol)
+                  .firstOrNull,
+              orElse: () => null,
+            ) ??
+        debt.currency;
 
     return Dismissible(
       key: Key(debt.id),
@@ -965,7 +978,13 @@ class _DebtInstanceTile extends ConsumerWidget {
         return confirmed;
       },
       onDismissed: (_) async {
-        await ref.read(debtListProvider.notifier).deleteDebt(debt.id);
+        try {
+          await ref.read(debtListProvider.notifier).deleteDebt(debt.id);
+        } catch (e) {
+          // Satır listeden düştü; hata olursa geri getirmek için listeyi yenile.
+          ref.invalidate(debtGroupedProvider(item.owned));
+          if (context.mounted) showErrorSnackBar(context, e);
+        }
       },
       background: Container(
         color: Colors.green,
@@ -1036,7 +1055,11 @@ class _DebtInstanceTile extends ConsumerWidget {
             style: Theme.of(context).textTheme.bodySmall,
           ),
           trailing: Text(
-            '${debt.amount} ${debt.currency}',
+            NumberFormat.currency(
+              locale: Intl.defaultLocale,
+              symbol: symbol,
+              decimalDigits: debt.amount % 1 == 0 ? 0 : 2,
+            ).format(debt.amount),
             style: TextStyle(
               fontWeight: FontWeight.w700,
               fontFeatures: const [FontFeature.tabularFigures()],
@@ -1217,6 +1240,7 @@ class _AmountDialog extends StatefulWidget {
 }
 
 class _AmountDialogState extends State<_AmountDialog> {
+  final _formKey = GlobalKey<FormState>();
   final _controller = TextEditingController();
 
   @override
@@ -1225,32 +1249,46 @@ class _AmountDialogState extends State<_AmountDialog> {
     super.dispose();
   }
 
+  void _submit() {
+    if (!_formKey.currentState!.validate()) return;
+    Navigator.of(
+      context,
+    ).pop(double.parse(_controller.text.replaceAll(',', '.')));
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     return AlertDialog(
       title: Text(l10n.enterAmount),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            widget.debtName,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
+      content: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              widget.debtName,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _controller,
-            autofocus: true,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: InputDecoration(
-              hintText: l10n.partialPaymentHint,
-              border: const OutlineInputBorder(),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: _controller,
+              autofocus: true,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              decoration: InputDecoration(
+                hintText: l10n.partialPaymentHint,
+                border: const OutlineInputBorder(),
+              ),
+              validator: Validators.amount(l10n),
+              onFieldSubmitted: (_) => _submit(),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
       actions: [
         TextButton(
@@ -1258,12 +1296,7 @@ class _AmountDialogState extends State<_AmountDialog> {
           child: Text(MaterialLocalizations.of(context).cancelButtonLabel),
         ),
         FilledButton(
-          onPressed: () {
-            final value = double.tryParse(
-              _controller.text.replaceAll(',', '.'),
-            );
-            Navigator.of(context).pop(value);
-          },
+          onPressed: _submit,
           child: Text(MaterialLocalizations.of(context).okButtonLabel),
         ),
       ],
@@ -1482,7 +1515,7 @@ class _BulkPayDialogState extends ConsumerState<_BulkPayDialog> {
         ),
         error: (e, _) => Padding(
           padding: const EdgeInsets.all(20),
-          child: Text(e.toString()),
+          child: Text(e.toLocalizedMessage(context.l10n)),
         ),
         data: (debt) {
           _initEntries(debt);

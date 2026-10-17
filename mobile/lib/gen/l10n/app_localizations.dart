@@ -1951,6 +1951,42 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'{count} taksit (açık uçlu)'**
   String openEndedInstallments(int count);
+
+  /// No description provided for @purchaseFailed.
+  ///
+  /// In tr, this message translates to:
+  /// **'Satın alma sırasında bir hata oluştu.'**
+  String get purchaseFailed;
+
+  /// No description provided for @storeUnavailable.
+  ///
+  /// In tr, this message translates to:
+  /// **'Mağazaya bağlanılamadı. İnternet bağlantını kontrol et.'**
+  String get storeUnavailable;
+
+  /// No description provided for @subscriptionPlansLoadFailed.
+  ///
+  /// In tr, this message translates to:
+  /// **'Abonelik planları şu an yüklenemedi.'**
+  String get subscriptionPlansLoadFailed;
+
+  /// No description provided for @debtCountLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} borç'**
+  String debtCountLabel(int count);
+
+  /// No description provided for @percentValue.
+  ///
+  /// In tr, this message translates to:
+  /// **'%{value}'**
+  String percentValue(String value);
+
+  /// No description provided for @trendNoPayments.
+  ///
+  /// In tr, this message translates to:
+  /// **'Son 6 ayda ödeme yok'**
+  String get trendNoPayments;
 }
 
 class _AppLocalizationsDelegate

@@ -191,7 +191,9 @@ class _HouseholdCard extends StatelessWidget {
     final l10n = context.l10n;
     final cs = Theme.of(context).colorScheme;
     final ratioText = summary.householdDebtToIncomeRatio != null
-        ? '%${summary.householdDebtToIncomeRatio!.toStringAsFixed(1)}'
+        ? l10n.percentValue(
+            summary.householdDebtToIncomeRatio!.toStringAsFixed(1),
+          )
         : l10n.noIncomeSet;
 
     return Container(
@@ -258,7 +260,7 @@ class _StatsGrid extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     final ratioText = summary.debtToIncomeRatio != null
-        ? '%${summary.debtToIncomeRatio!.toStringAsFixed(1)}'
+        ? l10n.percentValue(summary.debtToIncomeRatio!.toStringAsFixed(1))
         : l10n.noIncomeSet;
 
     return GridView.count(
@@ -272,21 +274,21 @@ class _StatsGrid extends StatelessWidget {
         _StatCard(
           label: l10n.totalPaidAmount,
           value: _fmtMoney(summary.baseCurrency, summary.totalPaid),
-          sub: '${summary.paidCount} borç',
+          sub: l10n.debtCountLabel(summary.paidCount),
           color: AppColors.success,
           icon: Icons.check_circle_outline,
         ),
         _StatCard(
           label: l10n.pendingLabel,
           value: _fmtMoney(summary.baseCurrency, summary.pendingAmount),
-          sub: '${summary.pendingCount} borç',
+          sub: l10n.debtCountLabel(summary.pendingCount),
           color: AppColors.warning,
           icon: Icons.hourglass_empty_outlined,
         ),
         _StatCard(
           label: l10n.skippedLabel,
           value: _fmtMoney(summary.baseCurrency, summary.skippedAmount),
-          sub: '${summary.skippedCount} borç',
+          sub: l10n.debtCountLabel(summary.skippedCount),
           color: cs.error,
           icon: Icons.skip_next_outlined,
         ),
@@ -410,23 +412,33 @@ class _TrendChartCard extends StatelessWidget {
       height: 200,
       padding: const EdgeInsets.fromLTRB(8, 16, 16, 8),
       decoration: altBCard(cs),
-      // Giriş animasyonu: çizgi tabandan yükselir
-      child: TweenAnimationBuilder<double>(
-        tween: Tween(begin: 0, end: 1),
-        duration: const Duration(milliseconds: 800),
-        curve: Curves.easeOutCubic,
-        builder: (context, t, _) => CustomPaint(
-          painter: _TrendPainter(
-            values: values,
-            months: months,
-            lineColor: cs.primary,
-            gridColor: cs.outlineVariant,
-            labelColor: cs.onSurfaceVariant,
-            progress: t,
-          ),
-          size: Size.infinite,
-        ),
-      ),
+      // Painter tüm değerler 0 iken hiçbir şey çizmez — boş kart yerine metin.
+      child: values.every((v) => v == 0)
+          ? Center(
+              child: Text(
+                context.l10n.trendNoPayments,
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+              ),
+            )
+          // Giriş animasyonu: çizgi tabandan yükselir
+          : TweenAnimationBuilder<double>(
+              tween: Tween(begin: 0, end: 1),
+              duration: const Duration(milliseconds: 800),
+              curve: Curves.easeOutCubic,
+              builder: (context, t, _) => CustomPaint(
+                painter: _TrendPainter(
+                  values: values,
+                  months: months,
+                  lineColor: cs.primary,
+                  gridColor: cs.outlineVariant,
+                  labelColor: cs.onSurfaceVariant,
+                  progress: t,
+                ),
+                size: Size.infinite,
+              ),
+            ),
     );
   }
 
@@ -434,7 +446,7 @@ class _TrendChartCard extends StatelessWidget {
     try {
       final parts = yyyyMm.split('-');
       final dt = DateTime(int.parse(parts[0]), int.parse(parts[1]));
-      return DateFormat('MMM').format(dt);
+      return DateFormat('MMM', Intl.defaultLocale).format(dt);
     } catch (_) {
       return yyyyMm;
     }
@@ -654,7 +666,9 @@ class _CategoryDonutCard extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          '%${items[i].percentage.toStringAsFixed(1)}',
+                          context.l10n.percentValue(
+                            items[i].percentage.toStringAsFixed(1),
+                          ),
                           style: Theme.of(context).textTheme.labelSmall
                               ?.copyWith(
                                 fontWeight: FontWeight.w700,
@@ -809,7 +823,9 @@ class _ProgressTile extends StatelessWidget {
                 ),
               if (!item.isCompleted && progress != null)
                 Text(
-                  '%${item.completionPercentage!.toStringAsFixed(0)}',
+                  l10n.percentValue(
+                    item.completionPercentage!.toStringAsFixed(0),
+                  ),
                   style: TextStyle(
                     color: progressColor,
                     fontSize: 12,

@@ -507,5 +507,21 @@
     "placeholders": {
       "count": { "type": "int" }
     }
-  }
+  },
+  "purchaseFailed": "Satın alma sırasında bir hata oluştu.",
+  "storeUnavailable": "Mağazaya bağlanılamadı. İnternet bağlantını kontrol et.",
+  "subscriptionPlansLoadFailed": "Abonelik planları şu an yüklenemedi.",
+  "debtCountLabel": "{count} borç",
+  "@debtCountLabel": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "percentValue": "%{value}",
+  "@percentValue": {
+    "placeholders": {
+      "value": { "type": "String" }
+    }
+  },
+  "trendNoPayments": "Son 6 ayda ödeme yok"
 }
