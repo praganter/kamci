@@ -17,4 +17,6 @@ public interface UserIncomeRepository extends MongoRepository<UserIncomeDocument
 
     Optional<UserIncomeDocument> findTopByOwnerIdAndEffectiveFromLessThanEqualOrderByEffectiveFromDesc(
             String ownerId, LocalDateTime asOf);
+
+    void deleteByOwnerId(String ownerId);
 }

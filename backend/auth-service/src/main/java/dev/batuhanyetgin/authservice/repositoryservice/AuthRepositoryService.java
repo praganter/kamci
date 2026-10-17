@@ -34,4 +34,8 @@ public class AuthRepositoryService extends BaseRepositoryService<AuthDocument> {
     public boolean existsById(final String id) {
         return authRepository.existsById(id);
     }
+
+    public void delete(final String id) {
+        authRepository.deleteById(id);
+    }
 }

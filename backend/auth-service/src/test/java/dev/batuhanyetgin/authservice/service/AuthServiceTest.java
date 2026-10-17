@@ -1,6 +1,10 @@
 package dev.batuhanyetgin.authservice.service;
 
+import dev.batuhanyetgin.authservice.client.DebtServiceClient;
+import dev.batuhanyetgin.authservice.client.NotificationServiceClient;
 import dev.batuhanyetgin.authservice.document.AuthDocument;
+import dev.batuhanyetgin.authservice.document.HouseholdDocument;
+import dev.batuhanyetgin.authservice.repositoryservice.HouseholdRepositoryService;
 import dev.batuhanyetgin.authservice.dto.request.ChangePasswordRequest;
 import dev.batuhanyetgin.authservice.dto.request.ForgetPasswordRequest;
 import dev.batuhanyetgin.authservice.dto.request.LoginRequest;
@@ -38,6 +42,9 @@ class AuthServiceTest {
     @Mock private AuthEventProducer authEventProducer;
     @Mock private TokenBlacklistService tokenBlacklistService;
     @Mock private RateLimiterService rateLimiterService;
+    @Mock private HouseholdRepositoryService householdRS;
+    @Mock private DebtServiceClient debtServiceClient;
+    @Mock private NotificationServiceClient notificationServiceClient;
 
     @InjectMocks
     private AuthService authService;
@@ -437,6 +444,63 @@ class AuthServiceTest {
             assertThatExceptionOfType(BaseException.class)
                     .isThrownBy(() -> authService.logout("Bearer   "))
                     .matches(e -> e.getStatus() == HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    // ─── deleteAccount ────────────────────────────────────────────────────────
+
+    @Nested
+    @DisplayName("deleteAccount")
+    class DeleteAccount {
+
+        @Test
+        @DisplayName("authenticated user → cascades to debt/notification services, deletes household link and account")
+        void authenticatedUser_cascadesAndDeletesAccount() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(USER_ID);
+
+                final HouseholdDocument household = HouseholdDocument.builder()
+                        .ownerId(USER_ID)
+                        .partnerId("partner1")
+                        .build();
+                when(householdRS.findAllForUser(USER_ID)).thenReturn(java.util.List.of(household));
+
+                authService.deleteAccount();
+
+                verify(debtServiceClient).deleteAccountData(USER_ID);
+                verify(notificationServiceClient).deleteAccountData(USER_ID);
+                verify(householdRS).delete(household);
+                verify(authRS).delete(USER_ID);
+            }
+        }
+
+        @Test
+        @DisplayName("no household link → skips household deletion but still deletes account")
+        void noHousehold_skipsHouseholdDeletion() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(USER_ID);
+                when(householdRS.findAllForUser(USER_ID)).thenReturn(java.util.List.of());
+
+                authService.deleteAccount();
+
+                verify(householdRS, never()).delete(any());
+                verify(authRS).delete(USER_ID);
+            }
+        }
+
+        @Test
+        @DisplayName("debt-service unavailable → propagates exception, account not deleted")
+        void debtServiceUnavailable_doesNotDeleteAccount() {
+            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
+                ctx.when(RequestContextUtil::getUserId).thenReturn(USER_ID);
+                doThrow(BaseException.serviceUnavailable("error.debt_service.unavailable"))
+                        .when(debtServiceClient).deleteAccountData(USER_ID);
+
+                assertThatExceptionOfType(BaseException.class)
+                        .isThrownBy(() -> authService.deleteAccount());
+
+                verify(authRS, never()).delete(any());
+            }
         }
     }
 

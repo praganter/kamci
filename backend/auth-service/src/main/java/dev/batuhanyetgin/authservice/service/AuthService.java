@@ -1,5 +1,7 @@
 package dev.batuhanyetgin.authservice.service;
 
+import dev.batuhanyetgin.authservice.client.DebtServiceClient;
+import dev.batuhanyetgin.authservice.client.NotificationServiceClient;
 import dev.batuhanyetgin.authservice.document.AuthDocument;
 import dev.batuhanyetgin.authservice.dto.request.ChangePasswordRequest;
 import dev.batuhanyetgin.authservice.dto.request.ForgetPasswordRequest;
@@ -10,6 +12,7 @@ import dev.batuhanyetgin.authservice.dto.response.UserDetailResponse;
 import dev.batuhanyetgin.authservice.dto.response.TokenResponse;
 import dev.batuhanyetgin.authservice.producer.AuthEventProducer;
 import dev.batuhanyetgin.authservice.repositoryservice.AuthRepositoryService;
+import dev.batuhanyetgin.authservice.repositoryservice.HouseholdRepositoryService;
 import dev.batuhanyetgin.commonmodule.event.PasswordResetEvent;
 import dev.batuhanyetgin.commonmodule.event.RabbitMQConstants;
 import dev.batuhanyetgin.commonmodule.event.UserRegisteredEvent;
@@ -31,6 +34,9 @@ public class AuthService {
     private final AuthEventProducer authEventProducer;
     private final TokenBlacklistService tokenBlacklistService;
     private final RateLimiterService rateLimiterService;
+    private final HouseholdRepositoryService householdRS;
+    private final DebtServiceClient debtServiceClient;
+    private final NotificationServiceClient notificationServiceClient;
 
     public TokenResponse register(final RegisterRequest request) {
 
@@ -175,6 +181,17 @@ public class AuthService {
                 .refreshToken(jwtService.generateToken(userId, true, false))
                 .token(jwtService.generateToken(userId, false, authDocument.isPremium()))
                 .build();
+    }
+
+    public void deleteAccount() {
+        final String userId = RequestContextUtil.getUserId();
+
+        debtServiceClient.deleteAccountData(userId);
+        notificationServiceClient.deleteAccountData(userId);
+        householdRS.findAllForUser(userId).forEach(householdRS::delete);
+
+        authRS.delete(userId);
+        log.info("Account deleted for userId: {}", userId);
     }
 
     public UserDetailResponse userDetail() {

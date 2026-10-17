@@ -106,6 +106,17 @@ public class AuthController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Permanently delete the authenticated user's account and all associated data")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Account and associated data deleted"),
+            @ApiResponse(responseCode = "401", description = "Not authenticated")
+    })
+    @DeleteMapping("account")
+    ResponseEntity<Void> deleteAccount() {
+        authService.deleteAccount();
+        return ResponseEntity.noContent().build();
+    }
+
     @Operation(summary = "Get the authenticated user's profile")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "User profile returned"),

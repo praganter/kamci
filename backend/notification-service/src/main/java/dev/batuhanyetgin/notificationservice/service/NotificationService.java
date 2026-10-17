@@ -39,4 +39,8 @@ public class NotificationService {
             notificationRepository.save(notification);
         }
     }
+
+    public void deleteAllForUser(final String userId) {
+        notificationRepository.deleteByUserId(userId);
+    }
 }

@@ -41,4 +41,8 @@ public class UserIncomeRepositoryService {
         return userIncomeRepository
                 .findTopByOwnerIdAndEffectiveFromLessThanEqualOrderByEffectiveFromDesc(ownerId, asOf);
     }
+
+    public void deleteByOwnerId(final String ownerId) {
+        userIncomeRepository.deleteByOwnerId(ownerId);
+    }
 }

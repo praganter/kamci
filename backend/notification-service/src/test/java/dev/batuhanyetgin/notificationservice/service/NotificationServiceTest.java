@@ -113,4 +113,17 @@ class NotificationServiceTest {
                     .isInstanceOf(BaseException.class);
         }
     }
+
+    @Nested
+    @DisplayName("deleteAllForUser")
+    class DeleteAllForUser {
+
+        @Test
+        @DisplayName("delegates to repository deleteByUserId")
+        void delegatesToRepository() {
+            notificationService.deleteAllForUser(USER_ID);
+
+            verify(notificationRepository).deleteByUserId(USER_ID);
+        }
+    }
 }
