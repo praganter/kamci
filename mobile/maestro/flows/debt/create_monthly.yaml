@@ -133,7 +133,7 @@ tags: [debt]
 - tapOn:
     text: "Borçlar"
 - waitForAnimationToEnd
-# Debt tile accessibility label'ı birleşiktir ("Ad\n0 / 12\n600.0 TRY");
+# Debt tile accessibility label'ı birleşiktir ("Ad\n0 / 12\n₺600");
 # tam metin eşleşmez, [\s\S]* ile regex gerekir (`.` newline eşlemez).
 - scrollUntilVisible:
     element:
@@ -146,7 +146,7 @@ tags: [debt]
 # Cleanup: borcu sil
 - swipe:
     from:
-      text: "[\\s\\S]*\\d+\\.\\d+ [A-Z]{3}"
+      text: "[^\\n]+\\n\\d+( / \\d+)?[^\\n]*\\n[^\\n]+"
       index: 0
     direction: LEFT
 - waitForAnimationToEnd

@@ -104,7 +104,7 @@ appId: com.batuhanyetgin.kamci
 - tapOn:
     text: "Oluştur"
 # Form kapanış animasyonu bitmeden tab tap'i yanlış yere gider; ayrıca yeni
-# oluşan borcun tile label'ı birleşiktir ("Test Borcu\n0 / 1\n500.0 TRY").
+# oluşan borcun tile label'ı birleşiktir ("Test Borcu\n0 / 1\n₺500").
 - extendedWaitUntil:
     visible:
       id: "myDebtsTab"

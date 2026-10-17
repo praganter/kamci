@@ -127,18 +127,18 @@ tags: [debt]
 - tapOn:
     text: "Borçlar"
 - waitForAnimationToEnd
-# Debt tile label'ı birleşiktir ("Ad\n0 / 1\n1200.0 USD") → [\s\S]* regex şart
+# Debt tile label'ı birleşiktir ("Ad\n0 / 1\n$1.200") → [\s\S]* regex şart
 - scrollUntilVisible:
     element:
       text: "USD Test Borcu[\\s\\S]*"
     direction: DOWN
     timeout: 20000
 - assertVisible:
-    text: "USD Test Borcu[\\s\\S]*USD"
+    text: "USD Test Borcu[\\s\\S]*\\$[\\d.,]+"
 # Cleanup USD borcu
 - swipe:
     from:
-      text: "[\\s\\S]*\\d+\\.\\d+ [A-Z]{3}"
+      text: "[^\\n]+\\n\\d+( / \\d+)?[^\\n]*\\n[^\\n]+"
       index: 0
     direction: LEFT
 - waitForAnimationToEnd
@@ -273,11 +273,11 @@ tags: [debt]
     direction: DOWN
     timeout: 20000
 - assertVisible:
-    text: "EUR Test Borcu[\\s\\S]*EUR"
+    text: "EUR Test Borcu[\\s\\S]*€[\\d.,]+"
 # Cleanup EUR borcu
 - swipe:
     from:
-      text: "[\\s\\S]*\\d+\\.\\d+ [A-Z]{3}"
+      text: "[^\\n]+\\n\\d+( / \\d+)?[^\\n]*\\n[^\\n]+"
       index: 0
     direction: LEFT
 - waitForAnimationToEnd

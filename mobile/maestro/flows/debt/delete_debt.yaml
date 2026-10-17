@@ -14,7 +14,7 @@ tags: [debt, smoke]
 # endToStart = sola swipe = sil
 - swipe:
     from:
-      text: "[\\s\\S]*\\d+\\.\\d+ [A-Z]{3}"
+      text: "[^\\n]+\\n\\d+( / \\d+)?[^\\n]*\\n[^\\n]+"
       index: 0
     direction: LEFT
 - waitForAnimationToEnd

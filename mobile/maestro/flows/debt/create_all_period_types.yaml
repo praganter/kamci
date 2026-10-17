@@ -135,7 +135,7 @@ tags: [debt]
     text: "Günlük Borç[\\s\\S]*"
 - swipe:
     from:
-      text: "[\\s\\S]*\\d+\\.\\d+ [A-Z]{3}"
+      text: "[^\\n]+\\n\\d+( / \\d+)?[^\\n]*\\n[^\\n]+"
       index: 0
     direction: LEFT
 - waitForAnimationToEnd
@@ -270,7 +270,7 @@ tags: [debt]
     text: "Haftalık Borç[\\s\\S]*"
 - swipe:
     from:
-      text: "[\\s\\S]*\\d+\\.\\d+ [A-Z]{3}"
+      text: "[^\\n]+\\n\\d+( / \\d+)?[^\\n]*\\n[^\\n]+"
       index: 0
     direction: LEFT
 - waitForAnimationToEnd
@@ -405,7 +405,7 @@ tags: [debt]
     text: "İki Haftalık Borç[\\s\\S]*"
 - swipe:
     from:
-      text: "[\\s\\S]*\\d+\\.\\d+ [A-Z]{3}"
+      text: "[^\\n]+\\n\\d+( / \\d+)?[^\\n]*\\n[^\\n]+"
       index: 0
     direction: LEFT
 - waitForAnimationToEnd
@@ -540,7 +540,7 @@ tags: [debt]
     text: "Üç Aylık Borç[\\s\\S]*"
 - swipe:
     from:
-      text: "[\\s\\S]*\\d+\\.\\d+ [A-Z]{3}"
+      text: "[^\\n]+\\n\\d+( / \\d+)?[^\\n]*\\n[^\\n]+"
       index: 0
     direction: LEFT
 - waitForAnimationToEnd
@@ -675,7 +675,7 @@ tags: [debt]
     text: "Altı Aylık Borç[\\s\\S]*"
 - swipe:
     from:
-      text: "[\\s\\S]*\\d+\\.\\d+ [A-Z]{3}"
+      text: "[^\\n]+\\n\\d+( / \\d+)?[^\\n]*\\n[^\\n]+"
       index: 0
     direction: LEFT
 - waitForAnimationToEnd
@@ -810,7 +810,7 @@ tags: [debt]
     text: "Yıllık Borç[\\s\\S]*"
 - swipe:
     from:
-      text: "[\\s\\S]*\\d+\\.\\d+ [A-Z]{3}"
+      text: "[^\\n]+\\n\\d+( / \\d+)?[^\\n]*\\n[^\\n]+"
       index: 0
     direction: LEFT
 - waitForAnimationToEnd

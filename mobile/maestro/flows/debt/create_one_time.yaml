@@ -129,7 +129,7 @@ tags: [debt, smoke]
 - waitForAnimationToEnd
 # Scroll to find the debt regardless of how many empty category groups are above it.
 # NOT: Debt tile'ın iOS accessibility label'ı birleşiktir:
-# "Tek Seferlik Test Borcu\n0 / 1\n150.0 TRY" — tam metin eşleşmez.
+# "Tek Seferlik Test Borcu\n0 / 1\n₺150" — tam metin eşleşmez.
 # Maestro regex'inde `.` newline'ı eşlemez → [\s\S]* şart.
 - scrollUntilVisible:
     element:
@@ -137,11 +137,11 @@ tags: [debt, smoke]
     direction: DOWN
     timeout: 20000
 - assertVisible:
-    text: "Tek Seferlik Test Borcu[\\s\\S]*150\\.0 TRY"
+    text: "Tek Seferlik Test Borcu[\\s\\S]*₺150"
 # Cleanup: borcu sil (limit aşımını önle)
 - swipe:
     from:
-      text: "[\\s\\S]*\\d+\\.\\d+ [A-Z]{3}"
+      text: "[^\\n]+\\n\\d+( / \\d+)?[^\\n]*\\n[^\\n]+"
       index: 0
     direction: LEFT
 - waitForAnimationToEnd

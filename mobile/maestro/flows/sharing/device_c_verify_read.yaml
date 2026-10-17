@@ -32,7 +32,7 @@ tags: [sharing, multi-device]
 # yakalayıp sekmeyi kaydırıyor, Dismissible hiç tetiklenmiyor → koordinat swipe.
 - swipe:
     from:
-      text: "[\\s\\S]*\\d+\\.\\d+ [A-Z]{3}"
+      text: "[^\\n]+\\n\\d+( / \\d+)?[^\\n]*\\n[^\\n]+"
       index: 0
     direction: RIGHT
     duration: 400

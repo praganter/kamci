@@ -23,7 +23,7 @@ tags: [sharing, multi-device]
 # yakalayıp sekmeyi kaydırıyor → koordinat swipe.
 - swipe:
     from:
-      text: "[\\s\\S]*\\d+\\.\\d+ [A-Z]{3}"
+      text: "[^\\n]+\\n\\d+( / \\d+)?[^\\n]*\\n[^\\n]+"
       index: 0
     direction: LEFT
     duration: 400
@@ -51,7 +51,7 @@ tags: [sharing, multi-device]
 # 3) Sağa swipe = ödeme → canWrite VAR → ödeme gerçekten yapılabilmeli
 - swipe:
     from:
-      text: "[\\s\\S]*\\d+\\.\\d+ [A-Z]{3}"
+      text: "[^\\n]+\\n\\d+( / \\d+)?[^\\n]*\\n[^\\n]+"
       index: 0
     direction: RIGHT
     duration: 400

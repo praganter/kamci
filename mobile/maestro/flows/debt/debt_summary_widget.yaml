@@ -13,7 +13,7 @@ tags: [debt]
 - waitForAnimationToEnd
 # Borç listesinde tutar ve para birimi tile'ın birleşik label'ında doğrulanır
 - assertVisible:
-    text: "Test Borcu[\\s\\S]*500\\.0 TRY"
+    text: "Test Borcu[\\s\\S]*₺500"
 # Hata durumu olmamalı
 - assertNotVisible:
     text: "Hata"
@@ -22,7 +22,7 @@ tags: [debt]
 # Cleanup: borcu sil
 - swipe:
     from:
-      text: "[\\s\\S]*\\d+\\.\\d+ [A-Z]{3}"
+      text: "[^\\n]+\\n\\d+( / \\d+)?[^\\n]*\\n[^\\n]+"
       index: 0
     direction: LEFT
 - waitForAnimationToEnd
