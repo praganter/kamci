@@ -668,20 +668,43 @@ class _CategoryPeriodSection extends ConsumerWidget {
             ),
           ],
         ),
-        trailing: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
-          decoration: BoxDecoration(
-            color: cs.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Text(
-            '$totalCount',
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-              color: cs.onSurfaceVariant,
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+              decoration: BoxDecoration(
+                color: cs.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                '$totalCount',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: cs.onSurfaceVariant,
+                ),
+              ),
             ),
-          ),
+            // Uzun basma menüsünün görünür karşılığı.
+            Builder(
+              builder: (btnCtx) => IconButton(
+                icon: const Icon(Icons.more_vert),
+                color: cs.onSurfaceVariant,
+                tooltip: MaterialLocalizations.of(
+                  context,
+                ).showMenuTooltip,
+                onPressed: () {
+                  final box = btnCtx.findRenderObject()! as RenderBox;
+                  _showCategoryMenu(
+                    context,
+                    ref,
+                    box.localToGlobal(box.size.center(Offset.zero)),
+                  );
+                },
+              ),
+            ),
+          ],
         ),
         children: [
           for (int i = 0; i < items.length; i++) ...[
@@ -958,7 +981,13 @@ class _DebtInstanceTile extends ConsumerWidget {
             action: (l) => l.canWrite,
           );
           if (!hasWrite) return false;
-          await _showPaymentOptions(context, ref, item);
+          await showPaymentOptions(
+            context,
+            ref,
+            debtId: debt.id,
+            debtName: debt.name,
+            amount: debt.amount,
+          );
           return false;
         }
 
@@ -1075,12 +1104,14 @@ class _DebtInstanceTile extends ConsumerWidget {
 
 // ── Payment Options ──────────────────────────────────────────────────────────
 
-Future<void> _showPaymentOptions(
+/// Ödeme eylemleri sheet'i — listede sağa kaydırma ve detaydaki "Öde" butonu.
+Future<void> showPaymentOptions(
   BuildContext context,
-  WidgetRef ref,
-  DebtListItem item,
-) async {
-  final debt = item.debt;
+  WidgetRef ref, {
+  required String debtId,
+  required String debtName,
+  required double amount,
+}) async {
   final l10n = context.l10n;
   final notifier = ref.read(debtListProvider.notifier);
 
@@ -1120,10 +1151,10 @@ Future<void> _showPaymentOptions(
             onTap: () async {
               Navigator.of(ctx).pop();
               try {
-                await notifier.skipPayment(debt.id);
+                await notifier.skipPayment(debtId);
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(l10n.paymentSkipped(debt.name))),
+                    SnackBar(content: Text(l10n.paymentSkipped(debtName))),
                   );
                 }
               } catch (e) {
@@ -1137,16 +1168,16 @@ Future<void> _showPaymentOptions(
             title: Text(l10n.partialPayment),
             onTap: () async {
               Navigator.of(ctx).pop();
-              final amount = await showDialog<double>(
+              final partial = await showDialog<double>(
                 context: context,
-                builder: (_) => _AmountDialog(debtName: debt.name),
+                builder: (_) => _AmountDialog(debtName: debtName),
               );
-              if (amount == null) return;
+              if (partial == null) return;
               try {
-                await notifier.makePayment(debt.id, amountPaid: amount);
+                await notifier.makePayment(debtId, amountPaid: partial);
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(l10n.paymentRecorded(debt.name))),
+                    SnackBar(content: Text(l10n.paymentRecorded(debtName))),
                   );
                 }
               } catch (e) {
@@ -1164,10 +1195,10 @@ Future<void> _showPaymentOptions(
             onTap: () async {
               Navigator.of(ctx).pop();
               try {
-                await notifier.makePayment(debt.id);
+                await notifier.makePayment(debtId);
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(l10n.paymentRecorded(debt.name))),
+                    SnackBar(content: Text(l10n.paymentRecorded(debtName))),
                   );
                 }
               } catch (e) {
@@ -1201,13 +1232,13 @@ Future<void> _showPaymentOptions(
                   final payments = await showDialog<List<BulkPaymentEntry>>(
                     context: context,
                     builder: (_) => _BulkPayDialog(
-                      debtId: debt.id,
-                      defaultAmount: debt.amount,
+                      debtId: debtId,
+                      defaultAmount: amount,
                     ),
                   );
                   if (payments == null || payments.isEmpty) return;
                   try {
-                    await notifier.bulkPay(debt.id, payments);
+                    await notifier.bulkPay(debtId, payments);
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(

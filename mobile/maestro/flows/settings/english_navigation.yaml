@@ -38,9 +38,7 @@ onFlowComplete:
     text: "(?s)Change Password.*"
 - assertVisible:
     text: "(?s)Send Suggestion / Complaint.*"
-# Ayarlar push edilmiş ekran (bottom nav yok) → geri dön
-- back
-- waitForAnimationToEnd
+# Ayarlar artık bir sekme (bottom nav görünür) → doğrudan Borçlar'a geç
 # Borçlar
 - tapOn:
     text: "Debts"

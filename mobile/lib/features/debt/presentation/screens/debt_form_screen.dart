@@ -7,6 +7,7 @@ import '../../../../core/l10n/l10n.dart';
 import '../../../../core/l10n/exception_l10n.dart';
 import '../../../../core/l10n/enum_l10n.dart';
 import '../../../../core/network/api_exception.dart';
+import '../../../../core/providers/app_settings_provider.dart';
 import '../../../../shared/widgets/pro_badge.dart';
 import '../../../../core/utils/snackbar_utils.dart';
 import '../../../../core/utils/validators.dart';
@@ -53,6 +54,13 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
   @override
   void initState() {
     super.initState();
+    if (widget.debtId == null) {
+      // Yeni borçta en olası değerler hazır gelsin (3 seçim daha az).
+      final now = DateTime.now();
+      _selectedCurrency = ref.read(baseCurrencyProvider);
+      _periodType = PaymentPeriodType.monthly;
+      _firstPaymentDate = DateTime(now.year, now.month, now.day);
+    }
     if (widget.debtId != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
@@ -228,60 +236,6 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // ── Kategori ────────────────────────────────────────────
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: PlatformSelectField<String>(
-                      label: l10n.category,
-                      prefixIcon: const Icon(Icons.folder_outlined),
-                      value: _selectedCategoryId,
-                      hint: l10n.select,
-                      semanticsId: 'categoryField',
-                      items:
-                          categoriesAsync.valueOrNull
-                              ?.map(
-                                (c) => PlatformSelectItem(
-                                  value: c.id,
-                                  label: c.name,
-                                ),
-                              )
-                              .toList() ??
-                          [],
-                      onChanged: (v) => setState(() => _selectedCategoryId = v),
-                      validator: (v) => v == null
-                          ? Validators.required(
-                              l10n,
-                              null,
-                              fieldName: l10n.category,
-                            )
-                          : null,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Material(
-                    color: Theme.of(context).colorScheme.primaryContainer,
-                    borderRadius: BorderRadius.circular(14),
-                    child: InkWell(
-                      onTap: _openAddCategorySheet,
-                      borderRadius: BorderRadius.circular(14),
-                      child: SizedBox(
-                        width: 56,
-                        height: 56,
-                        child: Icon(
-                          Icons.add,
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.onPrimaryContainer,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-
               // ── Borç Adı ────────────────────────────────────────────
               TextFormField(
                 controller: _nameCtrl,
@@ -330,7 +284,10 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                   return PlatformSelectField<String>(
                     label: l10n.currency,
                     prefixIcon: const Icon(Icons.attach_money),
-                    value: _selectedCurrency,
+                    // Varsayılan baz para birimi listede yoksa boş başla.
+                    value: sorted.any((c) => c.code == _selectedCurrency)
+                        ? _selectedCurrency
+                        : null,
                     hint: l10n.select,
                     semanticsId: 'currencyField',
                     items: sorted
@@ -420,6 +377,60 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                 ),
                 const SizedBox(height: 16),
               ],
+
+              // ── Kategori ────────────────────────────────────────────
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: PlatformSelectField<String>(
+                      label: l10n.category,
+                      prefixIcon: const Icon(Icons.folder_outlined),
+                      value: _selectedCategoryId,
+                      hint: l10n.select,
+                      semanticsId: 'categoryField',
+                      items:
+                          categoriesAsync.valueOrNull
+                              ?.map(
+                                (c) => PlatformSelectItem(
+                                  value: c.id,
+                                  label: c.name,
+                                ),
+                              )
+                              .toList() ??
+                          [],
+                      onChanged: (v) => setState(() => _selectedCategoryId = v),
+                      validator: (v) => v == null
+                          ? Validators.required(
+                              l10n,
+                              null,
+                              fieldName: l10n.category,
+                            )
+                          : null,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Material(
+                    color: Theme.of(context).colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(14),
+                    child: InkWell(
+                      onTap: _openAddCategorySheet,
+                      borderRadius: BorderRadius.circular(14),
+                      child: SizedBox(
+                        width: 56,
+                        height: 56,
+                        child: Icon(
+                          Icons.add,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onPrimaryContainer,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
 
               // ── Açıklama ────────────────────────────────────────────
               TextFormField(
@@ -567,19 +578,23 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                 ),
                 const SizedBox(height: 8),
               ],
-              const SizedBox(height: 24),
-
-              ElevatedButton(
-                onPressed: _isSubmitting ? null : _submit,
-                child: _isSubmitting
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : Text(widget.debtId == null ? l10n.create : l10n.update),
-              ),
             ],
+          ),
+        ),
+      ),
+      // Uzun formda kaydet butonu her zaman görünür kalsın.
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+          child: ElevatedButton(
+            onPressed: _isSubmitting ? null : _submit,
+            child: _isSubmitting
+                ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : Text(widget.debtId == null ? l10n.create : l10n.update),
           ),
         ),
       ),

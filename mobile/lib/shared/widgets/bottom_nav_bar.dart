@@ -37,7 +37,7 @@ class AppShell extends ConsumerWidget {
       case 2:
         context.goNamed(RouteNames.charts);
       case 3:
-        context.pushNamed(RouteNames.settings);
+        context.goNamed(RouteNames.settings);
     }
   }
 

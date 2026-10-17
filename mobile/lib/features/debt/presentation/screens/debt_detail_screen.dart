@@ -11,12 +11,14 @@ import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/utils/permission_utils.dart';
 import '../../../../core/utils/snackbar_utils.dart';
 import '../../../../shared/widgets/app_error_widget.dart';
+import '../../../../shared/widgets/confirm_dialog.dart';
 import '../../../../shared/providers/current_user_provider.dart';
 import '../../../category/presentation/providers/category_providers.dart';
 import '../../../category/domain/entities/member_embedded.dart';
 import '../../domain/entities/debt.dart';
 import '../../domain/entities/payment_embedded.dart';
 import '../providers/debt_providers.dart';
+import 'debt_list_screen.dart' show showPaymentOptions;
 
 class DebtDetailScreen extends ConsumerStatefulWidget {
   const DebtDetailScreen({super.key, required this.id});
@@ -51,8 +53,10 @@ class _DebtDetailScreenState extends ConsumerState<DebtDetailScreen> {
     final currentUserId = ref.watch(currentUserIdProvider).valueOrNull;
 
     return debtAsync.when(
-      loading: () =>
-          const Scaffold(body: Center(child: CircularProgressIndicator())),
+      loading: () => Scaffold(
+        appBar: AppBar(),
+        body: const Center(child: CircularProgressIndicator()),
+      ),
       error: (e, _) => Scaffold(
         appBar: AppBar(),
         body: AppErrorWidget(
@@ -116,8 +120,47 @@ class _DebtDetailScreenState extends ConsumerState<DebtDetailScreen> {
                   ref.invalidate(debtGroupedProvider(false));
                 },
               ),
+              IconButton(
+                icon: const Icon(Icons.delete_outline),
+                tooltip: l10n.deleteDebt,
+                onPressed: () => _delete(isOwner: isOwner, level: level),
+              ),
             ],
           ),
+          // Ödeme artık sadece listedeki gizli kaydırma jestiyle değil,
+          // görünür bir butonla da yapılabilir.
+          bottomNavigationBar:
+              debt.status == DebtStatus.active && !debt.autoPayment
+              ? SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                    child: Semantics(
+                      container: true,
+                      identifier: 'payDebtBtn',
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.payments_outlined),
+                        label: Text(l10n.paymentActions),
+                        onPressed: () {
+                          final hasWrite = PermissionUtils.check(
+                            context,
+                            isOwner: isOwner,
+                            level: level,
+                            action: (l) => l.canWrite,
+                          );
+                          if (!hasWrite) return;
+                          showPaymentOptions(
+                            context,
+                            ref,
+                            debtId: debt.id,
+                            debtName: debt.name,
+                            amount: debt.amount,
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                )
+              : null,
           body: SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -176,6 +219,31 @@ class _DebtDetailScreenState extends ConsumerState<DebtDetailScreen> {
         );
       },
     );
+  }
+
+  Future<void> _delete({
+    required bool isOwner,
+    required AccessLevel? level,
+  }) async {
+    final hasDelete = PermissionUtils.check(
+      context,
+      isOwner: isOwner,
+      level: level,
+      action: (l) => l.canDelete,
+    );
+    if (!hasDelete) return;
+    final confirmed = await showConfirmDialog(
+      context,
+      title: context.l10n.deleteDebt,
+      content: context.l10n.deleteDebtPermanentWarning,
+    );
+    if (!confirmed || !mounted) return;
+    try {
+      await ref.read(debtListProvider.notifier).deleteDebt(widget.id);
+      if (mounted) context.pop();
+    } catch (e) {
+      if (mounted) showErrorSnackBar(context, e);
+    }
   }
 
   Future<void> _setPaidInstallments({

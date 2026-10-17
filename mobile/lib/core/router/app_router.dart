@@ -100,12 +100,6 @@ GoRouter appRouter(Ref ref) {
         builder: (context, _) => const RegisterScreen(),
       ),
       GoRoute(
-        path: RoutePaths.settings,
-        name: RouteNames.settings,
-        parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, _) => const SettingsScreen(),
-      ),
-      GoRoute(
         path: RoutePaths.changePassword,
         name: RouteNames.changePassword,
         parentNavigatorKey: _rootNavigatorKey,
@@ -159,17 +153,21 @@ GoRouter appRouter(Ref ref) {
               GoRoute(
                 path: 'new',
                 name: RouteNames.debtNew,
+                // Form/detay tam ekran: yüzen nav bar içeriği örtmesin.
+                parentNavigatorKey: _rootNavigatorKey,
                 builder: (context, _) => const DebtFormScreen(),
               ),
               GoRoute(
                 path: ':id',
                 name: RouteNames.debtDetail,
+                parentNavigatorKey: _rootNavigatorKey,
                 builder: (_, state) =>
                     DebtDetailScreen(id: state.pathParameters['id']!),
                 routes: [
                   GoRoute(
                     path: 'edit',
                     name: RouteNames.debtEdit,
+                    parentNavigatorKey: _rootNavigatorKey,
                     builder: (_, state) =>
                         DebtFormScreen(debtId: state.pathParameters['id']),
                   ),
@@ -196,6 +194,12 @@ GoRouter appRouter(Ref ref) {
             name: RouteNames.charts,
             pageBuilder: (context, state) =>
                 _fadePage(state, const ChartsScreen()),
+          ),
+          GoRoute(
+            path: RoutePaths.settings,
+            name: RouteNames.settings,
+            pageBuilder: (context, state) =>
+                _fadePage(state, const SettingsScreen()),
           ),
         ],
       ),
