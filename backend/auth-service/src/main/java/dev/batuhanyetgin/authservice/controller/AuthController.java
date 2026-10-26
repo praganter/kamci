@@ -131,7 +131,7 @@ public class AuthController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Returns true if user exists, false otherwise")
     })
-    @GetMapping("user/exists/{userId}")
+    @GetMapping("internal/user/exists/{userId}")
     ResponseEntity<Boolean> userExists(@PathVariable final String userId) {
         return ResponseEntity.ok(authRS.existsById(userId));
     }
@@ -141,7 +141,7 @@ public class AuthController {
             @ApiResponse(responseCode = "200", description = "Returns userId for the given email"),
             @ApiResponse(responseCode = "404", description = "User not found")
     })
-    @GetMapping("user/id-by-email/{email}")
+    @GetMapping("internal/user/id-by-email/{email}")
     ResponseEntity<String> getUserIdByEmail(@PathVariable final String email) {
         return ResponseEntity.ok(authRS.findByEMail(email).getId());
     }

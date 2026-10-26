@@ -448,7 +448,7 @@ class CategoryServiceTest {
 
                 when(categoryRS.findById(CAT_ID)).thenReturn(buildCategory(CAT_ID, OWNER_ID));
                 final Request feignReq = Request.create(
-                        Request.HttpMethod.GET, "http://auth-service/auth/user/id-by-email/" + MEMBER_EMAIL,
+                        Request.HttpMethod.GET, "http://auth-service/auth/internal/user/id-by-email/" + MEMBER_EMAIL,
                         Collections.emptyMap(), null, null, null);
                 when(authClient.getUserIdByEmail(MEMBER_EMAIL))
                         .thenThrow(new FeignException.NotFound("not found", feignReq, null, null));

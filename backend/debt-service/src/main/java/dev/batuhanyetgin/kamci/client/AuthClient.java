@@ -9,10 +9,10 @@ import java.util.List;
 @FeignClient(name = "auth-service", fallbackFactory = AuthClientFallbackFactory.class)
 public interface AuthClient {
 
-    @GetMapping("auth/user/exists/{userId}")
+    @GetMapping("auth/internal/user/exists/{userId}")
     boolean userExists(@PathVariable String userId);
 
-    @GetMapping("auth/user/id-by-email/{email}")
+    @GetMapping("auth/internal/user/id-by-email/{email}")
     String getUserIdByEmail(@PathVariable String email);
 
     @GetMapping("auth/household/members/{userId}")
