@@ -11,7 +11,7 @@ spring:
     gateway:
       discovery:
         locator:
-          enabled: true
+          enabled: false
           lower-case-service-id: true
       routes:
         - id: debt-service
@@ -88,9 +88,7 @@ endpoints:
     - /actuator/prometheus
     - /actuator/info
     - /swagger-ui.html
-    - /swagger-ui/**
     - /webjars/**
-    - /*/v3/api-docs
 
 rate-limit:
   rules:
