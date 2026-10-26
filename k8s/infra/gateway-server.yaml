@@ -43,6 +43,10 @@ spec:
                   key: JWT_SECRET_KEY
             - name: EUREKA_URI
               value: http://eureka-server:8761/eureka
+            # Traefik pods (cluster pod CIDR) → XFF is trusted. NodePort must stay externalTrafficPolicy: Local
+            # (otherwise kube-proxy SNATs to 10.42.0.1 → trusted → XFF spoofable)
+            - name: GATEWAY_TRUSTEDPROXIES
+              value: 10.42.0.0/16
           livenessProbe:
             httpGet:
               path: /actuator/health
@@ -67,6 +71,9 @@ metadata:
   namespace: kamci
 spec:
   type: NodePort
+  # Phase 1: the old app still uses 30080. Local → no SNAT, client IP = public (untrusted).
+  # Phase 2 (branch gateway-https-phase2): ClusterIP, plain HTTP closed.
+  externalTrafficPolicy: Local
   selector:
     app: gateway-server
   ports:
