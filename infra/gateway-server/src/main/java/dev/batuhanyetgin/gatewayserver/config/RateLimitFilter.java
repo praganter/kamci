@@ -14,7 +14,6 @@ import org.springframework.util.AntPathMatcher;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
-import java.net.InetSocketAddress;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -25,6 +24,7 @@ public class RateLimitFilter implements GlobalFilter, Ordered {
 
     private final RateLimitProperties properties;
     private final ErrorResponseWriter errorResponseWriter;
+    private final TrustedProxies trustedProxies;
 
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
@@ -65,18 +65,12 @@ public class RateLimitFilter implements GlobalFilter, Ordered {
     }
 
     /**
-     * Resolves the client IP from the raw Netty TCP connection, NOT from any
-     * X-Forwarded-For / Forwarded header. There is no trusted reverse proxy in
-     * front of the gateway (NodePort is exposed directly), so forwarded headers
-     * are attacker-controlled and are stripped by {@link ForwardedHeaderStrippingFilter}.
-     * If a reverse proxy / ingress is ever placed in front of the gateway, this
-     * logic must be revisited to trust the proxy-supplied XFF instead.
+     * Resolves the client IP from the raw TCP connection, or from the proxy-set
+     * X-Forwarded-For hop when the peer is a {@link TrustedProxies trusted proxy}.
+     * Untrusted forwarded headers are stripped by {@link ForwardedHeaderStrippingFilter}.
      */
     private String resolveIp(ServerWebExchange exchange) {
-        InetSocketAddress address = exchange.getRequest().getRemoteAddress();
-        return address != null && address.getAddress() != null
-                ? address.getAddress().getHostAddress()
-                : "unknown";
+        return trustedProxies.clientIp(exchange);
     }
 
     @Override

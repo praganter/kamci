@@ -1,5 +1,6 @@
 package dev.batuhanyetgin.gatewayserver.config;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
@@ -21,12 +22,15 @@ import java.util.List;
  * gateway's own forwarded-headers filter then re-adds trusted values based on
  * the real Netty TCP {@code remoteAddress} for downstream services.
  *
- * <p>If a trusted reverse proxy / ingress is ever placed in front of the
- * gateway, this filter (and {@link RateLimitFilter#resolveIp}) must be
- * revisited — the proxy-supplied XFF would then be legitimate.
+ * <p>Requests whose TCP peer is a configured {@link TrustedProxies trusted proxy}
+ * (the TLS-terminating ingress) keep their headers — there the proxy-supplied
+ * XFF is legitimate.
  */
 @Component
+@RequiredArgsConstructor
 public class ForwardedHeaderStrippingFilter implements GlobalFilter, Ordered {
+
+    private final TrustedProxies trustedProxies;
 
     private static final List<String> STRIPPED_HEADERS = List.of(
             "X-Forwarded-For",
@@ -40,6 +44,9 @@ public class ForwardedHeaderStrippingFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+        if (trustedProxies.isTrusted(exchange)) {
+            return chain.filter(exchange);
+        }
         ServerWebExchange mutated = exchange.mutate()
                 .request(r -> r.headers(headers -> STRIPPED_HEADERS.forEach(headers::remove)))
                 .build();
