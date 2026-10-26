@@ -1,6 +1,6 @@
 package dev.batuhanyetgin.authservice.controller;
 
-import dev.batuhanyetgin.authservice.dto.request.VerifyReceiptRequest;
+import com.fasterxml.jackson.databind.JsonNode;
 import dev.batuhanyetgin.authservice.dto.response.SubscriptionResponse;
 import dev.batuhanyetgin.authservice.service.SubscriptionService;
 import dev.batuhanyetgin.commonmodule.exception.BaseException;
@@ -9,7 +9,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.util.Map;
 
 @RestController
 @RequestMapping("subscription/")
@@ -28,18 +26,8 @@ public class SubscriptionController {
     private final SubscriptionService subscriptionService;
     @Value("${ADMIN_SECRET_KEY:}")
     private String adminSecretKey;
-
-    @Operation(summary = "Verify a purchase receipt and activate premium")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Subscription activated, new tokens returned"),
-            @ApiResponse(responseCode = "400", description = "Receipt verification failed"),
-            @ApiResponse(responseCode = "422", description = "Validation error")
-    })
-    @PostMapping("verify")
-    ResponseEntity<SubscriptionResponse> verify(@RequestBody @Valid final VerifyReceiptRequest request) {
-        final String userId = RequestContextUtil.getUserId();
-        return ResponseEntity.ok(subscriptionService.verifyReceipt(userId, request));
-    }
+    @Value("${REVENUECAT_WEBHOOK_SECRET:}")
+    private String revenueCatWebhookSecret;
 
     @Operation(summary = "Get current subscription status")
     @ApiResponses({
@@ -52,32 +40,14 @@ public class SubscriptionController {
         return ResponseEntity.ok(subscriptionService.getStatus(userId));
     }
 
-    @Operation(summary = "Apple App Store Server Notification webhook (public)")
-    @ApiResponse(responseCode = "200", description = "Notification processed")
-    @PostMapping("apple/webhook")
-    ResponseEntity<Void> appleWebhook(@RequestBody final Map<String, String> payload) {
-        final String signedPayload = payload.get("signedPayload");
-        if (signedPayload != null) {
-            subscriptionService.handleAppleWebhook(signedPayload);
-        }
-        return ResponseEntity.ok().build();
-    }
-
-    @Operation(summary = "Google Play Real-time Developer Notification webhook (public)")
-    @ApiResponse(responseCode = "200", description = "Notification processed")
-    @PostMapping("google/webhook")
-    ResponseEntity<Void> googleWebhook(@RequestBody final Map<String, Object> payload) {
-        try {
-            @SuppressWarnings("unchecked") final Map<String, String> message = (Map<String, String>) payload.get("message");
-            if (message != null) {
-                final String data = message.get("data");
-                if (data != null) {
-                    subscriptionService.handleGoogleWebhook(data);
-                }
-            }
-        } catch (ClassCastException e) {
-            // Malformed payload — ignore
-        }
+    @Operation(summary = "RevenueCat webhook (public)")
+    @ApiResponse(responseCode = "200", description = "Event processed")
+    @PostMapping("revenuecat/webhook")
+    ResponseEntity<Void> revenueCatWebhook(
+            @RequestHeader(value = "Authorization", required = false) final String authHeader,
+            @RequestBody final JsonNode payload) {
+        validateRevenueCatSecret(authHeader);
+        subscriptionService.handleRevenueCatWebhook(payload);
         return ResponseEntity.ok().build();
     }
 
@@ -106,6 +76,15 @@ public class SubscriptionController {
                 adminSecretKey.getBytes(StandardCharsets.UTF_8),
                 adminKey.getBytes(StandardCharsets.UTF_8))) {
             throw BaseException.forbidden("error.admin.unauthorized");
+        }
+    }
+
+    private void validateRevenueCatSecret(final String authHeader) {
+        final String expected = "Bearer " + revenueCatWebhookSecret;
+        if (revenueCatWebhookSecret.isBlank() || authHeader == null || !MessageDigest.isEqual(
+                expected.getBytes(StandardCharsets.UTF_8),
+                authHeader.getBytes(StandardCharsets.UTF_8))) {
+            throw BaseException.forbidden("error.subscription.webhook_unauthorized");
         }
     }
 }

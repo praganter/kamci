@@ -1,6 +1,7 @@
 package dev.batuhanyetgin.authservice.controller;
 
-import dev.batuhanyetgin.authservice.dto.request.VerifyReceiptRequest;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import dev.batuhanyetgin.authservice.dto.response.SubscriptionResponse;
 import dev.batuhanyetgin.authservice.enums.SubscriptionPlan;
 import dev.batuhanyetgin.authservice.enums.SubscriptionStatus;
@@ -19,8 +20,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.util.Map;
-
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -33,11 +32,13 @@ class SubscriptionControllerTest {
 
     private static final String USER_ID    = "user123";
     private static final String ADMIN_KEY  = "secret-admin-key";
+    private static final String RC_SECRET  = "rc-webhook-secret";
 
     @BeforeEach
     void setUp() {
         controller = new SubscriptionController(subscriptionService);
         ReflectionTestUtils.setField(controller, "adminSecretKey", ADMIN_KEY);
+        ReflectionTestUtils.setField(controller, "revenueCatWebhookSecret", RC_SECRET);
     }
 
     private SubscriptionResponse buildResponse() {
@@ -45,35 +46,6 @@ class SubscriptionControllerTest {
                 .plan(SubscriptionPlan.YEARLY)
                 .status(SubscriptionStatus.ACTIVE)
                 .build();
-    }
-
-    // ─── verify ───────────────────────────────────────────────────────────────
-
-    @Nested
-    @DisplayName("verify")
-    class Verify {
-
-        @Test
-        @DisplayName("delegates to service and returns 200")
-        void delegatesAndReturns200() {
-            try (MockedStatic<RequestContextUtil> ctx = mockStatic(RequestContextUtil.class)) {
-                ctx.when(RequestContextUtil::getUserId).thenReturn(USER_ID);
-
-                final VerifyReceiptRequest req = VerifyReceiptRequest.builder()
-                        .platform("IOS")
-                        .plan("YEARLY")
-                        .receiptData("receipt-data")
-                        .productId("product1")
-                        .build();
-                when(subscriptionService.verifyReceipt(USER_ID, req)).thenReturn(buildResponse());
-
-                final ResponseEntity<SubscriptionResponse> response = controller.verify(req);
-
-                assertThat(response.getStatusCode().value()).isEqualTo(200);
-                assertThat(response.getBody().getStatus()).isEqualTo(SubscriptionStatus.ACTIVE);
-                verify(subscriptionService).verifyReceipt(USER_ID, req);
-            }
-        }
     }
 
     // ─── status ───────────────────────────────────────────────────────────────
@@ -99,69 +71,47 @@ class SubscriptionControllerTest {
         }
     }
 
-    // ─── appleWebhook ─────────────────────────────────────────────────────────
+    // ─── revenueCatWebhook ────────────────────────────────────────────────────
 
     @Nested
-    @DisplayName("appleWebhook")
-    class AppleWebhook {
+    @DisplayName("revenueCatWebhook")
+    class RevenueCatWebhook {
 
-        @Test
-        @DisplayName("payload with signedPayload → delegates to service and returns 200")
-        void payloadPresent_delegatesAndReturns200() {
-            final Map<String, String> payload = Map.of("signedPayload", "signed.jwt.token");
+        private final ObjectMapper mapper = new ObjectMapper();
 
-            final ResponseEntity<Void> response = controller.appleWebhook(payload);
-
-            assertThat(response.getStatusCode().value()).isEqualTo(200);
-            verify(subscriptionService).handleAppleWebhook("signed.jwt.token");
+        private ObjectNode buildPayload() {
+            final ObjectNode event = mapper.createObjectNode();
+            event.put("type", "INITIAL_PURCHASE");
+            event.put("app_user_id", USER_ID);
+            final ObjectNode payload = mapper.createObjectNode();
+            payload.set("event", event);
+            return payload;
         }
 
         @Test
-        @DisplayName("payload without signedPayload → no service call, returns 200")
-        void noSignedPayload_noServiceCallAndReturns200() {
-            final ResponseEntity<Void> response = controller.appleWebhook(Map.of());
+        @DisplayName("valid secret → delegates to service and returns 200")
+        void validSecret_delegatesAndReturns200() {
+            final ObjectNode payload = buildPayload();
+
+            final ResponseEntity<Void> response = controller.revenueCatWebhook("Bearer " + RC_SECRET, payload);
 
             assertThat(response.getStatusCode().value()).isEqualTo(200);
-            verifyNoInteractions(subscriptionService);
-        }
-    }
-
-    // ─── googleWebhook ────────────────────────────────────────────────────────
-
-    @Nested
-    @DisplayName("googleWebhook")
-    class GoogleWebhook {
-
-        @Test
-        @DisplayName("valid message with data → delegates to service and returns 200")
-        void validMessage_delegatesAndReturns200() {
-            final Map<String, Object> payload = Map.of(
-                    "message", Map.of("data", "base64encodedData")
-            );
-
-            final ResponseEntity<Void> response = controller.googleWebhook(payload);
-
-            assertThat(response.getStatusCode().value()).isEqualTo(200);
-            verify(subscriptionService).handleGoogleWebhook("base64encodedData");
+            verify(subscriptionService).handleRevenueCatWebhook(payload);
         }
 
         @Test
-        @DisplayName("no message key → no service call, returns 200")
-        void noMessage_noServiceCallAndReturns200() {
-            final ResponseEntity<Void> response = controller.googleWebhook(Map.of());
+        @DisplayName("missing or wrong secret → throws FORBIDDEN, no service call")
+        void invalidSecret_throwsForbidden() {
+            final ObjectNode payload = buildPayload();
 
-            assertThat(response.getStatusCode().value()).isEqualTo(200);
-            verifyNoInteractions(subscriptionService);
-        }
+            assertThatExceptionOfType(BaseException.class)
+                    .isThrownBy(() -> controller.revenueCatWebhook("Bearer wrong-secret", payload))
+                    .matches(e -> e.getStatus() == HttpStatus.FORBIDDEN);
 
-        @Test
-        @DisplayName("malformed payload (ClassCastException) → caught silently, returns 200")
-        void malformedPayload_caughtSilentlyReturns200() {
-            final Map<String, Object> payload = Map.of("message", "not-a-map");
+            assertThatExceptionOfType(BaseException.class)
+                    .isThrownBy(() -> controller.revenueCatWebhook(null, payload))
+                    .matches(e -> e.getStatus() == HttpStatus.FORBIDDEN);
 
-            final ResponseEntity<Void> response = controller.googleWebhook(payload);
-
-            assertThat(response.getStatusCode().value()).isEqualTo(200);
             verifyNoInteractions(subscriptionService);
         }
     }
