@@ -26,7 +26,7 @@ tags: [premium, debt]
     text: "Premium Gerekli"
 - scrollUntilVisible:
     element:
-      text: "Güncelle"
+      text: "Uygulama İçi"
     direction: DOWN
 - assertVisible:
     text: "Bildirim Kanalları"
@@ -35,8 +35,17 @@ tags: [premium, debt]
     text: "Güncelle"
 - assertVisible:
     text: "En az bir bildirim kanalı seçilmelidir"
+# Snackbar sabit butonun hemen üstünde açılıp kanal satırını örter
+- extendedWaitUntil:
+    notVisible:
+      text: "En az bir bildirim kanalı seçilmelidir"
+    timeout: 10000
 - tapOn:
     text: "Uygulama İçi"
+- scrollUntilVisible:
+    element:
+      text: "(?s)Hatırlatma Saati.*"
+    direction: DOWN
 - tapOn:
     text: "(?s)Hatırlatma Tarihi.*"
 - waitForAnimationToEnd

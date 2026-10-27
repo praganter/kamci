@@ -24,9 +24,8 @@ tags: [debt]
     text: "Tutar"
 - eraseText: 100
 - inputText: "999"
-- tapOn:
-    text: "Borcu Düzenle"
-# Güncelle butonu formun dibinde — scroll şart (create flow'lardaki Oluştur gibi)
+# Güncelle butonu altta sabit; açık klavye onu örter
+- hideKeyboard
 - scrollUntilVisible:
     element:
       text: "Güncelle"

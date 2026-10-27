@@ -46,8 +46,7 @@ tags: [debt]
 - tapOn:
     text: "Tutar"
 - inputText: "300"
-- tapOn:
-    text: "Yeni Borç"
+- hideKeyboard
 - runFlow:
     when:
       platform: iOS
@@ -105,11 +104,8 @@ tags: [debt]
 - waitForAnimationToEnd
 - assertVisible:
     text: "Toplam Taksit Sayısı.*"
-- tapOn:
-    text: "Toplam Taksit Sayısı.*"
-- inputText: "6"
-- tapOn:
-    text: "Yeni Borç"
+# Tarih seçici kapanınca odak son text alanına döner ve klavye açılır;
+# bu yüzden tarih taksit girişinden önce seçilir.
 - scrollUntilVisible:
     element:
       id: "dateField"
@@ -118,6 +114,10 @@ tags: [debt]
     id: "dateField"
 - tapOn:
     text: "Tamam"
+- tapOn:
+    text: "Toplam Taksit Sayısı.*"
+- inputText: "6"
+- hideKeyboard
 - scrollUntilVisible:
     element:
       text: "Oluştur"

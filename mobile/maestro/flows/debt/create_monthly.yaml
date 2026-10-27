@@ -43,8 +43,7 @@ tags: [debt]
 - tapOn:
     text: "Tutar"
 - inputText: "600"
-- tapOn:
-    text: "Yeni Borç"
+- hideKeyboard
 - runFlow:
     when:
       platform: iOS
@@ -101,11 +100,8 @@ tags: [debt]
 # Taksit alanı görünmeli (MONTHLY için)
 - assertVisible:
     text: "Toplam Taksit Sayısı.*"
-- tapOn:
-    text: "Toplam Taksit Sayısı.*"
-- inputText: "12"
-- tapOn:
-    text: "Yeni Borç"
+# Tarih seçici kapanınca odak son text alanına döner ve klavye açılır;
+# bu yüzden tarih taksit girişinden önce seçilir.
 - scrollUntilVisible:
     element:
       id: "dateField"
@@ -114,6 +110,10 @@ tags: [debt]
     id: "dateField"
 - tapOn:
     text: "Tamam"
+- tapOn:
+    text: "Toplam Taksit Sayısı.*"
+- inputText: "12"
+- hideKeyboard
 - scrollUntilVisible:
     element:
       text: "Oluştur"
