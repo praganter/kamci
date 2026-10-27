@@ -64,8 +64,11 @@ class PlatformTimeField extends StatelessWidget {
       triggerMode: TooltipTriggerMode.longPress,
       preferBelow: false,
       child: InkWell(
-        onTap: () =>
-            isIOS ? _showIOSPicker(context) : _showMaterialPicker(context),
+        onTap: () {
+          // Seçici kapanınca odak son text alanına dönüp klavyeyi açmasın
+          FocusManager.instance.primaryFocus?.unfocus();
+          isIOS ? _showIOSPicker(context) : _showMaterialPicker(context);
+        },
         borderRadius: BorderRadius.circular(4),
         hoverColor: Colors.transparent,
         highlightColor: Colors.transparent,

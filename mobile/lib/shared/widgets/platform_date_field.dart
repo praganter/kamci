@@ -126,9 +126,13 @@ class _PlatformDateFieldState extends State<PlatformDateField> {
             container: widget.semanticsId != null,
             identifier: widget.semanticsId ?? '',
             child: InkWell(
-              onTap: () => isIOS
-                  ? _showIOSPicker(context, state)
-                  : _showMaterialPicker(context, state),
+              onTap: () {
+                // Seçici kapanınca odak son text alanına dönüp klavyeyi açmasın
+                FocusManager.instance.primaryFocus?.unfocus();
+                isIOS
+                    ? _showIOSPicker(context, state)
+                    : _showMaterialPicker(context, state);
+              },
               borderRadius: BorderRadius.circular(4),
               hoverColor: Colors.transparent,
               highlightColor: Colors.transparent,
