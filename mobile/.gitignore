@@ -70,3 +70,6 @@ lib/firebase_options.dart
 ios/Runner
 # Local environment
 .env
+maestro/.env
+firebase.json
+.vscode/
