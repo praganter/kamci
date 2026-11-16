@@ -1,0 +1,4 @@
+fixture:
+  marker: from-native-folder
+server:
+  port: 8080

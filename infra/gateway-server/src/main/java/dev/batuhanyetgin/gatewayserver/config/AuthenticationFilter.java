@@ -36,13 +36,21 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
                     "error.route.not_found", "Not found");
         }
 
+        // Identity headers are gateway-owned: drop any client-supplied value on every route (public ones included).
+        exchange = exchange.mutate()
+                .request(r -> r.headers(h -> {
+                    h.remove("user-id");
+                    h.remove("user-premium");
+                }))
+                .build();
+
         if (validator.isSecured().test(request)) {
-            if (!request.getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
+            final String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+            if (authHeader == null) {
                 return errorResponseWriter.write(exchange, HttpStatus.UNAUTHORIZED,
                         "error.auth.header_missing", "Authorization header is missing");
             }
 
-            final String authHeader = request.getHeaders().get(HttpHeaders.AUTHORIZATION).get(0);
             String token = jwtUtil.getAuthHeader(authHeader);
 
             if (token == null) {
@@ -70,11 +78,8 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
             final boolean isPremium = Boolean.TRUE.equals(claims.get("premium", Boolean.class));
             exchange = exchange.mutate()
                     .request(r -> r.headers(headers -> {
-                        headers.remove("user-id");
-                        headers.remove("User-ID");
-                        headers.add("user-id", userId);
-                        headers.remove("user-premium");
-                        headers.add("user-premium", String.valueOf(isPremium));
+                        headers.set("user-id", userId);
+                        headers.set("user-premium", String.valueOf(isPremium));
                     }))
                     .build();
         }

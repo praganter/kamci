@@ -1,6 +1,6 @@
 package dev.batuhanyetgin.gatewayserver.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import io.micrometer.tracing.Tracer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.ObjectProvider;
