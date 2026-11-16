@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gateway-server
+  namespace: kamci
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gateway-server
+  template:
+    metadata:
+      labels:
+        app: gateway-server
+    spec:
+      priorityClassName: kamci-high-priority
+      imagePullSecrets:
+        - name: registry-credentials
+      containers:
+        - name: gateway-server
+          image: ${REGISTRY}/gateway-server:${IMAGE_TAG}
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              cpu: 200m
+              memory: 320Mi
+            limits:
+              cpu: 400m
+              memory: 448Mi
+          env:
+            - name: JAVA_OPTS
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: JAVA_OPTS
+            - name: CONFIG_SERVER_URL
+              value: http://config-server:8888
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: JWT_SECRET_KEY
+            - name: EUREKA_URI
+              value: http://eureka-server:8761/eureka
+            # Traefik pods (cluster pod CIDR) → XFF is trusted. NodePort must stay externalTrafficPolicy: Local
+            # (otherwise kube-proxy SNATs to 10.42.0.1 → trusted → XFF spoofable)
+            - name: GATEWAY_TRUSTEDPROXIES
+              value: 10.42.0.0/16
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 10
+            failureThreshold: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gateway-server
+  namespace: kamci
+spec:
+  type: NodePort
+  # Phase 1: the old app still uses 30080. Local → no SNAT, client IP = public (untrusted).
+  # Phase 2 (branch gateway-https-phase2): ClusterIP, plain HTTP closed.
+  externalTrafficPolicy: Local
+  selector:
+    app: gateway-server
+  ports:
+    - port: 8080
+      targetPort: 8080
+      nodePort: 30080

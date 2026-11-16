@@ -1,0 +1,79 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-datasources
+  namespace: kamci
+  labels:
+    app: grafana
+data:
+  datasources.yaml: |
+    apiVersion: 1
+
+    deleteDatasources:
+      - name: Prometheus
+        orgId: 1
+      - name: Loki
+        orgId: 1
+      - name: Tempo
+        orgId: 1
+
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        uid: prometheus
+        orgId: 1
+        url: http://prometheus:9090
+        isDefault: true
+        access: proxy
+        jsonData:
+          timeInterval: 15s
+          httpMethod: POST
+          exemplarTraceIdDestinations:
+            - name: traceID
+              datasourceUid: tempo
+              urlDisplayLabel: "View Trace in Tempo"
+
+      - name: Loki
+        type: loki
+        uid: loki
+        orgId: 1
+        url: http://loki:3100
+        access: proxy
+        jsonData:
+          derivedFields:
+            - name: TraceID
+              matcherRegex: '\[[\w-]+,([0-9a-f]{16,32}),'
+              url: "${__value.raw}"
+              datasourceUid: tempo
+              urlDisplayLabel: "Trace in Tempo"
+
+      - name: Tempo
+        type: tempo
+        uid: tempo
+        orgId: 1
+        url: http://tempo:3200
+        access: proxy
+        jsonData:
+          httpProtocol: "http/1.1"
+          tracesToLogsV2:
+            datasourceUid: loki
+            spanStartTimeShift: "-5m"
+            spanEndTimeShift: "5m"
+            filterByTraceID: true
+            filterBySpanID: false
+            customQuery: false
+            tags:
+              - key: "service.name"
+                value: "container"
+          serviceMap:
+            datasourceUid: prometheus
+          lokiSearch:
+            datasourceUid: loki
+          nodeGraph:
+            enabled: true
+          search:
+            hide: false
+          traceQuery:
+            timeShiftEnabled: true
+            spanStartTimeShift: "1h"
+            spanEndTimeShift: "-1h"

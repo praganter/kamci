@@ -1,0 +1,187 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: prometheus
+  namespace: kamci
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: prometheus
+rules:
+  - apiGroups: [""]
+    resources: [nodes, nodes/proxy, nodes/metrics, services, endpoints, pods]
+    verbs: [get, list, watch]
+  - nonResourceURLs: [/metrics, /metrics/cadvisor]
+    verbs: [get]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: prometheus
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: prometheus
+subjects:
+  - kind: ServiceAccount
+    name: prometheus
+    namespace: kamci
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: kamci
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+      evaluation_interval: 15s
+
+    rule_files:
+      - /etc/prometheus/rules/*.yml
+
+    alerting:
+      alertmanagers:
+        - static_configs:
+            - targets: ['alertmanager:9093']
+
+    scrape_configs:
+      - job_name: 'prometheus'
+        static_configs:
+          - targets: ['localhost:9090']
+
+      # cAdvisor via Kubernetes API proxy (requires RBAC above)
+      - job_name: 'cadvisor'
+        scheme: https
+        tls_config:
+          insecure_skip_verify: true
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        kubernetes_sd_configs:
+          - role: node
+        metrics_path: /metrics/cadvisor
+        relabel_configs:
+          - target_label: __address__
+            replacement: kubernetes.default.svc:443
+          - source_labels: [__meta_kubernetes_node_name]
+            target_label: __metrics_path__
+            replacement: /api/v1/nodes/$1/proxy/metrics/cadvisor
+          - action: labelmap
+            regex: __meta_kubernetes_node_label_(.+)
+
+      # kubelet metrics
+      - job_name: 'kubelet'
+        scheme: https
+        tls_config:
+          insecure_skip_verify: true
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        kubernetes_sd_configs:
+          - role: node
+        relabel_configs:
+          - target_label: __address__
+            replacement: kubernetes.default.svc:443
+          - source_labels: [__meta_kubernetes_node_name]
+            target_label: __metrics_path__
+            replacement: /api/v1/nodes/$1/proxy/metrics
+          - action: labelmap
+            regex: __meta_kubernetes_node_label_(.+)
+
+      - job_name: 'gateway-server'
+        scrape_interval: 30s
+        metrics_path: '/actuator/prometheus'
+        static_configs:
+          - targets: ['gateway-server:8080']
+
+      - job_name: 'eureka-server'
+        scrape_interval: 30s
+        metrics_path: '/actuator/prometheus'
+        static_configs:
+          - targets: ['eureka-server:8761']
+
+      - job_name: 'config-server'
+        scrape_interval: 30s
+        metrics_path: '/actuator/prometheus'
+        static_configs:
+          - targets: ['config-server:8888']
+
+      - job_name: 'auth-service'
+        scrape_interval: 30s
+        metrics_path: '/actuator/prometheus'
+        static_configs:
+          - targets: ['auth-service:8082']
+
+      - job_name: 'debt-service'
+        scrape_interval: 30s
+        metrics_path: '/actuator/prometheus'
+        static_configs:
+          - targets: ['debt-service:8081']
+
+      - job_name: 'notification-service'
+        scrape_interval: 30s
+        metrics_path: '/actuator/prometheus'
+        static_configs:
+          - targets: ['notification-service:8083']
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-rules
+  namespace: kamci
+data:
+  recording-rules.yml: |
+    groups:
+      - name: kamci_red_recording_rules
+        interval: 30s
+        rules:
+          - record: job:http_server_requests_seconds_bucket:rate5m
+            expr: sum by (job, le) (rate(http_server_requests_seconds_bucket[5m]))
+          - record: job_method_uri:http_server_requests_seconds_bucket:rate5m
+            expr: sum by (job, method, uri, le) (rate(http_server_requests_seconds_bucket[5m]))
+          - record: job:http_server_requests_seconds_count:rate5m
+            expr: sum by (job) (rate(http_server_requests_seconds_count[5m]))
+  alerting-rules.yml: |
+    groups:
+      - name: kamci_basic_alerts
+        rules:
+          - alert: PodRestartingFrequently
+            expr: changes(container_start_time_seconds{namespace="kamci", container!=""}[15m]) > 2
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "{{ $labels.pod }}/{{ $labels.container }} sık restart oluyor"
+              description: "Son 15 dakikada {{ $value }} kez restart oldu."
+
+          - alert: ContainerOOMKilled
+            expr: increase(container_oom_events_total{namespace="kamci"}[10m]) > 0
+            for: 0m
+            labels:
+              severity: critical
+            annotations:
+              summary: "{{ $labels.pod }}/{{ $labels.container }} OOMKill aldı"
+              description: "cAdvisor container_oom_events_total metriğinde artış tespit edildi."
+
+          - alert: PVCDiskAlmostFull
+            expr: (kubelet_volume_stats_used_bytes{namespace="kamci"} / kubelet_volume_stats_capacity_bytes{namespace="kamci"}) > 0.85
+            for: 10m
+            labels:
+              severity: warning
+            annotations:
+              summary: "{{ $labels.persistentvolumeclaim }} %85 doluluğu aştı"
+              description: "Kullanım oranı {{ $value | humanizePercentage }}."
+
+          - alert: HighHttp5xxRate
+            expr: |
+              (
+                sum by (job) (rate(http_server_requests_seconds_count{status=~"5..", job=~"auth-service|debt-service|notification-service|gateway-server"}[5m]))
+                /
+                sum by (job) (rate(http_server_requests_seconds_count{job=~"auth-service|debt-service|notification-service|gateway-server"}[5m]))
+              ) > 0.05
+            for: 5m
+            labels:
+              severity: critical
+            annotations:
+              summary: "{{ $labels.job }} 5xx oranı %5'i aştı"
+              description: "Son 5 dakikada 5xx oranı {{ $value | humanizePercentage }}."
