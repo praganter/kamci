@@ -932,7 +932,8 @@ public class DebtService {
     }
 
     private void setNextAutoPaymentDate(final DebtDocument debtDocument) {
-        if (!debtDocument.isAutoPayment() || debtDocument.getFirstPaymentDate() == null) {
+        if (!debtDocument.isAutoPayment() || debtDocument.getFirstPaymentDate() == null
+                || debtDocument.getStatus() == DebtStatus.COMPLETED) {
             return;
         }
         if (debtDocument.getNextAutoPaymentDate() == null) {
