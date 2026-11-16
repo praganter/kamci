@@ -1,10 +1,9 @@
 spring:
   application:
     name: auth-service
-  config:
-    import: "optional:configserver:"
   cloud:
     config:
+      fail-fast: true
       uri: ${CONFIG_SERVER_URL:http://config-server:8888}
       name: auth-service,common-config
   data:
@@ -12,3 +11,11 @@ spring:
       host: ${APP_REDIS_HOST:redis}
       port: ${APP_REDIS_PORT:6379}
       password: ${APP_REDIS_PASSWORD:}
+
+---
+# Everything but `local` takes its settings from the config server and refuses to start without it.
+spring:
+  config:
+    activate:
+      on-profile: "!local"
+    import: "configserver:"

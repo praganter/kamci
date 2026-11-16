@@ -1,9 +1,16 @@
 spring:
   application:
     name: notification-service
-  config:
-    import: "optional:configserver:"
   cloud:
     config:
+      fail-fast: true
       uri: ${CONFIG_SERVER_URL:http://config-server:8888}
       name: notification-service,common-config
+
+---
+# Everything but `local` takes its settings from the config server and refuses to start without it.
+spring:
+  config:
+    activate:
+      on-profile: "!local"
+    import: "configserver:"

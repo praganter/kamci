@@ -4,3 +4,7 @@ spring:
 
 server:
   port: 8084
+
+exchange-rate:
+  base-currencies: ${EXCHANGE_BASE_CURRENCIES:USD,EUR,TRY,GBP}
+  api-url: https://latest.currency-api.pages.dev/v1/currencies

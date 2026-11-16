@@ -7,7 +7,6 @@ x-service: &service
   restart: unless-stopped
   environment: &service-env
     SPRING_PROFILES_ACTIVE: local
-    SPRING_CLOUD_CONFIG_ENABLED: "false"
     TZ: Europe/Istanbul
     MONGO_DB_URI: mongodb://mongodb:27017/kamci
     SPRING_RABBITMQ_HOST: rabbitmq

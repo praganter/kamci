@@ -1,10 +1,9 @@
 spring:
   application:
     name: debt-service
-  config:
-    import: "optional:configserver:"
   cloud:
     config:
+      fail-fast: true
       uri: ${CONFIG_SERVER_URL:http://config-server:8888}
       name: debt-service,common-config
     openfeign:
@@ -25,3 +24,11 @@ resilience4j:
         wait-duration-in-open-state: 30s
         permitted-number-of-calls-in-half-open-state: 3
         register-health-indicator: true
+
+---
+# Everything but `local` takes its settings from the config server and refuses to start without it.
+spring:
+  config:
+    activate:
+      on-profile: "!local"
+    import: "configserver:"
