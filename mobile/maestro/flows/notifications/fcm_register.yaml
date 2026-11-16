@@ -1,0 +1,28 @@
+appId: com.batuhanyetgin.kamci
+tags: [notifications]
+---
+# NOTIF-01: Login sonrası FCM token kayıt
+# Android emülatörde Google Play Services AVD gerektirir
+# iOS Simulator'da bu test skip edilir
+- runFlow: "../../subflows/_ensure_login_screen.yaml"
+# Android 13+ bildirim izni dialog
+- tapOn:
+    text: "İzin Ver"
+    optional: true
+- tapOn:
+    text: "Allow"
+    optional: true
+- tapOn:
+    text: "E-posta Adresi"
+- inputText: "${USER_A_EMAIL}"
+- tapOn:
+    text: "Şifre"
+- inputText: "${USER_A_PASSWORD}"
+- tapOn:
+    text: "Giriş Yap"
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Borçlar"
+# FCM token kaydı arka planda gerçekleşir
+# Backend doğrulaması: POST /notification/device-token çağrıldı
+- waitForAnimationToEnd

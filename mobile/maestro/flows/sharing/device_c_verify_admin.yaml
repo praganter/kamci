@@ -1,0 +1,56 @@
+appId: com.batuhanyetgin.kamci
+tags: [sharing, multi-device]
+---
+# SHARE-04 (Device C): ADMIN yetkisi — borç silme
+# ADMIN = canWrite ✓, canEdit ✓, canDelete ✓ (tam yetki)
+#
+# 🚫 BLOKE — backend bug: /category/getAll üyelerde userId döndürmüyor.
+# categoryAccessLevels (category_providers.dart) üyeyi m.userId == currentUserId
+# ile arar; userId hep null olduğundan eşleşme tutmaz ve orElse → AccessLevel.read
+# çalışır. Sonuç: sahibin verdiği ADMIN alıcıda sessizce OKUMA'ya düşer.
+# Backend members[].userId döndürene kadar bu test GEÇEMEZ. [[project-api-blocker]]
+#
+# ÖNKOŞUL: reset_sharing_state.py + device_a_share_admin.yaml hemen önce koşmalı.
+- runFlow: "../../subflows/_login_as_user_c.yaml"
+- tapOn:
+    text: "Borçlar"
+- waitForAnimationToEnd
+- tapOn:
+    id: "sharedDebtsTab"
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible:
+      text: "Test Borcu[\\s\\S]*"
+    timeout: 10000
+# Sola swipe = sil → canDelete VAR → onay diyaloğu
+# element-swipe yerine koordinat swipe (TabBarView çakışması).
+- swipe:
+    from:
+      text: "[^\\n]+\\n\\d+( / \\d+)?[^\\n]*\\n[^\\n]+"
+      index: 0
+    direction: LEFT
+    duration: 400
+- extendedWaitUntil:
+    visible:
+      text: "Borcu Sil"
+    timeout: 8000
+# Onay butonu "Sil" (showConfirmDialog confirmText), "Evet" DEĞİL.
+- tapOn:
+    text: "Sil"
+- extendedWaitUntil:
+    notVisible:
+      text: "Test Borcu[\\s\\S]*"
+    timeout: 10000
+# Üye Ekle butonu görünmemeli — üye ekleme yalnız owner'a açık
+# (category_detail_screen.dart: floatingActionButton isOwner ? ... : null)
+- tapOn:
+    text: "Kategoriler"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Paylaşılanlar[\\s\\S]*"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Test Kategorisi[\\s\\S]*"
+- waitForAnimationToEnd
+- assertNotVisible:
+    text: "Üye Ekle"

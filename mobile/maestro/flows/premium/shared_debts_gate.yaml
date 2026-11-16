@@ -1,0 +1,16 @@
+appId: com.batuhanyetgin.kamci
+tags: [premium]
+---
+# PREM-05: Paylaşılan borçlar sekmesi — freemium
+- runFlow: "../../subflows/_login_as_user_b.yaml"
+- tapOn:
+    text: "Borçlar"
+- waitForAnimationToEnd
+- tapOn:
+    id: "sharedDebtsTab"
+- waitForAnimationToEnd
+# Premium kart görünmeli — freemium gate
+- assertVisible:
+    id: "upgradeCard"
+- assertNotVisible:
+    text: "Henüz borç yok"

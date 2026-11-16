@@ -1,0 +1,26 @@
+appId: com.batuhanyetgin.kamci
+tags: [debt, smoke]
+---
+# DEBT-11: Borç silme — sola swipe → confirm dialog
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- runFlow: "../../subflows/_cleanup_all_debts.yaml"
+- runFlow: "../../subflows/_create_default_category.yaml"
+- runFlow: "../../subflows/_create_default_debt.yaml"
+- tapOn:
+    text: "Borçlar"
+- tapOn:
+    id: "myDebtsTab"
+- waitForAnimationToEnd
+# endToStart = sola swipe = sil
+- swipe:
+    from:
+      text: "[^\\n]+\\n\\d+( / \\d+)?[^\\n]*\\n[^\\n]+"
+      index: 0
+    direction: LEFT
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Borcu Sil"
+- tapOn:
+    text: "Sil"
+- assertNotVisible:
+    text: "Test Borcu[\\s\\S]*"

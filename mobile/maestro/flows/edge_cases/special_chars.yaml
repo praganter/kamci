@@ -1,0 +1,126 @@
+appId: com.batuhanyetgin.kamci
+tags: [edge_cases]
+---
+# EDGE-06/07: Özel karakter ve uzun string — UI kırılmamalı
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- runFlow: "../../subflows/_create_default_category.yaml"
+- tapOn:
+    text: "Borçlar"
+# Koordinat (89%, 80%) iPhone geometrisiydi; Pixel'de FAB'ın üstüne düşüyordu.
+- tapOn:
+    id: "addDebtFab"
+- extendedWaitUntil:
+    visible:
+      text: "Yeni Borç"
+    timeout: 8000
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: "categoryField"
+      - waitForAnimationToEnd
+      - tapOn:
+          text: "Tamam"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: "categoryField"
+      - scrollUntilVisible:
+          element:
+            text: "Test Kategorisi"
+          direction: DOWN
+          timeout: 10000
+      - tapOn:
+          text: "Test Kategorisi"
+      - waitForAnimationToEnd
+- tapOn:
+    text: "Borç Adı"
+# Emoji ve özel karakter içeren isim
+- inputText: "Test 🎉 Borcu #$%&*@!"
+- tapOn:
+    text: "Tutar"
+- inputText: "1"
+- tapOn:
+    text: "Yeni Borç"
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: "currencyField"
+      - waitForAnimationToEnd
+      - tapOn:
+          text: "Tamam"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: "currencyField"
+      - scrollUntilVisible:
+          element:
+            text: "TRY ₺"
+          direction: DOWN
+          timeout: 10000
+      - tapOn:
+          text: "TRY ₺"
+      - waitForAnimationToEnd
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: "periodField"
+      - waitForAnimationToEnd
+      - tapOn:
+          text: "Tek Seferlik"
+      - tapOn:
+          text: "Tamam"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: "periodField"
+      - scrollUntilVisible:
+          element:
+            text: "Tek Seferlik"
+          direction: DOWN
+          timeout: 10000
+      - tapOn:
+          text: "Tek Seferlik"
+      - waitForAnimationToEnd
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: "dateField"
+    direction: DOWN
+- tapOn:
+    id: "dateField"
+- waitForAnimationToEnd
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: "pickerOkBtn"
+# Android: Material DatePicker onayı
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn: "Tamam"
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "Oluştur"
+    direction: DOWN
+- tapOn:
+    text: "Oluştur"
+# UI kırılmamalı — hata yoksa borç oluşturulur, varsa hata SnackBar gelir
+- waitForAnimationToEnd
+- assertNotVisible:
+    text: "Beklenmeyen"

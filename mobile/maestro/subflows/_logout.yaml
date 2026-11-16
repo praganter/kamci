@@ -1,0 +1,22 @@
+appId: com.batuhanyetgin.kamci
+---
+# Settings > "Çıkış Yap" butonuna basar, confirm dialog'da onaylar
+- tapOn:
+    id: "navSettings"
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "Çıkış Yap"
+    direction: DOWN
+- tapOn:
+    text: "Çıkış Yap"
+- waitForAnimationToEnd
+# Confirm dialog
+- assertVisible:
+    text: "Hesabınızdan çıkış yapmak istediğinize emin misiniz?"
+- tapOn:
+    text: "Çıkış Yap"
+    index: 1
+- waitForAnimationToEnd
+# Caller is responsible for verifying the login screen (GoRouter navigation
+# causes XCTest tree to be temporarily invalid after stack replacement)

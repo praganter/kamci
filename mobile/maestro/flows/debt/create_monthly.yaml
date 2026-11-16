@@ -1,0 +1,156 @@
+appId: com.batuhanyetgin.kamci
+tags: [debt]
+---
+# DEBT-02: MONTHLY 12 taksitli borç — testten sonra siler (test izolasyonu)
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- runFlow: "../../subflows/_cleanup_all_debts.yaml"
+- runFlow: "../../subflows/_create_default_category.yaml"
+- tapOn:
+    text: "Borçlar"
+- waitForAnimationToEnd
+- tapOn:
+    id: "addDebtFab"
+- extendedWaitUntil:
+    visible:
+      text: "Yeni Borç"
+    timeout: 8000
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: "categoryField"
+      - waitForAnimationToEnd
+      - tapOn:
+          text: "Tamam"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: "categoryField"
+      - scrollUntilVisible:
+          element:
+            text: "Test Kategorisi"
+          direction: DOWN
+          timeout: 10000
+      - tapOn:
+          text: "Test Kategorisi"
+      - waitForAnimationToEnd
+- tapOn:
+    text: "Borç Adı"
+- inputText: "Aylık Taksit Borcu"
+- tapOn:
+    text: "Tutar"
+- inputText: "600"
+- hideKeyboard
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: "currencyField"
+      - waitForAnimationToEnd
+      - tapOn:
+          text: "Tamam"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: "currencyField"
+      - scrollUntilVisible:
+          element:
+            text: "TRY ₺"
+          direction: DOWN
+          timeout: 10000
+      - tapOn:
+          text: "TRY ₺"
+      - waitForAnimationToEnd
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: "periodField"
+      - waitForAnimationToEnd
+      - repeat:
+          times: 4
+          commands:
+            - runFlow: "../../subflows/_picker_wheel_next.yaml"
+      - assertVisible:
+          text: "Aylık"
+      - tapOn:
+          text: "Tamam"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: "periodField"
+      - scrollUntilVisible:
+          element:
+            text: "Aylık"
+          direction: DOWN
+          timeout: 10000
+      - tapOn:
+          text: "Aylık"
+      - waitForAnimationToEnd
+- waitForAnimationToEnd
+# Taksit alanı görünmeli (MONTHLY için)
+- assertVisible:
+    text: "Toplam Taksit Sayısı.*"
+# Tarih seçici kapanınca odak son text alanına döner ve klavye açılır;
+# bu yüzden tarih taksit girişinden önce seçilir.
+- scrollUntilVisible:
+    element:
+      id: "dateField"
+    direction: DOWN
+- tapOn:
+    id: "dateField"
+- tapOn:
+    text: "Tamam"
+- tapOn:
+    text: "Toplam Taksit Sayısı.*"
+- inputText: "12"
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "Oluştur"
+    direction: DOWN
+- tapOn:
+    text: "Oluştur"
+# Same animation-race fix as create_one_time: navigate Kategoriler→Borçlar
+# to guarantee a fresh Kendi Borçlarım state before asserting.
+- extendedWaitUntil:
+    visible:
+      id: "myDebtsTab"
+    timeout: 35000
+- waitForAnimationToEnd
+- tapOn:
+    text: "Kategoriler"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Borçlar"
+- waitForAnimationToEnd
+# Debt tile accessibility label'ı birleşiktir ("Ad\n0 / 12\n₺600");
+# tam metin eşleşmez, [\s\S]* ile regex gerekir (`.` newline eşlemez).
+- scrollUntilVisible:
+    element:
+      text: "Aylık Taksit Borcu[\\s\\S]*"
+    direction: DOWN
+    timeout: 20000
+# Taksit göstergesi "0 / 12" aynı birleşik label içinde doğrulanır
+- assertVisible:
+    text: "Aylık Taksit Borcu[\\s\\S]*0 / 12[\\s\\S]*"
+# Cleanup: borcu sil
+- swipe:
+    from:
+      text: "[^\\n]+\\n\\d+( / \\d+)?[^\\n]*\\n[^\\n]+"
+      index: 0
+    direction: LEFT
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Borcu Sil"
+- tapOn:
+    text: "Sil"

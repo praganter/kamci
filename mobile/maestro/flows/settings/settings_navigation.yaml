@@ -1,0 +1,34 @@
+appId: com.batuhanyetgin.kamci
+tags: [settings, smoke]
+---
+# SET-01: Settings ekranı navigasyonu — tüm bölümler görünür
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- tapOn:
+    text: "Ayarlar"
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Ayarlar"
+# Uygulama Ayarları bölümü (fold üstü)
+- assertVisible:
+    text: "Uygulama Ayarları"
+- assertVisible:
+    text: "Tema"
+- assertVisible:
+    text: "Dil"
+# Fold altındaki elemanlar
+- scrollUntilVisible:
+    element:
+      text: "Çıkış Yap"
+    direction: DOWN
+- assertVisible:
+    text: "Hesap"
+# ListTile a11y text = "title\nsubtitle" — (?s) flag ile .* newline'ı da eşler
+- assertVisible:
+    text: "(?s)Şifre Değiştir.*"
+- assertVisible:
+    text: "Çıkış Yap"
+# Geri Bildirim bölümü — aynı scroll pozisyonunda görünmeli
+- assertVisible:
+    text: "Geri Bildirim"
+- assertVisible:
+    text: "(?s)Öneri / Şikayet Gönder.*"

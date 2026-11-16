@@ -1,0 +1,25 @@
+appId: com.batuhanyetgin.kamci
+tags: [income]
+---
+# INC-02: Gelir geçmişi — liste yüklenir, eklenen gelir görünür, ham hata basılmaz
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- runFlow: "../../subflows/_open_income.yaml"
+- assertNotVisible: "(?s).*(Exception|DioException).*"
+- runFlow:
+    file: "../../subflows/_add_income.yaml"
+    env:
+      AMOUNT: "777"
+- assertNotVisible: "Henüz gelir kaydı yok"
+- scrollUntilVisible:
+    element:
+      text: "(?s)₺777,00.*"
+    direction: DOWN
+    timeout: 15000
+# Geri → Ayarlar, tekrar aç → liste kalıcı
+- back
+- runFlow: "../../subflows/_open_income.yaml"
+- scrollUntilVisible:
+    element:
+      text: "(?s)₺777,00.*"
+    direction: DOWN
+    timeout: 15000

@@ -1,0 +1,32 @@
+appId: com.batuhanyetgin.kamci
+tags: [debt]
+---
+# DEBT-16: Debt Summary widget — borç listesinde tutar/para birimi doğru gösterilmeli — testten sonra siler
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- runFlow: "../../subflows/_cleanup_all_debts.yaml"
+- runFlow: "../../subflows/_create_default_category.yaml"
+- runFlow: "../../subflows/_create_default_debt.yaml"
+- tapOn:
+    text: "Borçlar"
+- tapOn:
+    id: "myDebtsTab"
+- waitForAnimationToEnd
+# Borç listesinde tutar ve para birimi tile'ın birleşik label'ında doğrulanır
+- assertVisible:
+    text: "Test Borcu[\\s\\S]*₺500"
+# Hata durumu olmamalı
+- assertNotVisible:
+    text: "Hata"
+- assertNotVisible:
+    text: "hata"
+# Cleanup: borcu sil
+- swipe:
+    from:
+      text: "[^\\n]+\\n\\d+( / \\d+)?[^\\n]*\\n[^\\n]+"
+      index: 0
+    direction: LEFT
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Borcu Sil"
+- tapOn:
+    text: "Sil"

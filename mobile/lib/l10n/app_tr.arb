@@ -1,0 +1,535 @@
+{
+  "@@locale": "tr",
+
+  "appName": "Kamci",
+
+  "save": "Kaydet",
+  "cancel": "İptal",
+  "delete": "Sil",
+  "edit": "Düzenle",
+  "create": "Oluştur",
+  "update": "Güncelle",
+  "send": "Gönder",
+  "remove": "Kaldır",
+  "add": "Ekle",
+  "select": "Seçin",
+  "retry": "Tekrar Dene",
+
+  "welcome": "Hoş Geldiniz!",
+  "signIn": "Giriş Yap",
+  "signUp": "Kayıt Ol",
+  "signOut": "Çıkış Yap",
+  "signOutConfirm": "Hesabınızdan çıkış yapmak istediğinize emin misiniz?",
+  "deleteAccount": "Hesabı Sil",
+  "deleteAccountConfirmTitle": "Hesabınız kalıcı olarak silinsin mi?",
+  "deleteAccountConfirm": "Hesabınız ve tüm borç, kategori, gelir ve bildirim verileriniz kalıcı olarak silinecek. Bu işlem geri alınamaz.\n\nAktif bir aboneliğiniz varsa, ücretlendirmenin durması için App Store veya Google Play üzerinden ayrıca iptal etmeniz gerekir.",
+  "deleteAccountConfirmButton": "Kalıcı Olarak Sil",
+  "email": "E-posta Adresi",
+  "password": "Şifre",
+  "confirmPassword": "Şifre Tekrar",
+  "newPassword": "Yeni Şifre",
+  "forgotPassword": "Şifremi Unuttum?",
+  "forgotPasswordTitle": "Şifremi Unuttum",
+  "resetPasswordTitle": "Şifre Sıfırla",
+  "updatePassword": "Şifreyi Güncelle",
+  "noAccount": "Hesabınız yok mu?",
+  "hasAccount": "Zaten hesabınız var mı?",
+  "forgotPasswordDesc": "Şifre sıfırlama bağlantısı e-posta adresinize gönderilecek.",
+  "resetPasswordDesc": "Yeni şifrenizi belirleyin.",
+  "checkEmail": "E-postanızı Kontrol Edin",
+  "checkEmailDesc": "{email} adresine şifre sıfırlama bağlantısı gönderildi.",
+  "@checkEmailDesc": {
+    "placeholders": {
+      "email": { "type": "String" }
+    }
+  },
+  "invalidResetLink": "Geçersiz şifre sıfırlama bağlantısı.",
+  "passwordUpdated": "Şifreniz başarıyla güncellendi.",
+
+  "debts": "Borçlar",
+  "categories": "Kategoriler",
+
+  "myDebts": "Kendi Borçlarım",
+  "sharedDebts": "Paylaşılan",
+  "noDebtsYet": "Henüz borç yok",
+  "noSharedDebts": "Paylaşılan borç yok",
+  "addDebtHint": "Yeni borç eklemek için + düğmesine bas",
+  "joinSharedHint": "Paylaşılan bir kategoriye üye ol",
+  "noCategoryDebts": "Bu kategoride henüz borç yok",
+  "noDebts": "Borç yok",
+  "summaryTotal": "Toplam",
+  "deleteDebtPermanentWarning": "Bu borç kalıcı olarak silinecek, geri alınamaz. Emin misiniz?",
+  "paymentRecorded": "{name} ödemeniz kayıt edildi.",
+  "@paymentRecorded": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+
+  "deleteDebt": "Borcu Sil",
+  "deleteDebtConfirm": "\"{name}\" borcunu silmek istediğinize emin misiniz?",
+  "@deleteDebtConfirm": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+
+  "amount": "Tutar",
+  "status": "Durum",
+  "paymentPeriod": "Ödeme Periyodu",
+  "startDate": "Başlangıç",
+  "firstPaymentDate": "İlk Ödeme Tarihi",
+  "endDate": "Bitiş",
+  "description": "Açıklama",
+  "nextReminder": "Sonraki Hatırlatma",
+  "paymentHistory": "Ödeme Geçmişi ({count})",
+  "@paymentHistory": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "noPaymentsYet": "Henüz ödeme yapılmamış",
+  "paid": "Ödendi",
+  "pendingPayment": "Bekliyor",
+
+  "newDebt": "Yeni Borç",
+  "editDebt": "Borcu Düzenle",
+  "debtName": "Borç Adı",
+  "selectDate": "Seçin",
+  "selectStartDate": "Başlangıç tarihini seçin",
+  "noCategory": "Kategori Yok",
+  "category": "Kategori",
+  "autoPayment": "Otomatik Ödeme",
+  "categoryOptional": "Kategori (İsteğe Bağlı)",
+  "descriptionOptional": "Açıklama (İsteğe Bağlı)",
+
+  "myCategories": "Sahip Olduklarım",
+  "joinedCategories": "Paylaşılanlar",
+  "noCategoriesYet": "Henüz kategori yok",
+  "noJoinedCategories": "Paylaşılan kategori yok",
+  "addCategoryHint": "Yeni kategori oluşturmak için + düğmesine bas",
+  "waitingInvitation": "Bir kategoriye davet bekleniyor",
+  "memberCount": "{count} üye",
+  "@memberCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "deleteCategory": "Kategoriyi Sil",
+  "deleteCategoryConfirm": "\"{name}\" kategorisini silmek istediğinize emin misiniz?",
+  "@deleteCategoryConfirm": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+
+  "memberCountTitle": "{count} Üye",
+  "@memberCountTitle": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "noMembersYet": "Henüz üye yok",
+  "addMember": "Üye Ekle",
+  "removeMember": "Üyeyi Kaldır",
+  "removeMemberConfirm": "Bu üyeyi kategoriden kaldırmak istediğinize emin misiniz?",
+
+  "newCategory": "Yeni Kategori",
+  "editCategory": "Kategoriyi Düzenle",
+  "transferAndDeleteCategory": "Borçları Aktarıp Kategoriyi Sil",
+  "deleteWithDebts": "Borçları ile Kategoriyi Sil",
+  "selectTargetCategory": "Hedef Kategori Seç",
+  "transferAndDeleteConfirm": "\"{name}\" kategorisindeki borçlar seçilen kategoriye aktarılacak, ardından kategori silinecek.",
+  "@transferAndDeleteConfirm": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "deleteWithDebtsConfirm": "\"{name}\" kategorisi ve içindeki tüm borçlar silinecek. Bu işlem geri alınamaz.",
+  "@deleteWithDebtsConfirm": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "migratedDebtCount": "{count} borç hedef kategoriye taşındı",
+  "@migratedDebtCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "categoryName": "Kategori Adı",
+
+  "periodOneTime": "Tek Seferlik",
+  "periodDaily": "Günlük",
+  "periodWeekly": "Haftalık",
+  "periodBiWeekly": "İki Haftalık",
+  "periodMonthly": "Aylık",
+  "periodQuarterly": "Üç Aylık",
+  "periodHalfYearly": "Altı Aylık",
+  "periodYearly": "Yıllık",
+
+  "statusActive": "Aktif",
+  "statusInactive": "Pasif",
+  "statusCompleted": "Tamamlandı",
+
+  "currentPassword": "Mevcut Şifre",
+
+  "settings": "Ayarlar",
+  "account": "Hesap",
+  "changePassword": "Şifre Değiştir",
+  "changePasswordDesc": "Şifre sıfırlama bağlantısı e-postanıza gönderilecek",
+  "feedback": "Geri Bildirim",
+  "sendFeedback": "Öneri / Şikayet Gönder",
+  "feedbackDesc": "Görüş ve önerilerinizi bizimle paylaşın",
+  "appearance": "Uygulama Ayarları",
+  "language": "Dil",
+  "theme": "Tema",
+  "themeSystem": "Sistem",
+  "themeLight": "Açık",
+  "themeDark": "Koyu",
+  "langSystem": "Sistem",
+  "langTurkish": "Türkçe",
+  "langEnglish": "English",
+  "visibility": "Borç Görünürlüğü",
+  "filterAll": "Hepsi",
+  "filterActive": "Aktif",
+  "filterInactive": "Pasif",
+
+  "developerCredit": "Developed by {name}",
+  "@developerCredit": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+
+  "currency": "Para Birimi",
+
+  "installmentCount": "Taksit Sayısı",
+  "installmentCountOptional": "Toplam Taksit Sayısı (İsteğe Bağlı)",
+  "installmentProgress": "{paid} / {total}",
+  "@installmentProgress": {
+    "placeholders": {
+      "paid": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "openEnded": "Açık Uçlu",
+  "openEndedProgress": "{count}",
+  "@openEndedProgress": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "memberEmail": "Üye E-posta Adresi",
+
+  "reminder": "Hatırlatma",
+  "reminderDate": "Hatırlatma Tarihi",
+  "reminderTime": "Hatırlatma Saati",
+  "reminderChannels": "Bildirim Kanalları",
+  "channelEmail": "E-posta",
+  "channelInApp": "Uygulama İçi",
+  "premiumRequiredTitle": "Premium Gerekli",
+  "premiumLimitReached": "Ücretsiz sürümde en fazla {limit} {feature} ekleyebilirsiniz. Devam etmek için Premium'a geçin.",
+  "@premiumLimitReached": {
+    "placeholders": {
+      "limit": { "type": "int" },
+      "feature": { "type": "String" }
+    }
+  },
+  "premiumFeatureRequired": "{feature} özelliğini kullanmak için Premium'a geçin.",
+  "@premiumFeatureRequired": {
+    "placeholders": {
+      "feature": { "type": "String" }
+    }
+  },
+  "maybeLater": "Belki Daha Sonra",
+
+  "premium": "Premium",
+  "getPremium": "Premium Al",
+  "goPremium": "Premium'a Geç",
+  "premiumActive": "Aktif",
+  "premiumUnlockDesc": "Kamci'nin tüm potansiyelinin kilidini aç",
+  "premiumUnlimitedDesc": "Sınırsız borç, kategori ve daha fazlası",
+  "renewsOn": "Yenileme: {date}",
+  "@renewsOn": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "bestValue": "En İyi Değer",
+  "autoRenewInfo": "Otomatik yenilenir. İstediğinizde iptal edin.",
+  "restorePurchases": "Satın Alımları Geri Yükle",
+  "featureUnlimitedDebts": "Sınırsız borç",
+  "featureUnlimitedCategories": "Sınırsız kategori",
+  "featureReminders": "Borç hatırlatıcıları ve bildirimler",
+  "featureCategorySharing": "Arkadaşlarla kategori paylaşımı",
+  "perMonth": "/ ay",
+  "perYear": "/ yıl",
+  "sharedPremiumDesc": "Paylaşılan borçları görmek ve arkadaşlarınla ortak borç yönetmek için Premium üye olmalısın.",
+  "userId": "Kullanıcı ID",
+  "userIdHint": "Kullanıcı ID'sini girin",
+  "accessLevel": "Erişim Seviyesi",
+
+  "skipPayment": "Ödemeyi Atla",
+  "skipPaymentConfirm": "Bu ödeme dönemini atlamak istediğinize emin misiniz?",
+  "paymentSkipped": "{name} ödeme dönemi atlandı.",
+  "@paymentSkipped": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+
+  "income": "Gelir",
+  "incomeHistory": "Gelir Geçmişi",
+  "incomeDesc": "Aylık gelirini kaydet, borç/gelir oranını takip et",
+  "addIncome": "Gelir Ekle",
+  "noIncomeYet": "Henüz gelir kaydı yok",
+  "incomeAmount": "Gelir Tutarı",
+  "incomeNote": "Not (İsteğe Bağlı)",
+  "effectiveFrom": "Geçerlilik Tarihi",
+  "deleteIncome": "Geliri Sil",
+  "deleteIncomeConfirm": "Bu gelir kaydını silmek istediğinize emin misiniz?",
+
+  "reminderChannelRequired": "En az bir bildirim kanalı seçilmelidir",
+  "reminderDateRequired": "Hatırlatma tarihi seçilmelidir",
+  "reminderTimeRequired": "Hatırlatma saati seçilmelidir",
+
+  "paymentActions": "Ödeme İşlemleri",
+  "partialPayment": "Parçalı Ödeme",
+  "fullPayment": "Tam Ödeme",
+  "bulkPayment": "Toplu Ödeme",
+  "setPaidInstallments": "Ödenmiş Taksitleri Ayarla",
+  "setPaidInstallmentsDesc": "Başka bir uygulamadan geçiyorsan, bu borç için daha önce ödediğin taksit sayısını gir.",
+  "paidInstallmentsCountLabel": "Ödenmiş taksit sayısı",
+  "paidInstallmentsCountInvalid": "1 veya daha büyük bir sayı girin",
+  "setPaidInstallmentsSuccess": "{count} taksit ödenmiş olarak işaretlendi",
+  "@setPaidInstallmentsSuccess": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "enterAmount": "Tutar Girin",
+  "partialPaymentHint": "Boş bırakılırsa tam tutar kullanılır",
+  "bulkPayTitle": "Toplu Ödeme Seç",
+  "bulkPayConfirm": "{count} ödeme kaydedildi.",
+  "@bulkPayConfirm": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "charts": "Grafikler",
+
+  "manageMembers": "Üyeleri Yönet",
+  "leaveCategory": "Bu Kategoriden Ayrıl",
+  "leaveCategoryConfirm": "\"{name}\" kategorisinden ayrılmak istediğinize emin misiniz?",
+  "@leaveCategoryConfirm": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "bulkShare": "Toplu Paylaş",
+  "shareCategory": "Paylaş",
+  "shareAllSelected": "Seçilenleri Paylaş ({count})",
+  "@shareAllSelected": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "selectCategoriesToShare": "Kategorileri Seç",
+  "addToCategories": "{count} kategoriye ekle",
+  "@addToCategories": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "shareAccessLevel": "Erişim Seviyesi",
+  "selectAccessLevel": "Erişim seviyesi seçin",
+  "categoriesSelected": "{count} kategori seçildi",
+  "@categoriesSelected": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "clearSelection": "Seçimi Temizle",
+  "memberAddedSuccess": "{email} üye olarak eklendi.",
+  "@memberAddedSuccess": {
+    "placeholders": {
+      "email": { "type": "String" }
+    }
+  },
+  "memberRemovedSuccess": "Üye kaldırıldı.",
+  "bulkShareSuccess": "{email} {count} kategoriye eklendi.",
+  "@bulkShareSuccess": {
+    "placeholders": {
+      "email": { "type": "String" },
+      "count": { "type": "int" }
+    }
+  },
+  "memberLeftCategory": "Kategoriden ayrıldınız.",
+  "changeAccessLevel": "Erişim Seviyesini Değiştir",
+  "membersList": "Üyeler Listesi",
+  "accessRead": "Okuma",
+  "accessReadDesc": "Sadece görüntüleyebilir",
+  "accessWrite": "Yazma",
+  "accessWriteDesc": "Görüntüleyebilir ve ödeme yapabilir",
+  "accessEdit": "Düzenleme",
+  "accessEditDesc": "Görüntüleyebilir, ödeme yapabilir ve düzenleyebilir",
+  "accessDelete": "Admin",
+  "accessDeleteDesc": "Tam yetki: görüntüleme, ödeme, düzenleme ve silme",
+  "noPermission": "Bu operasyon için yetkiniz yok.",
+
+  "errorWithMessage": "Hata: {message}",
+  "@errorWithMessage": {
+    "placeholders": {
+      "message": { "type": "String" }
+    }
+  },
+
+  "validationEmailRequired": "Email gerekli",
+  "validationEmailInvalid": "Geçerli bir email girin",
+  "validationPasswordRequired": "Şifre gerekli",
+  "validationPasswordMinLength": "Şifre en az 8 karakter olmalı",
+  "validationPasswordMaxLength": "Şifre en fazla 72 karakter olabilir",
+  "validationConfirmPasswordRequired": "Şifre tekrarı gerekli",
+  "validationPasswordMismatch": "Şifreler eşleşmiyor",
+  "validationFieldRequired": "{fieldName} gerekli",
+  "@validationFieldRequired": {
+    "placeholders": {
+      "fieldName": { "type": "String" }
+    }
+  },
+  "validationAmountRequired": "Tutar gerekli",
+  "validationAmountInvalid": "Geçerli bir tutar girin",
+  "validationAmountPositive": "Tutar 0'dan büyük olmalı",
+  "errorInvalidCredentials": "E-posta veya şifre hatalı.",
+  "errorUnexpected": "Beklenmeyen bir hata oluştu.",
+  "errorNetwork": "İnternet bağlantısı yok. Bağlantınızı kontrol edin.",
+  "errorServer": "Sunucu hatası oluştu. Lütfen tekrar deneyin.",
+  "errorNotFound": "İstenen kaynak bulunamadı.",
+  "errorRateLimit": "Çok fazla istek gönderildi. Lütfen bir süre bekleyin.",
+  "errorSessionExpired": "Oturumunuz sona erdi. Lütfen tekrar giriş yapın.",
+  "errorDebtAlreadyCompleted": "Bu borç zaten tamamlanmış.",
+  "errorDebtOverpayment": "Ödeme tutarı, kalan borç tutarını aşamaz.",
+  "errorCategoryNameConflict": "Bu isimde bir kategori zaten var.",
+  "errorCategoryCannotAddSelf": "Kendinizi üye olarak ekleyemezsiniz.",
+  "errorCategoryMemberNotFound": "Üye bulunamadı.",
+  "errorCategoryNotFound": "Kategori bulunamadı.",
+  "errorCategoryMemberUserNotFound": "Bu e-posta ile kayıtlı kullanıcı bulunamadı.",
+  "errorCategoryMemberAlreadyExists": "Bu kullanıcı zaten kategori üyesi.",
+  "errorCategoryMigrateSameCategory": "Hedef kategori, kaynak kategoriyle aynı olamaz.",
+  "errorDebtNotFound": "Borç bulunamadı.",
+  "errorDebtAlreadyPaidThisPeriod": "Bu dönem için ödeme zaten yapılmış.",
+  "errorDebtAutoPaymentEnabled": "Otomatik ödeme açıkken bu işlem yapılamaz.",
+  "errorDebtConcurrentRequest": "Bu borç için başka bir işlem sürüyor, lütfen tekrar deneyin.",
+  "errorDebtPaymentBeforeStart": "Ödeme, borcun başlangıç tarihinden önce olamaz.",
+  "errorDebtPeriodAlreadyRecorded": "Bu dönem zaten kaydedilmiş.",
+  "errorDebtInstallmentCountExceeded": "Taksit sayısı sınırı aşıldı.",
+  "errorDebtMissingPeriodConfig": "Ödeme periyodu bilgisi eksik.",
+  "errorIncomeNotFound": "Gelir kaydı bulunamadı.",
+  "errorReminderDateOrTimeMissing": "Hatırlatma tarihi veya saati eksik.",
+  "errorAuthEmailInUse": "Bu e-posta adresi zaten kullanımda.",
+  "errorAuthTooManyLoginAttempts": "Çok fazla giriş denemesi yapıldı. Lütfen bir süre bekleyin.",
+  "errorAuthNotValid": "E-posta veya şifre hatalı.",
+  "errorAuthTokenRevoked": "Oturumunuz sonlandırıldı. Lütfen tekrar giriş yapın.",
+  "errorAuthTokenInvalid": "Geçersiz oturum. Lütfen tekrar giriş yapın.",
+  "errorAuthCurrentPasswordInvalid": "Mevcut şifreniz hatalı.",
+  "errorAuthTokenAlreadyUsed": "Bu bağlantı zaten kullanılmış. Lütfen tekrar deneyin.",
+  "errorAuthTooManyPasswordResetAttempts": "Çok fazla şifre sıfırlama denemesi yapıldı. Lütfen bir süre bekleyin.",
+  "errorHouseholdInviteeNotFound": "Bu e-posta ile kayıtlı bir kullanıcı bulunamadı.",
+  "errorHouseholdCannotInviteSelf": "Kendinizi davet edemezsiniz.",
+  "errorHouseholdAlreadyLinked": "Zaten aktif veya bekleyen bir haneniz var.",
+  "errorHouseholdInviteeAlreadyLinked": "Bu kullanıcının zaten aktif veya bekleyen bir hanesi var.",
+  "errorHouseholdNotFound": "Hane bulunamadı.",
+  "errorHouseholdNotPending": "Bu davet artık bekleyen durumda değil.",
+  "household": "Hane",
+  "householdDesc": "Eşinizle geliri birleştirip ortak borç/gelir oranını görün",
+  "householdInviteTitle": "Hane Daveti Gönder",
+  "householdInviteEmailLabel": "E-posta",
+  "householdInviteButton": "Davet Gönder",
+  "householdInviteSent": "Davet gönderildi",
+  "householdNoHousehold": "Henüz bir haneniz yok",
+  "householdPendingAsOwner": "{email} için davetiniz onay bekliyor",
+  "@householdPendingAsOwner": {
+    "placeholders": {
+      "email": {"type": "String"}
+    }
+  },
+  "householdPendingAsPartner": "{email} sizi hanesine davet etti",
+  "@householdPendingAsPartner": {
+    "placeholders": {
+      "email": {"type": "String"}
+    }
+  },
+  "householdActiveWith": "{email} ile ortak hane",
+  "@householdActiveWith": {
+    "placeholders": {
+      "email": {"type": "String"}
+    }
+  },
+  "householdAccept": "Kabul Et",
+  "householdDecline": "Reddet",
+  "householdLeave": "Haneden Ayrıl",
+  "householdLeaveConfirmTitle": "Haneden ayrıl?",
+  "householdLeaveConfirmBody": "Ortak gelir birleştirme durdurulacak.",
+  "householdIncomeLabel": "Hane Geliri",
+  "householdRatioLabel": "Hane B/G Oranı",
+  "notifications": "Bildirimler",
+  "notificationsDesc": "Hatırlatıcılar, hane davetleri ve haftalık özet",
+  "notificationsEmpty": "Henüz bildirim yok",
+  "retryButton": "Tekrar Dene",
+  "personCount": "{count} kişi",
+  "@personCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "baseCurrency": "Baz Para Birimi",
+
+  "monthlySummary": "Aylık Özet",
+  "totalPaidAmount": "Toplam Ödendi",
+  "trendLast6Months": "Son 6 Ay Trendi",
+  "categoryBreakdown": "Kategori Dağılımı",
+  "debtProgressTitle": "Borç İlerlemesi",
+  "noDataForMonth": "Bu ay için veri yok",
+  "debtToIncomeRatioLabel": "Borç/Gelir Oranı",
+  "pendingLabel": "Bekleyen",
+  "skippedLabel": "Atlanan",
+  "noIncomeSet": "Gelir tanımlanmamış",
+  "installmentsLabel": "{paid} / {total} taksit",
+  "@installmentsLabel": {
+    "placeholders": {
+      "paid": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "openEndedInstallments": "{count} taksit (açık uçlu)",
+  "@openEndedInstallments": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "purchaseFailed": "Satın alma sırasında bir hata oluştu.",
+  "storeUnavailable": "Mağazaya bağlanılamadı. İnternet bağlantını kontrol et.",
+  "subscriptionPlansLoadFailed": "Abonelik planları şu an yüklenemedi.",
+  "debtCountLabel": "{count} borç",
+  "@debtCountLabel": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "percentValue": "%{value}",
+  "@percentValue": {
+    "placeholders": {
+      "value": { "type": "String" }
+    }
+  },
+  "trendNoPayments": "Son 6 ayda ödeme yok",
+  "dueOn": "Vade {date}",
+  "@dueOn": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  }
+}

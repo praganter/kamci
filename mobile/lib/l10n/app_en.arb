@@ -1,0 +1,490 @@
+{
+  "@@locale": "en",
+
+  "appName": "Kamci",
+
+  "save": "Save",
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "edit": "Edit",
+  "create": "Create",
+  "update": "Update",
+  "send": "Send",
+  "remove": "Remove",
+  "add": "Add",
+  "select": "Select",
+  "retry": "Retry",
+
+  "welcome": "Welcome!",
+  "signIn": "Sign In",
+  "signUp": "Sign Up",
+  "signOut": "Sign Out",
+  "signOutConfirm": "Are you sure you want to sign out?",
+  "deleteAccount": "Delete Account",
+  "deleteAccountConfirmTitle": "Permanently delete your account?",
+  "deleteAccountConfirm": "Your account and all of your debts, categories, income and notifications will be permanently deleted. This cannot be undone.\n\nIf you have an active subscription, cancel it separately in the App Store or Google Play to stop billing.",
+  "deleteAccountConfirmButton": "Delete Permanently",
+  "email": "Email Address",
+  "password": "Password",
+  "confirmPassword": "Confirm Password",
+  "newPassword": "New Password",
+  "forgotPassword": "Forgot Password?",
+  "forgotPasswordTitle": "Forgot Password",
+  "resetPasswordTitle": "Reset Password",
+  "updatePassword": "Update Password",
+  "noAccount": "Don't have an account?",
+  "hasAccount": "Already have an account?",
+  "forgotPasswordDesc": "A password reset link will be sent to your email address.",
+  "resetPasswordDesc": "Set your new password.",
+  "checkEmail": "Check Your Email",
+  "checkEmailDesc": "A password reset link has been sent to {email}.",
+  "invalidResetLink": "Invalid password reset link.",
+  "passwordUpdated": "Your password has been updated successfully.",
+
+  "debts": "Debts",
+  "categories": "Categories",
+
+  "myDebts": "My Debts",
+  "sharedDebts": "Shared",
+  "noDebtsYet": "No debts yet",
+  "noSharedDebts": "No shared debts",
+  "addDebtHint": "Press + to add a new debt",
+  "joinSharedHint": "Join a shared category",
+  "noCategoryDebts": "No debts in this category yet",
+  "noDebts": "No debts",
+  "summaryTotal": "Total",
+  "deleteDebtPermanentWarning": "This debt will be permanently deleted and cannot be undone. Are you sure?",
+  "paymentRecorded": "Payment for {name} has been recorded.",
+  "@paymentRecorded": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+
+  "deleteDebt": "Delete Debt",
+  "deleteDebtConfirm": "Are you sure you want to delete \"{name}\"?",
+
+  "amount": "Amount",
+  "status": "Status",
+  "paymentPeriod": "Payment Period",
+  "startDate": "Start Date",
+  "firstPaymentDate": "First Payment Date",
+  "endDate": "End Date",
+  "description": "Description",
+  "nextReminder": "Next Reminder",
+  "paymentHistory": "Payment History ({count})",
+  "noPaymentsYet": "No payments yet",
+  "paid": "Paid",
+  "pendingPayment": "Pending",
+
+  "newDebt": "New Debt",
+  "editDebt": "Edit Debt",
+  "debtName": "Debt Name",
+  "selectDate": "Select",
+  "selectStartDate": "Please select a start date",
+  "noCategory": "No Category",
+  "category": "Category",
+  "autoPayment": "Auto Payment",
+  "categoryOptional": "Category (Optional)",
+  "descriptionOptional": "Description (Optional)",
+
+  "myCategories": "My Categories",
+  "joinedCategories": "Shared",
+  "noCategoriesYet": "No categories yet",
+  "noJoinedCategories": "No shared categories",
+  "addCategoryHint": "Press + to create a new category",
+  "waitingInvitation": "Waiting for a category invitation",
+  "memberCount": "{count} member(s)",
+  "deleteCategory": "Delete Category",
+  "deleteCategoryConfirm": "Are you sure you want to delete \"{name}\"?",
+
+  "memberCountTitle": "{count} Member(s)",
+  "noMembersYet": "No members yet",
+  "addMember": "Add Member",
+  "removeMember": "Remove Member",
+  "removeMemberConfirm": "Are you sure you want to remove this member from the category?",
+
+  "newCategory": "New Category",
+  "editCategory": "Edit Category",
+  "transferAndDeleteCategory": "Transfer Debts & Delete",
+  "deleteWithDebts": "Delete with Debts",
+  "selectTargetCategory": "Select Target Category",
+  "transferAndDeleteConfirm": "Debts in \"{name}\" will be moved to the selected category, then the category will be deleted.",
+  "@transferAndDeleteConfirm": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "deleteWithDebtsConfirm": "Category \"{name}\" and all its debts will be deleted. This cannot be undone.",
+  "@deleteWithDebtsConfirm": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "migratedDebtCount": "{count} debts migrated to target category",
+  "@migratedDebtCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "categoryName": "Category Name",
+
+  "periodOneTime": "One-Time",
+  "periodDaily": "Daily",
+  "periodWeekly": "Weekly",
+  "periodBiWeekly": "Bi-weekly",
+  "periodMonthly": "Monthly",
+  "periodQuarterly": "Quarterly",
+  "periodHalfYearly": "Half-yearly",
+  "periodYearly": "Yearly",
+
+  "statusActive": "Active",
+  "statusInactive": "Inactive",
+  "statusCompleted": "Completed",
+
+  "currentPassword": "Current Password",
+
+  "settings": "Settings",
+  "account": "Account",
+  "changePassword": "Change Password",
+  "changePasswordDesc": "A password reset link will be sent to your email",
+  "feedback": "Feedback",
+  "sendFeedback": "Send Suggestion / Complaint",
+  "feedbackDesc": "Share your thoughts and suggestions with us",
+  "appearance": "App Settings",
+  "language": "Language",
+  "theme": "Theme",
+  "themeSystem": "System",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "langSystem": "System",
+  "langTurkish": "Türkçe",
+  "langEnglish": "English",
+  "visibility": "Debt Visibility",
+  "filterAll": "All",
+  "filterActive": "Active",
+  "filterInactive": "Inactive",
+
+  "developerCredit": "Developed by {name}",
+  "@developerCredit": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+
+  "currency": "Currency",
+
+  "installmentCount": "Installment Count",
+  "installmentCountOptional": "Total Installment Count (Optional)",
+  "installmentProgress": "{paid} / {total}",
+  "@installmentProgress": {
+    "placeholders": {
+      "paid": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "openEnded": "Open-Ended",
+  "openEndedProgress": "{count}",
+  "@openEndedProgress": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "memberEmail": "Member Email Address",
+
+  "reminder": "Reminder",
+  "reminderDate": "Reminder Date",
+  "reminderTime": "Reminder Time",
+  "reminderChannels": "Notification Channels",
+  "channelEmail": "Email",
+  "channelInApp": "In-App",
+  "premiumRequiredTitle": "Premium Required",
+  "premiumLimitReached": "In the free version, you can add at most {limit} {feature}. Upgrade to Premium to continue.",
+  "@premiumLimitReached": {
+    "placeholders": {
+      "limit": { "type": "int" },
+      "feature": { "type": "String" }
+    }
+  },
+  "premiumFeatureRequired": "Upgrade to Premium to use the {feature} feature.",
+  "@premiumFeatureRequired": {
+    "placeholders": {
+      "feature": { "type": "String" }
+    }
+  },
+  "maybeLater": "Maybe Later",
+
+  "premium": "Premium",
+  "getPremium": "Get Premium",
+  "goPremium": "Go Premium",
+  "premiumActive": "Active",
+  "premiumUnlockDesc": "Unlock the full potential of Kamci",
+  "premiumUnlimitedDesc": "Unlimited debts, categories & more",
+  "renewsOn": "Renews {date}",
+  "@renewsOn": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "bestValue": "Best Value",
+  "autoRenewInfo": "Renews automatically. Cancel anytime.",
+  "restorePurchases": "Restore Purchases",
+  "featureUnlimitedDebts": "Unlimited debts",
+  "featureUnlimitedCategories": "Unlimited categories",
+  "featureReminders": "Debt reminders & notifications",
+  "featureCategorySharing": "Category sharing with friends",
+  "perMonth": "/ month",
+  "perYear": "/ year",
+  "sharedPremiumDesc": "You need to be a Premium member to view shared debts and manage debts with friends.",
+  "userId": "User ID",
+  "userIdHint": "Enter User ID",
+  "accessLevel": "Access Level",
+
+  "skipPayment": "Skip Payment",
+  "skipPaymentConfirm": "Are you sure you want to skip this payment period?",
+  "paymentSkipped": "{name} payment period skipped.",
+  "@paymentSkipped": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+
+  "income": "Income",
+  "incomeHistory": "Income History",
+  "incomeDesc": "Record your monthly income and track your debt-to-income ratio",
+  "addIncome": "Add Income",
+  "noIncomeYet": "No income records yet",
+  "incomeAmount": "Income Amount",
+  "incomeNote": "Note (Optional)",
+  "effectiveFrom": "Effective From",
+  "deleteIncome": "Delete Income",
+  "deleteIncomeConfirm": "Are you sure you want to delete this income record?",
+
+  "reminderChannelRequired": "At least one notification channel must be selected",
+  "reminderDateRequired": "Reminder date is required",
+  "reminderTimeRequired": "Reminder time is required",
+
+  "paymentActions": "Payment Actions",
+  "partialPayment": "Partial Payment",
+  "fullPayment": "Full Payment",
+  "bulkPayment": "Bulk Payment",
+  "setPaidInstallments": "Set Paid Installments",
+  "setPaidInstallmentsDesc": "Coming from another app? Enter how many installments of this debt you've already paid.",
+  "paidInstallmentsCountLabel": "Paid installments",
+  "paidInstallmentsCountInvalid": "Enter a number of 1 or more",
+  "setPaidInstallmentsSuccess": "{count} installments marked as paid",
+  "@setPaidInstallmentsSuccess": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "enterAmount": "Enter Amount",
+  "partialPaymentHint": "Leave empty to use full amount",
+  "bulkPayTitle": "Select Bulk Payments",
+  "bulkPayConfirm": "{count} payments recorded.",
+  "@bulkPayConfirm": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "charts": "Charts",
+
+  "manageMembers": "Manage Members",
+  "leaveCategory": "Leave Category",
+  "leaveCategoryConfirm": "Are you sure you want to leave \"{name}\"?",
+  "@leaveCategoryConfirm": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "bulkShare": "Bulk Share",
+  "shareCategory": "Share",
+  "shareAllSelected": "Share All Selected ({count})",
+  "@shareAllSelected": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "selectCategoriesToShare": "Select Categories",
+  "addToCategories": "Add to {count} categories",
+  "@addToCategories": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "shareAccessLevel": "Access Level",
+  "selectAccessLevel": "Select access level",
+  "categoriesSelected": "{count} categories selected",
+  "@categoriesSelected": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "clearSelection": "Clear Selection",
+  "memberAddedSuccess": "{email} added as member.",
+  "@memberAddedSuccess": {
+    "placeholders": {
+      "email": { "type": "String" }
+    }
+  },
+  "memberRemovedSuccess": "Member removed.",
+  "bulkShareSuccess": "{email} added to {count} categories.",
+  "@bulkShareSuccess": {
+    "placeholders": {
+      "email": { "type": "String" },
+      "count": { "type": "int" }
+    }
+  },
+  "memberLeftCategory": "You have left the category.",
+  "changeAccessLevel": "Change Access Level",
+  "membersList": "Members List",
+  "accessRead": "Read",
+  "accessReadDesc": "View only",
+  "accessWrite": "Write",
+  "accessWriteDesc": "Can view and make payments",
+  "accessEdit": "Edit",
+  "accessEditDesc": "Can view, make payments and edit",
+  "accessDelete": "Admin",
+  "accessDeleteDesc": "Full access: view, pay, edit and delete",
+  "noPermission": "You don't have permission for this operation.",
+
+  "errorWithMessage": "Error: {message}",
+  "@errorWithMessage": {
+    "placeholders": {
+      "message": { "type": "String" }
+    }
+  },
+
+  "validationEmailRequired": "Email is required",
+  "validationEmailInvalid": "Enter a valid email address",
+  "validationPasswordRequired": "Password is required",
+  "validationPasswordMinLength": "Password must be at least 8 characters",
+  "validationPasswordMaxLength": "Password must be at most 72 characters",
+  "validationConfirmPasswordRequired": "Confirm password is required",
+  "validationPasswordMismatch": "Passwords do not match",
+  "validationFieldRequired": "{fieldName} is required",
+  "@validationFieldRequired": {
+    "placeholders": {
+      "fieldName": { "type": "String" }
+    }
+  },
+  "validationAmountRequired": "Amount is required",
+  "validationAmountInvalid": "Enter a valid amount",
+  "validationAmountPositive": "Amount must be greater than 0",
+  "errorInvalidCredentials": "Incorrect email or password.",
+  "errorUnexpected": "An unexpected error occurred.",
+  "errorNetwork": "No internet connection. Please check your connection.",
+  "errorServer": "A server error occurred. Please try again.",
+  "errorNotFound": "The requested resource was not found.",
+  "errorRateLimit": "Too many requests. Please wait a moment.",
+  "errorSessionExpired": "Your session has expired. Please sign in again.",
+  "errorDebtAlreadyCompleted": "This debt is already completed.",
+  "errorDebtOverpayment": "The payment amount can't exceed the remaining debt.",
+  "errorCategoryNameConflict": "A category with this name already exists.",
+  "errorCategoryCannotAddSelf": "You can't add yourself as a member.",
+  "errorCategoryMemberNotFound": "Member not found.",
+  "errorCategoryNotFound": "Category not found.",
+  "errorCategoryMemberUserNotFound": "No user found with this email.",
+  "errorCategoryMemberAlreadyExists": "This user is already a member of the category.",
+  "errorCategoryMigrateSameCategory": "The target category can't be the same as the source category.",
+  "errorDebtNotFound": "Debt not found.",
+  "errorDebtAlreadyPaidThisPeriod": "This period has already been paid.",
+  "errorDebtAutoPaymentEnabled": "This action isn't allowed while auto payment is enabled.",
+  "errorDebtConcurrentRequest": "Another operation is in progress for this debt. Please try again.",
+  "errorDebtPaymentBeforeStart": "The payment can't be before the debt's start date.",
+  "errorDebtPeriodAlreadyRecorded": "This period has already been recorded.",
+  "errorDebtInstallmentCountExceeded": "The installment count limit has been exceeded.",
+  "errorDebtMissingPeriodConfig": "Payment period information is missing.",
+  "errorIncomeNotFound": "Income record not found.",
+  "errorReminderDateOrTimeMissing": "Reminder date or time is missing.",
+  "errorAuthEmailInUse": "This email address is already in use.",
+  "errorAuthTooManyLoginAttempts": "Too many login attempts. Please wait a moment.",
+  "errorAuthNotValid": "Incorrect email or password.",
+  "errorAuthTokenRevoked": "Your session has been ended. Please sign in again.",
+  "errorAuthTokenInvalid": "Invalid session. Please sign in again.",
+  "errorAuthCurrentPasswordInvalid": "Your current password is incorrect.",
+  "errorAuthTokenAlreadyUsed": "This link has already been used. Please try again.",
+  "errorAuthTooManyPasswordResetAttempts": "Too many password reset attempts. Please wait a moment.",
+  "errorHouseholdInviteeNotFound": "No user is registered with this email.",
+  "errorHouseholdCannotInviteSelf": "You can't invite yourself.",
+  "errorHouseholdAlreadyLinked": "You already have an active or pending household.",
+  "errorHouseholdInviteeAlreadyLinked": "This user already has an active or pending household.",
+  "errorHouseholdNotFound": "Household not found.",
+  "errorHouseholdNotPending": "This invite is no longer pending.",
+  "household": "Household",
+  "householdDesc": "Combine income with your partner and see joint debt-to-income ratio",
+  "householdInviteTitle": "Send Household Invite",
+  "householdInviteEmailLabel": "Email",
+  "householdInviteButton": "Send Invite",
+  "householdInviteSent": "Invite sent",
+  "householdNoHousehold": "You don't have a household yet",
+  "householdPendingAsOwner": "Your invite to {email} is pending",
+  "@householdPendingAsOwner": {
+    "placeholders": {
+      "email": {"type": "String"}
+    }
+  },
+  "householdPendingAsPartner": "{email} invited you to their household",
+  "@householdPendingAsPartner": {
+    "placeholders": {
+      "email": {"type": "String"}
+    }
+  },
+  "householdActiveWith": "Shared household with {email}",
+  "@householdActiveWith": {
+    "placeholders": {
+      "email": {"type": "String"}
+    }
+  },
+  "householdAccept": "Accept",
+  "householdDecline": "Decline",
+  "householdLeave": "Leave Household",
+  "householdLeaveConfirmTitle": "Leave household?",
+  "householdLeaveConfirmBody": "Combined income will no longer be shared.",
+  "householdIncomeLabel": "Household Income",
+  "householdRatioLabel": "Household D/I Ratio",
+  "notifications": "Notifications",
+  "notificationsDesc": "Reminders, household invites and weekly digest",
+  "notificationsEmpty": "No notifications yet",
+  "retryButton": "Try Again",
+  "personCount": "{count} people",
+  "@personCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "baseCurrency": "Base Currency",
+
+  "monthlySummary": "Monthly Summary",
+  "totalPaidAmount": "Total Paid",
+  "trendLast6Months": "Last 6 Months Trend",
+  "categoryBreakdown": "Category Breakdown",
+  "debtProgressTitle": "Debt Progress",
+  "noDataForMonth": "No data for this month",
+  "debtToIncomeRatioLabel": "Debt/Income Ratio",
+  "pendingLabel": "Pending",
+  "skippedLabel": "Skipped",
+  "noIncomeSet": "No income set",
+  "installmentsLabel": "{paid} / {total} installments",
+  "@installmentsLabel": {
+    "placeholders": {
+      "paid": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "openEndedInstallments": "{count} installments (open-ended)",
+  "@openEndedInstallments": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "purchaseFailed": "Something went wrong during the purchase.",
+  "storeUnavailable": "Couldn't connect to the store. Check your internet connection.",
+  "subscriptionPlansLoadFailed": "Subscription plans couldn't be loaded right now.",
+  "debtCountLabel": "{count, plural, =1{1 debt} other{{count} debts}}",
+  "percentValue": "{value}%",
+  "trendNoPayments": "No payments in the last 6 months",
+  "dueOn": "Due {date}"
+}

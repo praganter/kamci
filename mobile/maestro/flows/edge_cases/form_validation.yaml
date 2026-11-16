@@ -1,0 +1,106 @@
+appId: com.batuhanyetgin.kamci
+tags: [edge_cases]
+---
+# EDGE-02..05: Form validasyon senaryoları
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+
+# ── Borç formu — boş submit ────────────────────────────────
+- tapOn:
+    text: "Borçlar"
+- tapOn:
+    id: "addDebtFab"
+- extendedWaitUntil:
+    visible:
+      text: "Yeni Borç"
+    timeout: 8000
+- scrollUntilVisible:
+    element:
+      text: "Oluştur"
+    direction: DOWN
+- tapOn:
+    text: "Oluştur"
+# Validation hataları ayrı Text element olarak gösterilir
+- assertVisible:
+    text: "(?s).*gerekli.*"
+# Formdan çık: iOS kenar kaydırma geri hareketi, Android sistem geri tuşu
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - swipe:
+          direction: RIGHT
+          duration: 400
+- runFlow:
+    when:
+      platform: Android
+    # AppBar geri butonu: klavye durumundan bağımsız. (hideKeyboard klavye
+    # kapalıyken back gönderip formu kapatıyor, ardından gelen back uygulamadan
+    # çıkıyordu.)
+    commands:
+      - tapOn: "Geri"
+- waitForAnimationToEnd
+
+# ── Login formu — geçersiz email ───────────────────────────
+- runFlow: "../../subflows/_logout.yaml"
+# GoRouter stack replacement → XCTest tree geçici invalid; launchApp ile doğrula
+- launchApp:
+    clearKeychain: false
+    permissions:
+      all: allow
+- extendedWaitUntil:
+    visible:
+      text: "E-posta Adresi"
+    timeout: 45000
+- tapOn:
+    text: "E-posta Adresi"
+- inputText: "gecersizemail"
+- tapOn:
+    text: "Şifre"
+- inputText: "TestPass123!"
+- tapOn:
+    text: "Giriş Yap"
+- assertVisible:
+    text: "Geçerli bir email girin"
+
+# ── Login formu — kısa şifre ───────────────────────────────
+- tapOn:
+    text: "E-posta Adresi"
+- eraseText: 100
+- inputText: "${USER_A_EMAIL}"
+- tapOn:
+    text: "Şifre"
+- eraseText: 100
+- inputText: "kisa"
+- tapOn:
+    text: "Giriş Yap"
+- assertVisible:
+    text: "Şifre en az 8 karakter olmalı"
+
+# ── Register — şifre uyuşmuyor ─────────────────────────────
+# Android: açık klavye "Kayıt Ol" linkini örter; hideKeyboard klavye kapalıysa
+# back gönderip uygulamadan çıkabileceği için scroll ile görünür yap.
+- scrollUntilVisible:
+    element:
+      text: "Kayıt Ol"
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    text: "Kayıt Ol"
+- extendedWaitUntil:
+    visible: "Şifre Tekrar"
+    timeout: 10000
+- tapOn:
+    text: "E-posta Adresi"
+- inputText: "${USER_A_EMAIL}"
+- tapOn:
+    text: "Şifre"
+    index: 0
+- inputText: "TestPass123!"
+- tapOn:
+    text: "Şifre Tekrar"
+- inputText: "FarkliSifre456!"
+- tapOn:
+    text: "Kayıt Ol"
+    index: 1
+- assertVisible:
+    text: "Şifreler eşleşmiyor"

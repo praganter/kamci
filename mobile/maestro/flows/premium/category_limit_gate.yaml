@@ -1,0 +1,19 @@
+appId: com.batuhanyetgin.kamci
+tags: [premium]
+---
+# PREM-02: 2. kategori limiti — freemium hesap
+# Precondition: Non-premium hesap, zaten 2 kategori mevcut
+- runFlow: "../../subflows/_login_as_user_b.yaml"
+- tapOn:
+    text: "Kategoriler"
+- waitForAnimationToEnd
+- tapOn:
+    id: "addCategoryFab"
+- extendedWaitUntil:
+    visible:
+      text: "Premium Gerekli"
+    timeout: 5000
+- assertNotVisible:
+    text: "Yeni Kategori"
+- tapOn:
+    text: "Belki Daha Sonra"

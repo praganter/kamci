@@ -1,0 +1,100 @@
+{
+  "month": "2026-11",
+  "baseCurrency": "TRY",
+  "totalPaid": 100.0,
+  "paidCount": 1,
+  "skippedCount": 0,
+  "skippedAmount": 0,
+  "pendingCount": 0,
+  "pendingAmount": 0,
+  "incomeAtMonth": null,
+  "debtToIncomeRatio": null,
+  "household": false,
+  "householdIncomeAtMonth": null,
+  "householdDebtToIncomeRatio": null,
+  "debts": [
+    {
+      "debtId": "6afaf2bb7c4cf716a14bd7d9",
+      "debtName": "Rent",
+      "currency": "TRY",
+      "amountPaid": 100.0,
+      "paid": true,
+      "skipped": false,
+      "pending": false,
+      "paidTime": "2026-11-16T15:10:35.879"
+    }
+  ],
+  "trend": [
+    {
+      "month": "2026-06",
+      "totalPaid": 0,
+      "paidCount": 0,
+      "skippedCount": 0,
+      "pendingCount": 0,
+      "debtToIncomeRatio": null
+    },
+    {
+      "month": "2026-07",
+      "totalPaid": 0,
+      "paidCount": 0,
+      "skippedCount": 0,
+      "pendingCount": 0,
+      "debtToIncomeRatio": null
+    },
+    {
+      "month": "2026-08",
+      "totalPaid": 0,
+      "paidCount": 0,
+      "skippedCount": 0,
+      "pendingCount": 0,
+      "debtToIncomeRatio": null
+    },
+    {
+      "month": "2026-09",
+      "totalPaid": 0,
+      "paidCount": 0,
+      "skippedCount": 0,
+      "pendingCount": 0,
+      "debtToIncomeRatio": null
+    },
+    {
+      "month": "2026-10",
+      "totalPaid": 0,
+      "paidCount": 0,
+      "skippedCount": 0,
+      "pendingCount": 0,
+      "debtToIncomeRatio": null
+    },
+    {
+      "month": "2026-11",
+      "totalPaid": 100.0,
+      "paidCount": 1,
+      "skippedCount": 0,
+      "pendingCount": 0,
+      "debtToIncomeRatio": null
+    }
+  ],
+  "categoryBreakdown": [
+    {
+      "categoryId": "6afaf2bb7c4cf716a14bd7d8",
+      "categoryName": "Home",
+      "totalPaid": 100.0,
+      "debtCount": 1,
+      "percentage": 100.0
+    }
+  ],
+  "debtProgress": [
+    {
+      "debtId": "6afaf2bb7c4cf716a14bd7d9",
+      "debtName": "Rent",
+      "currency": "TRY",
+      "totalAmount": 500.0,
+      "totalPaid": 100.0,
+      "remainingAmount": 2500.0,
+      "paidInstallments": 1,
+      "totalInstallments": 6,
+      "completionPercentage": 16.67,
+      "status": "ACTIVE"
+    }
+  ]
+}

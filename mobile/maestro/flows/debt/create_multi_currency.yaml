@@ -1,0 +1,287 @@
+appId: com.batuhanyetgin.kamci
+tags: [debt]
+---
+# DEBT-13/14: Multi-currency — USD ve EUR — testten sonra siler (test izolasyonu)
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- runFlow: "../../subflows/_cleanup_all_debts.yaml"
+- runFlow: "../../subflows/_create_default_category.yaml"
+- tapOn:
+    text: "Borçlar"
+- waitForAnimationToEnd
+
+# ── USD ────────────────────────────────────────────────────
+- tapOn:
+    id: "addDebtFab"
+- extendedWaitUntil:
+    visible:
+      text: "Yeni Borç"
+    timeout: 8000
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: "categoryField"
+      - waitForAnimationToEnd
+      - tapOn:
+          text: "Tamam"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: "categoryField"
+      - scrollUntilVisible:
+          element:
+            text: "Test Kategorisi"
+          direction: DOWN
+          timeout: 10000
+      - tapOn:
+          text: "Test Kategorisi"
+      - waitForAnimationToEnd
+- tapOn:
+    text: "Borç Adı"
+- inputText: "USD Test Borcu"
+- tapOn:
+    text: "Tutar"
+- inputText: "1200"
+- tapOn:
+    text: "Yeni Borç"
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: "currencyField"
+      - waitForAnimationToEnd
+      - repeat:
+          times: 14
+          commands:
+            - runFlow: "../../subflows/_picker_wheel_next.yaml"
+      - assertVisible:
+          text: "USD[\\s\\S]*"
+      - tapOn:
+          text: "Tamam"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: "currencyField"
+      - scrollUntilVisible:
+          element:
+            text: "USD[\\s\\S]*"
+          direction: DOWN
+          timeout: 10000
+      - tapOn:
+          text: "USD[\\s\\S]*"
+      - waitForAnimationToEnd
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: "periodField"
+      - waitForAnimationToEnd
+      - tapOn:
+          text: "Tek Seferlik"
+      - tapOn:
+          text: "Tamam"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: "periodField"
+      - scrollUntilVisible:
+          element:
+            text: "Tek Seferlik"
+          direction: DOWN
+          timeout: 10000
+      - tapOn:
+          text: "Tek Seferlik"
+      - waitForAnimationToEnd
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: "dateField"
+    direction: DOWN
+- tapOn:
+    id: "dateField"
+- tapOn:
+    text: "Tamam"
+- scrollUntilVisible:
+    element:
+      text: "Oluştur"
+    direction: DOWN
+- tapOn:
+    text: "Oluştur"
+- extendedWaitUntil:
+    visible:
+      id: "myDebtsTab"
+    timeout: 35000
+- waitForAnimationToEnd
+- tapOn:
+    text: "Kategoriler"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Borçlar"
+- waitForAnimationToEnd
+# Debt tile label'ı birleşiktir ("Ad\n0 / 1\n$1.200") → [\s\S]* regex şart
+- scrollUntilVisible:
+    element:
+      text: "USD Test Borcu[\\s\\S]*"
+    direction: DOWN
+    timeout: 20000
+- assertVisible:
+    text: "USD Test Borcu[\\s\\S]*\\$[\\d.,]+"
+# Cleanup USD borcu
+- swipe:
+    from:
+      text: "[^\\n]+\\n\\d+( / \\d+)?[^\\n]*\\n[^\\n]+"
+      index: 0
+    direction: LEFT
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Borcu Sil"
+- tapOn:
+    text: "Sil"
+- waitForAnimationToEnd
+
+# ── EUR ────────────────────────────────────────────────────
+- tapOn:
+    id: "addDebtFab"
+- extendedWaitUntil:
+    visible:
+      text: "Yeni Borç"
+    timeout: 8000
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: "categoryField"
+      - waitForAnimationToEnd
+      - tapOn:
+          text: "Tamam"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: "categoryField"
+      - scrollUntilVisible:
+          element:
+            text: "Test Kategorisi"
+          direction: DOWN
+          timeout: 10000
+      - tapOn:
+          text: "Test Kategorisi"
+      - waitForAnimationToEnd
+- tapOn:
+    text: "Borç Adı"
+- inputText: "EUR Test Borcu"
+- tapOn:
+    text: "Tutar"
+- inputText: "900"
+- tapOn:
+    text: "Yeni Borç"
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: "currencyField"
+      - waitForAnimationToEnd
+      - repeat:
+          times: 7
+          commands:
+            - runFlow: "../../subflows/_picker_wheel_next.yaml"
+      - assertVisible:
+          text: "EUR[\\s\\S]*"
+      - tapOn:
+          text: "Tamam"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: "currencyField"
+      - scrollUntilVisible:
+          element:
+            text: "EUR[\\s\\S]*"
+          direction: DOWN
+          timeout: 10000
+      - tapOn:
+          text: "EUR[\\s\\S]*"
+      - waitForAnimationToEnd
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: "periodField"
+      - waitForAnimationToEnd
+      - tapOn:
+          text: "Tek Seferlik"
+      - tapOn:
+          text: "Tamam"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: "periodField"
+      - scrollUntilVisible:
+          element:
+            text: "Tek Seferlik"
+          direction: DOWN
+          timeout: 10000
+      - tapOn:
+          text: "Tek Seferlik"
+      - waitForAnimationToEnd
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: "dateField"
+    direction: DOWN
+- tapOn:
+    id: "dateField"
+- tapOn:
+    text: "Tamam"
+- scrollUntilVisible:
+    element:
+      text: "Oluştur"
+    direction: DOWN
+- tapOn:
+    text: "Oluştur"
+- extendedWaitUntil:
+    visible:
+      id: "myDebtsTab"
+    timeout: 35000
+- waitForAnimationToEnd
+- tapOn:
+    text: "Kategoriler"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Borçlar"
+- waitForAnimationToEnd
+# Debt tile label'ı birleşiktir → [\s\S]* regex şart
+- scrollUntilVisible:
+    element:
+      text: "EUR Test Borcu[\\s\\S]*"
+    direction: DOWN
+    timeout: 20000
+- assertVisible:
+    text: "EUR Test Borcu[\\s\\S]*€[\\d.,]+"
+# Cleanup EUR borcu
+- swipe:
+    from:
+      text: "[^\\n]+\\n\\d+( / \\d+)?[^\\n]*\\n[^\\n]+"
+      index: 0
+    direction: LEFT
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Borcu Sil"
+- tapOn:
+    text: "Sil"

@@ -1,0 +1,47 @@
+abstract final class RouteNames {
+  static const String splash = 'splash';
+  static const String login = 'login';
+  static const String register = 'register';
+  static const String forgotPassword = 'forgot-password';
+  static const String resetPassword = 'reset-password';
+
+  static const String debts = 'debts';
+  static const String debtNew = 'debt-new';
+  static const String debtDetail = 'debt-detail';
+  static const String debtEdit = 'debt-edit';
+
+  static const String categories = 'categories';
+  static const String categoryDetail = 'category-detail';
+
+  static const String settings = 'settings';
+  static const String changePassword = 'change-password';
+  static const String income = 'income';
+  static const String charts = 'charts';
+  static const String premium = 'premium';
+  static const String household = 'household';
+  static const String notifications = 'notifications';
+}
+
+abstract final class RoutePaths {
+  static const String splash = '/splash';
+  static const String login = '/login';
+  static const String register = '/register';
+  static const String forgotPassword = '/forgot-password';
+  static const String resetPassword = '/reset-password';
+
+  static const String debts = '/debts';
+  static const String debtNew = '/debts/new';
+  static String debtDetail(String id) => '/debts/$id';
+  static String debtEdit(String id) => '/debts/$id/edit';
+
+  static const String categories = '/categories';
+  static String categoryDetail(String id) => '/categories/$id';
+
+  static const String settings = '/settings';
+  static const String changePassword = '/change-password';
+  static const String income = '/income';
+  static const String charts = '/charts';
+  static const String premium = '/premium';
+  static const String household = '/household';
+  static const String notifications = '/notifications';
+}

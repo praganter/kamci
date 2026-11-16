@@ -1,0 +1,26 @@
+appId: com.batuhanyetgin.kamci
+tags: [premium, smoke]
+---
+# PREM-01: 5. borç limiti — freemium hesap
+# Precondition: Non-premium hesap, zaten 5 borç mevcut
+# Bu test User B (non-premium) ile çalışır
+- runFlow: "../../subflows/_login_as_user_b.yaml"
+- tapOn:
+    text: "Borçlar"
+- waitForAnimationToEnd
+# FAB'a tıkla — limit aşıldıysa premium sheet açılmalı
+- tapOn:
+    id: "addDebtFab"
+- extendedWaitUntil:
+    visible:
+      text: "Premium Gerekli"
+    timeout: 5000
+# PremiumRequiredSheet limit sayısını ayrı bir metin olarak render etmez;
+# "Premium Al" CTA'sı ve gate'in formu AÇMAMASI ile doğrula.
+- assertVisible:
+    text: "Premium Al"
+- assertNotVisible:
+    text: "Yeni Borç"
+# "Belki Daha Sonra" ile kapat
+- tapOn:
+    text: "Belki Daha Sonra"

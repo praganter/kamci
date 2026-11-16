@@ -1,0 +1,35 @@
+appId: com.batuhanyetgin.kamci
+tags: [sharing, multi-device]
+---
+# SHARE-01 (Device A): User A, Test Kategorisi'ni User C ile READ yetkisiyle paylaşır
+# Bu flow emulator-5554 (Device A) üzerinde çalışır
+# Ardından device_b_verify_read.yaml emulator-5556'da çalıştırılır
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- runFlow: "../../subflows/_create_default_category.yaml"
+- runFlow: "../../subflows/_create_default_debt.yaml"
+- tapOn:
+    text: "Kategoriler"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Test Kategorisi"
+- waitForAnimationToEnd
+# Üye ekle FAB veya butonu
+- tapOn:
+    text: "Üye Ekle"
+- assertVisible:
+    text: "Üye Ekle"
+- tapOn:
+    text: "E-posta Adresi"
+- inputText: "${USER_C_EMAIL}"
+# inputText sonrası field commit için bekle (yoksa Ekle boş email ile gider)
+- waitForAnimationToEnd
+# Erişim seviyesi dropdown'ı DEFAULT "Okuma" (AccessLevel.read) ile başlar
+# → READ paylaşımı için dokunmaya gerek yok, direkt Ekle.
+- tapOn:
+    text: "Ekle"
+# Üye satırı birleşik label taşır ("OKUMA\n...\nios2@test.com") → [\s\S]* regex.
+# "üye olarak eklendi" snackbar geçicidir, güvenilir değil → üye satırıyla doğrula.
+- extendedWaitUntil:
+    visible:
+      text: "[\\s\\S]*${USER_C_EMAIL}[\\s\\S]*"
+    timeout: 10000

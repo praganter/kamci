@@ -1,0 +1,29 @@
+appId: com.batuhanyetgin.kamci
+---
+# clearKeychain: true → stale token yok, auth check <1s'de tamamlanır.
+# permissions:all:allow → izin diyaloğu otomatik kabul edilir.
+- launchApp:
+    clearKeychain: true
+    permissions:
+      all: allow
+- runFlow:
+    file: "_safe_logout.yaml"
+    optional: true
+- extendedWaitUntil:
+    visible:
+      text: "E-posta Adresi"
+    timeout: 20000
+- tapOn:
+    text: "E-posta Adresi"
+- waitForAnimationToEnd
+- inputText: "${USER_B_EMAIL}"
+- tapOn:
+    text: "Şifre"
+- waitForAnimationToEnd
+- inputText: "${USER_B_PASSWORD}"
+- tapOn:
+    text: "Giriş Yap"
+- extendedWaitUntil:
+    visible:
+      text: "Borçlar"
+    timeout: 30000

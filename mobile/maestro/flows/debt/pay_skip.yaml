@@ -1,0 +1,31 @@
+appId: com.batuhanyetgin.kamci
+tags: [debt, midnight]
+---
+# DEBT-08: Ödemeyi atla — testten sonra siler (test izolasyonu)
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- runFlow: "../../subflows/_cleanup_all_debts.yaml"
+- runFlow: "../../subflows/_create_default_category.yaml"
+- runFlow: "../../subflows/_create_monthly_debt.yaml"
+- tapOn:
+    text: "Borçlar"
+- tapOn:
+    id: "myDebtsTab"
+- waitForAnimationToEnd
+- swipe:
+    from:
+      text: "[^\\n]+\\n\\d+( / \\d+)?[^\\n]*\\n[^\\n]+"
+      index: 0
+    direction: RIGHT
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Ödeme İşlemleri"
+- tapOn:
+    text: "Ödemeyi Atla"
+- assertVisible:
+    text: "[\\s\\S]*atlandı[\\s\\S]*"
+# Cleanup: borcu sil. Atlamadan sonra liste yeniden düzenlenir; sabit %40
+# swipe boş alana düşüp TabBarView'ü "Paylaşılan"a kaydırabiliyor (Android).
+- extendedWaitUntil:
+    notVisible: "[\\s\\S]*atlandı[\\s\\S]*"
+    timeout: 10000
+- runFlow: "../../subflows/_cleanup_all_debts.yaml"

@@ -1,0 +1,30 @@
+appId: com.batuhanyetgin.kamci
+---
+# Assumes the main shell is visible (Ayarlar tab in bottom nav).
+# Fails immediately if Ayarlar is not found — caller uses runFlow optional:true.
+# scrollUntilVisible has 20s default timeout: covers navigation animation + screen load.
+# NOT does verify the login screen after logout — caller is responsible for that.
+# Android: clearKeychain oturumu kapatmaz; launchApp sonrası splash + auth check
+# sürerken "Ayarlar" henüz yoktur ve tapOn erken düşüp logout atlanır. Önce
+# login ekranı ya da ana shell gelene kadar bekle.
+- extendedWaitUntil:
+    visible: "E-posta Adresi|Ayarlar"
+    timeout: 30000
+# Metin değil id: Android'de önceki flow'dan açık kalan Gboard'un araç
+# çubuğunda da "Ayarlar" butonu var — metinle basınca klavye ayarları açılıyordu.
+- tapOn:
+    id: "navSettings"
+- scrollUntilVisible:
+    element:
+      text: "Çıkış Yap"
+    direction: DOWN
+- tapOn:
+    text: "Çıkış Yap"
+- extendedWaitUntil:
+    visible:
+      text: "İptal"
+    timeout: 3000
+- tapOn:
+    text: "Çıkış Yap"
+    index: 1
+- waitForAnimationToEnd

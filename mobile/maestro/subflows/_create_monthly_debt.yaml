@@ -1,0 +1,131 @@
+appId: com.batuhanyetgin.kamci
+---
+# Pay testleri için AYLIK "Test Borcu" oluşturur (500 TRY, taksit boş).
+# NEDEN AYLIK: Backend /debt/pay ve /debt/skip, ONE_TIME borçlarda HTTP 500
+# dönüyor (error.unexpected — 2026-07-15'te doğrulandı); MONTHLY'de sorunsuz.
+- waitForAnimationToEnd
+- tapOn:
+    id: "myDebtsTab"
+- waitForAnimationToEnd
+- tapOn:
+    id: "addDebtFab"
+- waitForAnimationToEnd
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: "categoryField"
+      - extendedWaitUntil:
+          visible:
+            text: "Tamam"
+          timeout: 5000
+      - tapOn:
+          text: "Tamam"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: "categoryField"
+      - scrollUntilVisible:
+          element:
+            text: "Test Kategorisi"
+          direction: DOWN
+          timeout: 10000
+      - tapOn:
+          text: "Test Kategorisi"
+      - waitForAnimationToEnd
+- tapOn:
+    text: "Borç Adı"
+- inputText: "Test Borcu"
+- tapOn:
+    text: "Tutar"
+- inputText: "500"
+- tapOn:
+    text: "Yeni Borç"
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: "currencyField"
+      - waitForAnimationToEnd
+      - tapOn:
+          text: "Tamam"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: "currencyField"
+      - scrollUntilVisible:
+          element:
+            text: "TRY ₺"
+          direction: DOWN
+          timeout: 10000
+      - tapOn:
+          text: "TRY ₺"
+      - waitForAnimationToEnd
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: "periodField"
+      - waitForAnimationToEnd
+      - repeat:
+          times: 4
+          commands:
+            - runFlow: "_picker_wheel_next.yaml"
+      - assertVisible:
+          text: "Aylık"
+      - tapOn:
+          text: "Tamam"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: "periodField"
+      - scrollUntilVisible:
+          element:
+            text: "Aylık"
+          direction: DOWN
+          timeout: 10000
+      - tapOn:
+          text: "Aylık"
+      - waitForAnimationToEnd
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: "dateField"
+    direction: DOWN
+- tapOn:
+    id: "dateField"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Tamam"
+- scrollUntilVisible:
+    element:
+      text: "Oluştur"
+    direction: DOWN
+- tapOn:
+    text: "Oluştur"
+# Form kapanış animasyon race'i: Kategoriler→Borçlar bounce ile temiz state
+- extendedWaitUntil:
+    visible:
+      id: "myDebtsTab"
+    timeout: 35000
+- waitForAnimationToEnd
+- tapOn:
+    text: "Kategoriler"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Borçlar"
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "Test Borcu[\\s\\S]*"
+    direction: DOWN
+    timeout: 20000

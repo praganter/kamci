@@ -1,0 +1,179 @@
+appId: com.batuhanyetgin.kamci
+tags: [debt, midnight]
+---
+# DEBT-09: Toplu ödeme
+# ⚠️  User A premium olmalı — değilse "Toplu Ödeme Seç" yerine premium gate görünür
+# Premium aktivasyonu: backend DB'de User A için premium: true yap
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- runFlow: "../../subflows/_cleanup_all_debts.yaml"
+- runFlow: "../../subflows/_create_default_category.yaml"
+# Aylık taksitli borç oluştur
+- tapOn:
+    text: "Borçlar"
+- waitForAnimationToEnd
+- tapOn:
+    id: "addDebtFab"
+- extendedWaitUntil:
+    visible:
+      text: "Yeni Borç"
+    timeout: 8000
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: "categoryField"
+      - waitForAnimationToEnd
+      - tapOn:
+          text: "Tamam"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: "categoryField"
+      - scrollUntilVisible:
+          element:
+            text: "Test Kategorisi"
+          direction: DOWN
+          timeout: 10000
+      - tapOn:
+          text: "Test Kategorisi"
+      - waitForAnimationToEnd
+- tapOn:
+    text: "Borç Adı"
+- inputText: "Toplu Ödeme Borcu"
+- tapOn:
+    text: "Tutar"
+- inputText: "300"
+- hideKeyboard
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: "currencyField"
+      - waitForAnimationToEnd
+      - assertVisible:
+          text: "TRY[\\s\\S]*"
+      - tapOn:
+          text: "Tamam"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: "currencyField"
+      - scrollUntilVisible:
+          element:
+            text: "TRY[\\s\\S]*"
+          direction: DOWN
+          timeout: 10000
+      - tapOn:
+          text: "TRY[\\s\\S]*"
+      - waitForAnimationToEnd
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: "periodField"
+      - waitForAnimationToEnd
+      - repeat:
+          times: 4
+          commands:
+            - runFlow: "../../subflows/_picker_wheel_next.yaml"
+      - assertVisible:
+          text: "Aylık"
+      - tapOn:
+          text: "Tamam"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: "periodField"
+      - scrollUntilVisible:
+          element:
+            text: "Aylık"
+          direction: DOWN
+          timeout: 10000
+      - tapOn:
+          text: "Aylık"
+      - waitForAnimationToEnd
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Toplam Taksit Sayısı.*"
+# Tarih seçici kapanınca odak son text alanına döner ve klavye açılır;
+# bu yüzden tarih taksit girişinden önce seçilir.
+- scrollUntilVisible:
+    element:
+      id: "dateField"
+    direction: DOWN
+- tapOn:
+    id: "dateField"
+- tapOn:
+    text: "Tamam"
+- tapOn:
+    text: "Toplam Taksit Sayısı.*"
+- inputText: "6"
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "Oluştur"
+    direction: DOWN
+- tapOn:
+    text: "Oluştur"
+# Form kapanış animasyon race'i: Kategoriler→Borçlar bounce ile temiz state
+- extendedWaitUntil:
+    visible:
+      id: "myDebtsTab"
+    timeout: 35000
+- waitForAnimationToEnd
+- tapOn:
+    text: "Kategoriler"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Borçlar"
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "Toplu Ödeme Borcu[\\s\\S]*"
+    direction: DOWN
+    timeout: 20000
+# Aylık borç üzerinde sağa swipe
+- swipe:
+    from:
+      text: "[^\\n]+\\n\\d+( / \\d+)?[^\\n]*\\n[^\\n]+"
+      index: 0
+    direction: RIGHT
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Ödeme İşlemleri"
+- tapOn:
+    text: "Toplu Ödeme"
+- assertVisible:
+    text: "Toplu Ödeme Seç"
+# Vadesi gelen taksitler sheet'te ZATEN İŞARETLİ gelir (checked: true) —
+# checkbox'a dokunma. Ancak entry'ler debtDetailProvider'dan async yüklenir:
+# dialog başlığı görünürken buton hâlâ "Gönder (0)" (disabled) olabilir.
+# Sayaç ≥ 1 olana kadar bekle, sonra gönder.
+- extendedWaitUntil:
+    visible:
+      text: "Gönder \\([1-9][0-9]*\\)"
+    timeout: 10000
+- tapOn:
+    text: "Gönder.*"
+- assertVisible:
+    text: "[\\s\\S]*ödeme kaydedildi[\\s\\S]*"
+# Cleanup
+- swipe:
+    from:
+      text: "[^\\n]+\\n\\d+( / \\d+)?[^\\n]*\\n[^\\n]+"
+      index: 0
+    direction: LEFT
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Borcu Sil"
+- tapOn:
+    text: "Sil"

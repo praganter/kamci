@@ -1,0 +1,55 @@
+appId: com.batuhanyetgin.kamci
+tags: [debt]
+---
+# DEBT-05: Borç düzenleme — testten sonra siler (test izolasyonu)
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- runFlow: "../../subflows/_cleanup_all_debts.yaml"
+- runFlow: "../../subflows/_create_default_category.yaml"
+- runFlow: "../../subflows/_create_default_debt.yaml"
+- tapOn:
+    text: "Test Borcu[\\s\\S]*"
+- waitForAnimationToEnd
+# Düzenle butonuna tıkla
+- tapOn:
+    text: "Düzenle"
+- assertVisible:
+    text: "Borcu Düzenle"
+# Borç adını güncelle
+- tapOn:
+    text: "Borç Adı"
+- eraseText: 100
+- inputText: "Güncellenmiş Borç"
+# Tutarı güncelle
+- tapOn:
+    text: "Tutar"
+- eraseText: 100
+- inputText: "999"
+# Güncelle butonu altta sabit; açık klavye onu örter
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "Güncelle"
+    direction: DOWN
+- tapOn:
+    text: "Güncelle"
+- extendedWaitUntil:
+    visible:
+      text: "Güncellenmiş Borç"
+    timeout: 10000
+# Detay info kartı tek birleşik node → ₺999 ancak [\s\S]* ile bulunur
+- assertVisible:
+    text: "[\\s\\S]*₺999[\\s\\S]*"
+# Geri dön (Detail → List) sonra borcu sil
+- tapOn:
+    text: "Geri"
+- waitForAnimationToEnd
+- swipe:
+    from:
+      text: "[^\\n]+\\n\\d+( / \\d+)?[^\\n]*\\n[^\\n]+"
+      index: 0
+    direction: LEFT
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Borcu Sil"
+- tapOn:
+    text: "Sil"

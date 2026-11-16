@@ -1,0 +1,27 @@
+appId: com.batuhanyetgin.kamci
+tags: [income, smoke]
+---
+# INC-01: Gelir ekle — boş form validasyonu (edge) + başarılı kayıt
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- runFlow: "../../subflows/_open_income.yaml"
+# Edge: boş form → tutar ve tarih zorunlu hataları, istek atılmaz
+- tapOn: "Gelir Ekle"
+- extendedWaitUntil:
+    visible: "Gelir Tutarı"
+    timeout: 5000
+- hideKeyboard
+- tapOn: "Kaydet"
+- assertVisible: "Tutar gerekli"
+- assertVisible: "Geçerlilik Tarihi gerekli"
+- back
+- waitForAnimationToEnd
+# Happy path
+- runFlow:
+    file: "../../subflows/_add_income.yaml"
+    env:
+      AMOUNT: "4321"
+- scrollUntilVisible:
+    element:
+      text: "(?s)₺4\\.321,00.*"
+    direction: DOWN
+    timeout: 15000

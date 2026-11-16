@@ -1,0 +1,44 @@
+appId: com.batuhanyetgin.kamci
+tags: [category]
+---
+# CAT-04: Kategori migrate — borçları taşı ve kaynak kategoriyi sil
+# NOT: "Borçları Aktarıp Kategoriyi Sil" seçeneği BORÇLAR ekranındaki kategori
+# grup başlığına longPress ile açılan PopupMenu'dedir (Kategoriler ekranında
+# DEĞİL). Grup başlığı birleşik label → [\s\S]* regex.
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- runFlow: "../../subflows/_cleanup_all_debts.yaml"
+- runFlow: "../../subflows/_create_default_category.yaml"
+# Hedef kategori (migrate için 2. kategori gerekli) — önceki koşulardan
+# kalmış olabilir, idempotent oluştur.
+- runFlow:
+    file: "../../subflows/_ensure_category.yaml"
+    env:
+      NAME: "Hedef Kategori"
+# Kaynak kategoriye (Test Kategorisi) borç ekle → Borçlar'da görünsün
+- tapOn:
+    text: "Borçlar"
+- waitForAnimationToEnd
+- runFlow: "../../subflows/_create_default_debt.yaml"
+# Borçlar ekranında kaynak kategori başlığına longPress → PopupMenu
+# Android ExpansionTile label'ı başa durum ekler ("0, Test Kategorisi\n...")
+- longPressOn:
+    text: "[\\s\\S]*Test Kategorisi[\\s\\S]*"
+- extendedWaitUntil:
+    visible:
+      text: "Borçları Aktarıp Kategoriyi Sil"
+    timeout: 5000
+- tapOn:
+    text: "Borçları Aktarıp Kategoriyi Sil"
+# Hedef kategori seçim dialog'u. Dropdown zaten ilk hedefi (targets.first =
+# tek "Hedef Kategori") seçili başlatır → dokunma; direkt Kaydet.
+- extendedWaitUntil:
+    visible:
+      text: "Hedef Kategori Seç"
+    timeout: 5000
+- tapOn:
+    text: "Kaydet"
+# Borç hedefe taşındı, kaynak silindi → Test Borcu hâlâ listede (Hedef altında)
+- extendedWaitUntil:
+    visible:
+      text: "Test Borcu[\\s\\S]*"
+    timeout: 10000

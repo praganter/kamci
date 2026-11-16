@@ -1,0 +1,43 @@
+appId: com.batuhanyetgin.kamci
+tags: [category]
+---
+# CAT-02: Kategori düzenle
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+# Önceki koşulardan kalmış olabilir → idempotent (409 name_conflict'te
+# sheet açık kalıyor ve sonraki dokunuş sheet'e düşüyordu).
+- runFlow:
+    file: "../../subflows/_ensure_category.yaml"
+    env:
+      NAME: "Test Kategorisi"
+# Detay sayfasına git
+- tapOn:
+    text: "(?s)Test Kategorisi.*"
+- extendedWaitUntil:
+    visible:
+      text: "Test Kategorisi"
+    timeout: 5000
+- extendedWaitUntil:
+    visible:
+      id: "editCategoryBtn"
+    timeout: 8000
+- tapOn:
+    id: "editCategoryBtn"
+- extendedWaitUntil:
+    visible:
+      text: "Kategoriyi Düzenle"
+    timeout: 5000
+- tapOn:
+    text: "Kategori Adı"
+- eraseText: 100
+- inputText: "Güncellenmiş Kategori"
+- tapOn:
+    text: "Güncelle"
+- extendedWaitUntil:
+    visible:
+      text: "Güncellenmiş Kategori"
+    timeout: 10000
+# Temizlik: detay ekranından sil (sonraki çalışma için)
+- tapOn:
+    id: "deleteCategoryBtn"
+- tapOn:
+    text: "Sil"

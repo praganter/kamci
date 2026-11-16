@@ -1,0 +1,151 @@
+appId: com.batuhanyetgin.kamci
+tags: [debt, smoke]
+---
+# DEBT-01: ONE_TIME borç oluştur — testten sonra siler (test izolasyonu)
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- runFlow: "../../subflows/_cleanup_all_debts.yaml"
+- runFlow: "../../subflows/_create_default_category.yaml"
+- tapOn:
+    text: "Borçlar"
+- waitForAnimationToEnd
+- tapOn:
+    id: "addDebtFab"
+- extendedWaitUntil:
+    visible:
+      text: "Yeni Borç"
+    timeout: 8000
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: "categoryField"
+      - waitForAnimationToEnd
+      - tapOn:
+          text: "Tamam"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: "categoryField"
+      - scrollUntilVisible:
+          element:
+            text: "Test Kategorisi"
+          direction: DOWN
+          timeout: 10000
+      - tapOn:
+          text: "Test Kategorisi"
+      - waitForAnimationToEnd
+- tapOn:
+    text: "Borç Adı"
+- inputText: "Tek Seferlik Test Borcu"
+- tapOn:
+    text: "Tutar"
+- inputText: "150"
+- tapOn:
+    text: "Yeni Borç"
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: "currencyField"
+      - waitForAnimationToEnd
+      - tapOn:
+          text: "Tamam"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: "currencyField"
+      - scrollUntilVisible:
+          element:
+            text: "TRY ₺"
+          direction: DOWN
+          timeout: 10000
+      - tapOn:
+          text: "TRY ₺"
+      - waitForAnimationToEnd
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: "periodField"
+      - waitForAnimationToEnd
+      - tapOn:
+          text: "Tek Seferlik"
+      - tapOn:
+          text: "Tamam"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: "periodField"
+      - scrollUntilVisible:
+          element:
+            text: "Tek Seferlik"
+          direction: DOWN
+          timeout: 10000
+      - tapOn:
+          text: "Tek Seferlik"
+      - waitForAnimationToEnd
+- waitForAnimationToEnd
+# Taksit alanı görünmemeli (ONE_TIME)
+- assertNotVisible:
+    text: ".*Taksit Sayısı.*"
+- scrollUntilVisible:
+    element:
+      id: "dateField"
+    direction: DOWN
+- tapOn:
+    id: "dateField"
+- tapOn:
+    text: "Tamam"
+- scrollUntilVisible:
+    element:
+      text: "Oluştur"
+    direction: DOWN
+- tapOn:
+    text: "Oluştur"
+# After form pop the slide-back animation may still be running when
+# myDebtsTab first appears in the accessibility tree.  Tapping the tab
+# during that animation lands on wrong coordinates → wrong tab selected.
+# Fix: wait for animation to settle, then force a clean /debts navigation
+# via the bottom nav (Kategoriler → Borçlar) which always starts at index 0.
+- extendedWaitUntil:
+    visible:
+      id: "myDebtsTab"
+    timeout: 35000
+- waitForAnimationToEnd
+- tapOn:
+    text: "Kategoriler"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Borçlar"
+- waitForAnimationToEnd
+# Scroll to find the debt regardless of how many empty category groups are above it.
+# NOT: Debt tile'ın iOS accessibility label'ı birleşiktir:
+# "Tek Seferlik Test Borcu\n0 / 1\n₺150" — tam metin eşleşmez.
+# Maestro regex'inde `.` newline'ı eşlemez → [\s\S]* şart.
+- scrollUntilVisible:
+    element:
+      text: "Tek Seferlik Test Borcu[\\s\\S]*"
+    direction: DOWN
+    timeout: 20000
+- assertVisible:
+    text: "Tek Seferlik Test Borcu[\\s\\S]*₺150"
+# Cleanup: borcu sil (limit aşımını önle)
+- swipe:
+    from:
+      text: "[^\\n]+\\n\\d+( / \\d+)?[^\\n]*\\n[^\\n]+"
+      index: 0
+    direction: LEFT
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Borcu Sil"
+- tapOn:
+    text: "Sil"

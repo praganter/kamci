@@ -1,0 +1,15 @@
+appId: com.batuhanyetgin.kamci
+tags: [sharing, multi-device]
+---
+# SHARE-02 (Device A): User C'yi WRITE yetkisiyle paylaşıma al
+# Önceki hâli User A'yı "Paylaşılanlar" sekmesinde arıyordu — User A kategorinin
+# SAHİBİ, kategori "Sahip Olduklarım"da. Ayrıca "Erişim Seviyesini Değiştir"
+# ekranı uygulamada YOK → kaldır+ekle deseni (bkz _share_with_c_as.yaml).
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- runFlow:
+    file: "../../subflows/_share_with_c_as.yaml"
+    env:
+      LEVEL: "Yazma"
+# Üye satırındaki AccessLevelBadge WRITE'ı göstermeli
+- assertVisible:
+    text: "[\\s\\S]*Yazma[\\s\\S]*"

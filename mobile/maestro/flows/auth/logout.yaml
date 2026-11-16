@@ -1,0 +1,55 @@
+appId: com.batuhanyetgin.kamci
+tags: [auth, smoke]
+---
+# AUTH-05: Çıkış Yap butonu — Settings > "Çıkış Yap" → confirm → login ekranı
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- assertVisible:
+    text: "Borçlar"
+- tapOn:
+    text: "Ayarlar"
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "Çıkış Yap"
+    direction: DOWN
+# Hesap bölümünde Çıkış Yap görünür
+- assertVisible:
+    text: "Çıkış Yap"
+- tapOn:
+    text: "Çıkış Yap"
+- waitForAnimationToEnd
+# Confirm dialog açılır
+- assertVisible:
+    text: "Hesabınızdan çıkış yapmak istediğinize emin misiniz?"
+# İptal → ekranda kalır
+- tapOn:
+    text: "İptal"
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "Çıkış Yap"
+    direction: DOWN
+- assertVisible:
+    text: "Çıkış Yap"
+# Tekrar tap → onayla
+- tapOn:
+    text: "Çıkış Yap"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Çıkış Yap"
+    index: 1
+- waitForAnimationToEnd
+# GoRouter stack replacement kauseth XCTest tree geçici invalidation yapar.
+# Re-launch (clearKeychain:false) ile auth state sıfırlandığını doğrula:
+# Token Keychain'e yazılamamıştı (simulator entitlement yok) → re-launch sonrası login ekranı çıkar.
+- launchApp:
+    clearKeychain: false
+    permissions:
+      all: allow
+# Android emülatörde debug build soğuk açılışı 5–21 sn ölçüldü → geniş timeout.
+- extendedWaitUntil:
+    visible:
+      text: "E-posta Adresi"
+    timeout: 45000
+- assertNotVisible:
+    text: "Borçlar"

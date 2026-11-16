@@ -1,0 +1,68 @@
+appId: com.batuhanyetgin.kamci
+tags: [settings]
+---
+# SET-05/06/07: Görünüm ayarları — Tema, Dil, Baz Para Birimi
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- tapOn:
+    text: "Ayarlar"
+- waitForAnimationToEnd
+
+# ── Tema toggle ────────────────────────────────────────────────────────────────
+# SET-05: Koyu temaya geç
+- tapOn:
+    text: "Koyu"
+- waitForAnimationToEnd
+# UI render olur, hata yoksa geçer
+- assertNotVisible:
+    text: "Hata"
+# Sistem temasına geri dön
+- tapOn:
+    text: "Sistem"
+- waitForAnimationToEnd
+
+# ── Dil toggle ────────────────────────────────────────────────────────────────
+# SET-06: İngilizce'ye geç — etiketler değişmeli
+- tapOn:
+    text: "English"
+- waitForAnimationToEnd
+# Settings AppBar başlığı İngilizce olmalı
+- assertVisible:
+    text: "Settings"
+# Türkçe'ye geri dön
+- tapOn:
+    text: "Türkçe"
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Ayarlar"
+
+# ── Baz Para Birimi picker ────────────────────────────────────────────────────
+# SET-07: Para birimini USD olarak değiştir
+# _SegmentCard label "Baz Para Birimi" is a plain Text — NOT tappable.
+# The tappable InkWell is _BaseCurrencyPicker; its a11y text = "₺ TRY" or "$ USD".
+- scrollUntilVisible:
+    element:
+      text: "(?s)Baz Para Birimi.*"
+    direction: DOWN
+# Tap the dropdown InkWell (currently shows TRY)
+- tapOn:
+    text: "(?s).*TRY"
+- waitForAnimationToEnd
+# Bottom sheet açılır — başlık standalone text olarak görünür
+- assertVisible:
+    text: "Baz Para Birimi"
+# ListTile a11y = "$ USD"
+- tapOn:
+    text: "(?s).*USD"
+- waitForAnimationToEnd
+# Seçim sonrası dropdown "$ USD" gösterir
+- assertVisible:
+    text: "(?s).*USD.*"
+# TRY'ye geri dön — dropdown now shows USD, tap it to re-open picker
+- tapOn:
+    text: "(?s).*USD"
+- waitForAnimationToEnd
+- tapOn:
+    text: "(?s).*TRY"
+- waitForAnimationToEnd
+- assertVisible:
+    text: "(?s).*TRY.*"

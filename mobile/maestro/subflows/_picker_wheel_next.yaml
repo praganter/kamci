@@ -1,0 +1,13 @@
+appId: com.batuhanyetgin.kamci
+---
+# CupertinoPicker çarkını BİR öğe ileri (aşağı) kaydırır.
+# Çark satırları iOS accessibility tree'de YOKTUR (picker tek "adjustable"
+# node'dur, value = seçili öğe). Bu yüzden tapOn text: ile öğe seçilemez;
+# tek yol adım adım kaydırıp value'yu assert etmektir.
+# Geometri (iPhone 16): sheet bottom nav ÜSTÜNDE durur; çark alanı ~%58-85.
+# 1 öğe = 44pt ≈ %5 → yavaş (500ms) swipe momentum atlamasını önler.
+- swipe:
+    start: "50%, 79%"
+    end: "50%, 74%"
+    duration: 500
+- waitForAnimationToEnd

@@ -1,0 +1,69 @@
+appId: com.batuhanyetgin.kamci
+tags: [settings, i18n]
+# Flow nerede kırılırsa kırılsın dili Türkçe'ye geri al — diğer flow'lar TR metin arar.
+# launchApp yeniden başlatır → Borçlar'dan Settings açılır, dil seçici fold üstünde.
+onFlowComplete:
+  - launchApp
+  - extendedWaitUntil:
+      visible:
+        text: "Debts|Borçlar"
+      timeout: 30000
+  - tapOn:
+      text: "Settings"
+      optional: true
+  - tapOn:
+      text: "Türkçe"
+      optional: true
+---
+# I18N-01: İngilizce arayüzde ana ekranlar gezilir — sekme/başlıklar
+# İngilizce olmalı, Türkçe etiket sızmamalı.
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- tapOn:
+    text: "Ayarlar"
+- waitForAnimationToEnd
+- tapOn:
+    text: "English"
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Settings"
+- assertVisible:
+    text: "Theme"
+- assertVisible:
+    text: "Language"
+- scrollUntilVisible:
+    element:
+      text: "Sign Out"
+    direction: DOWN
+- assertVisible:
+    text: "(?s)Change Password.*"
+- assertVisible:
+    text: "(?s)Send Suggestion / Complaint.*"
+# Ayarlar artık bir sekme (bottom nav görünür) → doğrudan Borçlar'a geç
+# Borçlar
+- tapOn:
+    text: "Debts"
+- waitForAnimationToEnd
+- assertVisible:
+    text: "(?s).*My Debts.*"
+- assertNotVisible:
+    text: "(?s).*Kendi Borçlarım.*"
+# Kategoriler
+- tapOn:
+    text: "Categories"
+- waitForAnimationToEnd
+- assertNotVisible:
+    text: "Kategoriler"
+# Grafikler
+- tapOn:
+    text: "Charts"
+- waitForAnimationToEnd
+- assertNotVisible:
+    text: "Grafikler"
+# Ayarlar'ı aç, onFlowComplete Türkçe'ye çevirir
+- tapOn:
+    text: "Settings"
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Theme"
+- assertNotVisible:
+    text: "Ayarlar"

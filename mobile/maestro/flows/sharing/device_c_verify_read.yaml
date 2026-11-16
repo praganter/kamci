@@ -1,0 +1,42 @@
+appId: com.batuhanyetgin.kamci
+tags: [sharing, multi-device]
+---
+# SHARE-01 (Device C): User C READ yetkisini doğrular
+# NOT: Category tab'larının Semantics identifier'ı yok (debt tab'larının aksine),
+# iOS Tab suffix'i ("\nSekme 2/2") tam eşleşmeyi kırar → "Paylaşılanlar[\s\S]*"
+# regex. Kategori/borç tile'ları birleşik label → [\s\S]*.
+- runFlow: "../../subflows/_login_as_user_c.yaml"
+- tapOn:
+    text: "Kategoriler"
+- waitForAnimationToEnd
+# Paylaşılan sekmesinde kategori görünmeli
+- tapOn:
+    text: "Paylaşılanlar[\\s\\S]*"
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Test Kategorisi[\\s\\S]*"
+# Borçlar sekmesine git, paylaşılan borçları görmeli
+- tapOn:
+    text: "Borçlar"
+- waitForAnimationToEnd
+- tapOn:
+    id: "sharedDebtsTab"
+- waitForAnimationToEnd
+# Test Borcu görünmeli (paylaşılan tab'da)
+- extendedWaitUntil:
+    visible:
+      text: "Test Borcu[\\s\\S]*"
+    timeout: 10000
+# Sağa swipe dene — READ yetkisi ödeme yapamaz → "yetkiniz yok"
+# element-swipe KULLANMA: Dismissible tile üstündeki element-swipe'ı TabBarView
+# yakalayıp sekmeyi kaydırıyor, Dismissible hiç tetiklenmiyor → koordinat swipe.
+- swipe:
+    from:
+      text: "[^\\n]+\\n\\d+( / \\d+)?[^\\n]*\\n[^\\n]+"
+      index: 0
+    direction: RIGHT
+    duration: 400
+- extendedWaitUntil:
+    visible:
+      text: "[\\s\\S]*yetkiniz yok[\\s\\S]*"
+    timeout: 8000

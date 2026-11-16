@@ -1,0 +1,31 @@
+appId: com.batuhanyetgin.kamci
+tags: [notifications]
+---
+# NOTIF-02: Logout'ta FCM token silinir, yeniden login'de kaydedilir
+# Settings > "Çıkış Yap" → DELETE /notification/device-token çağrılır
+# Re-login → POST /notification/device-token çağrılır
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- assertVisible:
+    text: "Borçlar"
+# Logout yap
+- runFlow: "../../subflows/_logout.yaml"
+# GoRouter stack replacement sonrası tree geçici invalid — launchApp ile doğrula
+- launchApp:
+    clearKeychain: false
+    permissions:
+      all: allow
+- extendedWaitUntil:
+    visible:
+      text: "E-posta Adresi"
+    timeout: 45000
+# Tekrar giriş yap — FCM token yeniden kaydedilmeli (POST /notification/device-token)
+- tapOn:
+    text: "E-posta Adresi"
+- inputText: "${USER_A_EMAIL}"
+- tapOn:
+    text: "Şifre"
+- inputText: "${USER_A_PASSWORD}"
+- tapOn:
+    text: "Giriş Yap"
+- assertVisible:
+    text: "Borçlar"

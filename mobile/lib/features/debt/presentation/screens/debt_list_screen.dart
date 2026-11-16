@@ -1,0 +1,1725 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
+import '../../../../core/theme/theme_helpers.dart';
+import '../../../../core/l10n/l10n.dart';
+import '../../../../core/l10n/exception_l10n.dart';
+import '../../../../core/l10n/enum_l10n.dart';
+import '../../../../core/router/route_names.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/permission_utils.dart';
+import '../../../../core/utils/date_formatter.dart';
+import '../../../../core/utils/snackbar_utils.dart';
+import '../../../../core/utils/validators.dart';
+import '../../../category/presentation/providers/category_providers.dart';
+import '../../../category/domain/entities/member_embedded.dart';
+import '../../../../shared/widgets/app_error_widget.dart';
+import '../../../../shared/widgets/empty_state.dart';
+import '../../../../shared/widgets/list_skeleton.dart';
+import '../../../../shared/widgets/confirm_dialog.dart';
+import '../../../../shared/widgets/premium_required_sheet.dart';
+import '../../../../shared/widgets/pro_badge.dart';
+import '../../../category/domain/entities/category.dart';
+import '../../../category/presentation/widgets/add_category_sheet.dart';
+import '../../../subscription/presentation/providers/subscription_providers.dart';
+import '../../../subscription/presentation/widgets/premium_card.dart';
+import '../../../subscription/subscription_constants.dart';
+import '../../../../core/providers/app_settings_provider.dart';
+import '../../domain/entities/bulk_payment_entry.dart';
+import '../../domain/entities/debt.dart';
+import '../providers/debt_providers.dart';
+
+class DebtListScreen extends ConsumerStatefulWidget {
+  const DebtListScreen({super.key});
+
+  @override
+  ConsumerState<DebtListScreen> createState() => _DebtListScreenState();
+}
+
+class _DebtListScreenState extends ConsumerState<DebtListScreen>
+    with SingleTickerProviderStateMixin {
+  late final TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(_onTabChanged);
+  }
+
+  void _onTabChanged() {
+    if (!_tabController.indexIsChanging) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _tabController.removeListener(_onTabChanged);
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final l10n = context.l10n;
+    final isPremium = ref.watch(isPremiumProvider);
+    // Keep categoryListProvider alive while this screen is in the stack.
+    // This prevents auto-dispose between FAB pre-fetch and form opening.
+    ref.watch(categoryListProvider);
+
+    return Scaffold(
+      appBar: AppBar(
+        toolbarHeight: 0,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(56),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+            child: Container(
+              height: 40,
+              decoration: BoxDecoration(
+                color: cs.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: TabBar(
+                controller: _tabController,
+                indicatorSize: TabBarIndicatorSize.tab,
+                indicator: BoxDecoration(
+                  color: cs.primaryContainer,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                dividerColor: Colors.transparent,
+                labelColor: cs.brightness == Brightness.light
+                    ? cs.onPrimaryContainer
+                    : cs.primary,
+                unselectedLabelColor: cs.onSurfaceVariant,
+                labelStyle: const TextStyle(fontWeight: FontWeight.w600),
+                overlayColor: WidgetStateProperty.all(Colors.transparent),
+                tabs: [
+                  Semantics(
+                    container: true,
+                    identifier: 'myDebtsTab',
+                    child: Tab(text: l10n.myDebts),
+                  ),
+                  Semantics(
+                    container: true,
+                    identifier: 'sharedDebtsTab',
+                    child: Tab(text: l10n.sharedDebts),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+      body: TabBarView(
+        controller: _tabController,
+        children: const [_DebtTabView(owned: true), _DebtTabView(owned: false)],
+      ),
+      floatingActionButton: _tabController.index == 0
+          ? Semantics(
+              container: true,
+              identifier: 'addDebtFab',
+              child: FloatingActionButton(
+                onPressed: () async {
+                  if (!isPremium) {
+                    // Borç sayısını, ekranın zaten resolve ettiği
+                    // debtGroupedProvider(true) üzerinden say. (Önceki hâli
+                    // debtListProvider'ı okuyordu; o provider ekranda hiç
+                    // watch edilmediğinden null dönüp limiti bypass ediyordu.)
+                    final grouped = await ref.read(
+                      debtGroupedProvider(true).future,
+                    );
+                    final debtCount = grouped.fold<int>(
+                      0,
+                      (sum, cat) => sum + cat.debts.length,
+                    );
+                    if (debtCount >= SubscriptionConstants.freeDebtLimit) {
+                      if (!context.mounted) return;
+                      PremiumRequiredSheet.show(
+                        context,
+                        featureName: l10n.debts.toLowerCase(),
+                        limitCount: SubscriptionConstants.freeDebtLimit,
+                      );
+                      return;
+                    }
+                  }
+                  if (!context.mounted) return;
+                  ref.invalidate(currencyListProvider);
+                  await context.pushNamed(RouteNames.debtNew);
+                },
+                child: const Icon(Icons.add),
+              ),
+            )
+          : null,
+    );
+  }
+}
+
+class _DebtTabView extends ConsumerStatefulWidget {
+  const _DebtTabView({required this.owned});
+
+  final bool owned;
+
+  @override
+  ConsumerState<_DebtTabView> createState() => _DebtTabViewState();
+}
+
+class _DebtTabViewState extends ConsumerState<_DebtTabView>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    final owned = widget.owned;
+    final groupedAsync = ref.watch(groupedDebtInstancesByOwnerProvider(owned));
+    final isPremium = ref.watch(isPremiumProvider);
+    final selectedMonth = ref.watch(selectedMonthProvider);
+    final cs = Theme.of(context).colorScheme;
+
+    return SafeArea(
+      bottom: false,
+      child: Column(
+        children: [
+          // ── Month Selector ───────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+            child: Container(
+              decoration: BoxDecoration(
+                color: cs.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                children: [
+                  // container: kendi node'u olmazsa identifier Row'da merge
+                  // olur ve test id'si (Android resource-id) kaybolur.
+                  Semantics(
+                    container: true,
+                    identifier: 'prevMonthBtn',
+                    child: IconButton(
+                      key: const Key('prevMonthBtn'),
+                      onPressed: () =>
+                          ref.read(selectedMonthProvider.notifier).previous(),
+                      icon: Icon(
+                        Icons.chevron_left,
+                        color: cs.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: InkWell(
+                      onTap: () async {
+                        final picked = await showDialog<DateTime>(
+                          context: context,
+                          builder: (_) =>
+                              _MonthPickerDialog(initialMonth: selectedMonth),
+                        );
+                        if (picked != null) {
+                          ref
+                              .read(selectedMonthProvider.notifier)
+                              .setMonth(picked);
+                        }
+                      },
+                      borderRadius: BorderRadius.circular(12),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            // Ay değişince etiket kısa kayma + fade ile değişir
+                            AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 250),
+                              transitionBuilder: (child, anim) =>
+                                  FadeTransition(
+                                    opacity: anim,
+                                    child: SlideTransition(
+                                      position: Tween(
+                                        begin: const Offset(0, 0.4),
+                                        end: Offset.zero,
+                                      ).animate(anim),
+                                      child: child,
+                                    ),
+                                  ),
+                              child: Text(
+                                DateFormat(
+                                  'MMMM yyyy',
+                                  Localizations.localeOf(context).languageCode,
+                                ).format(selectedMonth),
+                                key: ValueKey(selectedMonth),
+                                style: Theme.of(context).textTheme.titleSmall
+                                    ?.copyWith(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Icon(
+                              Icons.keyboard_arrow_down_rounded,
+                              size: 18,
+                              color: cs.onSurfaceVariant,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  Semantics(
+                    container: true,
+                    identifier: 'nextMonthBtn',
+                    child: IconButton(
+                      key: const Key('nextMonthBtn'),
+                      onPressed: () =>
+                          ref.read(selectedMonthProvider.notifier).next(),
+                      icon: Icon(
+                        Icons.chevron_right,
+                        color: cs.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          Expanded(
+            child: (!owned && !isPremium)
+                ? Center(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.people_outline,
+                            size: 64,
+                            color: cs.primary,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            context.l10n.noSharedDebts,
+                            style: Theme.of(context).textTheme.titleLarge
+                                ?.copyWith(fontWeight: FontWeight.bold),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            context.l10n.sharedPremiumDesc,
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(color: cs.onSurfaceVariant),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 32),
+                          const PremiumCard(),
+                        ],
+                      ),
+                    ),
+                  )
+                : groupedAsync.when(
+                    loading: () => const ListSkeleton(),
+                    error: (e, _) => AppErrorWidget(
+                      error: e,
+                      onRetry: () {
+                        ref.invalidate(debtGroupedProvider(true));
+                        ref.invalidate(debtGroupedProvider(false));
+                      },
+                    ),
+                    data: (groupedByPeriod) {
+                      final List<Widget> slivers = [
+                        _MonthSummaryCard(
+                          items: [
+                            for (final cats in groupedByPeriod.values)
+                              for (final g in cats.values) ...g.items,
+                          ],
+                        ),
+                      ];
+
+                      bool hasAny = false;
+                      for (final period in PaymentPeriodType.values) {
+                        final categories = groupedByPeriod[period]!;
+                        final entries = categories.entries.toList();
+
+                        if (entries.isEmpty) continue;
+                        hasAny = true;
+
+                        slivers.add(
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                            child: Text(
+                              period.l10nLabel(context.l10n).toUpperCase(),
+                              style: Theme.of(context).textTheme.labelMedium
+                                  ?.copyWith(
+                                    color: cs.onSurfaceVariant,
+                                    fontWeight: FontWeight.w600,
+                                    letterSpacing: 0.8,
+                                  ),
+                            ),
+                          ),
+                        );
+
+                        // alt-b: dönem başına tek kart, kategoriler içinde
+                        // alt başlık + düz satırlar (Monarch tarzı)
+                        slivers.add(
+                          Container(
+                            margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                            decoration: altBCard(cs),
+                            clipBehavior: Clip.antiAlias,
+                            child: Material(
+                              type: MaterialType.transparency,
+                              child: Column(
+                                children: [
+                                  for (var i = 0; i < entries.length; i++) ...[
+                                    if (i > 0)
+                                      Divider(
+                                        height: 1,
+                                        thickness: 1,
+                                        color: cs.outlineVariant,
+                                      ),
+                                    _CategoryPeriodSection(
+                                      categoryId: entries[i].key,
+                                      categoryName:
+                                          entries[i].value.categoryName,
+                                      owned: entries[i].value.owned,
+                                      items: entries[i].value.items,
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      }
+
+                      if (!hasAny) {
+                        return RefreshIndicator.adaptive(
+                          onRefresh: () async {
+                            ref.invalidate(debtGroupedProvider(true));
+                            ref.invalidate(debtGroupedProvider(false));
+                          },
+                          child: SingleChildScrollView(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            child: SizedBox(
+                              height: MediaQuery.of(context).size.height * 0.6,
+                              child: EmptyState(
+                                icon: owned
+                                    ? Icons.account_balance_wallet_outlined
+                                    : Icons.people_outline,
+                                title: owned
+                                    ? context.l10n.noDebtsYet
+                                    : context.l10n.noSharedDebts,
+                                subtitle: owned
+                                    ? context.l10n.addDebtHint
+                                    : context.l10n.joinSharedHint,
+                              ),
+                            ),
+                          ),
+                        );
+                      }
+
+                      return RefreshIndicator.adaptive(
+                        onRefresh: () async {
+                          ref.invalidate(debtGroupedProvider(true));
+                          ref.invalidate(debtGroupedProvider(false));
+                        },
+                        child: ListView(
+                          padding: const EdgeInsets.only(bottom: 88),
+                          children: slivers,
+                        ),
+                      );
+                    },
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// alt-b: ayın özeti — büyük toplam (Copilot/Monarch "hero number"),
+/// altında ödenen / bekleyen sayıları (YNAB durum renkleri).
+class _MonthSummaryCard extends ConsumerWidget {
+  const _MonthSummaryCard({required this.items});
+
+  final List<DebtListItem> items;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+    final l10n = context.l10n;
+    final symbols = ref
+        .watch(currencyListProvider)
+        .maybeWhen(
+          data: (list) => {for (final c in list) c.code: c.symbol},
+          orElse: () => <String, String>{},
+        );
+
+    final totals = <String, double>{};
+    for (final i in items) {
+      totals.update(
+        i.debt.currency,
+        (v) => v + i.debt.amount,
+        ifAbsent: () => i.debt.amount,
+      );
+    }
+    final paid = items.where((i) => i.debt.paidCurrentPeriod).length;
+    const tabular = [FontFeature.tabularFigures()];
+    final light = cs.brightness == Brightness.light;
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+      padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
+      // Açık temada koyu "çapa" kart (koyu temanın havası); koyu tema aynı.
+      decoration: light
+          ? BoxDecoration(
+              color: cs.inverseSurface,
+              borderRadius: BorderRadius.circular(14),
+            )
+          : altBCard(cs),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.summaryTotal,
+            style: tt.labelMedium?.copyWith(
+              color: light
+                  ? cs.onInverseSurface.withValues(alpha: 0.6)
+                  : cs.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 4),
+          for (final e in totals.entries)
+            // Count-up: ilk açılışta 0'dan, sonra eski değerden yeniye sayar
+            TweenAnimationBuilder<double>(
+              tween: Tween(begin: 0, end: e.value),
+              duration: MediaQuery.disableAnimationsOf(context)
+                  ? Duration.zero
+                  : const Duration(milliseconds: 700),
+              curve: Curves.easeOutCubic,
+              builder: (context, v, _) => Text(
+                NumberFormat.currency(
+                  locale: Intl.defaultLocale,
+                  symbol: symbols[e.key] ?? e.key,
+                  decimalDigits: 0,
+                ).format(v),
+                style: tt.displayMedium?.copyWith(
+                  color: light ? cs.onInverseSurface : null,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -1,
+                  fontFeatures: tabular,
+                ),
+              ),
+            ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              _StatusPill(
+                label: '${l10n.paid} $paid',
+                color: AppColors.success,
+              ),
+              const SizedBox(width: 8),
+              _StatusPill(
+                label: '${l10n.pendingLabel} ${items.length - paid}',
+                color: AppColors.warning,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatusPill extends StatelessWidget {
+  const _StatusPill({required this.label, required this.color});
+
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+}
+
+class _CategoryPeriodSection extends ConsumerWidget {
+  const _CategoryPeriodSection({
+    required this.categoryId,
+    required this.categoryName,
+    required this.owned,
+    required this.items,
+  });
+
+  final String categoryId;
+  final String categoryName;
+  final bool owned;
+  final List<DebtListItem> items;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final cs = Theme.of(context).colorScheme;
+
+    final currenciesAsync = ref.watch(currencyListProvider);
+    final currencySymbols = currenciesAsync.maybeWhen(
+      data: (list) => {for (final c in list) c.code: c.symbol},
+      orElse: () => <String, String>{},
+    );
+
+    final baseCurrency = ref.watch(baseCurrencyProvider);
+    final ratesAsync = ref.watch(exchangeRatesProvider);
+
+    final Map<String, double> totals = {};
+    for (final item in items) {
+      final code = item.debt.currency;
+      totals.update(
+        code,
+        (v) => v + item.debt.amount,
+        ifAbsent: () => item.debt.amount,
+      );
+    }
+
+    final amountSummary = totals.entries
+        .map((e) {
+          final symbol = currencySymbols[e.key] ?? e.key;
+          final fmt = NumberFormat.currency(
+            locale: Intl.defaultLocale,
+            symbol: symbol,
+            decimalDigits: 0,
+          );
+          return fmt.format(e.value);
+        })
+        .join('  •  ');
+
+    String? convertedTotal;
+    final rates = ratesAsync.valueOrNull;
+    if (rates != null && totals.length > 1) {
+      double total = 0;
+      bool canConvert = true;
+      for (final e in totals.entries) {
+        if (e.key == baseCurrency) {
+          total += e.value;
+        } else {
+          final rate = rates[e.key];
+          if (rate != null && rate > 0) {
+            total += e.value / rate;
+          } else {
+            canConvert = false;
+            break;
+          }
+        }
+      }
+      if (canConvert) {
+        final baseSymbol = currencySymbols[baseCurrency] ?? baseCurrency;
+        final fmt = NumberFormat.currency(
+          locale: Intl.defaultLocale,
+          symbol: baseSymbol,
+          decimalDigits: 0,
+        );
+        convertedTotal = '≈ ${fmt.format(total)}';
+      }
+    }
+
+    final paidCount = items.where((i) => i.debt.paidCurrentPeriod).length;
+    final totalCount = items.length;
+    final completionRatio = totalCount > 0 ? paidCount / totalCount : 0.0;
+
+    return GestureDetector(
+      onLongPressStart: (details) =>
+          _showCategoryMenu(context, ref, details.globalPosition),
+      // alt-b: kart dönem seviyesinde (üst Container) — burada sadece
+      // kategori alt başlığı + düz satırlar
+      child: ExpansionTile(
+        initiallyExpanded: true,
+        tilePadding: const EdgeInsets.fromLTRB(16, 2, 12, 2),
+        backgroundColor: Colors.transparent,
+        title: Text(
+          categoryName,
+          style: Theme.of(
+            context,
+          ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+        ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              amountSummary,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: cs.onSurfaceVariant,
+                fontWeight: FontWeight.w600,
+                fontFeatures: const [FontFeature.tabularFigures()],
+              ),
+            ),
+            if (convertedTotal != null)
+              Text(
+                convertedTotal,
+                style: Theme.of(
+                  context,
+                ).textTheme.labelSmall?.copyWith(color: cs.onSurfaceVariant),
+              ),
+            const SizedBox(height: 4),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(2),
+              child: LinearProgressIndicator(
+                value: completionRatio,
+                minHeight: 3,
+                backgroundColor: cs.surfaceContainerHighest,
+                valueColor: AlwaysStoppedAnimation(cs.primary),
+              ),
+            ),
+          ],
+        ),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+              decoration: BoxDecoration(
+                color: cs.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                '$totalCount',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: cs.onSurfaceVariant,
+                ),
+              ),
+            ),
+            // Uzun basma menüsünün görünür karşılığı.
+            Builder(
+              builder: (btnCtx) => IconButton(
+                icon: const Icon(Icons.more_vert),
+                color: cs.onSurfaceVariant,
+                tooltip: MaterialLocalizations.of(
+                  context,
+                ).showMenuTooltip,
+                onPressed: () {
+                  final box = btnCtx.findRenderObject()! as RenderBox;
+                  _showCategoryMenu(
+                    context,
+                    ref,
+                    box.localToGlobal(box.size.center(Offset.zero)),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+        children: [
+          for (int i = 0; i < items.length; i++) ...[
+            Divider(
+              height: 1,
+              thickness: 1,
+              indent: 68,
+              color: cs.outlineVariant,
+            ),
+            _DebtInstanceTile(item: items[i], isLast: i == items.length - 1),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showCategoryMenu(
+    BuildContext context,
+    WidgetRef ref,
+    Offset globalPosition,
+  ) async {
+    final l10n = context.l10n;
+    final overlay =
+        Overlay.of(context).context.findRenderObject()! as RenderBox;
+    final result = await showMenu<String>(
+      context: context,
+      position: RelativeRect.fromRect(
+        globalPosition & const Size(1, 1),
+        Offset.zero & overlay.size,
+      ),
+      items: [
+        PopupMenuItem(
+          value: 'edit',
+          child: Row(
+            children: [
+              const Icon(Icons.edit_outlined, size: 18),
+              const SizedBox(width: 10),
+              Text(l10n.editCategory),
+            ],
+          ),
+        ),
+        PopupMenuItem(
+          value: 'transfer',
+          child: Row(
+            children: [
+              const Icon(Icons.swap_horiz_rounded, size: 18),
+              const SizedBox(width: 10),
+              Text(l10n.transferAndDeleteCategory),
+            ],
+          ),
+        ),
+        PopupMenuItem(
+          value: 'delete',
+          child: Row(
+            children: [
+              Icon(
+                Icons.delete_outline,
+                size: 18,
+                color: Theme.of(context).colorScheme.error,
+              ),
+              const SizedBox(width: 10),
+              Text(
+                l10n.deleteWithDebts,
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+    if (result == null || !context.mounted) return;
+
+    final accessLevels = ref.read(categoryAccessLevelsProvider).valueOrNull;
+    final level = accessLevels?[categoryId];
+
+    switch (result) {
+      case 'edit':
+        final hasEdit = PermissionUtils.check(
+          context,
+          isOwner: owned,
+          level: level,
+          action: (l) => l.canEdit,
+        );
+        if (!hasEdit) return;
+
+        showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          useSafeArea: true,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          builder: (_) => AddCategorySheet(
+            categoryId: categoryId,
+            initialName: categoryName,
+          ),
+        );
+      case 'transfer':
+        final hasDelete = PermissionUtils.check(
+          context,
+          isOwner: owned,
+          level: level,
+          action: (l) => l.canDelete,
+        );
+        if (!hasDelete) return;
+
+        if (context.mounted) _showTransferDialog(context, ref);
+      case 'delete':
+        final hasDelete = PermissionUtils.check(
+          context,
+          isOwner: owned,
+          level: level,
+          action: (l) => l.canDelete,
+        );
+        if (!hasDelete) return;
+
+        if (context.mounted) _confirmDeleteWithDebts(context, ref);
+    }
+  }
+
+  Future<void> _showTransferDialog(BuildContext context, WidgetRef ref) async {
+    final categoriesAsync = ref.read(categoryListProvider);
+    final categories = categoriesAsync.valueOrNull ?? [];
+    final targets = categories.where((c) => c.id != categoryId).toList();
+
+    if (targets.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(context.l10n.noCategoriesYet)));
+      return;
+    }
+
+    final targetId = await showDialog<String>(
+      context: context,
+      builder: (ctx) =>
+          _TransferCategoryDialog(sourceName: categoryName, targets: targets),
+    );
+    if (targetId == null || !context.mounted) return;
+
+    try {
+      final count = await ref
+          .read(categoryListProvider.notifier)
+          .transferDebtsAndDelete(categoryId, targetId);
+      ref.invalidate(debtGroupedProvider(true));
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(context.l10n.migratedDebtCount(count))),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) showErrorSnackBar(context, e);
+    }
+  }
+
+  Future<void> _confirmDeleteWithDebts(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
+    final l10n = context.l10n;
+    final confirmed = await showConfirmDialog(
+      context,
+      title: l10n.deleteWithDebts,
+      content: l10n.deleteWithDebtsConfirm(categoryName),
+    );
+    if (!confirmed || !context.mounted) return;
+    try {
+      await ref.read(categoryListProvider.notifier).deleteCategory(categoryId);
+      ref.invalidate(debtGroupedProvider(true));
+    } catch (e) {
+      if (context.mounted) showErrorSnackBar(context, e);
+    }
+  }
+}
+
+class _TransferCategoryDialog extends StatefulWidget {
+  const _TransferCategoryDialog({
+    required this.sourceName,
+    required this.targets,
+  });
+
+  final String sourceName;
+  final List<Category> targets;
+
+  @override
+  State<_TransferCategoryDialog> createState() =>
+      _TransferCategoryDialogState();
+}
+
+class _TransferCategoryDialogState extends State<_TransferCategoryDialog> {
+  String? _selectedId;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedId = widget.targets.first.id;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return AlertDialog(
+      title: Text(l10n.transferAndDeleteCategory),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(l10n.transferAndDeleteConfirm(widget.sourceName)),
+          const SizedBox(height: 16),
+          Text(
+            l10n.selectTargetCategory,
+            style: Theme.of(context).textTheme.labelMedium,
+          ),
+          const SizedBox(height: 8),
+          DropdownButtonFormField<String>(
+            initialValue: _selectedId,
+            isExpanded: true,
+            decoration: const InputDecoration(
+              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              border: OutlineInputBorder(),
+            ),
+            items: widget.targets
+                .map((c) => DropdownMenuItem(value: c.id, child: Text(c.name)))
+                .toList(),
+            onChanged: (v) => setState(() => _selectedId = v),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(l10n.cancel),
+        ),
+        FilledButton(
+          onPressed: _selectedId == null
+              ? null
+              : () => Navigator.of(context).pop(_selectedId),
+          child: Text(l10n.save),
+        ),
+      ],
+    );
+  }
+}
+
+class _DebtInstanceTile extends ConsumerWidget {
+  const _DebtInstanceTile({required this.item, this.isLast = false});
+  final DebtListItem item;
+  final bool isLast;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final debt = item.debt;
+    final isPaid = debt.paidCurrentPeriod;
+    final cs = Theme.of(context).colorScheme;
+    final symbol =
+        ref
+            .watch(currencyListProvider)
+            .maybeWhen(
+              data: (list) => list
+                  .where((c) => c.code == debt.currency)
+                  .map((c) => c.symbol)
+                  .firstOrNull,
+              orElse: () => null,
+            ) ??
+        debt.currency;
+
+    return Dismissible(
+      key: Key(debt.id),
+      direction: DismissDirection.horizontal,
+      // Eşik geçildiğinde hissedilir geri bildirim: bırakınca eylem olacak.
+      onUpdate: (d) {
+        if (d.reached && !d.previousReached) HapticFeedback.selectionClick();
+      },
+      confirmDismiss: (direction) async {
+        final accessLevels = ref.read(categoryAccessLevelsProvider).valueOrNull;
+        final level = accessLevels?[debt.categoryId];
+
+        if (direction == DismissDirection.startToEnd) {
+          final hasWrite = PermissionUtils.check(
+            context,
+            isOwner: item.owned,
+            level: level,
+            action: (l) => l.canWrite,
+          );
+          if (!hasWrite) return false;
+          await showPaymentOptions(
+            context,
+            ref,
+            debtId: debt.id,
+            debtName: debt.name,
+            amount: debt.amount,
+          );
+          return false;
+        }
+
+        final hasDelete = PermissionUtils.check(
+          context,
+          isOwner: item.owned,
+          level: level,
+          action: (l) => l.canDelete,
+        );
+        if (!hasDelete) return false;
+
+        final confirmed = await showConfirmDialog(
+          context,
+          title: context.l10n.deleteDebt,
+          content: context.l10n.deleteDebtPermanentWarning,
+        );
+        return confirmed;
+      },
+      onDismissed: (_) async {
+        try {
+          await ref.read(debtListProvider.notifier).deleteDebt(debt.id);
+        } catch (e) {
+          // Satır listeden düştü; hata olursa geri getirmek için listeyi yenile.
+          ref.invalidate(debtGroupedProvider(item.owned));
+          if (context.mounted) showErrorSnackBar(context, e);
+        }
+      },
+      background: Container(
+        color: AppColors.success,
+        alignment: Alignment.centerLeft,
+        padding: const EdgeInsets.only(left: 20),
+        child: const Icon(
+          Icons.payments_outlined,
+          color: Colors.white,
+          size: 26,
+        ),
+      ),
+      secondaryBackground: Container(
+        color: AppColors.error,
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 20),
+        child: const Icon(Icons.delete_rounded, color: Colors.white, size: 26),
+      ),
+      // alt-b: renkli sol şerit yok — düz satır, durum sadece ikon/tutar renginde
+      child: Material(
+        type: MaterialType.transparency,
+        child: ListTile(
+          onTap: () => context.pushNamed(
+            RouteNames.debtDetail,
+            pathParameters: {'id': debt.id},
+          ),
+          contentPadding: const EdgeInsets.fromLTRB(16, 2, 16, 2),
+          leading: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: isPaid
+                  ? AppColors.success.withValues(alpha: 0.14)
+                  : cs.surfaceContainerHighest,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              isPaid ? Icons.check_rounded : Icons.schedule_rounded,
+              color: isPaid ? successText(cs) : cs.onSurfaceVariant,
+              size: 18,
+            ),
+          ),
+          title: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  debt.name,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    decoration: null,
+                    color: isPaid ? cs.onSurfaceVariant : cs.onSurface,
+                  ),
+                ),
+              ),
+              if (debt.hasReminder)
+                Padding(
+                  padding: const EdgeInsets.only(left: 4),
+                  child: Icon(
+                    Icons.notifications_active_outlined,
+                    size: 14,
+                    color: cs.primary.withValues(alpha: 0.7),
+                  ),
+                ),
+            ],
+          ),
+          subtitle: Text(
+            [
+              debt.installmentCount != null
+                  ? '${debt.paidCount} / ${debt.installmentCount}'
+                  : '${debt.paidCount}',
+              // Bu dönem ödendiyse sıradaki vade bilgisi gürültü olur.
+              if (!isPaid && debt.nextDueDate != null)
+                context.l10n.dueOn(
+                  DateFormat(
+                    'd MMM',
+                    Localizations.localeOf(context).languageCode,
+                  ).format(debt.nextDueDate!),
+                ),
+            ].join(' · '),
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          trailing: Text(
+            NumberFormat.currency(
+              locale: Intl.defaultLocale,
+              symbol: symbol,
+              decimalDigits: debt.amount % 1 == 0 ? 0 : 2,
+            ).format(debt.amount),
+            style: TextStyle(
+              fontWeight: FontWeight.w700,
+              fontFeatures: const [FontFeature.tabularFigures()],
+              // alt-b: ödenen yeşil, bekleyen nötr (vurgu rengi sadece durum)
+              color: isPaid ? successText(cs) : cs.onSurface,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Payment Options ──────────────────────────────────────────────────────────
+
+/// Ödeme eylemleri sheet'i — listede sağa kaydırma ve detaydaki "Öde" butonu.
+Future<void> showPaymentOptions(
+  BuildContext context,
+  WidgetRef ref, {
+  required String debtId,
+  required String debtName,
+  required double amount,
+}) async {
+  final l10n = context.l10n;
+  final notifier = ref.read(debtListProvider.notifier);
+
+  await showModalBottomSheet<void>(
+    context: context,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (ctx) => SafeArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(height: 8),
+          Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: Theme.of(ctx).colorScheme.outlineVariant,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            child: Text(
+              l10n.paymentActions,
+              style: Theme.of(
+                ctx,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+            ),
+          ),
+          const Divider(height: 1),
+          // ── Ödemeyi Atla ─────────────────────────────────────────────
+          ListTile(
+            leading: Icon(
+              Icons.skip_next_outlined,
+              color: warningText(Theme.of(ctx).colorScheme),
+            ),
+            title: Text(l10n.skipPayment),
+            onTap: () async {
+              Navigator.of(ctx).pop();
+              try {
+                await notifier.skipPayment(debtId);
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(l10n.paymentSkipped(debtName))),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) showErrorSnackBar(context, e);
+              }
+            },
+          ),
+          // ── Parçalı Ödeme ─────────────────────────────────────────────
+          ListTile(
+            leading: Icon(
+              Icons.payments_outlined,
+              color: Theme.of(ctx).colorScheme.primary,
+            ),
+            title: Text(l10n.partialPayment),
+            onTap: () async {
+              Navigator.of(ctx).pop();
+              final partial = await showDialog<double>(
+                context: context,
+                builder: (_) => _AmountDialog(debtName: debtName),
+              );
+              if (partial == null) return;
+              try {
+                await notifier.makePayment(debtId, amountPaid: partial);
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(l10n.paymentRecorded(debtName))),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) showErrorSnackBar(context, e);
+              }
+            },
+          ),
+          // ── Tam Ödeme ─────────────────────────────────────────────────
+          ListTile(
+            leading: Icon(
+              Icons.check_circle_outline,
+              color: successText(Theme.of(ctx).colorScheme),
+            ),
+            title: Text(l10n.fullPayment),
+            onTap: () async {
+              Navigator.of(ctx).pop();
+              try {
+                await notifier.makePayment(debtId);
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(l10n.paymentRecorded(debtName))),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) showErrorSnackBar(context, e);
+              }
+            },
+          ),
+          // ── Toplu Ödeme ───────────────────────────────────────────────
+          Builder(
+            builder: (ctx2) {
+              final isPremium = ref.read(isPremiumProvider);
+              return ListTile(
+                leading: Icon(
+                  Icons.playlist_add_check,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                title: Text(l10n.bulkPayment),
+                trailing: isPremium ? null : const ProBadge(),
+                onTap: () async {
+                  if (!isPremium) {
+                    Navigator.of(ctx).pop();
+                    PremiumRequiredSheet.show(
+                      context,
+                      featureName: l10n.bulkPayment.toLowerCase(),
+                      limitCount: 0,
+                      message: l10n.premiumFeatureRequired(l10n.bulkPayment),
+                    );
+                    return;
+                  }
+                  Navigator.of(ctx).pop();
+                  final payments = await showDialog<List<BulkPaymentEntry>>(
+                    context: context,
+                    builder: (_) => _BulkPayDialog(
+                      debtId: debtId,
+                      defaultAmount: amount,
+                    ),
+                  );
+                  if (payments == null || payments.isEmpty) return;
+                  try {
+                    await notifier.bulkPay(debtId, payments);
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(l10n.bulkPayConfirm(payments.length)),
+                        ),
+                      );
+                    }
+                  } catch (e) {
+                    if (context.mounted) showErrorSnackBar(context, e);
+                  }
+                },
+              );
+            },
+          ),
+          const SizedBox(height: 8),
+        ],
+      ),
+    ),
+  );
+}
+
+// ── Amount Dialog ─────────────────────────────────────────────────────────────
+
+class _AmountDialog extends StatefulWidget {
+  const _AmountDialog({required this.debtName});
+  final String debtName;
+
+  @override
+  State<_AmountDialog> createState() => _AmountDialogState();
+}
+
+class _AmountDialogState extends State<_AmountDialog> {
+  final _formKey = GlobalKey<FormState>();
+  final _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    if (!_formKey.currentState!.validate()) return;
+    Navigator.of(
+      context,
+    ).pop(double.parse(_controller.text.replaceAll(',', '.')));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return AlertDialog(
+      title: Text(l10n.enterAmount),
+      content: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              widget.debtName,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: _controller,
+              autofocus: true,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              decoration: InputDecoration(
+                hintText: l10n.partialPaymentHint,
+                border: const OutlineInputBorder(),
+              ),
+              validator: Validators.amount(l10n),
+              onFieldSubmitted: (_) => _submit(),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(MaterialLocalizations.of(context).cancelButtonLabel),
+        ),
+        FilledButton(
+          onPressed: _submit,
+          child: Text(MaterialLocalizations.of(context).okButtonLabel),
+        ),
+      ],
+    );
+  }
+}
+
+// ── Month Picker Dialog ──────────────────────────────────────────────────────
+
+class _MonthPickerDialog extends StatefulWidget {
+  const _MonthPickerDialog({required this.initialMonth});
+  final DateTime initialMonth;
+
+  @override
+  State<_MonthPickerDialog> createState() => _MonthPickerDialogState();
+}
+
+class _MonthPickerDialogState extends State<_MonthPickerDialog> {
+  late int _year;
+  late int _selectedMonth;
+
+  @override
+  void initState() {
+    super.initState();
+    _year = widget.initialMonth.year;
+    _selectedMonth = widget.initialMonth.month;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final locale = Localizations.localeOf(context).languageCode;
+
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // ── Year navigation ──────────────────────────────────────
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                IconButton(
+                  onPressed: () => setState(() => _year--),
+                  icon: const Icon(Icons.chevron_left),
+                ),
+                Text(
+                  '$_year',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                IconButton(
+                  onPressed: () => setState(() => _year++),
+                  icon: const Icon(Icons.chevron_right),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            // ── Month grid ──────────────────────────────────────────
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                childAspectRatio: 2,
+                mainAxisSpacing: 8,
+                crossAxisSpacing: 8,
+              ),
+              itemCount: 12,
+              itemBuilder: (context, index) {
+                final month = index + 1;
+                final isCurrentSelection = month == _selectedMonth;
+                final label = DateFormat(
+                  'MMM',
+                  locale,
+                ).format(DateTime(_year, month));
+
+                return InkWell(
+                  onTap: () =>
+                      Navigator.of(context).pop(DateTime(_year, month)),
+                  borderRadius: BorderRadius.circular(10),
+                  child: Container(
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color:
+                          isCurrentSelection &&
+                              _year == widget.initialMonth.year
+                          ? cs.primary
+                          : cs.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      label,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color:
+                            isCurrentSelection &&
+                                _year == widget.initialMonth.year
+                            ? cs.onPrimary
+                            : cs.onSurface,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Bulk Pay Dialog ──────────────────────────────────────────────────────────
+
+class _BulkPayDialog extends ConsumerStatefulWidget {
+  const _BulkPayDialog({required this.debtId, required this.defaultAmount});
+  final String debtId;
+  final double defaultAmount;
+
+  @override
+  ConsumerState<_BulkPayDialog> createState() => _BulkPayDialogState();
+}
+
+class _BulkPayDialogState extends ConsumerState<_BulkPayDialog> {
+  final List<_BulkEntry> _entries = [];
+  bool _initialized = false;
+
+  void _initEntries(Debt debt) {
+    if (_initialized) return;
+    _initialized = true;
+    final amountStr = debt.amount % 1 == 0
+        ? debt.amount.toInt().toString()
+        : debt.amount.toString();
+    final now = DateTime.now();
+    final maxCount = debt.installmentCount;
+    int index = 0;
+    while (true) {
+      if (maxCount != null && index >= maxCount) break;
+      if (index >= 1000) break;
+      final date = _installmentDate(
+        debt.firstPaymentDate,
+        debt.paymentPeriodType,
+        index,
+      );
+      if (date.isAfter(now)) break;
+      final alreadyPaid =
+          index < debt.payments.length && debt.payments[index].paid;
+      if (!alreadyPaid) {
+        _entries.add(
+          _BulkEntry(
+            date: date,
+            controller: TextEditingController(text: amountStr),
+            selected: true,
+          ),
+        );
+      }
+      index++;
+    }
+  }
+
+  @override
+  void dispose() {
+    for (final e in _entries) {
+      e.controller.dispose();
+    }
+    super.dispose();
+  }
+
+  static DateTime _installmentDate(
+    DateTime start,
+    PaymentPeriodType period,
+    int index,
+  ) => switch (period) {
+    PaymentPeriodType.oneTime => start,
+    PaymentPeriodType.daily => start.add(Duration(days: index)),
+    PaymentPeriodType.weekly => start.add(Duration(days: index * 7)),
+    PaymentPeriodType.biWeekly => start.add(Duration(days: index * 14)),
+    PaymentPeriodType.monthly => DateTime(
+      start.year,
+      start.month + index,
+      start.day,
+    ),
+    PaymentPeriodType.quarterly => DateTime(
+      start.year,
+      start.month + index * 3,
+      start.day,
+    ),
+    PaymentPeriodType.halfYearly => DateTime(
+      start.year,
+      start.month + index * 6,
+      start.day,
+    ),
+    PaymentPeriodType.yearly => DateTime(
+      start.year + index,
+      start.month,
+      start.day,
+    ),
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final debtAsync = ref.watch(debtDetailProvider(widget.debtId));
+
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: debtAsync.when(
+        loading: () => const Padding(
+          padding: EdgeInsets.all(48),
+          child: Center(child: CircularProgressIndicator()),
+        ),
+        error: (e, _) => Padding(
+          padding: const EdgeInsets.all(20),
+          child: Text(e.toLocalizedMessage(context.l10n)),
+        ),
+        data: (debt) {
+          _initEntries(debt);
+          final selectedCount = _entries.where((e) => e.selected).length;
+
+          return Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.bulkPayTitle,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                if (_entries.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 20),
+                    child: Center(child: Text(l10n.noPaymentsYet)),
+                  )
+                else
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxHeight: 360),
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: List.generate(_entries.length, (i) {
+                          final entry = _entries[i];
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            child: Row(
+                              children: [
+                                Checkbox(
+                                  value: entry.selected,
+                                  onChanged: (val) => setState(
+                                    () => entry.selected = val ?? false,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                Expanded(
+                                  child: Text(
+                                    DateFormatter.formatDate(entry.date),
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.bodyMedium,
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: 90,
+                                  child: TextField(
+                                    controller: entry.controller,
+                                    keyboardType:
+                                        const TextInputType.numberWithOptions(
+                                          decimal: true,
+                                        ),
+                                    decoration: InputDecoration(
+                                      isDense: true,
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                            vertical: 6,
+                                          ),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                    ),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(fontWeight: FontWeight.w600),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }),
+                      ),
+                    ),
+                  ),
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: Text(
+                        MaterialLocalizations.of(context).cancelButtonLabel,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    FilledButton.icon(
+                      onPressed: selectedCount == 0
+                          ? null
+                          : () {
+                              final result = _entries
+                                  .where((e) => e.selected)
+                                  .map(
+                                    (e) => BulkPaymentEntry(
+                                      amountPaid:
+                                          double.tryParse(
+                                            e.controller.text.replaceAll(
+                                              ',',
+                                              '.',
+                                            ),
+                                          ) ??
+                                          widget.defaultAmount,
+                                      paidTime: e.date,
+                                    ),
+                                  )
+                                  .toList();
+                              Navigator.of(context).pop(result);
+                            },
+                      icon: const Icon(Icons.check, size: 18),
+                      label: Text('${l10n.send} ($selectedCount)'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _BulkEntry {
+  _BulkEntry({
+    required this.date,
+    required this.controller,
+    this.selected = false,
+  });
+  final DateTime date;
+  final TextEditingController controller;
+  bool selected;
+}

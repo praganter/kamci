@@ -1,0 +1,140 @@
+appId: com.batuhanyetgin.kamci
+tags: [premium]
+# User B'yi seed durumuna (5 borç) geri getir — debt_limit_gate buna bağlı.
+onFlowComplete:
+  - runScript:
+      file: "../../scripts/user_b_debt_slot.js"
+      env:
+        ACTION: "restore"
+---
+# PREM-04: Hatırlatma premium engeli — freemium hesap
+# User B'nin borç sayısı < 5 olmalı (5'te FAB limit gate'i açar), debt_limit_gate
+# ise tam 5 ister. Sıra bağımsızlığı için: başta API ile bir borç silinir,
+# onFlowComplete'te 5'e tamamlanır (scripts/user_b_debt_slot.js).
+- runScript:
+    file: "../../scripts/user_b_debt_slot.js"
+    env:
+      ACTION: "free"
+- runFlow: "../../subflows/_login_as_user_b.yaml"
+- tapOn:
+    text: "Borçlar"
+- waitForAnimationToEnd
+- tapOn:
+    id: "addDebtFab"
+- extendedWaitUntil:
+    visible:
+      text: "Yeni Borç"
+    timeout: 8000
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: "categoryField"
+      - waitForAnimationToEnd
+      - tapOn:
+          text: "Tamam"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: "categoryField"
+      - scrollUntilVisible:
+          element:
+            text: "Test Kategori"
+          direction: DOWN
+          timeout: 10000
+      - tapOn:
+          text: "Test Kategori"
+      - waitForAnimationToEnd
+- tapOn:
+    text: "Borç Adı"
+- inputText: "Hatırlatma Test"
+- tapOn:
+    text: "Tutar"
+- inputText: "100"
+- tapOn:
+    text: "Yeni Borç"
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: "currencyField"
+      - waitForAnimationToEnd
+      - tapOn:
+          text: "Tamam"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: "currencyField"
+      - scrollUntilVisible:
+          element:
+            text: "TRY ₺"
+          direction: DOWN
+          timeout: 10000
+      - tapOn:
+          text: "TRY ₺"
+      - waitForAnimationToEnd
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: "periodField"
+      - waitForAnimationToEnd
+      - tapOn:
+          text: "Tamam"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: "periodField"
+      - scrollUntilVisible:
+          element:
+            text: "Tek Seferlik"
+          direction: DOWN
+          timeout: 10000
+      - tapOn:
+          text: "Tek Seferlik"
+      - waitForAnimationToEnd
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: "dateField"
+    direction: DOWN
+- tapOn:
+    id: "dateField"
+- waitForAnimationToEnd
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: "pickerOkBtn"
+# Android: Material DatePicker onayı
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn: "Tamam"
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: "reminderToggle"
+    direction: DOWN
+# Hatırlatma toggle'a tıkla
+- tapOn:
+    id: "reminderToggle"
+# Premium sheet açılmalı
+- assertVisible:
+    text: "Premium Gerekli"
+# Hatırlatma alanları görünmemeli
+- assertNotVisible:
+    text: "Bildirim Kanalları"
+- tapOn:
+    text: "Belki Daha Sonra"

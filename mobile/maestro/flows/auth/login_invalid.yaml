@@ -1,0 +1,19 @@
+appId: com.batuhanyetgin.kamci
+tags: [auth]
+---
+# AUTH-03: Yanlış şifre — hata mesajı gösterilmeli
+- runFlow: "../../subflows/_ensure_login_screen.yaml"
+- tapOn:
+    text: "E-posta Adresi"
+- inputText: "${USER_A_EMAIL}"
+- tapOn:
+    text: "Şifre"
+- inputText: "YanlisPassword000!"
+- tapOn:
+    text: "Giriş Yap"
+- waitForAnimationToEnd
+# Hatalı şifreyle giriş yapılamaz — login ekranında kalmalı
+- assertVisible:
+    text: "Giriş Yap"
+- assertNotVisible:
+    text: "Borçlar"

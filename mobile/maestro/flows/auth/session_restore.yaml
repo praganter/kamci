@@ -1,0 +1,20 @@
+appId: com.batuhanyetgin.kamci
+tags: [auth]
+---
+# AUTH-07: Oturum kalıcılığı — login sonrası uygulama kapatılıp açılınca
+# saklı token ile doğrudan Borçlar'a düşülmeli, login ekranı görünmemeli.
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- stopApp
+# clearState/clearKeychain YOK — token flutter_secure_storage'da kalmalı
+- launchApp:
+    stopApp: false
+- extendedWaitUntil:
+    visible:
+      text: "Borçlar"
+    timeout: 30000
+- assertVisible:
+    text: "Ayarlar"
+- assertNotVisible:
+    text: "E-posta Adresi"
+- assertNotVisible:
+    text: "Giriş Yap"

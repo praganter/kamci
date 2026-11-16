@@ -1,0 +1,35 @@
+appId: com.batuhanyetgin.kamci
+tags: [premium, smoke]
+---
+# PREM-06: Premium screen navigasyonu (freemium)
+# User B (freemium) — Settings'teki upgrade kartından açılır
+# Simulator'da App Store sandbox çalışır → fiyatlar yüklenir
+- runFlow: "../../subflows/_login_as_user_b.yaml"
+- tapOn:
+    text: "Ayarlar"
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: "upgradeCard"
+    direction: DOWN
+- assertVisible:
+    id: "upgradeCard"
+- tapOn:
+    id: "upgradeCard"
+- waitForAnimationToEnd
+# PremiumScreen açılmalı — başlık "Premium'a Geç" içeriyor
+# Maestro full-string match kullandığından .* ile sarılır
+- assertVisible:
+    text: ".*Premium.*"
+# Kapat (X ikonu) — key: 'close' FlutterKey ile eklendi
+- tapOn:
+    id: "close"
+- waitForAnimationToEnd
+# Ayarlar'a geri döndük
+- assertVisible:
+    text: "Ayarlar"
+
+# ── PREM-07: Premium aktif kart (premium kullanıcı) ──────────────────────────
+# User A (premium) — altın kart görünür, tıklanınca features sheet açılır
+# NOT: User A şu anda premium değil (gerçek App Store satın alımı gerektirir)
+# Bu blok aktif iken başarısız olur; premium doğrulandıktan sonra etkinleştir

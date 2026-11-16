@@ -1,0 +1,32 @@
+appId: com.batuhanyetgin.kamci
+tags: [debt, smoke, midnight]
+---
+# DEBT-06: Tam ödeme — sağa swipe → "Ödeme İşlemleri" → "Tam Ödeme" — testten sonra siler
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- runFlow: "../../subflows/_cleanup_all_debts.yaml"
+- runFlow: "../../subflows/_create_default_category.yaml"
+- runFlow: "../../subflows/_create_monthly_debt.yaml"
+- tapOn:
+    text: "Borçlar"
+- tapOn:
+    id: "myDebtsTab"
+- waitForAnimationToEnd
+# startToEnd = sağa swipe = ödeme paneli
+- swipe:
+    from:
+      text: "[^\\n]+\\n\\d+( / \\d+)?[^\\n]*\\n[^\\n]+"
+      index: 0
+    direction: RIGHT
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Ödeme İşlemleri"
+- tapOn:
+    text: "Tam Ödeme"
+- assertVisible:
+    text: "[\\s\\S]*kayıt edildi[\\s\\S]*"
+# Cleanup: borcu sil. Tam ödemeden sonra liste yeniden düzenlenir; sabit %40
+# swipe boş alana düşüp TabBarView'ü "Paylaşılan"a kaydırabiliyor (Android).
+- extendedWaitUntil:
+    notVisible: "[\\s\\S]*kayıt edildi[\\s\\S]*"
+    timeout: 10000
+- runFlow: "../../subflows/_cleanup_all_debts.yaml"

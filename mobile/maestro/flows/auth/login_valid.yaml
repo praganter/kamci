@@ -1,0 +1,25 @@
+appId: com.batuhanyetgin.kamci
+tags: [auth, smoke]
+---
+# AUTH-02: Geçerli login
+- runFlow: "../../subflows/_ensure_login_screen.yaml"
+- tapOn:
+    text: "E-posta Adresi"
+- inputText: "${USER_A_EMAIL}"
+- tapOn:
+    text: "Şifre"
+- inputText: "${USER_A_PASSWORD}"
+- tapOn:
+    text: "Giriş Yap"
+- waitForAnimationToEnd
+# Bottom nav görünür = giriş başarılı
+- assertVisible:
+    text: "Borçlar"
+- assertVisible:
+    text: "Kategoriler"
+- assertVisible:
+    text: "Grafikler"
+- assertVisible:
+    text: "Ayarlar"
+- assertNotVisible:
+    text: "Giriş Yap"

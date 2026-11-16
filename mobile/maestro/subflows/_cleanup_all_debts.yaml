@@ -1,0 +1,66 @@
+appId: com.batuhanyetgin.kamci
+---
+# Cleanup: tüm test borçlarını siler — mevcut ay + 2 ay öncesi.
+# Her ay _cleanup_month ile boşalana kadar silinir (boş ayda anında geçer).
+
+- tapOn:
+    text: "Borçlar"
+- waitForAnimationToEnd
+
+# ── Mevcut ay ────────────────────────────────────────────────────────────────
+- runFlow: "_cleanup_month.yaml"
+
+# ── 1 ay geri ────────────────────────────────────────────────────────────────
+- tapOn:
+    id: "prevMonthBtn"
+- waitForAnimationToEnd
+# Month navigation causes a brief accessibility gap — wait for the tab to reappear
+- extendedWaitUntil:
+    visible:
+      id: "myDebtsTab"
+    timeout: 5000
+- runFlow: "_cleanup_month.yaml"
+
+# ── 2 ay geri ────────────────────────────────────────────────────────────────
+- tapOn:
+    id: "prevMonthBtn"
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible:
+      id: "myDebtsTab"
+    timeout: 5000
+- runFlow: "_cleanup_month.yaml"
+
+# ── Mevcut aya geri dön (2x ileri) ───────────────────────────────────────────
+# iOS: nextMonthBtn accessibility tree'de görünmüyor (Flutter bug: Row semantics
+# collapse) → koordinat (iPhone 16: month nav center ≈ 90%, 18%).
+# Android: id görünür; koordinat Pixel geometrisinde ay çubuğunun altına düşer.
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: "myDebtsTab"
+      - waitForAnimationToEnd
+      - tapOn:
+          point: "90%, 18%"
+      - waitForAnimationToEnd
+      - tapOn:
+          id: "myDebtsTab"
+      - waitForAnimationToEnd
+      - tapOn:
+          point: "90%, 18%"
+      - waitForAnimationToEnd
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: "nextMonthBtn"
+      - waitForAnimationToEnd
+      - tapOn:
+          id: "nextMonthBtn"
+      - waitForAnimationToEnd
+- tapOn:
+    id: "myDebtsTab"
+- waitForAnimationToEnd

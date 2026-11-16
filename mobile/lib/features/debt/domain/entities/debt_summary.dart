@@ -1,0 +1,38 @@
+import 'debt.dart';
+
+class DebtSummary {
+  const DebtSummary({
+    required this.id,
+    required this.name,
+    required this.categoryId,
+    this.installmentCount,
+    required this.paidCount,
+    required this.paymentPeriodType,
+    required this.amount,
+    required this.currency,
+    required this.status,
+    required this.paymentStatus,
+    required this.autoPayment,
+    required this.paidCurrentPeriod,
+    required this.hasReminder,
+    this.nextDueDate,
+  });
+
+  final String id;
+  final String name;
+  final String categoryId;
+  final int? installmentCount;
+  final int paidCount;
+  final PaymentPeriodType paymentPeriodType;
+  final double amount;
+  final String currency;
+  final DebtStatus status;
+  final PaymentStatus paymentStatus;
+  final bool autoPayment;
+  final bool paidCurrentPeriod;
+  final bool hasReminder;
+
+  /// Sıradaki vade (backend debt/get hesaplar, tek seferlikte ilk ödeme
+  /// tarihi). Eski backend'de ya da ilk ödeme tarihi yoksa null.
+  final DateTime? nextDueDate;
+}

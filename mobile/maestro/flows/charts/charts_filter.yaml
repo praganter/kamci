@@ -1,0 +1,20 @@
+appId: com.batuhanyetgin.kamci
+tags: [charts]
+---
+# CHART-02: Ay filtresi değiştirir
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- tapOn:
+    text: "Grafikler"
+- waitForAnimationToEnd
+# Sol ok — önceki ay
+- tapOn:
+    id: "chartPrevMonthBtn"
+- waitForAnimationToEnd
+- assertNotVisible:
+    text: "Hata"
+# Sağ ok — bu aya dön
+- tapOn:
+    id: "chartNextMonthBtn"
+- waitForAnimationToEnd
+- assertNotVisible:
+    text: "Hata"

@@ -1,0 +1,25 @@
+appId: com.batuhanyetgin.kamci
+tags: [category, smoke]
+---
+# CAT-01: Kategori oluştur
+- runFlow: "../../subflows/_login_as_user_a.yaml"
+- tapOn:
+    text: "Kategoriler"
+- waitForAnimationToEnd
+- tapOn:
+    id: "addCategoryFab"
+- assertVisible:
+    text: "Yeni Kategori"
+- tapOn:
+    text: "Kategori Adı"
+- inputText: "Maestro Kategori"
+- tapOn:
+    text: "Oluştur"
+- waitForAnimationToEnd
+# Kategoriler her test koşumunda birikir (cleanup yok) → yeni kategori listenin
+# altında kalabilir. extendedWaitUntil scroll etmez, sadece görünen alana bakar.
+- scrollUntilVisible:
+    element:
+      text: "Maestro Kategori[\\s\\S]*"
+    direction: DOWN
+    timeout: 30000

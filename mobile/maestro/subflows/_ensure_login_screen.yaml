@@ -1,0 +1,25 @@
+appId: com.batuhanyetgin.kamci
+---
+# clearKeychain: true → stale token yok, auth check <1s'de tamamlanır.
+# permissions:all:allow → izin diyaloğu otomatik kabul edilir.
+# Deep link dialog'u kapat (deeplink testinden kalabilir).
+- launchApp:
+    clearKeychain: true
+    permissions:
+      all: allow
+- tapOn:
+    text: "Vazgeç"
+    optional: true
+- tapOn:
+    text: "Vazgeç"
+    optional: true
+# Android: clearKeychain etkisiz (token flutter_secure_storage'da kalır) ve
+# clearState per-app locale'i (tr-TR) sildiği için UI üzerinden çıkış yapılır.
+- runFlow:
+    file: "_safe_logout.yaml"
+    optional: true
+# Android emülatörde debug build soğuk açılışı 5–21 sn ölçüldü.
+- extendedWaitUntil:
+    visible:
+      text: "E-posta Adresi"
+    timeout: 30000

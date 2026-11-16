@@ -1,0 +1,123 @@
+appId: com.batuhanyetgin.kamci
+---
+- waitForAnimationToEnd
+- tapOn:
+    id: "myDebtsTab"
+- waitForAnimationToEnd
+- tapOn:
+    id: "addDebtFab"
+- waitForAnimationToEnd
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: "categoryField"
+      - extendedWaitUntil:
+          visible:
+            text: "Tamam"
+          timeout: 5000
+      - tapOn:
+          text: "Tamam"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: "categoryField"
+      - scrollUntilVisible:
+          element:
+            text: "Test Kategorisi"
+          direction: DOWN
+          timeout: 10000
+      - tapOn:
+          text: "Test Kategorisi"
+      - waitForAnimationToEnd
+# Borç adı ve tutar
+- tapOn:
+    text: "Borç Adı"
+- inputText: "Test Borcu"
+- tapOn:
+    text: "Tutar"
+- inputText: "500"
+- tapOn:
+    text: "Yeni Borç"
+# Para Birimi picker
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: "currencyField"
+      - waitForAnimationToEnd
+      - tapOn:
+          text: "Tamam"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: "currencyField"
+      - scrollUntilVisible:
+          element:
+            text: "TRY ₺"
+          direction: DOWN
+          timeout: 10000
+      - tapOn:
+          text: "TRY ₺"
+      - waitForAnimationToEnd
+# Ödeme Periyodu picker
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: "periodField"
+      - waitForAnimationToEnd
+      - tapOn:
+          text: "Tamam"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: "periodField"
+      - scrollUntilVisible:
+          element:
+            text: "Tek Seferlik"
+          direction: DOWN
+          timeout: 10000
+      - tapOn:
+          text: "Tek Seferlik"
+      - waitForAnimationToEnd
+- waitForAnimationToEnd
+# İlk Ödeme Tarihi picker
+- tapOn:
+    id: "dateField"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Tamam"
+- scrollUntilVisible:
+    element:
+      text: "Oluştur"
+    direction: DOWN
+- tapOn:
+    text: "Oluştur"
+# Form kapanış animasyonu bitmeden tab tap'i yanlış yere gider; ayrıca yeni
+# oluşan borcun tile label'ı birleşiktir ("Test Borcu\n0 / 1\n₺500").
+- extendedWaitUntil:
+    visible:
+      id: "myDebtsTab"
+    timeout: 35000
+- waitForAnimationToEnd
+- tapOn:
+    text: "Kategoriler"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Borçlar"
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "Test Borcu[\\s\\S]*"
+    direction: DOWN
+    timeout: 20000

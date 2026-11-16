@@ -1,0 +1,36 @@
+appId: com.batuhanyetgin.kamci
+---
+# Kategoriler ekranında ${NAME} kategorisinin var olmasını sağlar (idempotent).
+# Kategoriler koşular arasında birikir; görünmüyorsa oluşturmayı dener, backend
+# 409 name_conflict dönerse (liste uzun, öğe ekran dışında) sheet'i kapatır.
+- tapOn:
+    text: "Kategoriler"
+- waitForAnimationToEnd
+- runFlow:
+    when:
+      notVisible: "(?s)${NAME}.*"
+    commands:
+      - tapOn:
+          id: "addCategoryFab"
+      - extendedWaitUntil:
+          visible:
+            text: "Yeni Kategori"
+          timeout: 5000
+      - tapOn:
+          text: "Kategori Adı"
+      - inputText: "${NAME}"
+      - tapOn:
+          text: "Oluştur"
+      - waitForAnimationToEnd
+      - runFlow:
+          when:
+            visible: "Bu isimde bir kategori zaten var."
+          commands:
+            - hideKeyboard
+            - back
+            - waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "(?s)${NAME}.*"
+    direction: DOWN
+    timeout: 15000

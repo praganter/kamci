@@ -1,0 +1,25 @@
+appId: com.batuhanyetgin.kamci
+---
+# Idempotent: "Test Kategorisi" önceki koşulardan kalmışsa tekrar oluşturmaz —
+# backend aynı isme 409 error.category.name_conflict döner ve sheet açık kalır.
+- tapOn:
+    text: "Kategoriler"
+- waitForAnimationToEnd
+- runFlow:
+    when:
+      notVisible: "(?s)Test Kategorisi.*"
+    commands:
+      - tapOn:
+          id: "addCategoryFab"
+      - assertVisible:
+          text: "Yeni Kategori"
+      - tapOn:
+          text: "Kategori Adı"
+      - inputText: "Test Kategorisi"
+      - tapOn:
+          text: "Oluştur"
+      - waitForAnimationToEnd
+- assertVisible:
+    text: "(?s)Test Kategorisi.*"
+- tapOn:
+    text: "Borçlar"
