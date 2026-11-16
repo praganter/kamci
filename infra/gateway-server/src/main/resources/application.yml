@@ -1,0 +1,29 @@
+server:
+  # No trusted reverse proxy sits in front of the gateway (NodePort is exposed
+  # directly), so client-supplied Forwarded / X-Forwarded-* headers must never
+  # influence the resolved remote address. "none" disables Spring's
+  # ForwardedHeaderTransformer, keeping ServerHttpRequest.getRemoteAddress() bound
+  # to the real Netty TCP peer — this is what RateLimitFilter keys buckets on.
+  forward-headers-strategy: none
+
+spring:
+  application:
+    name: gateway-server
+  cloud:
+    config:
+      uri: ${CONFIG_SERVER_URL:http://localhost:8888}
+      name: gateway-server,common-config
+    gateway:
+      server:
+        webflux:
+          # Do not parse or re-emit Forwarded / X-Forwarded-* headers. Combined with
+          # ForwardedHeaderStrippingFilter (strips them inbound) this prevents a
+          # client from spoofing its source IP to bypass rate limiting, and stops the
+          # spoofed value from being forwarded downstream. Revisit if a trusted proxy
+          # is ever placed in front of the gateway.
+          forwarded:
+            enabled: false
+          x-forwarded:
+            enabled: false
+  config:
+    import: "optional:configserver:"
