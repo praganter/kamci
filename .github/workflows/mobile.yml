@@ -27,4 +27,5 @@ jobs:
           flutter gen-l10n
       - run: flutter analyze
       # Integration tests need a running backend and are skipped here.
-      - run: flutter test test/core test/features test/shared --reporter=expanded
+      # unit + widget tests with coverage; fails below 60% (generated code excluded)
+      - run: bash tool/coverage.sh 60
