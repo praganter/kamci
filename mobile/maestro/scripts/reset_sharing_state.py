@@ -20,7 +20,7 @@ import sys
 import urllib.error
 import urllib.request
 
-BASE = "http://198.51.100.10:30080"
+BASE = os.environ.get("API_BASE_URL", "http://localhost:8080")
 
 
 def req(method, path, token=None, body=None):

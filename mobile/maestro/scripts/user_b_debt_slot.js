@@ -3,7 +3,7 @@
 //   ACTION=restore → 5'in altındaysa ONE_TIME borç ekleyerek 5'e tamamlar
 // reminder_gate (<5 ister) ile debt_limit_gate (=5 ister) sıra bağımsız koşsun
 // diye; seed_test_data.sh ile aynı veri şekli.
-const base = 'http://198.51.100.10:30080';
+const base = process.env.API_BASE_URL || 'http://localhost:8080';
 const jsonHeaders = { 'Content-Type': 'application/json' };
 
 const login = http.post(base + '/auth/login', {

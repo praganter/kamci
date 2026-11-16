@@ -12,7 +12,7 @@ if [ ! -f "$ENV_FILE" ]; then
 fi
 set -a; source "$ENV_FILE"; set +a
 
-BASE_URL="http://198.51.100.10:30080"
+BASE_URL="${API_BASE_URL:-http://localhost:8080}"
 TODAY=$(date +%Y-%m-%d)
 # /debt/save firstPaymentDate LocalDateTime bekler; tarih-only → 400 body_not_readable
 TODAY_DT="${TODAY}T00:00:00"

@@ -1,8 +1,19 @@
+import 'dart:io' show Platform;
+
+import 'package:flutter/foundation.dart' show kIsWeb;
+
 abstract final class ApiConstants {
-  static const String baseUrl = String.fromEnvironment(
-    'API_BASE_URL',
-    defaultValue: 'http://198.51.100.10:30080',
-  );
+  /// Gateway base URL. Override with `--dart-define=API_BASE_URL=http://host:8080`.
+  /// Default is the local docker-compose gateway (port 8080): the Android
+  /// emulator reaches the host machine via 10.0.2.2, while the iOS simulator
+  /// and desktop/web share the host's network, so `localhost` works there.
+  static final String baseUrl = _fromDefine.isNotEmpty
+      ? _fromDefine
+      : (!kIsWeb && Platform.isAndroid
+            ? 'http://10.0.2.2:8080'
+            : 'http://localhost:8080');
+
+  static const String _fromDefine = String.fromEnvironment('API_BASE_URL');
 
   static const String register = '/auth/register';
   static const String login = '/auth/login';
@@ -46,9 +57,6 @@ abstract final class ApiConstants {
   static const String incomeHistory = '/income/history';
   static const String incomeCurrent = '/income/current';
   static const String incomeDelete = '/income/delete';
-
-  static const String subscriptionVerify = '/subscription/verify';
-  static const String subscriptionStatus = '/subscription/status';
 
   static const String deviceToken = '/notification/device-token';
   static const String notificationList = '/notification/list';

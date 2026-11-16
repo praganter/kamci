@@ -17,7 +17,10 @@ import 'helpers/test_credentials.dart';
 /// premium'u zorunlu kılıyor; ayrıca free 2-kategori limiti name_conflict'i
 /// gölgeler) — kalıcı "owner" hesabı TEST_A_*. Çalıştırma: bkz.
 /// `test/integration/run.sh`
-const _baseUrl = 'http://198.51.100.10:30080';
+const _baseUrl = String.fromEnvironment(
+  'API_BASE_URL',
+  defaultValue: 'http://localhost:8080',
+);
 const _email = TestAccounts.emailA;
 const _password = TestAccounts.passwordA;
 

@@ -4,7 +4,10 @@ import 'package:dio/dio.dart';
 
 import 'test_credentials.dart';
 
-const _baseUrl = 'http://198.51.100.10:30080';
+const _baseUrl = String.fromEnvironment(
+  'API_BASE_URL',
+  defaultValue: 'http://localhost:8080',
+);
 
 /// `register` probe testinin (auth_test) yeni kullanıcı oluştururken
 /// kullandığı parola. Kalıcı A/B hesaplarının parolaları [TestAccounts]'tan

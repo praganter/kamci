@@ -100,7 +100,7 @@ void main() {
       // Backend geçersiz JWT için 401 ya da 403 döner; her ikisi de ApiException
       final fakeDio = Dio(
         BaseOptions(
-          baseUrl: 'http://198.51.100.10:30080',
+          baseUrl: const String.fromEnvironment('API_BASE_URL', defaultValue: 'http://localhost:8080'),
           headers: {
             'Authorization': 'Bearer sahte.token.bilgi',
             'Content-Type': 'application/json',

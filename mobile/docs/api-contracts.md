@@ -7,7 +7,7 @@ raporlanmıştır. Mimari/ekran özeti için `docs/architecture.md`'ye bak._
 
 | Öğe | Değer |
 |---|---|
-| Base URL | `String.fromEnvironment('API_BASE_URL', default: 'http://198.51.100.10:30080')` |
+| Base URL | `String.fromEnvironment('API_BASE_URL', default: platform-dependent local gateway, port 8080)` |
 | Sabit headers | `Content-Type: application/json`, `Accept: application/json`, `Accept-Language: <locale?.languageCode ?? 'tr'>` |
 | connect/receive timeout | 30 sn / 30 sn |
 | `dioClientProvider` | Base + `AuthInterceptor` (+ `LoggingInterceptor` yalnız debug) |

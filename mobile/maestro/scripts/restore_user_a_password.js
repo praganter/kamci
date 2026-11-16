@@ -1,7 +1,7 @@
 // change_password flow'u için güvenlik ağı (onFlowComplete): şifre geçici
 // değerde kaldıysa API ile .env'deki değere geri al. Aksi halde sonraki tüm
 // USER_A login'leri kırılır. Maestro runScript (GraalJS) — http/json global.
-const base = 'http://198.51.100.10:30080';
+const base = process.env.API_BASE_URL || 'http://localhost:8080';
 const temp = 'YeniTestPass456!';
 const headers = { 'Content-Type': 'application/json' };
 
