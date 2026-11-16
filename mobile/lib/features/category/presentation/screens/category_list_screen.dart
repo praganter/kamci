@@ -198,7 +198,6 @@ class _CategoryTabViewState extends ConsumerState<_CategoryTabView> {
     final l10n = context.l10n;
     final categoriesAsync = ref.watch(categoryListProvider);
     final currentUserAsync = ref.watch(currentUserIdProvider);
-    debugPrint('🟡 _CategoryTabView(isOwner=${widget.isOwner}) build: cats=${categoriesAsync.runtimeType}, userId=${currentUserAsync.valueOrNull}');
 
     return categoriesAsync.when(
       loading: () => const ListSkeleton(),

@@ -54,8 +54,13 @@ class LoggingInterceptor extends Interceptor {
   }
 
   List<String> _formatMap(Map<String, Object?> map) {
-    return map.entries.map((e) => '    ${e.key}: ${e.value}').toList();
+    return map.entries
+        .map((e) => '    ${e.key}: ${_isSecret(e.key) ? '***' : e.value}')
+        .toList();
   }
+
+  static bool _isSecret(String header) =>
+      const {'authorization', 'cookie', 'set-cookie'}.contains(header.toLowerCase());
 
   String _formatBody(dynamic data) {
     if (data == null) return '    (empty)';

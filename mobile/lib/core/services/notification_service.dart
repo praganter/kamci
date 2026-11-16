@@ -21,7 +21,7 @@ final _localNotifications = FlutterLocalNotificationsPlugin();
 @pragma('vm:entry-point')
 Future<void> firebaseBackgroundHandler(RemoteMessage message) async {
   // Firebase is already initialized in main.dart before this is called.
-  debugPrint('FCM background message: ${message.messageId}');
+  debugPrint('FCM background message received');
 }
 
 @Riverpod(keepAlive: true)
@@ -29,8 +29,13 @@ NotificationService notificationService(Ref ref) => NotificationService(ref);
 
 class NotificationService {
   NotificationService(this._ref) {
-    FirebaseMessaging.instance.onTokenRefresh.listen((_) => registerToken());
+    if (enabled) {
+      FirebaseMessaging.instance.onTokenRefresh.listen((_) => registerToken());
+    }
   }
+
+  /// True only when Firebase initialised successfully (see main.dart).
+  static bool enabled = false;
 
   final Ref _ref;
 
@@ -96,7 +101,6 @@ class NotificationService {
   static final pendingTarget = ValueNotifier<NotificationTarget?>(null);
 
   static void _handleNotificationClick(RemoteMessage message) {
-    debugPrint('Notification clicked: ${message.data}');
     pendingTarget.value = notificationTargetFromPush(message.data);
   }
 
@@ -138,6 +142,7 @@ class NotificationService {
 
   /// Get FCM token and register it with the backend.
   Future<void> registerToken({String? email}) async {
+    if (!enabled) return;
     try {
       // iOS requires APNs token before FCM token is available
       if (defaultTargetPlatform == TargetPlatform.iOS) {
@@ -161,7 +166,6 @@ class NotificationService {
         ApiConstants.deviceToken,
         data: {'token': token, 'email': ?email},
       );
-      debugPrint('FCM token registered successfully: $token');
     } catch (e) {
       debugPrint('FCM registerToken failed: $e');
     }
