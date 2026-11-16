@@ -1,0 +1,24 @@
+# Template rendered at container start by entrypoint.sh.
+#   ALERT_WEBHOOK_URL set   -> alerts are POSTed to that URL (Slack-compatible gateways, ntfy, n8n, ...)
+#   ALERT_WEBHOOK_URL unset -> alerts stay in the Alertmanager UI/API only
+route:
+  receiver: '__RECEIVER__'
+  group_by: ['alertname', 'job']
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+
+receivers:
+  - name: 'null'
+  - name: 'webhook'
+    webhook_configs:
+      - url: '__WEBHOOK_URL__'
+        send_resolved: true
+  # E-mail example (needs a reachable SMTP server) - copy into the list above and route to it:
+  # - name: 'email'
+  #   email_configs:
+  #     - to: 'oncall@example.com'
+  #       from: 'alertmanager@example.com'
+  #       smarthost: 'smtp.example.com:587'
+  #       auth_username: 'alertmanager@example.com'
+  #       auth_password: '<set-via-secret>'

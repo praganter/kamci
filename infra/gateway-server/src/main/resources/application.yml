@@ -14,14 +14,16 @@ spring:
       uri: ${CONFIG_SERVER_URL:http://localhost:8888}
       name: gateway-server,common-config
     gateway:
-      # Do not parse or re-emit Forwarded / X-Forwarded-* headers. Combined with
-      # ForwardedHeaderStrippingFilter (strips them inbound) this prevents a
-      # client from spoofing its source IP to bypass rate limiting, and stops the
-      # spoofed value from being forwarded downstream. Revisit if a trusted proxy
-      # is ever placed in front of the gateway.
-      forwarded:
-        enabled: false
-      x-forwarded:
-        enabled: false
+      server:
+        webflux:
+          # Do not parse or re-emit Forwarded / X-Forwarded-* headers. Combined with
+          # ForwardedHeaderStrippingFilter (strips them inbound) this prevents a
+          # client from spoofing its source IP to bypass rate limiting, and stops the
+          # spoofed value from being forwarded downstream. Revisit if a trusted proxy
+          # is ever placed in front of the gateway.
+          forwarded:
+            enabled: false
+          x-forwarded:
+            enabled: false
   config:
     import: "optional:configserver:"
