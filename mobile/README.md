@@ -113,6 +113,7 @@ endpoint (`POST /subscription/premium/{userId}` with `X-Admin-Key`, see
 ```bash
 flutter analyze
 flutter test test/core test/features test/shared            # unit + widget tests, no backend needed
+tool/coverage.sh 60                                       # same tests with lcov; fails below 60% lib line coverage (generated code excluded)
 flutter test test/integration \
   --dart-define=TEST_A_EMAIL=… --dart-define=TEST_A_PASSWORD=…   # hits a running backend
 ```

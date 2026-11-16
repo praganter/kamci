@@ -111,8 +111,8 @@ Future<Harness> pumpScreen(
   addTearDown(() {
     try {
       container.dispose();
+    // ignore: empty_catches
     } on StateError {
-      // riverpod completes in-flight async notifiers twice on dispose
     }
   });
   await tester.pumpWidget(
