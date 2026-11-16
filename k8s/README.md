@@ -40,7 +40,8 @@ kubeseal --format yaml < secrets/app-secrets.yaml > sealed-secret.yaml
 
 ## Apply order
 
-`apply-all.sh`: namespace -> secrets -> priority classes -> infra (prometheus-config first) -> be -> grafana configmaps/promtail.
+`apply-all.sh`: namespace -> secrets -> priority classes -> prometheus-config -> config-server (waits for rollout) -> rest of infra (waits for eureka) -> be -> grafana configmaps/promtail.
+Services start with `fail-fast` config import, so without a Ready config-server their pods CrashLoop.
 
 ```sh
 export REGISTRY=registry.example.com/myorg API_HOST=api.example.com GRAFANA_HOST=grafana.example.com IMAGE_TAG=v0.1.0
@@ -64,7 +65,9 @@ export REGISTRY=registry.example.com/myorg API_HOST=api.example.com GRAFANA_HOST
 
 - [ ] The backend moved to Spring Boot 4.0.x (Jackson 3). Only deploy images that include the `JacksonConfig`
       fix; use a **new** tag (>= `v0.1.0`), do not overwrite an older one.
+- [ ] `config-server` Ready before any `be/*` rollout (services are fail-fast; `apply-all.sh` enforces it, CI/manual applies must too).
 - [ ] All pods Ready, `config-server` and `eureka-server` first.
+- [ ] `GET /rates` through the gateway returns data: cache-service takes its Redis/exchange-rate settings only from the central `cache-service.yml`.
 - [ ] Smoke test through the gateway: register -> login -> create a debt.
 - [ ] Gateway sees real client IPs (Traefik `externalTrafficPolicy: Local`), rate limit works.
 - [ ] Grafana dashboards load; Prometheus targets are up.

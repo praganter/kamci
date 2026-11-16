@@ -21,7 +21,11 @@ apply infra/priorityclass.yaml
 
 echo "==> Infra (ConfigMap once, then rest)"
 apply infra/prometheus-config.yaml
+# Services use fail-fast config import: config-server must be Ready before anything else starts.
+apply infra/config-server.yaml
+kubectl -n kamci rollout status deploy/config-server --timeout=300s
 apply infra/*.yaml
+kubectl -n kamci rollout status deploy/eureka-server --timeout=300s
 
 echo "==> Backend"
 apply be/*.yaml
