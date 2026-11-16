@@ -2,7 +2,7 @@ appId: com.batuhanyetgin.kamci
 tags: [notifications]
 ---
 # NOT-02: Bildirim → ilgili ekrana yönlendirme
-# a) Push yönlendirmesi: debttracker://notification deep link'i push tıklamasıyla
+# a) Push yönlendirmesi: kamci://notification deep link'i push tıklamasıyla
 #    aynı kod yolunu (NotificationService.pendingTarget) kullanır.
 # b) In-app liste: HOUSEHOLD_INVITE satırına dokununca Hane ekranı açılır.
 # Edge: bilinmeyen tip → yönlendirme yok; geçersiz id → detay yerine liste.
@@ -12,7 +12,7 @@ tags: [notifications]
 - runFlow: "../../subflows/_login_as_user_a.yaml"
 - tapOn: "Ayarlar"
 - waitForAnimationToEnd
-- openLink: "debttracker://notification?type=HOUSEHOLD_INVITE&id=x"
+- openLink: "kamci://notification?type=HOUSEHOLD_INVITE&id=x"
 - extendedWaitUntil:
     visible: "Hane"
     timeout: 10000
@@ -20,7 +20,7 @@ tags: [notifications]
 - back
 - waitForAnimationToEnd
 # WEEKLY_DIGEST → Borçlar sekmesi
-- openLink: "debttracker://notification?type=WEEKLY_DIGEST"
+- openLink: "kamci://notification?type=WEEKLY_DIGEST"
 - extendedWaitUntil:
     visible:
       id: "myDebtsTab"
@@ -28,11 +28,11 @@ tags: [notifications]
 # Edge: bilinmeyen tip → ekran değişmez
 - tapOn: "Ayarlar"
 - waitForAnimationToEnd
-- openLink: "debttracker://notification?type=SOMETHING_NEW&id=x"
+- openLink: "kamci://notification?type=SOMETHING_NEW&id=x"
 - waitForAnimationToEnd
 - assertVisible: "Uygulama Ayarları"
 # Edge: geçersiz (path injection) id → detay yerine borç listesi
-- openLink: "debttracker://notification?type=DEBT_REMINDER&id=..%2Fsettings"
+- openLink: "kamci://notification?type=DEBT_REMINDER&id=..%2Fsettings"
 - extendedWaitUntil:
     visible:
       id: "myDebtsTab"

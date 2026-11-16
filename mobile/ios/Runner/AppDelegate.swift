@@ -45,7 +45,7 @@ import UserNotifications
     open url: URL,
     options: [UIApplication.OpenURLOptionsKey: Any] = [:]
   ) -> Bool {
-    // Forward custom scheme URLs (debttracker://) to app_links plugin
+    // Forward custom scheme URLs (kamci://) to app_links plugin
     return super.application(app, open: url, options: options)
   }
 

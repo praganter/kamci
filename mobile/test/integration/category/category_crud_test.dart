@@ -1,5 +1,5 @@
-import 'package:dt_mobile/core/network/api_exception.dart';
-import 'package:dt_mobile/features/category/data/datasources/category_remote_datasource.dart';
+import 'package:kamci/core/network/api_exception.dart';
+import 'package:kamci/features/category/data/datasources/category_remote_datasource.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../helpers/test_credentials.dart';

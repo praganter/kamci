@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:dt_mobile/core/services/notification_service.dart';
-import 'package:dt_mobile/core/storage/secure_storage_service.dart';
+import 'package:kamci/core/services/notification_service.dart';
+import 'package:kamci/core/storage/secure_storage_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 String fakeJwt({String sub = 'user-1', bool premium = false, int? exp}) {

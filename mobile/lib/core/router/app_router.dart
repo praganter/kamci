@@ -48,7 +48,7 @@ GoRouter appRouter(Ref ref) {
     debugLogDiagnostics: kDebugMode,
     refreshListenable: notifier,
     redirect: (context, state) {
-      if (state.uri.scheme == 'debttracker') {
+      if (state.uri.scheme == 'kamci') {
         if (state.uri.host == 'reset-password') {
           final token = state.uri.queryParameters['token'];
           return token != null

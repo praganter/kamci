@@ -39,7 +39,7 @@ lib/
   an expired session. Errors are mapped to a typed `ApiException` hierarchy and
   localised from the backend's `error.*` codes.
 - **Routing:** `go_router` with an auth-aware redirect and deep links
-  (`debttracker://` scheme for password reset and notification targets).
+  (`kamci://` scheme for password reset and notification targets).
 - **Models:** `freezed` + `json_serializable`. Money and dates tolerate the
   backend's number/ISO-string variants (including nanosecond `LocalDateTime`).
 - **i18n:** ARB files, Turkish template + English, generated with `flutter gen-l10n`.

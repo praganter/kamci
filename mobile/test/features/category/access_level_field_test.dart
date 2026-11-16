@@ -1,6 +1,6 @@
-import 'package:dt_mobile/features/category/domain/entities/member_embedded.dart';
-import 'package:dt_mobile/features/category/presentation/widgets/access_level_field.dart';
-import 'package:dt_mobile/gen/l10n/app_localizations.dart';
+import 'package:kamci/features/category/domain/entities/member_embedded.dart';
+import 'package:kamci/features/category/presentation/widgets/access_level_field.dart';
+import 'package:kamci/gen/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 

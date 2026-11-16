@@ -28,22 +28,22 @@
             </intent-filter>
             <!-- Deep link'ler app_links ile App._handleLink'te işlenir. Flutter'ın
                  varsayılan deep linking'i URI'yi GoRouter'a da verir; path'siz
-                 debttracker://host?... "/" olarak çözülüp Borçlar'a atar ve
+                 kamci://host?... "/" olarak çözülüp Borçlar'a atar ve
                  _handleLink'in yönlendirmesini ezer. -->
             <meta-data android:name="flutter_deeplinking_enabled" android:value="false" />
-            <!-- Deep link: debttracker://reset-password?token=xxx -->
+            <!-- Deep link: kamci://reset-password?token=xxx -->
             <intent-filter android:autoVerify="false">
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
-                <data android:scheme="debttracker" android:host="reset-password"/>
+                <data android:scheme="kamci" android:host="reset-password"/>
             </intent-filter>
-            <!-- Deep link: debttracker://notification?type=DEBT_REMINDER&id=xxx -->
+            <!-- Deep link: kamci://notification?type=DEBT_REMINDER&id=xxx -->
             <intent-filter android:autoVerify="false">
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
-                <data android:scheme="debttracker" android:host="notification"/>
+                <data android:scheme="kamci" android:host="notification"/>
             </intent-filter>
         </activity>
         <!-- FCM default notification channel -->

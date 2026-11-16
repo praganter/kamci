@@ -2,12 +2,12 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
-import 'package:dt_mobile/core/network/dio_client.dart';
-import 'package:dt_mobile/core/network/interceptors/auth_interceptor.dart';
-import 'package:dt_mobile/core/storage/secure_storage_service.dart';
-import 'package:dt_mobile/features/auth/domain/entities/auth_tokens.dart';
-import 'package:dt_mobile/features/auth/presentation/providers/auth_provider.dart';
-import 'package:dt_mobile/features/auth/presentation/providers/auth_state.dart';
+import 'package:kamci/core/network/dio_client.dart';
+import 'package:kamci/core/network/interceptors/auth_interceptor.dart';
+import 'package:kamci/core/storage/secure_storage_service.dart';
+import 'package:kamci/features/auth/domain/entities/auth_tokens.dart';
+import 'package:kamci/features/auth/presentation/providers/auth_provider.dart';
+import 'package:kamci/features/auth/presentation/providers/auth_state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 

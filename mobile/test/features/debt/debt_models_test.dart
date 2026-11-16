@@ -1,5 +1,5 @@
-import 'package:dt_mobile/features/debt/data/models/debt_summary_model.dart';
-import 'package:dt_mobile/features/debt/data/models/payment_embedded_model.dart';
+import 'package:kamci/features/debt/data/models/debt_summary_model.dart';
+import 'package:kamci/features/debt/data/models/payment_embedded_model.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 Map<String, dynamic> _summaryJson([Map<String, dynamic> extra = const {}]) => {

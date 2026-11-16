@@ -1,11 +1,11 @@
-import 'package:dt_mobile/core/network/api_exception.dart';
-import 'package:dt_mobile/core/services/notification_service.dart';
-import 'package:dt_mobile/core/storage/secure_storage_service.dart';
-import 'package:dt_mobile/features/auth/data/repositories/auth_repository_impl.dart';
-import 'package:dt_mobile/features/auth/domain/entities/auth_tokens.dart';
-import 'package:dt_mobile/features/auth/domain/repositories/auth_repository.dart';
-import 'package:dt_mobile/features/auth/presentation/providers/auth_provider.dart';
-import 'package:dt_mobile/features/auth/presentation/providers/auth_state.dart';
+import 'package:kamci/core/network/api_exception.dart';
+import 'package:kamci/core/services/notification_service.dart';
+import 'package:kamci/core/storage/secure_storage_service.dart';
+import 'package:kamci/features/auth/data/repositories/auth_repository_impl.dart';
+import 'package:kamci/features/auth/domain/entities/auth_tokens.dart';
+import 'package:kamci/features/auth/domain/repositories/auth_repository.dart';
+import 'package:kamci/features/auth/presentation/providers/auth_provider.dart';
+import 'package:kamci/features/auth/presentation/providers/auth_state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 

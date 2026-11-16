@@ -1,7 +1,7 @@
-import 'package:dt_mobile/core/l10n/l10n.dart';
-import 'package:dt_mobile/features/auth/presentation/providers/auth_provider.dart';
-import 'package:dt_mobile/features/auth/presentation/providers/auth_state.dart';
-import 'package:dt_mobile/features/auth/presentation/screens/login_screen.dart';
+import 'package:kamci/core/l10n/l10n.dart';
+import 'package:kamci/features/auth/presentation/providers/auth_provider.dart';
+import 'package:kamci/features/auth/presentation/providers/auth_state.dart';
+import 'package:kamci/features/auth/presentation/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';

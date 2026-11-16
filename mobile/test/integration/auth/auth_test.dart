@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
-import 'package:dt_mobile/core/network/api_exception.dart';
-import 'package:dt_mobile/features/auth/data/datasources/auth_remote_datasource.dart';
-import 'package:dt_mobile/features/auth/data/models/login_request.dart';
-import 'package:dt_mobile/features/auth/data/models/register_request.dart';
+import 'package:kamci/core/network/api_exception.dart';
+import 'package:kamci/features/auth/data/datasources/auth_remote_datasource.dart';
+import 'package:kamci/features/auth/data/models/login_request.dart';
+import 'package:kamci/features/auth/data/models/register_request.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../helpers/test_credentials.dart';

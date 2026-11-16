@@ -1,5 +1,5 @@
-import 'package:dt_mobile/core/router/route_names.dart';
-import 'package:dt_mobile/core/services/notification_routing.dart';
+import 'package:kamci/core/router/route_names.dart';
+import 'package:kamci/core/services/notification_routing.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

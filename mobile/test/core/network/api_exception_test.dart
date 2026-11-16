@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:dt_mobile/core/network/api_exception.dart';
+import 'package:kamci/core/network/api_exception.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 DioException _err(int status, Map<String, dynamic> body) => DioException(

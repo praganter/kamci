@@ -1,10 +1,10 @@
 import 'package:dio/dio.dart';
-import 'package:dt_mobile/core/network/api_exception.dart';
-import 'package:dt_mobile/features/category/data/datasources/category_remote_datasource.dart';
-import 'package:dt_mobile/features/category/domain/entities/member_embedded.dart';
-import 'package:dt_mobile/features/debt/data/datasources/debt_remote_datasource.dart';
-import 'package:dt_mobile/features/debt/data/models/create_debt_request.dart';
-import 'package:dt_mobile/features/debt/data/models/debt_model.dart';
+import 'package:kamci/core/network/api_exception.dart';
+import 'package:kamci/features/category/data/datasources/category_remote_datasource.dart';
+import 'package:kamci/features/category/domain/entities/member_embedded.dart';
+import 'package:kamci/features/debt/data/datasources/debt_remote_datasource.dart';
+import 'package:kamci/features/debt/data/models/create_debt_request.dart';
+import 'package:kamci/features/debt/data/models/debt_model.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'helpers/test_credentials.dart';

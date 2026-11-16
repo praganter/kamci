@@ -1,4 +1,4 @@
-import 'package:dt_mobile/features/charts/data/models/monthly_summary_model.dart';
+import 'package:kamci/features/charts/data/models/monthly_summary_model.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

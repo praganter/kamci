@@ -1,12 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:dt_mobile/features/auth/data/models/auth_response.dart';
-import 'package:dt_mobile/features/category/data/models/category_model.dart';
-import 'package:dt_mobile/features/charts/data/models/monthly_summary_model.dart';
-import 'package:dt_mobile/features/debt/data/models/debt_model.dart';
-import 'package:dt_mobile/features/debt/data/models/debt_summary_model.dart';
-import 'package:dt_mobile/features/income/data/models/income_model.dart';
+import 'package:kamci/features/auth/data/models/auth_response.dart';
+import 'package:kamci/features/category/data/models/category_model.dart';
+import 'package:kamci/features/charts/data/models/monthly_summary_model.dart';
+import 'package:kamci/features/debt/data/models/debt_model.dart';
+import 'package:kamci/features/debt/data/models/debt_summary_model.dart';
+import 'package:kamci/features/income/data/models/income_model.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 dynamic _fixture(String name) =>

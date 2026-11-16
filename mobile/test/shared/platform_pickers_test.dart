@@ -1,5 +1,5 @@
-import 'package:dt_mobile/shared/widgets/platform_date_field.dart';
-import 'package:dt_mobile/shared/widgets/platform_time_field.dart';
+import 'package:kamci/shared/widgets/platform_date_field.dart';
+import 'package:kamci/shared/widgets/platform_time_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
