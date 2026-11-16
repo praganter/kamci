@@ -9,10 +9,10 @@
         <relativePath/>
     </parent>
     <groupId>dev.batuhanyetgin</groupId>
-    <artifactId>dt-parent</artifactId>
+    <artifactId>kamci-parent</artifactId>
     <version>0.0.1</version>
-    <name>dt-parent</name>
-    <description>dt-parent</description>
+    <name>kamci-parent</name>
+    <description>kamci-parent</description>
     <packaging>pom</packaging>
 
     <modules>

@@ -7,11 +7,11 @@ COPY common-module/pom.xml common-module/
 COPY auth-service/pom.xml auth-service/
 
 RUN mkdir -p debt-service && \
-    echo '<project xmlns="http://maven.apache.org/POM/4.0.0"><modelVersion>4.0.0</modelVersion><parent><groupId>dev.batuhanyetgin</groupId><artifactId>dt-parent</artifactId><version>0.0.1</version></parent><artifactId>debt-service</artifactId></project>' > debt-service/pom.xml && \
+    echo '<project xmlns="http://maven.apache.org/POM/4.0.0"><modelVersion>4.0.0</modelVersion><parent><groupId>dev.batuhanyetgin</groupId><artifactId>kamci-parent</artifactId><version>0.0.1</version></parent><artifactId>debt-service</artifactId></project>' > debt-service/pom.xml && \
     mkdir -p notification-service && \
-    echo '<project xmlns="http://maven.apache.org/POM/4.0.0"><modelVersion>4.0.0</modelVersion><parent><groupId>dev.batuhanyetgin</groupId><artifactId>dt-parent</artifactId><version>0.0.1</version></parent><artifactId>notification-service</artifactId></project>' > notification-service/pom.xml && \
+    echo '<project xmlns="http://maven.apache.org/POM/4.0.0"><modelVersion>4.0.0</modelVersion><parent><groupId>dev.batuhanyetgin</groupId><artifactId>kamci-parent</artifactId><version>0.0.1</version></parent><artifactId>notification-service</artifactId></project>' > notification-service/pom.xml && \
     mkdir -p cache-service && \
-    echo '<project xmlns="http://maven.apache.org/POM/4.0.0"><modelVersion>4.0.0</modelVersion><parent><groupId>dev.batuhanyetgin</groupId><artifactId>dt-parent</artifactId><version>0.0.1</version></parent><artifactId>cache-service</artifactId></project>' > cache-service/pom.xml
+    echo '<project xmlns="http://maven.apache.org/POM/4.0.0"><modelVersion>4.0.0</modelVersion><parent><groupId>dev.batuhanyetgin</groupId><artifactId>kamci-parent</artifactId><version>0.0.1</version></parent><artifactId>cache-service</artifactId></project>' > cache-service/pom.xml
 
 RUN mvn dependency:go-offline -B -pl common-module,auth-service -am
 
