@@ -13,11 +13,16 @@ step() { printf '\n== %s\n' "$*"; }
 fail() { printf 'FAIL: %s\n' "$*" >&2; exit 1; }
 # first value of a JSON string field: field id "$json"
 field() { printf '%s' "$2" | grep -o "\"$1\":\"[^\"]*\"" | head -1 | cut -d'"' -f4; }
-# req METHOD PATH [BODY] [TOKEN] -> sets $BODY, fails unless HTTP 2xx
+# req METHOD PATH [BODY] [TOKEN] -> sets $BODY, fails unless HTTP 2xx.
+# 503 = the gateway has no instance for that route yet (Eureka cache lag, request never reached the service), so retry.
 req() {
-  local out
-  out=$(curl -sS -m 20 -w '\n%{http_code}' -X "$1" "$GATEWAY$2" \
-    -H 'Content-Type: application/json' ${4:+-H "Authorization: Bearer $4"} ${3:+-d "$3"}) || fail "$1 $2: curl error"
+  local out i
+  for i in $(seq 1 12); do
+    out=$(curl -sS -m 20 -w '\n%{http_code}' -X "$1" "$GATEWAY$2" \
+      -H 'Content-Type: application/json' ${4:+-H "Authorization: Bearer $4"} ${3:+-d "$3"}) || fail "$1 $2: curl error"
+    [[ ${out##*$'\n'} == 503 ]] || break
+    sleep 5
+  done
   CODE=${out##*$'\n'}; BODY=${out%$'\n'*}
   [[ $CODE == 2* ]] || fail "$1 $2 -> HTTP $CODE: $BODY"
   echo "$1 $2 -> $CODE"
