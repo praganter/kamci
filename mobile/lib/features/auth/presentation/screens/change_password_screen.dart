@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../../core/l10n/exception_l10n.dart';
+import '../../../../core/network/api_exception.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/utils/validators.dart';
@@ -45,7 +47,13 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
     final cs = Theme.of(context).colorScheme;
     final asyncState = ref.watch(changePasswordProvider);
     final isLoading = asyncState is AsyncLoading;
-    final error = asyncState is AsyncError ? asyncState.error as String : null;
+    final error = asyncState is AsyncError
+        ? switch (asyncState.error) {
+            UnauthorizedException() => l10n.currentPasswordIncorrect,
+            final Object e when e is ApiException => e.toLocalizedMessage(l10n),
+            _ => l10n.errorUnexpected,
+          }
+        : null;
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.changePassword)),

@@ -114,6 +114,11 @@ endpoint (`POST /subscription/premium/{userId}` with `X-Admin-Key`, see
 flutter analyze
 flutter test test/core test/features test/shared            # unit + widget tests, no backend needed
 tool/coverage.sh 60                                       # same tests with lcov; fails below 60% lib line coverage (generated code excluded)
+```
+
+`test/shared/coverage_all_test.dart` imports every `lib/` file, so files that no test loads still count in the coverage percentage as 0% (the number can only drop, it is never inflated). Maestro flows under `maestro/` are manual and do not run in CI.
+
+```bash
 flutter test test/integration \
   --dart-define=TEST_A_EMAIL=… --dart-define=TEST_A_PASSWORD=…   # hits a running backend
 ```

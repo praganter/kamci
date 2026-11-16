@@ -1076,4 +1076,10 @@ class AppLocalizationsTr extends AppLocalizations {
   String dueOn(String date) {
     return 'Vade $date';
   }
+
+  @override
+  String get currentPasswordIncorrect => 'Mevcut şifre hatalı.';
+
+  @override
+  String get splashTagline => 'Borç yiğidin \'Kamci\'sıdır';
 }

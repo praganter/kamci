@@ -2005,6 +2005,18 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Vade {date}'**
   String dueOn(String date);
+
+  /// No description provided for @currentPasswordIncorrect.
+  ///
+  /// In tr, this message translates to:
+  /// **'Mevcut şifre hatalı.'**
+  String get currentPasswordIncorrect;
+
+  /// No description provided for @splashTagline.
+  ///
+  /// In tr, this message translates to:
+  /// **'Borç yiğidin \'Kamci\'sıdır'**
+  String get splashTagline;
 }
 
 class _AppLocalizationsDelegate

@@ -39,6 +39,7 @@ Future<Harness> pumpScreen(
   bool premium = false,
   bool authenticated = true,
   String userId = 'user-1',
+  Locale locale = const Locale('en'),
   Map<String, Object> prefs = const {},
   List<Override> overrides = const [],
   Size size = const Size(700, 1200),
@@ -120,7 +121,7 @@ Future<Harness> pumpScreen(
       container: container,
       child: MaterialApp.router(
         routerConfig: router,
-        locale: const Locale('en'),
+        locale: locale,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
       ),

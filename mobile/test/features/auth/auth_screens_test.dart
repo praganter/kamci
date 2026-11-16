@@ -92,17 +92,46 @@ void main() {
       expect(find.text('host'), findsOneWidget, reason: 'success pops the screen');
     });
 
-    testWidgets('server rejection leaves the form in place', (t) async {
+    testWidgets('a 401 shows the localized wrong-password message', (t) async {
+      final api = FakeApi().on('POST /auth/change-password', {'message': 'x'}, 401);
+      final h = await pumpScreen(t, const ChangePasswordScreen(), api: api);
+      await _fill(t, ['oldpass123', 'newpass123']);
+      await t.tap(find.text('Update Password'));
+      await settle(t);
+      expect(find.text(h.l10n.currentPasswordIncorrect), findsOneWidget);
+      expect(find.text('The current password is incorrect.'), findsOneWidget);
+    });
+
+    testWidgets('the wrong-password message follows the Turkish locale', (t) async {
+      final api = FakeApi().on('POST /auth/change-password', {'message': 'x'}, 401);
+      await pumpScreen(t, const ChangePasswordScreen(), api: api, locale: const Locale('tr'));
+      await t.enterText(find.byType(TextFormField).at(0), 'oldpass123');
+      await t.enterText(find.byType(TextFormField).at(1), 'newpass123');
+      await t.tap(find.byType(FilledButton));
+      await settle(t);
+      expect(find.text('Mevcut şifre hatalı.'), findsOneWidget);
+    });
+
+    testWidgets('a business error code is localized, not shown raw', (t) async {
       final api = FakeApi().on('POST /auth/change-password', {
         'code': 'error.auth.current_password_invalid',
-        'message': 'wrong',
+        'message': 'raw backend text',
       }, 400);
       await pumpScreen(t, const ChangePasswordScreen(), api: api);
       await _fill(t, ['oldpass123', 'newpass123']);
       await t.tap(find.text('Update Password'));
       await settle(t);
-      expect(api.last.path, '/auth/change-password');
+      expect(find.text('raw backend text'), findsNothing);
       expect(find.byType(TextFormField), findsNWidgets(2));
+    });
+
+    testWidgets('an unexpected failure shows the generic localized error', (t) async {
+      final api = FakeApi().on('POST /auth/change-password', {'message': 'boom'}, 500);
+      final h = await pumpScreen(t, const ChangePasswordScreen(), api: api);
+      await _fill(t, ['oldpass123', 'newpass123']);
+      await t.tap(find.text('Update Password'));
+      await settle(t);
+      expect(find.text(h.l10n.errorServer), findsOneWidget);
     });
   });
 }

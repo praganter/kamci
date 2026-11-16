@@ -1082,4 +1082,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String dueOn(String date) {
     return 'Due $date';
   }
+
+  @override
+  String get currentPasswordIncorrect => 'The current password is incorrect.';
+
+  @override
+  String get splashTagline => 'Debt is the brave one\'s Kamci';
 }

@@ -486,5 +486,7 @@
   "debtCountLabel": "{count, plural, =1{1 debt} other{{count} debts}}",
   "percentValue": "{value}%",
   "trendNoPayments": "No payments in the last 6 months",
-  "dueOn": "Due {date}"
+  "dueOn": "Due {date}",
+  "currentPasswordIncorrect": "The current password is incorrect.",
+  "splashTagline": "Debt is the brave one's Kamci"
 }

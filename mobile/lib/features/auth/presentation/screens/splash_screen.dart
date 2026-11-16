@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/l10n/l10n.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class SplashScreen extends ConsumerWidget {
@@ -16,7 +17,7 @@ class SplashScreen extends ConsumerWidget {
             _BrandName(context: context),
             const SizedBox(height: 8),
             Text(
-              "Borç yiğidin 'Kamci'sıdır",
+              context.l10n.splashTagline,
               style: TextStyle(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
                 fontSize: 13,

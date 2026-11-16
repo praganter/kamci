@@ -531,5 +531,7 @@
     "placeholders": {
       "date": { "type": "String" }
     }
-  }
+  },
+  "currentPasswordIncorrect": "Mevcut şifre hatalı.",
+  "splashTagline": "Borç yiğidin 'Kamci'sıdır"
 }

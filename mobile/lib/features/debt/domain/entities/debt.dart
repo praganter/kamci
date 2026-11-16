@@ -10,17 +10,6 @@ enum PaymentPeriodType {
   quarterly,
   halfYearly,
   yearly;
-
-  String get label => switch (this) {
-    PaymentPeriodType.oneTime => 'Tek Seferlik',
-    PaymentPeriodType.daily => 'Günlük',
-    PaymentPeriodType.weekly => 'Haftalık',
-    PaymentPeriodType.biWeekly => 'İki Haftalık',
-    PaymentPeriodType.monthly => 'Aylık',
-    PaymentPeriodType.quarterly => 'Üç Aylık',
-    PaymentPeriodType.halfYearly => 'Altı Aylık',
-    PaymentPeriodType.yearly => 'Yıllık',
-  };
 }
 
 enum DebtStatusFilter { all, active, completed }
@@ -28,11 +17,6 @@ enum DebtStatusFilter { all, active, completed }
 enum DebtStatus {
   active,
   completed;
-
-  String get label => switch (this) {
-    DebtStatus.active => 'Aktif',
-    DebtStatus.completed => 'Tamamlandı',
-  };
 }
 
 enum PaymentStatus { paid, unpaid, overdue, partiallyPaid }
