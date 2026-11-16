@@ -1,0 +1,63 @@
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus, health, info, metrics
+  tracing:
+    sampling:
+      probability: 0.1
+  zipkin:
+    tracing:
+      endpoint: http://tempo:9411/api/v2/spans
+
+logging:
+  level:
+    root: INFO
+    dev.batuhanyetgin: INFO
+    org.springframework.boot.actuate: WARN
+    org.springframework.web: WARN
+    io.micrometer: WARN
+
+spring:
+  rabbitmq:
+    host: ${SPRING_RABBITMQ_HOST:localhost}
+    port: ${SPRING_RABBITMQ_PORT:5672}
+    username: ${SPRING_RABBITMQ_USERNAME}
+    password: ${SPRING_RABBITMQ_PASSWORD}
+  data:
+    mongodb:
+      uri: ${MONGO_DB_URI:mongodb://dev:dev@mongodb:27017/kamci?authSource=admin&retryWrites=false}
+      auto-index-creation: true
+      authentication-database: admin
+      database: kamci
+      field-naming-strategy: org.springframework.data.mapping.model.SnakeCaseFieldNamingStrategy
+
+eureka:
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${server.port}
+  client:
+    serviceUrl:
+      defaultZone: ${EUREKA_URI:http://eureka-server:8761/eureka}
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operationsSorter: method
+
+---
+# local/dev: verbose logs, trace every request
+spring:
+  config:
+    activate:
+      on-profile: local | dev
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+logging:
+  level:
+    dev.batuhanyetgin: DEBUG
