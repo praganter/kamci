@@ -17,7 +17,7 @@ x-logging: &logging
 x-service: &service
   restart: unless-stopped
   logging: *logging
-  networks: [ dt-network ]
+  networks: [ kamci-network ]
   environment: &service-env
     TZ: Europe/Istanbul
     CONFIG_SERVER_URL: http://config-server:8888
@@ -50,7 +50,7 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-dev}
     volumes:
       - mongo-data:/data/db
-    networks: [ dt-network ]
+    networks: [ kamci-network ]
     healthcheck:
       test: [ "CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')" ]
       interval: 10s
@@ -67,7 +67,7 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-kamci}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-kamci}
-    networks: [ dt-network ]
+    networks: [ kamci-network ]
     healthcheck:
       test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping" ]
       interval: 10s
@@ -82,7 +82,7 @@ services:
     command: [ "redis-server", "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lru" ]
     volumes:
       - redis-data:/data
-    networks: [ dt-network ]
+    networks: [ kamci-network ]
     healthcheck:
       test: [ "CMD", "redis-cli", "ping" ]
       interval: 10s
@@ -99,7 +99,7 @@ services:
     environment:
       MP_SMTP_AUTH_ACCEPT_ANY: "1"
       MP_SMTP_AUTH_ALLOW_INSECURE: "1"
-    networks: [ dt-network ]
+    networks: [ kamci-network ]
     healthcheck:
       test: [ "CMD", "/mailpit", "readyz" ]
       interval: 10s
@@ -120,7 +120,7 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: native
       JAVA_OPTS: ${JAVA_OPTS:-}
-    networks: [ dt-network ]
+    networks: [ kamci-network ]
     healthcheck:
       test: [ "CMD", "wget", "-q", "--spider", "http://localhost:8888/actuator/health" ]
       interval: 15s
@@ -139,7 +139,7 @@ services:
     environment:
       JAVA_OPTS: ${JAVA_OPTS:-}
       CONFIG_SERVER_URL: http://config-server:8888
-    networks: [ dt-network ]
+    networks: [ kamci-network ]
     depends_on:
       config-server:
         condition: service_healthy
@@ -163,7 +163,7 @@ services:
       CONFIG_SERVER_URL: http://config-server:8888
       EUREKA_URI: http://eureka-server:8761/eureka
       JWT_SECRET: ${JWT_SECRET_KEY:-change-me-change-me-change-me-0123456789}
-    networks: [ dt-network ]
+    networks: [ kamci-network ]
     # Start after the business services are registered, so the gateway's first Eureka fetch sees them all.
     depends_on:
       config-server:
@@ -260,7 +260,7 @@ services:
       - "9090:9090"
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
-    networks: [ dt-network ]
+    networks: [ kamci-network ]
     healthcheck:
       test: [ "CMD", "wget", "-q", "--spider", "http://localhost:9090/-/healthy" ]
       interval: 10s
@@ -275,7 +275,7 @@ services:
     environment:
       # Optional webhook that receives alerts. Empty = alerts are only visible in the Alertmanager UI.
       ALERT_WEBHOOK_URL: ${ALERT_WEBHOOK_URL:-}
-    networks: [ dt-network ]
+    networks: [ kamci-network ]
     healthcheck:
       test: [ "CMD-SHELL", "wget -q --spider http://localhost:9093/-/healthy || exit 1" ]
       interval: 10s
@@ -291,7 +291,7 @@ services:
       - "9411:9411"
     volumes:
       - tempo-data:/var/tempo
-    networks: [ dt-network ]
+    networks: [ kamci-network ]
     healthcheck:
       test: [ "CMD-SHELL", "wget -q --spider http://localhost:3200/ready || exit 1" ]
       interval: 10s
@@ -307,7 +307,7 @@ services:
     volumes:
       - loki-data:/var/loki
     command: -config.file=/etc/loki/local-config.yaml
-    networks: [ dt-network ]
+    networks: [ kamci-network ]
     healthcheck:
       test: [ "CMD-SHELL", "wget -q --spider http://localhost:3100/ready || exit 1" ]
       interval: 10s
@@ -322,7 +322,7 @@ services:
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
       - /var/run/docker.sock:/var/run/docker.sock
     command: -config.file=/etc/promtail/config.yml
-    networks: [ dt-network ]
+    networks: [ kamci-network ]
 
   grafana:
     profiles: [ observability ]
@@ -339,11 +339,11 @@ services:
         condition: service_healthy
       loki:
         condition: service_healthy
-    networks: [ dt-network ]
+    networks: [ kamci-network ]
 
 networks:
-  dt-network:
-    name: dt-network
+  kamci-network:
+    name: kamci-network
 
 volumes:
   mongo-data:

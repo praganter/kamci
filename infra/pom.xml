@@ -9,10 +9,10 @@
         <relativePath/>
     </parent>
     <groupId>dev.batuhanyetgin</groupId>
-    <artifactId>dt-infrastructure</artifactId>
+    <artifactId>kamci-infra</artifactId>
     <version>0.0.1</version>
-    <name>dt-infrastructure</name>
-    <description>dt-infrastructure</description>
+    <name>kamci-infra</name>
+    <description>kamci platform services: gateway, eureka, config-server</description>
     <packaging>pom</packaging>
 
     <modules>

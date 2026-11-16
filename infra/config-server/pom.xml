@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>dev.batuhanyetgin</groupId>
-        <artifactId>dt-infrastructure</artifactId>
+        <artifactId>kamci-infra</artifactId>
         <version>0.0.1</version>
         <relativePath>../pom.xml</relativePath>
     </parent>

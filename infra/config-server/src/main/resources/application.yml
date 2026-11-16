@@ -15,8 +15,8 @@ spring:
           # Used when SPRING_PROFILES_ACTIVE=native (compose mounts ./config at /config).
           search-locations: ${CONFIG_NATIVE_LOCATIONS:file:/config}
         git:
-          # Default backend (no profile flag): a Git repo holding the dt-config files.
-          uri: ${CONFIG_GIT_URI:https://git.example.com/dt-config.git}
+          # Default backend (no profile flag): a Git repo holding the files of the config/ folder.
+          uri: ${CONFIG_GIT_URI:}
           default-label: master
 
 eureka:
