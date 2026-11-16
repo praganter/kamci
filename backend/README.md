@@ -37,6 +37,15 @@ docker compose -f docker-compose.local.yml up --build
 
 Services start with the `local` profile: push notifications are logged and skipped, e-mail goes to [Mailpit](http://localhost:8025) (SMTP `localhost:1025`), and the RevenueCat webhook and admin endpoints use throw-away secrets defined in `auth-service/src/main/resources/application-local.yml`. Swagger UI is at `http://localhost:<port>/swagger-ui.html` on each service. Never use the `local` profile in production.
 
+### Running `backend/docker-compose.yml` on its own
+
+This file starts the business services plus their own MongoDB, RabbitMQ and Redis, and expects the config server and Eureka from the root stack.
+
+1. Start the root stack first: `docker compose up -d --wait` in the repository root. It creates the `kamci-network` network that this file joins as an `external` network, so without it `docker compose` fails with a missing-network error.
+2. Create `backend/.env` (the services load it through `env_file`). There is no `backend/.env.example`; copy the root one: `cp ../.env.example .env`.
+
+For a quick trial, `docker-compose.local.yml` above needs neither.
+
 ## Tests
 
 ```bash
