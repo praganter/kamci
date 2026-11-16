@@ -22,6 +22,7 @@ class IncomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final historyAsync = ref.watch(incomeHistoryProvider);
+    final removed = ref.watch(removedIncomeIdsProvider);
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.incomeHistory)),
@@ -31,7 +32,8 @@ class IncomeScreen extends ConsumerWidget {
           error: e,
           onRetry: () => ref.invalidate(incomeHistoryProvider),
         ),
-        data: (incomes) {
+        data: (all) {
+          final incomes = all.where((i) => !removed.contains(i.id)).toList();
           if (incomes.isEmpty) {
             return Center(
               child: Column(
@@ -58,7 +60,10 @@ class IncomeScreen extends ConsumerWidget {
             child: ListView.builder(
               padding: const EdgeInsets.only(bottom: 88),
               itemCount: incomes.length,
-              itemBuilder: (context, i) => _IncomeTile(income: incomes[i]),
+              itemBuilder: (_, i) => _IncomeTile(
+                income: incomes[i],
+                onDelete: () => _delete(context, ref, incomes[i].id),
+              ),
             ),
           );
         },
@@ -69,6 +74,21 @@ class IncomeScreen extends ConsumerWidget {
         child: const Icon(Icons.add),
       ),
     );
+  }
+
+  Future<void> _delete(BuildContext context, WidgetRef ref, String id) async {
+    final removed = ref.read(removedIncomeIdsProvider.notifier);
+    removed.state = {...removed.state, id};
+    try {
+      await ref.read(incomeRepositoryProvider).delete(id);
+      ref.invalidate(currentIncomeProvider);
+      ref.invalidate(incomeHistoryProvider);
+      await ref.read(incomeHistoryProvider.future).catchError((_) => <Income>[]);
+    } catch (e) {
+      if (context.mounted) showErrorSnackBar(context, e);
+    } finally {
+      removed.state = Set<String>.of(removed.state)..remove(id);
+    }
   }
 
   void _showAddIncomeSheet(BuildContext context, WidgetRef ref) {
@@ -85,8 +105,9 @@ class IncomeScreen extends ConsumerWidget {
 }
 
 class _IncomeTile extends ConsumerWidget {
-  const _IncomeTile({required this.income});
+  const _IncomeTile({required this.income, required this.onDelete});
   final Income income;
+  final VoidCallback onDelete;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -119,15 +140,7 @@ class _IncomeTile extends ConsumerWidget {
           cancelText: l10n.cancel,
         );
       },
-      onDismissed: (_) async {
-        try {
-          await ref.read(incomeRepositoryProvider).delete(income.id);
-          ref.invalidate(incomeHistoryProvider);
-          ref.invalidate(currentIncomeProvider);
-        } catch (e) {
-          if (context.mounted) showErrorSnackBar(context, e);
-        }
-      },
+      onDismissed: (_) => onDelete(),
       child: ListTile(
         leading: Container(
           width: 44,

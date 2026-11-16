@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../domain/entities/income.dart';
 import '../../data/repositories/income_repository_impl.dart';
@@ -17,3 +18,5 @@ Future<Income?> currentIncome(CurrentIncomeRef ref) async {
     return null;
   }
 }
+
+final removedIncomeIdsProvider = StateProvider<Set<String>>((_) => {});

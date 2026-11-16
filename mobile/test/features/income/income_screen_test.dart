@@ -1,5 +1,9 @@
+import 'dart:async';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kamci/core/network/dio_client.dart';
 import 'package:kamci/features/income/presentation/screens/income_screen.dart';
 
 import '../../helpers/fake_api.dart';
@@ -52,12 +56,59 @@ void main() {
     expect(find.text(h.l10n.deleteIncomeConfirm), findsOneWidget);
     expect(api.requests.where((r) => r.method == 'DELETE'), isEmpty);
 
-    await tester.tap(find.text(h.l10n.delete));
+    await tester.tap(find.text(h.l10n.delete).last);
     await settle(tester);
     expect(api.requests.where((r) => r.method == 'DELETE').single.path, '/income/delete/$id');
-    tester.takeException();
-    await tester.pump(const Duration(seconds: 2));
-    tester.takeException();
+    expect(find.byType(Dismissible), findsNothing);
+    expect(find.text(h.l10n.noIncomeYet), findsOneWidget);
+  });
+
+  testWidgets('the row disappears before the delete call finishes', (tester) async {
+    final id = (fixture('income_history') as List).first['id'] as String;
+    final gate = Completer<void>();
+    final api = _api();
+    final dio = api.dio();
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (o, handler) async {
+          if (o.method == 'DELETE') await gate.future;
+          handler.next(o);
+        },
+      ),
+    );
+    api.on('DELETE /income/delete/$id', null, 204);
+    final h = await pumpScreen(
+      tester,
+      const IncomeScreen(),
+      api: api,
+      overrides: [dioClientProvider.overrideWithValue(dio)],
+    );
+    await settle(tester);
+
+    await tester.drag(find.byType(Dismissible).first, const Offset(-600, 0));
+    await settle(tester);
+    await tester.tap(find.text(h.l10n.delete).last);
+    await settle(tester);
+
+    expect(find.byType(Dismissible), findsNothing, reason: 'removed optimistically');
+    gate.complete();
+    await settle(tester);
+  });
+
+  testWidgets('a failed delete puts the row back and reports the error', (tester) async {
+    final id = (fixture('income_history') as List).first['id'] as String;
+    final api = _api().on('DELETE /income/delete/$id', {'message': 'boom'}, 500);
+    final h = await pumpScreen(tester, const IncomeScreen(), api: api);
+    await settle(tester);
+
+    await tester.drag(find.byType(Dismissible).first, const Offset(-600, 0));
+    await settle(tester);
+    await tester.tap(find.text(h.l10n.delete).last);
+    await settle(tester);
+
+    await tester.pump(const Duration(seconds: 1));
+    expect(find.byKey(ValueKey(id)), findsOneWidget);
+    expect(find.byType(SnackBar), findsOneWidget);
   });
 
   testWidgets('add sheet validates before saving', (tester) async {
