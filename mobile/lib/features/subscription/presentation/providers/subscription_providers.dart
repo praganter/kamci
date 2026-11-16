@@ -1,19 +1,46 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../auth/domain/entities/user_detail.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../auth/presentation/providers/auth_state.dart';
 import '../../../../core/storage/secure_storage_service.dart';
-import '../../data/models/verify_receipt_request.dart';
-import '../../data/repositories/subscription_repository_impl.dart';
-import '../../domain/entities/subscription.dart';
+import '../../subscription_constants.dart';
 
 part 'subscription_providers.g.dart';
 
-/// Mevcut subscription durumunu backend'den çeker.
-@riverpod
-Future<Subscription> subscriptionStatus(Ref ref) =>
-    ref.watch(subscriptionRepositoryProvider).getStatus();
+/// RevenueCat CustomerInfo'su. RevenueCat kullanıcısı oturumdaki backend
+/// kullanıcısıyla eşlenir (appUserID = JWT userId) — webhook premium'u bu
+/// id ile backend'e yazar. RevenueCat yapılandırılmamışsa hep null.
+@Riverpod(keepAlive: true)
+class RevenueCatCustomer extends _$RevenueCatCustomer {
+  @override
+  CustomerInfo? build() {
+    if (SubscriptionConstants.revenueCatApiKey.isEmpty) return null;
+    void listener(CustomerInfo info) => state = info;
+    Purchases.addCustomerInfoUpdateListener(listener);
+    ref.onDispose(() => Purchases.removeCustomerInfoUpdateListener(listener));
+    ref.listen(authNotifierProvider, (_, next) => _syncUser(next),
+        fireImmediately: true);
+    return null;
+  }
+
+  Future<void> _syncUser(AuthState auth) async {
+    try {
+      if (auth case AuthStateAuthenticated(:final tokens)) {
+        final userId = tokens.userId;
+        // Aynı id ile logIn SDK'da no-op; token refresh'lerde tekrar çağrılır.
+        if (userId != null) {
+          state = (await Purchases.logIn(userId)).customerInfo;
+        }
+      } else if (auth is AuthStateUnauthenticated) {
+        if (!await Purchases.isAnonymous) state = await Purchases.logOut();
+      }
+    } catch (_) {
+      // Offline / SDK hatası — premium backend'den de okunuyor.
+    }
+  }
+}
 
 /// Son bilinen premium durumunu storage'dan okur.
 /// userDetail yüklenirken flicker'ı önler.
@@ -21,8 +48,9 @@ Future<Subscription> subscriptionStatus(Ref ref) =>
 Future<bool> cachedPremium(Ref ref) =>
     ref.read(secureStorageServiceProvider).getCachedPremiumStatus();
 
-/// userDetail.premium üzerinden türetilen premium flag.
-/// JWT token hemen mevcutsa oradan okur; sonra userDetail ile doğrular.
+/// RevenueCat entitlement'ı veya backend'in premium bayrağı.
+/// Backend, RevenueCat webhook'u ile birkaç saniye gecikmeli güncellenir;
+/// entitlement satın alma anında aktif olduğundan önce o okunur.
 @riverpod
 bool isPremium(Ref ref) {
   final authState = ref.watch(authNotifierProvider);
@@ -34,6 +62,15 @@ bool isPremium(Ref ref) {
       ref.read(secureStorageServiceProvider).savePremiumStatus(value.premium);
     }
   });
+
+  final entitlementActive =
+      ref
+          .watch(revenueCatCustomerProvider)
+          ?.entitlements
+          .active
+          .containsKey(SubscriptionConstants.entitlementId) ??
+      false;
+  if (entitlementActive) return true;
 
   // userDetail yanıtı varsa en güncel değer
   if (userDetailAsync.valueOrNull != null) {
@@ -47,34 +84,4 @@ bool isPremium(Ref ref) {
 
   // Authenticated değilse son storage cache'i
   return ref.watch(cachedPremiumProvider).valueOrNull ?? false;
-}
-
-/// Receipt doğrulama aksiyonu.
-/// verifyReceipt() sonrası userDetail ve subscriptionStatus invalidate edilir.
-@riverpod
-class SubscriptionNotifier extends _$SubscriptionNotifier {
-  @override
-  AsyncValue<Subscription?> build() => const AsyncValue.data(null);
-
-  Future<void> verifyReceipt(VerifyReceiptRequest request) async {
-    state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() async {
-      final sub = await ref
-          .read(subscriptionRepositoryProvider)
-          .verifyReceipt(request);
-      if (sub.accessToken != null && sub.refreshToken != null) {
-        await ref
-            .read(secureStorageServiceProvider)
-            .saveTokens(
-              accessToken: sub.accessToken!,
-              refreshToken: sub.refreshToken!,
-            );
-      }
-      // Force token refresh so the new JWT carries the updated premium claim.
-      await ref.read(authNotifierProvider.notifier).refreshTokens();
-      ref.invalidate(userDetailProvider);
-      ref.invalidate(subscriptionStatusProvider);
-      return sub;
-    });
-  }
 }

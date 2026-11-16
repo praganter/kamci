@@ -1670,18 +1670,6 @@ abstract class AppLocalizations {
   /// **'Hatırlatma tarihi veya saati eksik.'**
   String get errorReminderDateOrTimeMissing;
 
-  /// No description provided for @errorSubscriptionVerificationFailed.
-  ///
-  /// In tr, this message translates to:
-  /// **'Abonelik doğrulaması başarısız oldu.'**
-  String get errorSubscriptionVerificationFailed;
-
-  /// No description provided for @errorSubscriptionNotFound.
-  ///
-  /// In tr, this message translates to:
-  /// **'Abonelik bulunamadı.'**
-  String get errorSubscriptionNotFound;
-
   /// No description provided for @errorAuthEmailInUse.
   ///
   /// In tr, this message translates to:

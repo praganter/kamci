@@ -879,13 +879,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Reminder date or time is missing.';
 
   @override
-  String get errorSubscriptionVerificationFailed =>
-      'Subscription verification failed.';
-
-  @override
-  String get errorSubscriptionNotFound => 'Subscription not found.';
-
-  @override
   String get errorAuthEmailInUse => 'This email address is already in use.';
 
   @override

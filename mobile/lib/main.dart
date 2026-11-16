@@ -5,12 +5,13 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app.dart';
 import 'core/providers/app_settings_provider.dart';
 import 'core/services/notification_service.dart';
-import 'firebase_options.dart';
+import 'features/subscription/subscription_constants.dart';
 
 void main() {
   runZonedGuarded(_bootstrap, (error, stack) {
@@ -27,9 +28,27 @@ Future<void> _bootstrap() async {
   FlutterError.onError = (details) {
     debugPrint('[FLUTTER_ERROR] ${details.exception}\n${details.stack}');
   };
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  FirebaseMessaging.onBackgroundMessage(firebaseBackgroundHandler);
-  await NotificationService.initialize();
+  // Firebase is optional: without google-services.json / GoogleService-Info.plist
+  // the app runs normally and push notifications are simply disabled.
+  try {
+    await Firebase.initializeApp();
+    NotificationService.enabled = true;
+    FirebaseMessaging.onBackgroundMessage(firebaseBackgroundHandler);
+    await NotificationService.initialize();
+  } catch (e) {
+    NotificationService.enabled = false;
+    debugPrint('[FIREBASE] not configured, push disabled: $e');
+  }
+  // Key yoksa (dart-define verilmemiş) RevenueCat kapalı; satın alma ekranı
+  // "mağaza yok" gösterir. Hata uygulamanın açılmasını engellememeli.
+  final rcKey = SubscriptionConstants.revenueCatApiKey;
+  if (rcKey.isNotEmpty) {
+    try {
+      await Purchases.configure(PurchasesConfiguration(rcKey));
+    } catch (e) {
+      debugPrint('[REVENUECAT] configure failed: $e');
+    }
+  }
   final prefs = await SharedPreferences.getInstance();
   runApp(
     ProviderScope(

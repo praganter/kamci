@@ -48,9 +48,6 @@ String? _businessCodeMessage(String? code, AppLocalizations l10n) =>
       'error.income.not_found' => l10n.errorIncomeNotFound,
       'error.reminder.date_or_time_missing' =>
         l10n.errorReminderDateOrTimeMissing,
-      'error.subscription.verification_failed' =>
-        l10n.errorSubscriptionVerificationFailed,
-      'error.subscription.not_found' => l10n.errorSubscriptionNotFound,
       'error.auth.email_in_use' => l10n.errorAuthEmailInUse,
       'error.auth.too_many_login_attempts' =>
         l10n.errorAuthTooManyLoginAttempts,

@@ -37,12 +37,11 @@ dependencies:
   shimmer: ^3.0.0
   shared_preferences: ^2.3.3
   url_launcher: ^6.3.1
-  in_app_purchase: ^3.2.0
-
   # Firebase
   firebase_core: ^3.13.1
   firebase_messaging: ^15.2.5
   flutter_local_notifications: ^17.2.4
+  purchases_flutter: ^10.18.1
 
 dev_dependencies:
   flutter_test:

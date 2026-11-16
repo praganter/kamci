@@ -878,13 +878,6 @@ class AppLocalizationsTr extends AppLocalizations {
       'Hatırlatma tarihi veya saati eksik.';
 
   @override
-  String get errorSubscriptionVerificationFailed =>
-      'Abonelik doğrulaması başarısız oldu.';
-
-  @override
-  String get errorSubscriptionNotFound => 'Abonelik bulunamadı.';
-
-  @override
   String get errorAuthEmailInUse => 'Bu e-posta adresi zaten kullanımda.';
 
   @override

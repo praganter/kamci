@@ -51,8 +51,6 @@ sealed class ApiException implements Exception {
     'error.debt.missing_period_config',
     'error.income.not_found',
     'error.reminder.date_or_time_missing',
-    'error.subscription.verification_failed',
-    'error.subscription.not_found',
     'error.auth.email_in_use',
     'error.auth.too_many_login_attempts',
     'error.auth.not_valid',

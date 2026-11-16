@@ -6,6 +6,7 @@ import '../../../../shared/widgets/glow_border.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/router/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../subscription_constants.dart';
 import '../providers/subscription_providers.dart';
 
 class PremiumCard extends ConsumerWidget {
@@ -48,7 +49,14 @@ class _PremiumActiveCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final statusAsync = ref.watch(subscriptionStatusProvider);
+    final expiresDate = DateTime.tryParse(
+      ref
+              .watch(revenueCatCustomerProvider)
+              ?.entitlements
+              .active[SubscriptionConstants.entitlementId]
+              ?.expirationDate ??
+          '',
+    );
 
     return GestureDetector(
       onTap: () => _showFeatures(context),
@@ -81,17 +89,13 @@ class _PremiumActiveCard extends ConsumerWidget {
                       fontWeight: FontWeight.w800,
                     ),
                   ),
-                  statusAsync.whenOrNull(
-                        data: (sub) => sub.expiresDate != null
-                            ? Text(
-                                context.l10n.renewsOn(_fmt(sub.expiresDate!)),
-                                style: tt.bodySmall?.copyWith(
-                                  color: Colors.white.withValues(alpha: 0.85),
-                                ),
-                              )
-                            : null,
-                      ) ??
-                      const SizedBox.shrink(),
+                  if (expiresDate != null)
+                    Text(
+                      context.l10n.renewsOn(_fmt(expiresDate.toLocal())),
+                      style: tt.bodySmall?.copyWith(
+                        color: Colors.white.withValues(alpha: 0.85),
+                      ),
+                    ),
                 ],
               ),
             ),

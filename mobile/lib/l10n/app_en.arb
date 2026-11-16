@@ -398,8 +398,6 @@
   "errorDebtMissingPeriodConfig": "Payment period information is missing.",
   "errorIncomeNotFound": "Income record not found.",
   "errorReminderDateOrTimeMissing": "Reminder date or time is missing.",
-  "errorSubscriptionVerificationFailed": "Subscription verification failed.",
-  "errorSubscriptionNotFound": "Subscription not found.",
   "errorAuthEmailInUse": "This email address is already in use.",
   "errorAuthTooManyLoginAttempts": "Too many login attempts. Please wait a moment.",
   "errorAuthNotValid": "Incorrect email or password.",

@@ -428,8 +428,6 @@
   "errorDebtMissingPeriodConfig": "Ödeme periyodu bilgisi eksik.",
   "errorIncomeNotFound": "Gelir kaydı bulunamadı.",
   "errorReminderDateOrTimeMissing": "Hatırlatma tarihi veya saati eksik.",
-  "errorSubscriptionVerificationFailed": "Abonelik doğrulaması başarısız oldu.",
-  "errorSubscriptionNotFound": "Abonelik bulunamadı.",
   "errorAuthEmailInUse": "Bu e-posta adresi zaten kullanımda.",
   "errorAuthTooManyLoginAttempts": "Çok fazla giriş denemesi yapıldı. Lütfen bir süre bekleyin.",
   "errorAuthNotValid": "E-posta veya şifre hatalı.",
