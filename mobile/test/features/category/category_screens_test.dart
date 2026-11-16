@@ -52,7 +52,7 @@ void main() {
       expect(find.text(h.l10n.deleteCategoryConfirm('Home')), findsOneWidget);
       expect(api.requests.where((r) => r.method == 'DELETE'), isEmpty);
 
-      await t.tap(find.text('Sil'));
+      await t.tap(find.text('Delete').last);
       await settle(t);
       expect(api.requests.where((r) => r.method == 'DELETE').single.path, '/category/delete/$_catId');
     });

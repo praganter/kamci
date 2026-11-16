@@ -123,7 +123,7 @@ void main() {
     await settle(t);
     expect(api.requests.where((r) => r.method == 'DELETE'), isEmpty);
 
-    await t.tap(find.text('Sil'));
+    await t.tap(find.text('Delete'));
     await settle(t);
     expect(api.requests.where((r) => r.method == 'DELETE').single.path, '/debt/delete/$_id');
     expect(find.text('host'), findsOneWidget);
@@ -145,7 +145,7 @@ void main() {
 
     await t.tap(find.byIcon(Icons.delete_outline));
     await settle(t);
-    expect(find.text('Sil'), findsNothing, reason: 'no confirm dialog without delete rights');
+    expect(find.text('Delete'), findsNothing, reason: 'no confirm dialog without delete rights');
 
     await _openPayments(t);
     expect(find.text('Full Payment'), findsNothing);

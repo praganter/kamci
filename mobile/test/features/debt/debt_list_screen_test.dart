@@ -101,7 +101,7 @@ void main() {
       isFalse,
       reason: 'nothing is deleted before the user confirms',
     );
-    await tester.tap(find.text('Sil'));
+    await tester.tap(find.text('Delete').last);
     await settle(tester);
 
     expect(
