@@ -9,7 +9,7 @@ services:
     volumes:
       - mongo-data:/data/db
     networks:
-      - dt-network
+      - kamci-network
     environment:
       - MONGO_INITDB_DATABASE=${MONGO_DATABASE}
       - MONGO_INITDB_ROOT_USERNAME=${MONGO_ROOT_USER}
@@ -31,7 +31,7 @@ services:
       - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
       - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
     networks:
-      - dt-network
+      - kamci-network
     healthcheck:
       test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping" ]
       interval: 10s
@@ -71,7 +71,7 @@ services:
       rabbitmq:
         condition: service_healthy
     networks:
-      - dt-network
+      - kamci-network
 
   debt-service:
     build:
@@ -98,7 +98,7 @@ services:
       rabbitmq:
         condition: service_healthy
     networks:
-      - dt-network
+      - kamci-network
 
   notification-service:
     build:
@@ -125,7 +125,7 @@ services:
       rabbitmq:
         condition: service_healthy
     networks:
-      - dt-network
+      - kamci-network
 
   redis:
     image: redis:7.2-alpine
@@ -140,7 +140,7 @@ services:
     volumes:
       - redis-data:/data
     networks:
-      - dt-network
+      - kamci-network
     healthcheck:
       test: [ "CMD", "redis-cli", "ping" ]
       interval: 10s
@@ -172,10 +172,10 @@ services:
       redis:
         condition: service_healthy
     networks:
-      - dt-network
+      - kamci-network
 
 networks:
-  dt-network:
+  kamci-network:
     external: true
 
 volumes:
