@@ -5,6 +5,13 @@ on:
     paths: ['k8s/**', '.github/workflows/k8s.yml']
   pull_request:
     paths: ['k8s/**', '.github/workflows/k8s.yml']
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   validate:
     runs-on: ubuntu-latest

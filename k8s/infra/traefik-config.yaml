@@ -1,7 +1,7 @@
-# k3s'in kendi Traefik HelmChart'ını özelleştirir (kube-system).
-# - externalTrafficPolicy: Local → Traefik gerçek client IP'yi görür (gateway rate limit XFF'e göre çalışır)
-# - letsencrypt certResolver (HTTP-01, web entrypoint) → gateway-ingress TLS
-# - persistence → acme.json pod restart'ında kaybolmasın (LE rate limit'e takılmamak için)
+# Customises the Traefik HelmChart bundled with k3s (kube-system).
+# - externalTrafficPolicy: Local -> Traefik sees the real client IP (the gateway rate limit keys on X-Forwarded-For)
+# - letsencrypt certResolver (HTTP-01, web entrypoint) -> TLS for gateway-ingress
+# - persistence -> acme.json survives pod restarts (avoids Let's Encrypt rate limits)
 apiVersion: helm.cattle.io/v1
 kind: HelmChartConfig
 metadata:

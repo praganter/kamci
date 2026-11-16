@@ -5,6 +5,13 @@ on:
     paths: ['infra/**', '.github/workflows/infra.yml']
   pull_request:
     paths: ['infra/**', '.github/workflows/infra.yml']
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest

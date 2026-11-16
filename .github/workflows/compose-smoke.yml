@@ -5,6 +5,13 @@ on:
     paths: ['backend/**', 'infra/**', 'config/**', 'docker-compose.yml', 'scripts/**', '.github/workflows/compose-smoke.yml']
   pull_request:
     paths: ['backend/**', 'infra/**', 'config/**', 'docker-compose.yml', 'scripts/**', '.github/workflows/compose-smoke.yml']
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   smoke:
     runs-on: ubuntu-latest

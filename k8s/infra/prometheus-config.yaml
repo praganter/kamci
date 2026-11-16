@@ -151,8 +151,8 @@ data:
             labels:
               severity: warning
             annotations:
-              summary: "{{ $labels.pod }}/{{ $labels.container }} sık restart oluyor"
-              description: "Son 15 dakikada {{ $value }} kez restart oldu."
+              summary: "{{ $labels.pod }}/{{ $labels.container }} restarts frequently"
+              description: "Restarted {{ $value }} times in the last 15 minutes."
 
           - alert: ContainerOOMKilled
             expr: increase(container_oom_events_total{namespace="kamci"}[10m]) > 0
@@ -160,8 +160,8 @@ data:
             labels:
               severity: critical
             annotations:
-              summary: "{{ $labels.pod }}/{{ $labels.container }} OOMKill aldı"
-              description: "cAdvisor container_oom_events_total metriğinde artış tespit edildi."
+              summary: "{{ $labels.pod }}/{{ $labels.container }} was OOMKilled"
+              description: "Increase detected in the cAdvisor container_oom_events_total metric."
 
           - alert: PVCDiskAlmostFull
             expr: (kubelet_volume_stats_used_bytes{namespace="kamci"} / kubelet_volume_stats_capacity_bytes{namespace="kamci"}) > 0.85
@@ -169,8 +169,8 @@ data:
             labels:
               severity: warning
             annotations:
-              summary: "{{ $labels.persistentvolumeclaim }} %85 doluluğu aştı"
-              description: "Kullanım oranı {{ $value | humanizePercentage }}."
+              summary: "{{ $labels.persistentvolumeclaim }} is over 85% full"
+              description: "Usage ratio is {{ $value | humanizePercentage }}."
 
           - alert: HighHttp5xxRate
             expr: |
@@ -183,5 +183,5 @@ data:
             labels:
               severity: critical
             annotations:
-              summary: "{{ $labels.job }} 5xx oranı %5'i aştı"
-              description: "Son 5 dakikada 5xx oranı {{ $value | humanizePercentage }}."
+              summary: "{{ $labels.job }} 5xx rate is above 5%"
+              description: "5xx rate over the last 5 minutes: {{ $value | humanizePercentage }}."

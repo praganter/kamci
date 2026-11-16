@@ -1,4 +1,4 @@
-# gateway-server HTTPS girişi (Traefik IngressRoute + Let's Encrypt, bkz. traefik-config.yaml).
+# HTTPS entry for gateway-server (Traefik IngressRoute + Let's Encrypt, see traefik-config.yaml).
 # Hosts come from envsubst (${API_HOST}); see README.
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
@@ -27,8 +27,8 @@ spec:
     scheme: https
     permanent: true
 ---
-# Sadece bu host için HTTP→HTTPS; grafana-ingress (HTTP) etkilenmez.
-# ACME HTTP-01 challenge'ı Traefik bu router'dan önce yakalar.
+# HTTP -> HTTPS redirect for this host only; grafana-ingress (HTTP) is not affected.
+# Traefik handles the ACME HTTP-01 challenge before this router.
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
