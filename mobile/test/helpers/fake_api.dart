@@ -64,8 +64,9 @@ class FakeApi implements HttpClientAdapter {
         headers: json,
       );
     }
+    final body = r.body is Object? Function() ? (r.body as Object? Function())() : r.body;
     return ResponseBody.fromString(
-      r.body == null ? '' : jsonEncode(r.body),
+      body == null ? '' : jsonEncode(body),
       r.status,
       headers: json,
     );

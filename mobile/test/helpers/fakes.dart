@@ -42,6 +42,13 @@ class FakeStorage extends Fake implements SecureStorageService {
   Future<String?> getUserId() async => values['userId'];
 
   @override
+  Future<void> savePremiumStatus(bool value) async =>
+      values['premium'] = '$value';
+
+  @override
+  Future<bool> getCachedPremiumStatus() async => values['premium'] == 'true';
+
+  @override
   Future<void> clearAll() async => values.clear();
 }
 
