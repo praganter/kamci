@@ -2,7 +2,7 @@
 # Plus observability:          docker compose --profile observability up -d --build --wait
 #
 # Startup order (enforced with depends_on: service_healthy):
-#   config-server -> eureka-server -> gateway-server / business services
+#   config-server -> eureka-server -> business services -> gateway-server
 # Every value below has a throw-away dev default, so no .env is needed to try it out.
 # Override anything through .env (see .env.example). Never reuse these defaults in production.
 name: kamci
@@ -164,10 +164,19 @@ services:
       EUREKA_URI: http://eureka-server:8761/eureka
       JWT_SECRET: ${JWT_SECRET_KEY:-change-me-change-me-change-me-0123456789}
     networks: [ dt-network ]
+    # Start after the business services are registered, so the gateway's first Eureka fetch sees them all.
     depends_on:
       config-server:
         condition: service_healthy
       eureka-server:
+        condition: service_healthy
+      auth-service:
+        condition: service_healthy
+      debt-service:
+        condition: service_healthy
+      notification-service:
+        condition: service_healthy
+      cache-service:
         condition: service_healthy
     healthcheck:
       test: [ "CMD", "wget", "-q", "--spider", "http://localhost:8080/actuator/health" ]
