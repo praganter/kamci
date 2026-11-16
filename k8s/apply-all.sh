@@ -1,28 +1,32 @@
 #!/bin/bash
 set -e
 
+# Placeholders substituted in manifests (see README). Required: REGISTRY, API_HOST, GRAFANA_HOST.
+: "${REGISTRY:?e.g. registry.example.com:3000/myorg}"
+: "${API_HOST:?e.g. api.example.com}"
+: "${GRAFANA_HOST:?e.g. grafana.example.com}"
+export IMAGE_TAG="${IMAGE_TAG:-v0.1.0}"
+VARS='${REGISTRY} ${IMAGE_TAG} ${API_HOST} ${GRAFANA_HOST}'
+apply() { for f in "$@"; do envsubst "$VARS" < "$f" | kubectl apply -f -; done; }
+
 echo "==> Namespace"
-kubectl apply -f namespace.yaml
+apply namespace.yaml
 
 echo "==> Secrets"
-kubectl apply \
-  -f sealed-secret.yaml \
-  -f sealed-firebase-secret.yaml \
-  -f sealed-registry-credentials.yaml
+# sealed-*.yaml are generated with kubeseal and git-ignored (templates: secrets/*.example.yaml)
+apply sealed-secret.yaml sealed-firebase-secret.yaml sealed-registry-credentials.yaml
 
 echo "==> PriorityClasses (must exist before any pod references them)"
-kubectl apply -f infra/priorityclass.yaml
+apply infra/priorityclass.yaml
 
 echo "==> Infra (ConfigMap once, then rest)"
-kubectl apply -f infra/prometheus-config.yaml
-kubectl apply -f infra/
+apply infra/prometheus-config.yaml
+apply infra/*.yaml
 
 echo "==> Backend"
-kubectl apply -f be/
+apply be/*.yaml
 
 echo "==> Observability"
-kubectl apply \
-  -f observability/grafana/configmaps/ \
-  -f observability/grafana/promtail-config-patch.yaml
+apply observability/grafana/configmaps/*.yaml observability/grafana/promtail-config-patch.yaml
 
 echo "==> All done!"

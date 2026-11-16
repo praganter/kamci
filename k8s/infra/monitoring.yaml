@@ -57,7 +57,7 @@ spec:
         - name: registry-credentials
       containers:
         - name: prometheus
-          image: 203.0.113.10:3000/kamci/prometheus:latest
+          image: ${REGISTRY}/prometheus:${IMAGE_TAG}
           args:
             - --config.file=/etc/prometheus/prometheus.yml
             - --storage.tsdb.retention.time=48h
@@ -140,7 +140,7 @@ spec:
         - name: registry-credentials
       containers:
         - name: tempo
-          image: 203.0.113.10:3000/kamci/tempo:latest
+          image: ${REGISTRY}/tempo:${IMAGE_TAG}
           args:
             - -config.file=/etc/tempo.yaml
           ports:
@@ -152,7 +152,7 @@ spec:
               memory: 256Mi
             limits:
               cpu: 300m
-              memory: 384Mi
+              memory: 768Mi
           readinessProbe:
             httpGet:
               path: /ready
@@ -215,7 +215,7 @@ spec:
         - name: registry-credentials
       containers:
         - name: loki
-          image: 203.0.113.10:3000/kamci/loki:latest
+          image: ${REGISTRY}/loki:${IMAGE_TAG}
           args:
             - -config.file=/etc/loki/local-config.yaml
           ports:
@@ -312,7 +312,7 @@ spec:
         - name: registry-credentials
       containers:
         - name: promtail
-          image: 203.0.113.10:3000/kamci/promtail:latest
+          image: ${REGISTRY}/promtail:${IMAGE_TAG}
           args:
             - -config.file=/etc/promtail/config.yml
           resources:
@@ -322,6 +322,19 @@ spec:
             limits:
               cpu: 150m
               memory: 128Mi
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 9080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /ready
+              port: 9080
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            failureThreshold: 5
           volumeMounts:
             - name: pods-logs
               mountPath: /var/log/pods
@@ -363,7 +376,7 @@ spec:
         - name: registry-credentials
       containers:
         - name: grafana
-          image: 203.0.113.10:3000/kamci/grafana:latest
+          image: ${REGISTRY}/grafana:${IMAGE_TAG}
           ports:
             - containerPort: 3000
           resources:
@@ -441,7 +454,7 @@ metadata:
     kubernetes.io/ingress.class: traefik
 spec:
   rules:
-    - host: grafana.198.51.100.10.sslip.io
+    - host: ${GRAFANA_HOST}
       http:
         paths:
           - path: /
@@ -472,7 +485,7 @@ spec:
         - name: registry-credentials
       containers:
         - name: alertmanager
-          image: 203.0.113.10:3000/kamci/alertmanager:latest
+          image: ${REGISTRY}/alertmanager:${IMAGE_TAG}
           ports:
             - containerPort: 9093
           resources:

@@ -10,3 +10,7 @@ pub-cert.pem
 ARCHITECTURE.txt
 CODE_REVIEW_GRAPH.md
 REVIEW_QUICK_REFERENCE.txt
+# real sealed secrets / plain secrets (templates live in secrets/*.example.yaml)
+sealed-*.yaml
+secrets/*.yaml
+!secrets/*.example.yaml

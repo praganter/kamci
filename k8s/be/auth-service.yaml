@@ -18,7 +18,7 @@ spec:
         - name: registry-credentials
       containers:
         - name: auth-service
-          image: 203.0.113.10:3000/kamci/auth-service:latest
+          image: ${REGISTRY}/auth-service:${IMAGE_TAG}
           ports:
             - containerPort: 8082
           resources:

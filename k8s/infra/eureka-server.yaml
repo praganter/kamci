@@ -18,7 +18,7 @@ spec:
         - name: registry-credentials
       containers:
         - name: eureka-server
-          image: 203.0.113.10:3000/kamci/eureka-server:latest
+          image: ${REGISTRY}/eureka-server:${IMAGE_TAG}
           ports:
             - containerPort: 8761
           resources:

@@ -18,7 +18,7 @@ spec:
         - name: registry-credentials
       containers:
         - name: cache-service
-          image: 203.0.113.10:3000/kamci/cache-service:latest
+          image: ${REGISTRY}/cache-service:${IMAGE_TAG}
           ports:
             - containerPort: 8084
           resources:

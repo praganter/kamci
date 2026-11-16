@@ -18,7 +18,7 @@ spec:
         - name: registry-credentials
       containers:
         - name: config-server
-          image: 203.0.113.10:3000/kamci/config-server:latest
+          image: ${REGISTRY}/config-server:${IMAGE_TAG}
           ports:
             - containerPort: 8888
           resources:
