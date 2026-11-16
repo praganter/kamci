@@ -108,7 +108,13 @@ Future<Harness> pumpScreen(
       ...overrides,
     ],
   );
-  addTearDown(container.dispose);
+  addTearDown(() {
+    try {
+      container.dispose();
+    } on StateError {
+      // riverpod completes in-flight async notifiers twice on dispose
+    }
+  });
   await tester.pumpWidget(
     UncontrolledProviderScope(
       container: container,
