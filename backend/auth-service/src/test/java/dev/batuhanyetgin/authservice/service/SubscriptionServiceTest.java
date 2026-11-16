@@ -1,7 +1,8 @@
 package dev.batuhanyetgin.authservice.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ObjectNode;
 import dev.batuhanyetgin.authservice.document.AuthDocument;
 import dev.batuhanyetgin.authservice.document.SubscriptionDocument;
 import dev.batuhanyetgin.authservice.dto.response.SubscriptionResponse;
@@ -34,7 +35,7 @@ class SubscriptionServiceTest {
 
     @Mock private AuthRepositoryService authRS;
     @Mock private SubscriptionRepositoryService subscriptionRS;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = JsonMapper.builder().build();
 
     private SubscriptionService subscriptionService;
 
@@ -42,7 +43,7 @@ class SubscriptionServiceTest {
 
     @BeforeEach
     void setUp() {
-        subscriptionService = new SubscriptionService(authRS, subscriptionRS, objectMapper);
+        subscriptionService = new SubscriptionService(authRS, subscriptionRS);
     }
 
     private AuthDocument buildAuthDoc() {
@@ -136,7 +137,7 @@ class SubscriptionServiceTest {
     @DisplayName("handleRevenueCatWebhook")
     class HandleRevenueCatWebhook {
 
-        private final ObjectMapper mapper = new ObjectMapper();
+        private final ObjectMapper mapper = JsonMapper.builder().build();
 
         private ObjectNode buildEvent(final String type, final String appUserId,
                                        final String productId, final String store, final long expiresMs) {

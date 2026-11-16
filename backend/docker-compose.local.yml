@@ -1,0 +1,88 @@
+# Self-contained local stack: `docker compose -f docker-compose.local.yml up --build`
+# No .env, no config-server, no Eureka, no Firebase key. Services run with the `local` profile.
+# Mail lands in Mailpit (http://localhost:8025), push notifications are logged and skipped.
+name: kamci-backend-local
+
+x-service: &service
+  restart: unless-stopped
+  environment: &service-env
+    SPRING_PROFILES_ACTIVE: local
+    SPRING_CLOUD_CONFIG_ENABLED: "false"
+    TZ: Europe/Istanbul
+    MONGO_DB_URI: mongodb://mongodb:27017/kamci
+    SPRING_RABBITMQ_HOST: rabbitmq
+    APP_REDIS_HOST: redis
+    AUTH_SERVICE_URL: http://auth-service:8082
+    DEBT_SERVICE_URL: http://debt-service:8081
+    NOTIFICATION_SERVICE_URL: http://notification-service:8083
+    CACHE_SERVICE_URL: http://cache-service:8084
+  depends_on: &service-deps
+    mongodb:
+      condition: service_healthy
+    rabbitmq:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+
+services:
+  mongodb:
+    image: mongo:8.2.5
+    ports: ["27017:27017"]
+    volumes: [mongo-data:/data/db]
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    ports: ["5672:5672", "15672:15672"]
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7.2-alpine
+    ports: ["127.0.0.1:6379:6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  mailpit:
+    image: axllent/mailpit:latest
+    ports: ["1025:1025", "8025:8025"]
+
+  auth-service:
+    <<: *service
+    build: { context: ., dockerfile: auth-service/Dockerfile }
+    ports: ["8082:8082"]
+
+  debt-service:
+    <<: *service
+    build: { context: ., dockerfile: debt-service/Dockerfile }
+    ports: ["8081:8081"]
+
+  notification-service:
+    <<: *service
+    build: { context: ., dockerfile: notification-service/Dockerfile }
+    ports: ["8083:8083"]
+    environment:
+      <<: *service-env
+      MAIL_HOST: mailpit
+    depends_on:
+      <<: *service-deps
+      mailpit:
+        condition: service_started
+
+  cache-service:
+    <<: *service
+    build: { context: ., dockerfile: cache-service/Dockerfile }
+    ports: ["8084:8084"]
+
+volumes:
+  mongo-data:

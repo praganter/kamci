@@ -78,13 +78,4 @@ public class HouseholdController {
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.noContent().build());
     }
-
-    @Operation(summary = "Get household member user IDs for a user (internal inter-service use)")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Returns [userId] if no household, or [ownerId, partnerId] if accepted")
-    })
-    @GetMapping("members/{userId}")
-    ResponseEntity<List<String>> getMemberIds(@PathVariable final String userId) {
-        return ResponseEntity.ok(householdService.getMemberIds(userId));
-    }
 }

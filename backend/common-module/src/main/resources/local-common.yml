@@ -1,0 +1,57 @@
+# Shared settings for the `local` profile. Each service's application-local.yml imports this file.
+# Replaces config-server + Eureka so a service starts with nothing but MongoDB, RabbitMQ and Redis.
+# Everything here is a throw-away dev default. Never run the `local` profile in production.
+spring:
+  cloud:
+    config:
+      enabled: false
+    discovery:
+      client:
+        simple:
+          instances:
+            auth-service[0]:
+              uri: ${AUTH_SERVICE_URL:http://localhost:8082}
+            debt-service[0]:
+              uri: ${DEBT_SERVICE_URL:http://localhost:8081}
+            notification-service[0]:
+              uri: ${NOTIFICATION_SERVICE_URL:http://localhost:8083}
+            cache-service[0]:
+              uri: ${CACHE_SERVICE_URL:http://localhost:8084}
+  rabbitmq:
+    host: ${SPRING_RABBITMQ_HOST:localhost}
+    port: ${SPRING_RABBITMQ_PORT:5672}
+    username: ${SPRING_RABBITMQ_USERNAME:guest}
+    password: ${SPRING_RABBITMQ_PASSWORD:guest}
+  data:
+    redis:
+      host: ${APP_REDIS_HOST:localhost}
+      port: ${APP_REDIS_PORT:6379}
+      password: ${APP_REDIS_PASSWORD:}
+    mongodb:
+      uri: ${MONGO_DB_URI:mongodb://localhost:27017/kamci}
+      database: kamci
+      auto-index-creation: true
+      field-naming-strategy: org.springframework.data.mapping.model.SnakeCaseFieldNamingStrategy
+
+eureka:
+  client:
+    enabled: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics
+  tracing:
+    sampling:
+      probability: 0.0
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+logging:
+  level:
+    dev.batuhanyetgin: DEBUG

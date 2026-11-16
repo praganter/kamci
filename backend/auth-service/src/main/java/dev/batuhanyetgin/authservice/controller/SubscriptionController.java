@@ -1,6 +1,6 @@
 package dev.batuhanyetgin.authservice.controller;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import dev.batuhanyetgin.authservice.dto.response.SubscriptionResponse;
 import dev.batuhanyetgin.authservice.service.SubscriptionService;
 import dev.batuhanyetgin.commonmodule.exception.BaseException;

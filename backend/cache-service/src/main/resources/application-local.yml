@@ -1,0 +1,6 @@
+spring:
+  config:
+    import: classpath:local-common.yml
+
+server:
+  port: 8084

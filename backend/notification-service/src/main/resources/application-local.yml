@@ -1,0 +1,17 @@
+spring:
+  config:
+    import: classpath:local-common.yml
+  # Mail goes to Mailpit (SMTP localhost:1025, inbox UI on :8025). No auth, no TLS.
+  mail:
+    host: ${MAIL_HOST:localhost}
+    port: ${MAIL_PORT:1025}
+    username: kamci@local.test
+    properties:
+      mail.smtp.auth: false
+      mail.smtp.starttls.enable: false
+
+server:
+  port: 8083
+
+app:
+  password-reset-deep-link: kamci://reset-password

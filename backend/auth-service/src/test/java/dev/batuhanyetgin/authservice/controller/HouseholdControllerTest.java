@@ -107,15 +107,4 @@ class HouseholdControllerTest {
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
         }
     }
-
-    @Test
-    @DisplayName("getMemberIds → delegates to service and returns 200 with member list")
-    void getMemberIds_returnsOk() {
-        when(householdService.getMemberIds("user1")).thenReturn(List.of("user1", "partner1"));
-
-        final ResponseEntity<List<String>> response = controller.getMemberIds("user1");
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).containsExactly("user1", "partner1");
-    }
 }

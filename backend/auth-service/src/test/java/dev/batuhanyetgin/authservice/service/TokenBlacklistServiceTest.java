@@ -5,6 +5,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.data.redis.RedisConnectionFailureException;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -92,6 +93,28 @@ class TokenBlacklistServiceTest {
             when(redisTemplate.hasKey(KEY)).thenReturn(null);
 
             assertThat(tokenBlacklistService.isBlacklisted(TOKEN)).isFalse();
+        }
+    }
+
+    @Nested
+    @DisplayName("Redis outage (graceful degradation)")
+    class RedisOutage {
+
+        @Test
+        @DisplayName("isBlacklisted → fails open instead of throwing")
+        void isBlacklisted_failsOpen() {
+            when(redisTemplate.hasKey(KEY)).thenThrow(new RedisConnectionFailureException("down"));
+
+            assertThat(tokenBlacklistService.isBlacklisted(TOKEN)).isFalse();
+        }
+
+        @Test
+        @DisplayName("blacklist → swallows the error")
+        void blacklist_swallowsError() {
+            doThrow(new RedisConnectionFailureException("down"))
+                    .when(valueOps).set(KEY, "1", 60L, TimeUnit.SECONDS);
+
+            assertThatNoException().isThrownBy(() -> tokenBlacklistService.blacklist(TOKEN, 60L));
         }
     }
 }

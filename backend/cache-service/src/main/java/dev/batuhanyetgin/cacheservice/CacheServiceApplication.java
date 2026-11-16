@@ -3,10 +3,10 @@ package dev.batuhanyetgin.cacheservice;
 import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration;
-import org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration;
-import org.springframework.boot.autoconfigure.data.mongo.MongoRepositoriesAutoConfiguration;
-import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
+import org.springframework.boot.amqp.autoconfigure.RabbitAutoConfiguration;
+import org.springframework.boot.data.mongodb.autoconfigure.DataMongoAutoConfiguration;
+import org.springframework.boot.data.mongodb.autoconfigure.DataMongoRepositoriesAutoConfiguration;
+import org.springframework.boot.mongodb.autoconfigure.MongoAutoConfiguration;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -19,8 +19,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
         exclude = {
                 RabbitAutoConfiguration.class,
                 MongoAutoConfiguration.class,
-                MongoDataAutoConfiguration.class,
-                MongoRepositoriesAutoConfiguration.class
+                DataMongoAutoConfiguration.class,
+                DataMongoRepositoriesAutoConfiguration.class
         }
 )
 @ComponentScan(basePackages = {

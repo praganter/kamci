@@ -6,6 +6,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.data.redis.RedisConnectionFailureException;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -108,6 +109,28 @@ class RateLimiterServiceTest {
             rateLimiterService.reset(KEY);
 
             verify(redisTemplate).delete(REDIS_KEY);
+        }
+    }
+
+    @Nested
+    @DisplayName("Redis outage (graceful degradation)")
+    class RedisOutage {
+
+        @Test
+        @DisplayName("check → skips the limit instead of throwing")
+        void check_failsOpen() {
+            when(valueOps.increment(REDIS_KEY)).thenThrow(new RedisConnectionFailureException("down"));
+
+            assertThatNoException().isThrownBy(() ->
+                    rateLimiterService.check(KEY, 5, 900L, ERROR_KEY));
+        }
+
+        @Test
+        @DisplayName("reset → swallows the error")
+        void reset_swallowsError() {
+            when(redisTemplate.delete(REDIS_KEY)).thenThrow(new RedisConnectionFailureException("down"));
+
+            assertThatNoException().isThrownBy(() -> rateLimiterService.reset(KEY));
         }
     }
 }

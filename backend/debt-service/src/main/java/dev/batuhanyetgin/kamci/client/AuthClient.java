@@ -15,6 +15,6 @@ public interface AuthClient {
     @GetMapping("auth/internal/user/id-by-email/{email}")
     String getUserIdByEmail(@PathVariable String email);
 
-    @GetMapping("auth/household/members/{userId}")
+    @GetMapping("auth/internal/household/members/{userId}")
     List<String> getHouseholdMemberIds(@PathVariable String userId);
 }

@@ -1,7 +1,7 @@
 package dev.batuhanyetgin.cacheservice.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import dev.batuhanyetgin.cacheservice.dto.ExchangeRateResponse;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
@@ -103,7 +103,7 @@ public class ExchangeRateService {
         final Map<String, Object> response;
         try {
             response = objectMapper.readValue(responseJson, Map.class);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             log.error("Failed to parse exchange API response for base: {}", base, e);
             return;
         }
@@ -122,7 +122,7 @@ public class ExchangeRateService {
         try {
             redisTemplate.opsForValue().set(KEY_PREFIX + base.toUpperCase(), objectMapper.writeValueAsString(exchangeRate), CACHE_TTL);
             log.info("Cached {} rates for {} (date: {})", rates.size(), base.toUpperCase(), date);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             log.error("Failed to serialize exchange rates for base: {}", base, e);
         }
     }
@@ -130,7 +130,7 @@ public class ExchangeRateService {
     private ExchangeRateResponse deserialize(final String json) {
         try {
             return objectMapper.readValue(json, ExchangeRateResponse.class);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new IllegalStateException("Failed to deserialize cached exchange rates", e);
         }
     }

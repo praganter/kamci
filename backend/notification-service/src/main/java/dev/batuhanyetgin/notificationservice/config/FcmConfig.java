@@ -6,12 +6,15 @@ import com.google.firebase.FirebaseOptions;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.ClassPathResource;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+// `local` profile: no FirebaseApp bean at all, FcmService then logs and skips every push.
+@Profile("!local")
 @Slf4j
 @Configuration
 public class FcmConfig {

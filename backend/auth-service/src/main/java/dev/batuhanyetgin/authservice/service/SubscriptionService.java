@@ -1,7 +1,5 @@
 package dev.batuhanyetgin.authservice.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.batuhanyetgin.authservice.document.SubscriptionDocument;
 import dev.batuhanyetgin.authservice.dto.response.SubscriptionResponse;
 import dev.batuhanyetgin.authservice.enums.SubscriptionPlan;
@@ -13,6 +11,7 @@ import dev.batuhanyetgin.commonmodule.exception.BaseException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.JsonNode;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -25,7 +24,6 @@ public class SubscriptionService {
 
     private final AuthRepositoryService authRS;
     private final SubscriptionRepositoryService subscriptionRS;
-    private final ObjectMapper objectMapper;
 
     public SubscriptionResponse getStatus(final String userId) {
         return subscriptionRS.findByUserId(userId)
@@ -40,8 +38,8 @@ public class SubscriptionService {
     public void handleRevenueCatWebhook(final JsonNode payload) {
         try {
             final JsonNode event = payload.path("event");
-            final String type = event.path("type").asText();
-            final String userId = event.path("app_user_id").asText();
+            final String type = event.path("type").asString();
+            final String userId = event.path("app_user_id").asString();
             if (userId.isBlank()) {
                 log.warn("RevenueCat webhook event {} missing app_user_id", type);
                 return;
@@ -54,11 +52,11 @@ public class SubscriptionService {
                 sub.setStartDate(LocalDateTime.now(ZoneOffset.UTC));
             }
 
-            final String productId = event.path("product_id").asText(null);
+            final String productId = event.path("product_id").asString(null);
             if (productId != null) {
                 sub.setProductId(productId);
             }
-            final String store = event.path("store").asText(null);
+            final String store = event.path("store").asString(null);
             if (store != null) {
                 sub.setPlatform(mapStore(store));
             }

@@ -40,7 +40,7 @@ public class LoggingFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
 
-        final ContentCachingRequestWrapper wrappedRequest = new ContentCachingRequestWrapper(request);
+        final ContentCachingRequestWrapper wrappedRequest = new ContentCachingRequestWrapper(request, MAX_BODY_LENGTH);
         final ContentCachingResponseWrapper wrappedResponse = new ContentCachingResponseWrapper(response);
 
         final long startTime = System.currentTimeMillis();

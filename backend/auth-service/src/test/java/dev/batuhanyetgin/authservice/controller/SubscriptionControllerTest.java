@@ -1,7 +1,8 @@
 package dev.batuhanyetgin.authservice.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ObjectNode;
 import dev.batuhanyetgin.authservice.dto.response.SubscriptionResponse;
 import dev.batuhanyetgin.authservice.enums.SubscriptionPlan;
 import dev.batuhanyetgin.authservice.enums.SubscriptionStatus;
@@ -77,7 +78,7 @@ class SubscriptionControllerTest {
     @DisplayName("revenueCatWebhook")
     class RevenueCatWebhook {
 
-        private final ObjectMapper mapper = new ObjectMapper();
+        private final ObjectMapper mapper = JsonMapper.builder().build();
 
         private ObjectNode buildPayload() {
             final ObjectNode event = mapper.createObjectNode();

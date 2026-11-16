@@ -1,0 +1,16 @@
+spring:
+  config:
+    import: classpath:local-common.yml
+
+server:
+  port: 8082
+
+jwt:
+  expiration: 900000
+  expirationRefresh: 2678400000
+  secret: ${JWT_SECRET:local-dev-only-jwt-secret-change-me-0123456789abcdef}
+
+# Local-only credentials for the admin and RevenueCat webhook endpoints.
+# The webhook is inbound only (RevenueCat calls us), so there is nothing to mock outbound.
+ADMIN_SECRET_KEY: local-admin-key
+REVENUECAT_WEBHOOK_SECRET: local-revenuecat-secret
