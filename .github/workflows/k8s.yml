@@ -22,8 +22,8 @@ jobs:
           API_HOST: api.example.com
           GRAFANA_HOST: grafana.example.com
         run: |
-          # shellcheck disable=SC2016  # single quotes are intentional: envsubst variable list
           mkdir -p /tmp/rendered
+          # shellcheck disable=SC2016
           for f in namespace.yaml infra/*.yaml be/*.yaml secrets/*.example.yaml observability/grafana/configmaps/*.yaml observability/grafana/promtail-config-patch.yaml; do
             envsubst '${REGISTRY} ${IMAGE_TAG} ${API_HOST} ${GRAFANA_HOST}' < "$f" > "/tmp/rendered/$(echo "$f" | tr / _)"
           done
