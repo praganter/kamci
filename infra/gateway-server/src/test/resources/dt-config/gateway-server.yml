@@ -9,45 +9,45 @@ spring:
         caffeine:
           spec: initialCapacity=10,maximumSize=500,expireAfterWrite=5m
     gateway:
-     server:
-      webflux:
-       discovery:
-        locator:
-          enabled: false
-          lower-case-service-id: true
-       routes:
-        - id: debt-service
-          uri: lb://DEBT-SERVICE
-          predicates:
-            - Path=/debt/**,/category/**,/income/**
-          filters:
-            - name: CircuitBreaker
-              args:
-                name: debt-service
-        - id: cache-service
-          uri: lb://CACHE-SERVICE
-          predicates:
-            - Path=/rates/**
-          filters:
-            - name: CircuitBreaker
-              args:
-                name: cache-service
-        - id: auth-service
-          uri: lb://AUTH-SERVICE
-          predicates:
-            - Path=/auth/**,/subscription/**
-          filters:
-            - name: CircuitBreaker
-              args:
-                name: auth-service
-        - id: notification-service
-          uri: lb://NOTIFICATION-SERVICE
-          predicates:
-            - Path=/notification/**
-          filters:
-            - name: CircuitBreaker
-              args:
-                name: notification-service
+      server:
+        webflux:
+          discovery:
+            locator:
+              enabled: false
+              lower-case-service-id: true
+          routes:
+            - id: debt-service
+              uri: lb://DEBT-SERVICE
+              predicates:
+                - Path=/debt/**,/category/**,/income/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: debt-service
+            - id: cache-service
+              uri: lb://CACHE-SERVICE
+              predicates:
+                - Path=/rates/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: cache-service
+            - id: auth-service
+              uri: lb://AUTH-SERVICE
+              predicates:
+                - Path=/auth/**,/subscription/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: auth-service
+            - id: notification-service
+              uri: lb://NOTIFICATION-SERVICE
+              predicates:
+                - Path=/notification/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: notification-service
 
 eureka:
   instance:
