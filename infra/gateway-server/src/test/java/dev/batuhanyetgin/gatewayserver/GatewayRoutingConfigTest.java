@@ -15,9 +15,9 @@ import static dev.batuhanyetgin.gatewayserver.GatewayTestSupport.SECRET;
 import static dev.batuhanyetgin.gatewayserver.GatewayTestSupport.accessToken;
 import static org.assertj.core.api.Assertions.assertThat;
 
-/** Uses only the routes from the real {@code dt-config/gateway-server.yml} (no test route). */
+/** Uses only the routes from the real {@code config/gateway-server.yml} (monorepo root) (no test route). */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
-        "spring.config.import=classpath:/dt-config/gateway-server.yml",
+        "spring.config.import=file:../../config/gateway-server.yml",
         "spring.cloud.config.enabled=false",
         "eureka.client.enabled=false",
         "management.tracing.enabled=false",

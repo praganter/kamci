@@ -24,12 +24,12 @@ import static dev.batuhanyetgin.gatewayserver.GatewayTestSupport.accessToken;
 import static dev.batuhanyetgin.gatewayserver.GatewayTestSupport.token;
 
 /**
- * Runs the real gateway filter chain with the real {@code dt-config/gateway-server.yml}
+ * Runs the real gateway filter chain with the real {@code config/gateway-server.yml} (monorepo root)
  * (public endpoints, rate limits). Every request that survives the filters is forwarded to a local
  * {@code /echo} endpoint that reports the identity headers the downstream service would see.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
-        "spring.config.import=classpath:/dt-config/gateway-server.yml",
+        "spring.config.import=file:../../config/gateway-server.yml",
         "spring.cloud.config.enabled=false",
         "eureka.client.enabled=false",
         "management.tracing.enabled=false",

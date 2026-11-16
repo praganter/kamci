@@ -1,0 +1,343 @@
+# Whole kamci backend stack:   docker compose up -d --build --wait
+# Plus observability:          docker compose --profile observability up -d --build --wait
+#
+# Startup order (enforced with depends_on: service_healthy):
+#   config-server -> eureka-server -> gateway-server / business services
+# Every value below has a throw-away dev default, so no .env is needed to try it out.
+# Override anything through .env (see .env.example). Never reuse these defaults in production.
+name: kamci
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+# Settings shared by the four business services (they read the rest from config-server).
+x-service: &service
+  restart: unless-stopped
+  logging: *logging
+  networks: [ dt-network ]
+  environment: &service-env
+    TZ: Europe/Istanbul
+    CONFIG_SERVER_URL: http://config-server:8888
+    EUREKA_URI: http://eureka-server:8761/eureka
+    MONGO_DB_URI: mongodb://${MONGO_USER:-dev}:${MONGO_PASSWORD:-dev}@mongodb:27017/kamci?authSource=admin&retryWrites=false
+    SPRING_RABBITMQ_HOST: rabbitmq
+    SPRING_RABBITMQ_USERNAME: ${RABBITMQ_USER:-kamci}
+    SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-kamci}
+    APP_REDIS_HOST: redis
+    JWT_SECRET: ${JWT_SECRET_KEY:-change-me-change-me-change-me-0123456789}
+  depends_on: &service-deps
+    config-server:
+      condition: service_healthy
+    eureka-server:
+      condition: service_healthy
+    mongodb:
+      condition: service_healthy
+    rabbitmq:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+
+services:
+  # ---------------------------------------------------------------- data stores
+  mongodb:
+    image: mongo:8.2.5
+    environment:
+      MONGO_INITDB_DATABASE: kamci
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER:-dev}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-dev}
+    volumes:
+      - mongo-data:/data/db
+    networks: [ dt-network ]
+    healthcheck:
+      test: [ "CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
+    logging: *logging
+
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    ports:
+      - "15672:15672" # management UI
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-kamci}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-kamci}
+    networks: [ dt-network ]
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    restart: unless-stopped
+    logging: *logging
+
+  redis:
+    image: redis:7.2-alpine
+    command: [ "redis-server", "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lru" ]
+    volumes:
+      - redis-data:/data
+    networks: [ dt-network ]
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+    logging: *logging
+
+  # Catches the e-mails the notification service sends (password reset, invites). UI: http://localhost:8025
+  mailpit:
+    image: axllent/mailpit:v1.21
+    ports:
+      - "8025:8025"
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: "1"
+      MP_SMTP_AUTH_ALLOW_INSECURE: "1"
+    networks: [ dt-network ]
+    healthcheck:
+      test: [ "CMD", "/mailpit", "readyz" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    logging: *logging
+
+  # ---------------------------------------------------------------- platform (infra/)
+  config-server:
+    build:
+      context: ./infra
+      dockerfile: config-server/Dockerfile
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./config:/config:ro # served in native mode
+    environment:
+      SPRING_PROFILES_ACTIVE: native
+      JAVA_OPTS: ${JAVA_OPTS:-}
+    networks: [ dt-network ]
+    healthcheck:
+      test: [ "CMD", "wget", "-q", "--spider", "http://localhost:8888/actuator/health" ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    restart: unless-stopped
+    logging: *logging
+
+  eureka-server:
+    build:
+      context: ./infra
+      dockerfile: eureka-server/Dockerfile
+    ports:
+      - "8761:8761" # registry dashboard
+    environment:
+      JAVA_OPTS: ${JAVA_OPTS:-}
+      CONFIG_SERVER_URL: http://config-server:8888
+    networks: [ dt-network ]
+    depends_on:
+      config-server:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "wget", "-q", "--spider", "http://localhost:8761/actuator/health" ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    restart: unless-stopped
+    logging: *logging
+
+  gateway-server:
+    build:
+      context: ./infra
+      dockerfile: gateway-server/Dockerfile
+    ports:
+      - "8080:8080" # the only entry point for API clients
+    environment:
+      JAVA_OPTS: ${JAVA_OPTS:-}
+      CONFIG_SERVER_URL: http://config-server:8888
+      EUREKA_URI: http://eureka-server:8761/eureka
+      JWT_SECRET: ${JWT_SECRET_KEY:-change-me-change-me-change-me-0123456789}
+    networks: [ dt-network ]
+    depends_on:
+      config-server:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "wget", "-q", "--spider", "http://localhost:8080/actuator/health" ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    restart: unless-stopped
+    logging: *logging
+
+  # ---------------------------------------------------------------- business services (backend/)
+  # Not published on the host: clients go through the gateway.
+  auth-service:
+    <<: *service
+    build:
+      context: ./backend
+      dockerfile: auth-service/Dockerfile
+    environment:
+      <<: *service-env
+      ADMIN_SECRET_KEY: ${ADMIN_SECRET_KEY:-dev-admin-key}
+      REVENUECAT_WEBHOOK_SECRET: ${REVENUECAT_WEBHOOK_SECRET:-dev-revenuecat-secret}
+    healthcheck:
+      test: [ "CMD", "wget", "-q", "--spider", "http://localhost:8082/actuator/health" ]
+      interval: 15s
+      timeout: 5s
+      retries: 8
+      start_period: 90s
+
+  debt-service:
+    <<: *service
+    build:
+      context: ./backend
+      dockerfile: debt-service/Dockerfile
+    healthcheck:
+      test: [ "CMD", "wget", "-q", "--spider", "http://localhost:8081/actuator/health" ]
+      interval: 15s
+      timeout: 5s
+      retries: 8
+      start_period: 90s
+
+  notification-service:
+    <<: *service
+    build:
+      context: ./backend
+      dockerfile: notification-service/Dockerfile
+    environment:
+      <<: *service-env
+      # No Firebase key in the demo: push is disabled, e-mail goes to Mailpit.
+      MAIL_HOST: mailpit
+      MAIL_PORT: "1025"
+      MAIL_USERNAME: kamci@example.com
+      MAIL_PASSWORD: dev
+    depends_on:
+      <<: *service-deps
+      mailpit:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "wget", "-q", "--spider", "http://localhost:8083/actuator/health" ]
+      interval: 15s
+      timeout: 5s
+      retries: 8
+      start_period: 90s
+
+  cache-service:
+    <<: *service
+    build:
+      context: ./backend
+      dockerfile: cache-service/Dockerfile
+    healthcheck:
+      test: [ "CMD", "wget", "-q", "--spider", "http://localhost:8084/actuator/health" ]
+      interval: 15s
+      timeout: 5s
+      retries: 8
+      start_period: 90s
+
+  # ---------------------------------------------------------------- observability (opt-in profile)
+  prometheus:
+    profiles: [ observability ]
+    build: ./infra/prometheus
+    ports:
+      - "9090:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    networks: [ dt-network ]
+    healthcheck:
+      test: [ "CMD", "wget", "-q", "--spider", "http://localhost:9090/-/healthy" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  alertmanager:
+    profiles: [ observability ]
+    build: ./infra/alertmanager
+    ports:
+      - "9093:9093"
+    environment:
+      # Optional webhook that receives alerts. Empty = alerts are only visible in the Alertmanager UI.
+      ALERT_WEBHOOK_URL: ${ALERT_WEBHOOK_URL:-}
+    networks: [ dt-network ]
+    healthcheck:
+      test: [ "CMD-SHELL", "wget -q --spider http://localhost:9093/-/healthy || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  tempo:
+    profiles: [ observability ]
+    build: ./infra/tempo
+    command: [ "-config.file=/etc/tempo.yaml" ]
+    ports:
+      - "3200:3200"
+      - "9411:9411"
+    volumes:
+      - tempo-data:/var/tempo
+    networks: [ dt-network ]
+    healthcheck:
+      test: [ "CMD-SHELL", "wget -q --spider http://localhost:3200/ready || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  loki:
+    profiles: [ observability ]
+    build: ./infra/loki
+    ports:
+      - "3100:3100"
+    volumes:
+      - loki-data:/var/loki
+    command: -config.file=/etc/loki/local-config.yaml
+    networks: [ dt-network ]
+    healthcheck:
+      test: [ "CMD-SHELL", "wget -q --spider http://localhost:3100/ready || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  promtail:
+    profiles: [ observability ]
+    build: ./infra/promtail
+    volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: -config.file=/etc/promtail/config.yml
+    networks: [ dt-network ]
+
+  grafana:
+    profiles: [ observability ]
+    build: ./infra/grafana
+    ports:
+      - "3001:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GF_SECURITY_ADMIN_PASSWORD:-admin}
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+    depends_on:
+      prometheus:
+        condition: service_healthy
+      tempo:
+        condition: service_healthy
+      loki:
+        condition: service_healthy
+    networks: [ dt-network ]
+
+networks:
+  dt-network:
+    name: dt-network
+
+volumes:
+  mongo-data:
+  redis-data:
+  tempo-data:
+  loki-data:
