@@ -1,6 +1,6 @@
 # k8s manifests
 
-Kubernetes (k3s) manifests for the kamci debt-tracker backend. They document how the system was deployed to a
+Kubernetes (k3s) manifests for the Kamci debt-tracking backend. They document how the system was deployed to a
 real single-node cluster. Environment-specific values (registry, hostnames, secrets) are placeholders.
 
 ## Topology
@@ -16,7 +16,7 @@ Namespace `kamci`, Traefik (k3s default) as ingress.
 | Storage | PVCs (RWO, `Recreate` strategy): mongo, redis, prometheus, tempo, loki, grafana |
 | Scheduling | `infra/priorityclass.yaml`: high priority for data stores/core, low for observability |
 
-Central Spring config lives in the separate `dt-config` repo, served by `config-server`.
+Central Spring config lives in `config/` in this monorepo, served by `config-server`.
 
 ## Placeholders
 
@@ -36,7 +36,7 @@ kubeseal --format yaml < secrets/app-secrets.yaml > sealed-secret.yaml
 ```
 
 `sealed-*.yaml` and `secrets/*.yaml` (except `*.example.yaml`) are git-ignored. Without sealed-secrets,
-`kubectl apply -f secrets/<name>.yaml` the plain Secrets directly. `JWT_SECRET_KEY` must match the value in `dt-config`.
+`kubectl apply -f secrets/<name>.yaml` the plain Secrets directly. `JWT_SECRET_KEY` must match the value in `config/`.
 
 ## Apply order
 
@@ -57,7 +57,7 @@ export REGISTRY=registry.example.com/myorg API_HOST=api.example.com GRAFANA_HOST
 ## Try it on your own cluster
 
 1. k3s (or any cluster with Traefik) and the sealed-secrets controller (optional).
-2. Build/push the service images from `debt-tracker-be` and `dt-infrastructure` to your registry, tag them `IMAGE_TAG`.
+2. Build/push the service images from `backend/` and `infra/` to your registry, tag them `IMAGE_TAG`.
 3. Create secrets (above), point DNS for `API_HOST`/`GRAFANA_HOST` at the node, export the variables, run `./apply-all.sh`.
 4. `kubectl -n kamci get pods` and `kubectl -n kamci rollout status deploy/gateway-server`.
 
