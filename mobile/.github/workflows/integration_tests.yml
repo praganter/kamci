@@ -1,4 +1,4 @@
-name: Integration Tests
+name: CI
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   test:
-    name: Flutter Integration Tests
+    name: Analyze + unit/widget tests
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -19,6 +19,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
+          # riverpod_generator 2.x needs a Flutter whose sources analyzer 7 can read
           flutter-version: "3.41.6"
           channel: stable
           cache: true
@@ -26,12 +27,15 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Run integration tests
+      - name: Generate code (freezed / riverpod / json / l10n)
         run: |
-          flutter test test/integration/ \
-            --dart-define=PREMIUM_EMAIL=${{ secrets.PREMIUM_EMAIL }} \
-            --dart-define=PREMIUM_PASSWORD=${{ secrets.PREMIUM_PASSWORD }} \
-            --reporter=expanded
-        env:
-          PREMIUM_EMAIL: ${{ secrets.PREMIUM_EMAIL }}
-          PREMIUM_PASSWORD: ${{ secrets.PREMIUM_PASSWORD }}
+          dart run build_runner build --delete-conflicting-outputs
+          flutter gen-l10n
+
+      - name: Analyze
+        run: flutter analyze
+
+      # Integration tests (test/integration) need a running backend and are
+      # skipped here; see README.
+      - name: Unit + widget tests
+        run: flutter test test/core test/features test/shared --reporter=expanded

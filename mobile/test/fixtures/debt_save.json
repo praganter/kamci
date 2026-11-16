@@ -1,0 +1,23 @@
+{
+  "debt": {
+    "id": "6afaf2bb7c4cf716a14bd7d9",
+    "name": "Rent",
+    "ownerId": "6afaf2bb399846caf42061a0",
+    "categoryId": "6afaf2bb7c4cf716a14bd7d8",
+    "description": null,
+    "firstPaymentDate": "2026-11-01T10:00:00",
+    "installmentCount": 6,
+    "paymentPeriodType": "MONTHLY",
+    "amount": 500.0,
+    "currency": "TRY",
+    "status": "ACTIVE",
+    "paymentStatus": "UNPAID",
+    "autoPayment": false,
+    "reminder": null,
+    "nextReminderDate": null,
+    "nextAutoPaymentDate": null,
+    "createdDate": "2026-11-16T15:10:35.823765415",
+    "updatedDate": "2026-11-16T15:10:35.823765415",
+    "paidCurrentPeriod": false
+  }
+}
