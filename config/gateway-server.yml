@@ -85,8 +85,6 @@ endpoints:
     - /actuator/health
     - /actuator/prometheus
     - /actuator/info
-    - /swagger-ui.html
-    - /webjars/**
 
 rate-limit:
   rules:
@@ -111,6 +109,12 @@ rate-limit:
       refillTokens: 20
       refillSeconds: 600
 
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local | dev
 logging:
   level:
     org.springframework.cloud.gateway: DEBUG

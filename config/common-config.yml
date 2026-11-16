@@ -5,7 +5,7 @@ management:
         include: prometheus, health, info, metrics
   tracing:
     sampling:
-      probability: 1.0
+      probability: 0.1
   zipkin:
     tracing:
       endpoint: http://tempo:9411/api/v2/spans
@@ -13,7 +13,7 @@ management:
 logging:
   level:
     root: INFO
-    dev.batuhanyetgin: DEBUG
+    dev.batuhanyetgin: INFO
     org.springframework.boot.actuate: WARN
     org.springframework.web: WARN
     io.micrometer: WARN
@@ -47,3 +47,17 @@ springdoc:
     path: /swagger-ui.html
     tags-sorter: alpha
     operationsSorter: method
+
+---
+# local/dev: verbose logs, trace every request
+spring:
+  config:
+    activate:
+      on-profile: local | dev
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+logging:
+  level:
+    dev.batuhanyetgin: DEBUG

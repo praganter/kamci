@@ -9,13 +9,3 @@ jwt:
   expiration: 900000
   expirationRefresh: 2678400000
   secret: ${JWT_SECRET}
-
-apple:
-  store:
-    shared-secret: ${APPLE_SHARED_SECRET:}
-    verify-url: https://buy.itunes.apple.com/verifyReceipt
-    sandbox-verify-url: https://sandbox.itunes.apple.com/verifyReceipt
-
-google:
-  play:
-    service-account-json: ${GOOGLE_PLAY_SERVICE_ACCOUNT_JSON:}
