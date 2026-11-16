@@ -40,7 +40,7 @@ Spring Cloud Config Server (port 8888).
 
 | Mode | How | Source |
 |---|---|---|
-| native | `SPRING_PROFILES_ACTIVE=native` | folder `CONFIG_NATIVE_LOCATIONS` (default `file:/config`; compose mounts `./config` or `$CONFIG_DIR`) |
+| native | `SPRING_PROFILES_ACTIVE=native` | folder `CONFIG_NATIVE_LOCATIONS` (default `file:/config`; the root compose mounts `config/`) |
 | git (default, no flag) | nothing | repo `CONFIG_GIT_URI` |
 
 `/actuator/health` is the container healthcheck.
@@ -64,14 +64,23 @@ docker run --rm --entrypoint promtool -v "$PWD/prometheus:/p:ro" prom/prometheus
 
 ## Run
 
+From the repository root (the compose file lives there, not in `infra/`):
+
 ```
-cp .env.example .env        # set JWT_SECRET_KEY (same value as the business services)
-docker compose up -d --build --wait                          # core: config-server, eureka, gateway
-docker compose --profile observability up -d --build --wait  # core + Prometheus, Alertmanager, Loki, Promtail, Tempo, Grafana
+docker compose up -d --build --wait                          # core + business services
+docker compose --profile observability up -d --build --wait  # plus Prometheus, Alertmanager, Loki, Promtail, Tempo, Grafana
 ```
 
-Env: `JWT_SECRET_KEY` (required), `GF_SECURITY_ADMIN_PASSWORD`, `JAVA_OPTS`, `CONFIG_DIR`, `CONFIG_SERVER_PROFILE`,
-`CONFIG_GIT_URI`, `ALERT_WEBHOOK_URL`.
+Everything has a dev default; copy `.env.example` to `.env` to override (`JWT_SECRET_KEY` is shared by the gateway
+and auth-service).
+
+| URL | What |
+|---|---|
+| `http://localhost:8080` | gateway, the only API entry point (`/actuator/health` is public) |
+| `http://localhost:8761` | Eureka dashboard |
+| `http://localhost:8888` | config-server |
+| `http://localhost:3001` | Grafana (`observability` profile) |
+| `http://localhost:9090`, `:9093` | Prometheus, Alertmanager (`observability` profile) |
 
 ## Tests
 
@@ -81,6 +90,6 @@ mvn verify        # tests + JaCoCo report in <module>/target/site/jacoco
 
 - gateway: full filter chain with the real gateway config (valid / invalid / expired / refresh token, `*/internal/**`
   incl. encoded variants, identity header stripping, rate limit 429, public endpoint list, discovery locator off).
-  `src/test/resources/dt-config/gateway-server.yml` is a copy of the central config and must be kept in sync.
+  The tests load the real `config/gateway-server.yml` from the repository root.
 - eureka-server: context load and health.
 - config-server: native profile serves properties from a folder, health is UP.
