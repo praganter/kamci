@@ -1,0 +1,16 @@
+title = "kamci gitleaks config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Placeholders and dev-only defaults"
+regexes = [
+  '''CHANGE_ME[A-Za-z0-9_]*''',
+  '''mongodb://dev:dev@''',
+  '''change-me-at-least-32-[A-Za-z0-9-]*''',
+  '''TestPass123!''',
+]
+paths = [
+  '''(^|/)[^/]*\.example(\.[a-z]+)?$''',
+]

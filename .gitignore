@@ -1,0 +1,36 @@
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.iml
+
+# Secrets and local config (templates are committed as *.example)
+.env
+*.env
+!*.env.example
+.env.local
+firebase-adminsdk*.json
+google-services.json
+GoogleService-Info.plist
+firebase_options.dart
+sealed-*.yaml
+k8s/secrets/*.yaml
+!k8s/secrets/*.example.yaml
+*.pem
+*.key
+*.p12
+*.jks
+kubeseal.exe
+
+# Local AI-assistant state
+.claude/
+.vexp/
+.mcp.json
+
+# Build output
+target/
+build/
+.dart_tool/
+.gradle/
+node_modules/

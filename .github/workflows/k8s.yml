@@ -1,0 +1,29 @@
+name: k8s
+on:
+  push:
+    branches: [main]
+    paths: ['k8s/**', '.github/workflows/k8s.yml']
+  pull_request:
+    paths: ['k8s/**', '.github/workflows/k8s.yml']
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install kubeconform
+        run: |
+          curl -sSL https://github.com/yannh/kubeconform/releases/download/v0.6.7/kubeconform-linux-amd64.tar.gz | tar xz
+          sudo mv kubeconform /usr/local/bin/
+      - name: Render placeholders and validate
+        working-directory: k8s
+        env:
+          REGISTRY: registry.example.com/org
+          IMAGE_TAG: v0.1.0
+          API_HOST: api.example.com
+          GRAFANA_HOST: grafana.example.com
+        run: |
+          mkdir -p /tmp/rendered
+          for f in namespace.yaml infra/*.yaml be/*.yaml secrets/*.example.yaml observability/grafana/configmaps/*.yaml observability/grafana/promtail-config-patch.yaml; do
+            envsubst '${REGISTRY} ${IMAGE_TAG} ${API_HOST} ${GRAFANA_HOST}' < "$f" > "/tmp/rendered/$(echo "$f" | tr / _)"
+          done
+          kubeconform -strict -ignore-missing-schemas -summary /tmp/rendered

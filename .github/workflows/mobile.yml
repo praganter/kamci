@@ -1,0 +1,30 @@
+name: mobile
+on:
+  push:
+    branches: [main]
+    paths: ['mobile/**', '.github/workflows/mobile.yml']
+  pull_request:
+    paths: ['mobile/**', '.github/workflows/mobile.yml']
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          # pinned: build_runner crashes with Flutter 3.47.7
+          flutter-version: '3.41.6'
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Generate code (freezed / riverpod / json / l10n)
+        run: |
+          dart run build_runner build --delete-conflicting-outputs
+          flutter gen-l10n
+      - run: flutter analyze
+      # Integration tests need a running backend and are skipped here.
+      - run: flutter test test/core test/features test/shared --reporter=expanded
