@@ -4,8 +4,8 @@ This is a portfolio/showcase project and is not run in production. Security repo
 
 ## Reporting a vulnerability
 
-Please use GitHub's private vulnerability reporting (Security tab -> "Report a vulnerability")
-instead of opening a public issue. Include the affected component (`backend/`, `infra/`, `config/`,
+Please report privately, either through GitHub's private vulnerability reporting (Security tab ->
+"Report a vulnerability") or by email to byetgin@engineer.com. Do not open a public issue. Include the affected component (`backend/`, `infra/`, `config/`,
 `k8s/`, `mobile/`), reproduction steps and impact.
 
 ## Secrets

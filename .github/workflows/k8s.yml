@@ -9,7 +9,7 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.4.0
       - name: Install kubeconform
         run: |
           curl -sSL https://github.com/yannh/kubeconform/releases/download/v0.6.7/kubeconform-linux-amd64.tar.gz | tar xz
@@ -22,6 +22,7 @@ jobs:
           API_HOST: api.example.com
           GRAFANA_HOST: grafana.example.com
         run: |
+          # shellcheck disable=SC2016  # single quotes are intentional: envsubst variable list
           mkdir -p /tmp/rendered
           for f in namespace.yaml infra/*.yaml be/*.yaml secrets/*.example.yaml observability/grafana/configmaps/*.yaml observability/grafana/promtail-config-patch.yaml; do
             envsubst '${REGISTRY} ${IMAGE_TAG} ${API_HOST} ${GRAFANA_HOST}' < "$f" > "/tmp/rendered/$(echo "$f" | tr / _)"
