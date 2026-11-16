@@ -65,7 +65,7 @@ class _BulkShareSheetState extends ConsumerState<BulkShareSheet> {
   }
 
   Future<void> _submit() async {
-    _addEmail(); // flush any pending input
+    _addEmail();
     if (_emails.isEmpty) return;
 
     setState(() => _isLoading = true);
@@ -138,7 +138,6 @@ class _BulkShareSheetState extends ConsumerState<BulkShareSheet> {
             ),
           ),
           const SizedBox(height: 24),
-          // ── Email chip input ──────────────────────────────────────
           if (_emails.isNotEmpty) ...[
             Wrap(
               spacing: 8,

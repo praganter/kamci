@@ -18,9 +18,7 @@ class Household {
   final String partnerEmail;
   final HouseholdStatus status;
 
-  /// True if the current user is the inviter (owner) of this household.
   final bool isOwner;
 
-  /// The other person in the household, from the current user's perspective.
   String get partnerEmailForCurrentUser => isOwner ? partnerEmail : ownerEmail;
 }

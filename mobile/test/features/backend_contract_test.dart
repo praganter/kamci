@@ -9,10 +9,6 @@ import 'package:dt_mobile/features/debt/data/models/debt_summary_model.dart';
 import 'package:dt_mobile/features/income/data/models/income_model.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// Parses responses captured from the real backend (Spring Boot 4 / Jackson 3,
-/// local docker-compose stack) so a serialization change on the server — date
-/// format, field order, number type — breaks a test instead of the app.
-/// Fixtures live in test/fixtures/; re-capture them against a running backend.
 dynamic _fixture(String name) =>
     jsonDecode(File('test/fixtures/$name.json').readAsStringSync());
 
@@ -45,7 +41,6 @@ void main() {
       expect(debt.paymentStatus.name, 'partiallyPaid');
       expect(debt.firstPaymentDate.hour, 10);
       expect(debt.createdAt, isNotNull);
-      // Jackson 3 emits LocalDateTime with up to nanosecond precision.
       expect(json['updatedDate'], matches(RegExp(r'\.\d{7,9}$')));
       expect(debt.updatedAt, isNotNull);
     });

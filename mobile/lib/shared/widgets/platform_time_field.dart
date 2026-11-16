@@ -65,7 +65,6 @@ class PlatformTimeField extends StatelessWidget {
       preferBelow: false,
       child: InkWell(
         onTap: () {
-          // Seçici kapanınca odak son text alanına dönüp klavyeyi açmasın
           FocusManager.instance.primaryFocus?.unfocus();
           isIOS ? _showIOSPicker(context) : _showMaterialPicker(context);
         },

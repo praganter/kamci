@@ -12,21 +12,18 @@ import '../../../debt/presentation/providers/debt_providers.dart';
 import '../../domain/entities/monthly_summary.dart';
 import '../providers/charts_providers.dart';
 
-// ── Renk paleti (donut & trend) ───────────────────────────────────────────────
 
-// alt-b: zümrüt öncelikli, sakin ve ayrışan tonlar (mor yok)
 const _kChartColors = [
-  Color(0xFF059669), // zümrüt
-  Color(0xFF0EA5E9), // gök mavisi
-  Color(0xFFF59E0B), // kehribar
-  Color(0xFF6366F1), // indigo
-  Color(0xFFEF4444), // kırmızı
-  Color(0xFF14B8A6), // camgöbeği
-  Color(0xFF64748B), // arduvaz
-  Color(0xFFEC4899), // pembe
+  Color(0xFF059669),
+  Color(0xFF0EA5E9),
+  Color(0xFFF59E0B),
+  Color(0xFF6366F1),
+  Color(0xFFEF4444),
+  Color(0xFF14B8A6),
+  Color(0xFF64748B),
+  Color(0xFFEC4899),
 ];
 
-// ── Ana ekran ─────────────────────────────────────────────────────────────────
 
 class ChartsScreen extends ConsumerWidget {
   const ChartsScreen({super.key});
@@ -56,7 +53,6 @@ class ChartsScreen extends ConsumerWidget {
   }
 }
 
-// ── Ay seçici ─────────────────────────────────────────────────────────────────
 
 class _MonthSelector extends ConsumerWidget {
   @override
@@ -115,7 +111,6 @@ class _MonthSelector extends ConsumerWidget {
   }
 }
 
-// ── Özet gövde ────────────────────────────────────────────────────────────────
 
 class _SummaryBody extends StatelessWidget {
   const _SummaryBody({required this.summary});
@@ -128,17 +123,14 @@ class _SummaryBody extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
       children: [
-        // ── İstatistik kartları ──────────────────────────────────────────────
         _StatsGrid(summary: summary),
         const SizedBox(height: 20),
 
-        // ── Hane geliri (varsa) ──────────────────────────────────────────────
         if (summary.household) ...[
           _HouseholdCard(summary: summary),
           const SizedBox(height: 20),
         ],
 
-        // ── Trend çizgi grafiği ──────────────────────────────────────────────
         if (summary.trend.isNotEmpty) ...[
           _SectionHeader(title: l10n.trendLast6Months),
           const SizedBox(height: 8),
@@ -146,7 +138,6 @@ class _SummaryBody extends StatelessWidget {
           const SizedBox(height: 20),
         ],
 
-        // ── Kategori donut ───────────────────────────────────────────────────
         if (summary.categoryBreakdown.isNotEmpty) ...[
           _SectionHeader(title: l10n.categoryBreakdown),
           const SizedBox(height: 8),
@@ -154,7 +145,6 @@ class _SummaryBody extends StatelessWidget {
           const SizedBox(height: 20),
         ],
 
-        // ── Borç ilerleme ────────────────────────────────────────────────────
         if (summary.debtProgress.isNotEmpty) ...[
           _SectionHeader(title: l10n.debtProgressTitle),
           const SizedBox(height: 8),
@@ -180,7 +170,6 @@ class _SummaryBody extends StatelessWidget {
   }
 }
 
-// ── Hane geliri kartı ────────────────────────────────────────────────────────
 
 class _HouseholdCard extends StatelessWidget {
   const _HouseholdCard({required this.summary});
@@ -248,7 +237,6 @@ class _HouseholdCard extends StatelessWidget {
   }
 }
 
-// ── İstatistik grid ───────────────────────────────────────────────────────────
 
 class _StatsGrid extends StatelessWidget {
   const _StatsGrid({required this.summary});
@@ -378,7 +366,6 @@ class _StatCard extends StatelessWidget {
   }
 }
 
-// ── Bölüm başlığı ─────────────────────────────────────────────────────────────
 
 class _SectionHeader extends StatelessWidget {
   const _SectionHeader({required this.title});
@@ -396,7 +383,6 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
-// ── Trend çizgi grafiği ───────────────────────────────────────────────────────
 
 class _TrendChartCard extends StatelessWidget {
   const _TrendChartCard({required this.points});
@@ -412,7 +398,6 @@ class _TrendChartCard extends StatelessWidget {
       height: 200,
       padding: const EdgeInsets.fromLTRB(8, 16, 16, 8),
       decoration: altBCard(cs),
-      // Painter tüm değerler 0 iken hiçbir şey çizmez — boş kart yerine metin.
       child: values.every((v) => v == 0)
           ? Center(
               child: Text(
@@ -422,14 +407,12 @@ class _TrendChartCard extends StatelessWidget {
                 ).textTheme.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
               ),
             )
-          // Giriş animasyonu: çizgi tabandan yükselir
           : TweenAnimationBuilder<double>(
               tween: Tween(begin: 0, end: 1),
               duration: MediaQuery.disableAnimationsOf(context)
                   ? Duration.zero
                   : const Duration(milliseconds: 800),
               curve: Curves.easeOutCubic,
-              // Çizim ekran okuyucuya görünmez; değerleri metin olarak ver.
               builder: (context, t, _) => Semantics(
                 label: [
                   for (var i = 0; i < values.length; i++)
@@ -478,7 +461,6 @@ class _TrendPainter extends CustomPainter {
   final Color gridColor;
   final Color labelColor;
 
-  /// 0→1 giriş animasyonu ilerlemesi (değerler tabandan yükselir).
   final double progress;
 
   static const _leftPad = 48.0;
@@ -501,7 +483,6 @@ class _TrendPainter extends CustomPainter {
       fontWeight: FontWeight.w500,
     );
 
-    // Grid + Y labels
     final gridPaint = Paint()
       ..color = gridColor
       ..strokeWidth = 0.8;
@@ -523,7 +504,6 @@ class _TrendPainter extends CustomPainter {
       );
     }
 
-    // Positions
     final n = values.length;
     final positions = List.generate(n, (i) {
       final x = _leftPad + (n == 1 ? chartW / 2 : (i / (n - 1)) * chartW);
@@ -531,7 +511,6 @@ class _TrendPainter extends CustomPainter {
       return Offset(x, y);
     });
 
-    // Area fill
     final fillPath = Path()..moveTo(positions.first.dx, _topPad + chartH);
     for (final p in positions) {
       fillPath.lineTo(p.dx, p.dy);
@@ -553,7 +532,6 @@ class _TrendPainter extends CustomPainter {
         ).createShader(Rect.fromLTWH(_leftPad, _topPad, chartW, chartH)),
     );
 
-    // Line
     final linePath = Path()..moveTo(positions.first.dx, positions.first.dy);
     for (int i = 1; i < positions.length; i++) {
       linePath.lineTo(positions[i].dx, positions[i].dy);
@@ -568,7 +546,6 @@ class _TrendPainter extends CustomPainter {
         ..strokeJoin = StrokeJoin.round,
     );
 
-    // Dots
     final dotFill = Paint()..color = lineColor;
     final dotHole = Paint()..color = Colors.white;
     for (final p in positions) {
@@ -576,7 +553,6 @@ class _TrendPainter extends CustomPainter {
       canvas.drawCircle(p, 3, dotHole);
     }
 
-    // X labels
     for (int i = 0; i < positions.length; i++) {
       if (i < months.length) {
         _drawText(
@@ -611,7 +587,6 @@ class _TrendPainter extends CustomPainter {
       old.progress != progress;
 }
 
-// ── Kategori donut ────────────────────────────────────────────────────────────
 
 class _CategoryDonutCard extends StatelessWidget {
   const _CategoryDonutCard({required this.items});
@@ -630,7 +605,6 @@ class _CategoryDonutCard extends StatelessWidget {
           SizedBox(
             width: 120,
             height: 120,
-            // Giriş animasyonu: dilimler saat yönünde açılır
             child: TweenAnimationBuilder<double>(
               tween: Tween(begin: 0, end: 1),
               duration: MediaQuery.disableAnimationsOf(context)
@@ -711,7 +685,6 @@ class _DonutPainter extends CustomPainter {
   final List<Color> colors;
   final Color bgColor;
 
-  /// 0→1 giriş animasyonu ilerlemesi (toplam açı bununla ölçeklenir).
   final double progress;
 
   @override
@@ -745,7 +718,6 @@ class _DonutPainter extends CustomPainter {
       old.items != items || old.progress != progress;
 }
 
-// ── Borç ilerleme listesi ─────────────────────────────────────────────────────
 
 class _DebtProgressCard extends StatelessWidget {
   const _DebtProgressCard({required this.items});
@@ -857,7 +829,6 @@ class _ProgressTile extends StatelessWidget {
               ),
             )
           else
-            // Açık uçlu — sadece bar göster dolu
             ClipRRect(
               borderRadius: BorderRadius.circular(4),
               child: LinearProgressIndicator(
@@ -893,7 +864,6 @@ class _ProgressTile extends StatelessWidget {
   }
 }
 
-// ── Yardımcılar ───────────────────────────────────────────────────────────────
 
 String _fmtAmount(double amount) {
   if (amount >= 1000000) return '${(amount / 1000000).toStringAsFixed(1)}M';
@@ -901,7 +871,5 @@ String _fmtAmount(double amount) {
   return amount.toStringAsFixed(0);
 }
 
-/// Summary aggregates come converted to [currency] (debt/summary baseCurrency);
-/// older backends omit it, so the amount stays unlabelled as before.
 String _fmtMoney(String? currency, double amount) =>
     currency == null ? _fmtAmount(amount) : '${_fmtAmount(amount)} $currency';

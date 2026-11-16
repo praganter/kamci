@@ -80,9 +80,6 @@ class _PlatformDateFieldState extends State<PlatformDateField> {
         colorScheme: cs,
         brightness: brightness,
         onConfirm: (date) {
-          // Date-only: initialDateTime DateTime.now() olduğunda saat bileşeni
-          // sızar; backend firstPaymentDate'i saatle saklayınca aynı günün
-          // gece-yarısı paidTime'ı "payment_before_start" (400) üretir.
           final dateOnly = DateTime(date.year, date.month, date.day);
           state.didChange(dateOnly);
           widget.onChanged(dateOnly);
@@ -121,13 +118,10 @@ class _PlatformDateFieldState extends State<PlatformDateField> {
           triggerMode: TooltipTriggerMode.longPress,
           preferBelow: false,
           child: Semantics(
-            // container: kendi node'u olmazsa identifier Android'de üst
-            // node'a merge olur ve resource-id olarak görünmez (Maestro id:).
             container: widget.semanticsId != null,
             identifier: widget.semanticsId ?? '',
             child: InkWell(
               onTap: () {
-                // Seçici kapanınca odak son text alanına dönüp klavyeyi açmasın
                 FocusManager.instance.primaryFocus?.unfocus();
                 isIOS
                     ? _showIOSPicker(context, state)

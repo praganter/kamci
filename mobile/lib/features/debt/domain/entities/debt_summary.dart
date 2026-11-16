@@ -32,7 +32,5 @@ class DebtSummary {
   final bool paidCurrentPeriod;
   final bool hasReminder;
 
-  /// Sıradaki vade (backend debt/get hesaplar, tek seferlikte ilk ödeme
-  /// tarihi). Eski backend'de ya da ilk ödeme tarihi yoksa null.
   final DateTime? nextDueDate;
 }

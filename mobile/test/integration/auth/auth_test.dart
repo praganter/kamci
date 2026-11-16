@@ -22,11 +22,6 @@ void main() {
   });
 
   group('register', () {
-    // Sabit "probe" e-posta: ilk çalıştırmada kullanıcı oluşturulur, sonraki
-    // koşularda backend 409 döner. Her iki durum da register akışının ayakta
-    // olduğunu doğrular — HER KOŞUDA yeni kullanıcı yaratmaz (rate-limit dostu).
-    // `register` tag'i ile: gateway /auth/register kısıtlıysa
-    // `--exclude-tags register` ile atlanabilir.
     test(
       'register akışı token döndürür (ilk koşu) ya da zaten kayıtlı (409)',
       () async {
@@ -38,10 +33,8 @@ void main() {
           expect(result.accessToken, isNotEmpty);
           expect(result.refreshToken, isNotEmpty);
         } on RateLimitException {
-          // Gateway /auth/register saturasyonu — akışla ilgisiz ortam durumu.
           markTestSkipped('register rate-limited (429) — ortam, kod değil');
         } on ApiException catch (e) {
-          // Zaten kayıtlı — beklenen kararlı durum (409 → BusinessException).
           expect(e, isA<BusinessException>());
         }
       },
@@ -80,7 +73,6 @@ void main() {
     });
 
     test('var olmayan e-posta ile NotFoundException fırlar', () async {
-      // Backend var olmayan kullanıcı için 404 döner
       expect(
         () => ds.login(
           LoginRequest(email: 'hicyok_${DateTime.now().millisecondsSinceEpoch}@testmail.com', password: 'herhangi'),
@@ -97,7 +89,6 @@ void main() {
     });
 
     test('geçersiz token ile ApiException fırlar', () async {
-      // Backend geçersiz JWT için 401 ya da 403 döner; her ikisi de ApiException
       final fakeDio = Dio(
         BaseOptions(
           baseUrl: const String.fromEnvironment('API_BASE_URL', defaultValue: 'http://localhost:8080'),
@@ -117,7 +108,6 @@ void main() {
 
   group('refreshToken', () {
     test('geçerli refresh token ile yeni access token alınır', () async {
-      // setUp sırasında login'den alınan refresh token kullanılır
       final refreshed = await ds.refreshToken(TestHttpClient.refreshTokenA);
       expect(refreshed.accessToken, isNotEmpty);
     });

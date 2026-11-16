@@ -46,8 +46,6 @@ class AppShell extends ConsumerWidget {
     final cs = Theme.of(context).colorScheme;
     final l10n = context.l10n;
     final selectedIndex = _selectedIndex(context, ref);
-    // Keep categoryListProvider alive across all tab switches so the debt form
-    // never opens while categories are still re-fetching after a tab change.
     ref.watch(categoryListProvider);
 
     final items = [
@@ -81,7 +79,6 @@ class AppShell extends ConsumerWidget {
             ),
             child: Stack(
               children: [
-                // Seçim "ışını": eski sekmeden yenisine kayan parlak çizgi
                 Positioned.fill(
                   child: IgnorePointer(
                     child: AnimatedAlign(
@@ -115,10 +112,6 @@ class AppShell extends ConsumerWidget {
                     final isSelected = selectedIndex == i;
                     final color = isSelected ? cs.primary : cs.onSurfaceVariant;
                     return Expanded(
-                      // button/selected: ekran okuyucu sekmeyi buton + seçili
-                      // durumuyla duyurur. identifier: E2E testleri metin
-                      // yerine id ile basar (Android'de Gboard'un "Ayarlar"
-                      // butonu da aynı metni taşıyor).
                       child: Semantics(
                         container: true,
                         button: true,
@@ -173,8 +166,6 @@ class AppShell extends ConsumerWidget {
   }
 }
 
-/// Seçili sekmenin altındaki ışın. Her seçimde (yeni key) yeniden oynar:
-/// kayarken uzar, varınca toparlanır — hareket hissi; glow ile parlar.
 class _NavBeam extends StatelessWidget {
   const _NavBeam({super.key, required this.color});
 
@@ -189,7 +180,6 @@ class _NavBeam extends StatelessWidget {
           : const Duration(milliseconds: 320),
       curve: Curves.easeOutCubic,
       builder: (context, t, _) {
-        // t: 0→1; ortada en uzun (ışın), sonda 20px'e oturur
         final width = 20 + 22 * math.sin(math.pi * t);
         return Container(
           width: width,

@@ -448,7 +448,6 @@ class _CategoryCard extends StatelessWidget {
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
-      // alt-b kart; seçim modunda kalın vurgu çerçevesi
       decoration: isSelected
           ? altBCard(cs).copyWith(
               border: Border.all(color: cs.primary, width: 2),
@@ -649,7 +648,6 @@ class _BulkActionBar extends StatelessWidget {
   }
 }
 
-// ── Category Share Picker Sheet ───────────────────────────────────────────────
 
 class _CategorySharePickerSheet extends ConsumerStatefulWidget {
   const _CategorySharePickerSheet();

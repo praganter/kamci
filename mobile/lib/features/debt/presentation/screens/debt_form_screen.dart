@@ -55,7 +55,6 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
   void initState() {
     super.initState();
     if (widget.debtId == null) {
-      // Yeni borçta en olası değerler hazır gelsin (3 seçim daha az).
       final now = DateTime.now();
       _selectedCurrency = ref.read(baseCurrencyProvider);
       _periodType = PaymentPeriodType.monthly;
@@ -166,8 +165,6 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
     try {
       await ref.read(debtListProvider.notifier).saveDebt(widget.debtId, params);
       if (mounted) context.pop();
-      // Refresh the grouped lists AFTER pop so the GET requests fire while
-      // the debt list is the active screen, not during the form close animation.
       ref.invalidate(debtGroupedProvider(true));
       ref.invalidate(debtGroupedProvider(false));
     } on PremiumLimitException {
@@ -236,7 +233,6 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // ── Borç Adı ────────────────────────────────────────────
               TextFormField(
                 controller: _nameCtrl,
                 textCapitalization: TextCapitalization.words,
@@ -249,7 +245,6 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
               ),
               const SizedBox(height: 16),
 
-              // ── Tutar ───────────────────────────────────────────────
               TextFormField(
                 controller: _amountCtrl,
                 decoration: InputDecoration(
@@ -264,7 +259,6 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
               ),
               const SizedBox(height: 16),
 
-              // ── Para Birimi ─────────────────────────────────────────
               currenciesAsync.when(
                 loading: () => const LinearProgressIndicator(),
                 error: (e, _) => Text(
@@ -284,7 +278,6 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                   return PlatformSelectField<String>(
                     label: l10n.currency,
                     prefixIcon: const Icon(Icons.attach_money),
-                    // Varsayılan baz para birimi listede yoksa boş başla.
                     value: sorted.any((c) => c.code == _selectedCurrency)
                         ? _selectedCurrency
                         : null,
@@ -311,7 +304,6 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
               ),
               const SizedBox(height: 16),
 
-              // ── Ödeme Periyodu ──────────────────────────────────────
               PlatformSelectField<PaymentPeriodType>(
                 label: l10n.paymentPeriod,
                 prefixIcon: const Icon(Icons.repeat),
@@ -337,7 +329,6 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
               ),
               const SizedBox(height: 16),
 
-              // ── İlk Ödeme Tarihi ────────────────────────────────────
               PlatformDateField(
                 label: l10n.firstPaymentDate,
                 prefixIcon: const Icon(Icons.calendar_today),
@@ -357,7 +348,6 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
               ),
               const SizedBox(height: 16),
 
-              // ── Taksit Sayısı ────────────────────────────────────────
               if (_periodType != PaymentPeriodType.oneTime) ...[
                 TextFormField(
                   controller: _installmentCtrl,
@@ -378,7 +368,6 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                 const SizedBox(height: 16),
               ],
 
-              // ── Kategori ────────────────────────────────────────────
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -432,7 +421,6 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
               ),
               const SizedBox(height: 16),
 
-              // ── Açıklama ────────────────────────────────────────────
               TextFormField(
                 controller: _descCtrl,
                 textCapitalization: TextCapitalization.sentences,
@@ -444,7 +432,6 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
               ),
               const SizedBox(height: 8),
 
-              // ── Otomatik Ödeme ──────────────────────────────────────
               Theme(
                 data: Theme.of(context).copyWith(
                   splashFactory: NoSplash.splashFactory,
@@ -460,7 +447,6 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
                 ),
               ),
 
-              // ── Hatırlatma ──────────────────────────────────────────
               Semantics(
                 container: true,
                 identifier: 'reminderToggle',
@@ -582,7 +568,6 @@ class _DebtFormScreenState extends ConsumerState<DebtFormScreen> {
           ),
         ),
       ),
-      // Uzun formda kaydet butonu her zaman görünür kalsın.
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),

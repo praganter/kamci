@@ -5,8 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  // Regression: inside the add-member AlertDialog the field was ~260px wide and
-  // the two-line selected value overflowed bottom + right (RenderFlex error).
   testWidgets('dar diyalogda taşma yok, kapalıyken sadece seviye adı', (
     tester,
   ) async {
@@ -37,7 +35,6 @@ void main() {
     expect(find.text('Okuma'), findsOneWidget);
     expect(find.text('Sadece görüntüleyebilir'), findsNothing);
 
-    // Menü açılınca açıklamalar görünür ve seçim değeri günceller.
     await tester.tap(find.text('Okuma'));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);

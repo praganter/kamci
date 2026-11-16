@@ -2,9 +2,6 @@ import 'package:flutter/material.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../domain/entities/member_embedded.dart';
 
-/// Access level picker shared by the add-member dialog, bulk share sheet and
-/// category management sheet. Menu rows show name + description; the closed
-/// field shows only the name so it fits narrow dialogs without overflowing.
 class AccessLevelField extends StatelessWidget {
   const AccessLevelField({
     super.key,
@@ -36,7 +33,6 @@ class AccessLevelField extends StatelessWidget {
     return DropdownButtonFormField<AccessLevel>(
       initialValue: value,
       isExpanded: true,
-      // Menu rows grow to fit the two-line label + description.
       itemHeight: null,
       decoration: InputDecoration(
         labelText: l10n.accessLevel,

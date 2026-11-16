@@ -1,8 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-/// Onay diyaloğu — iOS'ta gerçek CupertinoAlertDialog, Android'de Material
-/// AlertDialog (Flutter'ın resmi adaptive deseni).
 Future<bool> showConfirmDialog(
   BuildContext context, {
   required String title,

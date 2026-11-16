@@ -20,7 +20,6 @@ void main() {
 }
 
 Future<void> _bootstrap() async {
-  // flutter run --dart-define=MAESTRO=true ile build edilince animasyonlar 100x hızlanır
   if (const bool.fromEnvironment('MAESTRO')) {
     timeDilation = 0.01;
   }
@@ -28,8 +27,6 @@ Future<void> _bootstrap() async {
   FlutterError.onError = (details) {
     debugPrint('[FLUTTER_ERROR] ${details.exception}\n${details.stack}');
   };
-  // Firebase is optional: without google-services.json / GoogleService-Info.plist
-  // the app runs normally and push notifications are simply disabled.
   try {
     await Firebase.initializeApp();
     NotificationService.enabled = true;
@@ -39,8 +36,6 @@ Future<void> _bootstrap() async {
     NotificationService.enabled = false;
     debugPrint('[FIREBASE] not configured, push disabled: $e');
   }
-  // Key yoksa (dart-define verilmemiş) RevenueCat kapalı; satın alma ekranı
-  // "mağaza yok" gösterir. Hata uygulamanın açılmasını engellememeli.
   final rcKey = SubscriptionConstants.revenueCatApiKey;
   if (rcKey.isNotEmpty) {
     try {

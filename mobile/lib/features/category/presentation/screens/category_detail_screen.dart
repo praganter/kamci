@@ -34,7 +34,6 @@ class CategoryDetailScreen extends ConsumerWidget {
       data: (category) {
         final isOwner = currentUserId == category.ownerId;
 
-        // Group members by access level
         final grouped = <AccessLevel, List<MemberEmbedded>>{};
         for (final level in AccessLevel.values) {
           final members =
@@ -270,10 +269,6 @@ class _LevelSection extends StatelessWidget {
             trailing: isOwner
                 ? Semantics(
                     identifier: 'removeMemberBtn',
-                    // container: true şart — ListTile satırı semantics'i
-                    // birleştirdiğinden identifier, butonun kendi node'u yerine
-                    // tüm satırı kaplayan birleşik node'a taşınıyor ve
-                    // dokunuş satırın ortasına, boşluğa düşüyordu.
                     container: true,
                     child: IconButton(
                       icon: Icon(
@@ -281,9 +276,6 @@ class _LevelSection extends StatelessWidget {
                         color: cs.error,
                         size: 20,
                       ),
-                      // Tooltip olmadan buton a11y ağacında label'sız kalıyordu:
-                      // ikon tek başına anlam taşımıyor, ekran okuyucu boş bir
-                      // düğme okuyordu.
                       tooltip: l10n.removeMember,
                       onPressed: () => onRemove(member),
                     ),

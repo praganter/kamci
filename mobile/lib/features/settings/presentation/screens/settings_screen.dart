@@ -33,15 +33,12 @@ class SettingsScreen extends ConsumerWidget {
             child: ListView(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               children: [
-                // ── Premium ───────────────────────────────────────────────
                 const PremiumCard(),
                 const SizedBox(height: 12),
 
-                // ── Profile ────────────────────────────────────────────────
                 _ProfileCard(),
                 const SizedBox(height: 20),
 
-                // ── Uygulama Ayarları — inset-grouped tek blok ─────────────
                 _SectionHeader(label: l10n.appearance),
                 _Group(
                   dividerIndent: 16,
@@ -59,7 +56,6 @@ class SettingsScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 24),
 
-                // ── Hesap ──────────────────────────────────────────────────
                 _SectionHeader(label: l10n.account),
                 _Group(
                   children: [
@@ -91,7 +87,6 @@ class SettingsScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 24),
 
-                // ── Geri Bildirim ──────────────────────────────────────────
                 _SectionHeader(label: l10n.feedback),
                 _Group(
                   children: [
@@ -116,17 +111,14 @@ class SettingsScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 24),
 
-                // ── Çıkış — iOS'taki gibi ayrı blok ────────────────────────
                 _Group(children: [_LogoutTile()]),
                 const SizedBox(height: 24),
 
-                // ── Hesap silme — App Store zorunluluğu, en altta ayrı blok ──
                 _Group(children: [_DeleteAccountTile()]),
               ],
             ),
           ),
 
-          // ── Footer — sabit alt ──────────────────────────────────────────
           Padding(
             padding: const EdgeInsets.only(bottom: 32, top: 16),
             child: Column(
@@ -152,7 +144,6 @@ class SettingsScreen extends ConsumerWidget {
   }
 }
 
-// ── Profile card ─────────────────────────────────────────────────────────────
 
 class _ProfileCard extends ConsumerWidget {
   @override
@@ -253,7 +244,6 @@ class _ProfileContent extends StatelessWidget {
   }
 }
 
-// ── Section header ───────────────────────────────────────────────────────────
 
 class _SectionHeader extends StatelessWidget {
   const _SectionHeader({required this.label});
@@ -277,16 +267,12 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
-// ── Group — inset-grouped blok ───────────────────────────────────────────────
 
-/// Bir bölümün satırlarını tek kartta toplar, aralarına ince ayraç koyar.
-/// Şeffaf Material: satırlardaki InkWell dalgası kart zemininin üstünde görünür.
 class _Group extends StatelessWidget {
   const _Group({required this.children, this.dividerIndent = 62});
 
   final List<Widget> children;
 
-  /// İkonlu satırlarda ayraç metinden başlar (16 + 32 ikon + 14 boşluk).
   final double dividerIndent;
 
   @override
@@ -316,7 +302,6 @@ class _Group extends StatelessWidget {
   }
 }
 
-/// iOS ayarlarındaki gibi küçük dolgulu ikon kutusu.
 class _IconBox extends StatelessWidget {
   const _IconBox({required this.icon, required this.bg, required this.fg});
 
@@ -338,7 +323,6 @@ class _IconBox extends StatelessWidget {
   }
 }
 
-// ── Settings tile ────────────────────────────────────────────────────────────
 
 class _SettingsTile extends StatelessWidget {
   const _SettingsTile({
@@ -397,7 +381,6 @@ class _SettingsTile extends StatelessWidget {
   }
 }
 
-// ── Logout tile ──────────────────────────────────────────────────────────────
 
 class _LogoutTile extends ConsumerWidget {
   @override
@@ -444,7 +427,6 @@ class _LogoutTile extends ConsumerWidget {
   }
 }
 
-// ── Delete account tile ──────────────────────────────────────────────────────
 
 class _DeleteAccountTile extends ConsumerStatefulWidget {
   @override
@@ -467,7 +449,6 @@ class _DeleteAccountTileState extends ConsumerState<_DeleteAccountTile> {
 
     setState(() => _deleting = true);
     try {
-      // Başarılıysa auth state unauthenticated olur, router login'e atar.
       await ref.read(authNotifierProvider.notifier).deleteAccount();
     } catch (e) {
       if (mounted) {
@@ -515,7 +496,6 @@ class _DeleteAccountTileState extends ConsumerState<_DeleteAccountTile> {
   }
 }
 
-// ── Segment row ──────────────────────────────────────────────────────────────
 
 class _SegmentRow extends StatelessWidget {
   const _SegmentRow({required this.label, required this.child});
@@ -525,9 +505,6 @@ class _SegmentRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // container: aynı gruptaki satırların etiketleri tek erişilebilirlik
-    // düğümünde birleşmesin ("Tema\nDil\n..."); ekran okuyucu ve E2E her
-    // satırı ayrı görür.
     return Semantics(
       container: true,
       child: Padding(
@@ -550,7 +527,6 @@ class _SegmentRow extends StatelessWidget {
   }
 }
 
-// ── Theme segmented ──────────────────────────────────────────────────────────
 
 class _ThemeSegmented extends ConsumerWidget {
   @override
@@ -572,7 +548,6 @@ class _ThemeSegmented extends ConsumerWidget {
   }
 }
 
-// ── Base currency picker ──────────────────────────────────────────────────────
 
 class _BaseCurrencyPicker extends ConsumerWidget {
   @override
@@ -686,7 +661,6 @@ class _CurrencySheet extends StatelessWidget {
   }
 }
 
-// ── Locale segmented ─────────────────────────────────────────────────────────
 
 class _LocaleSegmented extends ConsumerWidget {
   @override

@@ -9,14 +9,6 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'helpers/test_credentials.dart';
 
-/// C2 turu — backend (debt-service v0.0.20) artık 5 stabil `ErrorResponse.code`
-/// dönüyor. Bu suite mobile `ApiException.fromDioException` katmanının onları
-/// doğru tip + `code`'a çevirdiğini CANLI backend'e karşı doğrular.
-///
-/// PREMIUM bir hesap gerekir (cannot_add_self kategori paylaşımını, dolayısıyla
-/// premium'u zorunlu kılıyor; ayrıca free 2-kategori limiti name_conflict'i
-/// gölgeler) — kalıcı "owner" hesabı TEST_A_*. Çalıştırma: bkz.
-/// `test/integration/run.sh`
 const _baseUrl = String.fromEnvironment(
   'API_BASE_URL',
   defaultValue: 'http://localhost:8080',
@@ -54,7 +46,6 @@ void main() {
     debtDs = DebtRemoteDatasource(dio);
     catDs = CategoryRemoteDatasource(dio);
 
-    // Kendi bıraktığı test kategorilerini temizle (yabancılara dokunma).
     for (final c in await catDs.getAll()) {
       if (c.name.startsWith('__C2 ') || c.name.startsWith('C2 ')) {
         await catDs.delete(c.id).catchError((_) {});

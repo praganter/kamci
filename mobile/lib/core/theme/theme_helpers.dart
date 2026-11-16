@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'app_colors.dart';
 import 'app_text_styles.dart';
 
-/// Durum renkleri metin/ikon olarak: açık temada okunur koyu ton.
 Color successText(ColorScheme cs) => cs.brightness == Brightness.light
     ? AppColors.successTextLight
     : AppColors.success;
@@ -76,8 +75,6 @@ ElevatedButtonThemeData buildElevatedButtonTheme(ColorScheme colorScheme) {
   );
 }
 
-/// alt-b kart yüzeyi. Koyu: düz #1C1C1E (onaylı, değişmez). Açık: beyaz kart
-/// + ince çizgi + çok hafif gölge — gri zeminden net ayrışsın.
 BoxDecoration altBCard(ColorScheme cs, {double radius = 14}) {
   final light = cs.brightness == Brightness.light;
   return BoxDecoration(

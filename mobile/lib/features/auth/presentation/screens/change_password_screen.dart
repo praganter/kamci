@@ -56,7 +56,6 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Current password
               TextFormField(
                 controller: _currentCtrl,
                 obscureText: !_showCurrent,
@@ -77,7 +76,6 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
               ),
               const SizedBox(height: 16),
 
-              // New password
               TextFormField(
                 controller: _newCtrl,
                 obscureText: !_showNew,
@@ -98,7 +96,6 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
               ),
               const SizedBox(height: 8),
 
-              // Error
               if (error != null) ...[
                 const SizedBox(height: 8),
                 Container(
@@ -118,7 +115,6 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
               ],
               const SizedBox(height: 24),
 
-              // Submit
               FilledButton(
                 onPressed: isLoading ? null : _submit,
                 child: isLoading

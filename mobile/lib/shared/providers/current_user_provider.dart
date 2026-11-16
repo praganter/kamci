@@ -5,9 +5,6 @@ import '../../features/auth/presentation/providers/auth_state.dart';
 
 part 'current_user_provider.g.dart';
 
-// Reads userId from the in-memory JWT claim rather than Keychain.
-// This avoids a Keychain read after clearKeychain (E2E tests) where securityd
-// may still be restarting and reads would hang or throw.
 @riverpod
 Future<String?> currentUserId(Ref ref) async {
   final authState = ref.watch(authNotifierProvider);

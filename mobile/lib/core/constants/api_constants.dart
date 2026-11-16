@@ -3,10 +3,6 @@ import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
 
 abstract final class ApiConstants {
-  /// Gateway base URL. Override with `--dart-define=API_BASE_URL=http://host:8080`.
-  /// Default is the local docker-compose gateway (port 8080): the Android
-  /// emulator reaches the host machine via 10.0.2.2, while the iOS simulator
-  /// and desktop/web share the host's network, so `localhost` works there.
   static final String baseUrl = _fromDefine.isNotEmpty
       ? _fromDefine
       : (!kIsWeb && Platform.isAndroid
@@ -28,17 +24,14 @@ abstract final class ApiConstants {
   static const String householdInvite = '/auth/household/invite';
   static const String householdAccept = '/auth/household/accept';
   static const String householdDecline = '/auth/household/decline';
-  // Controller @RequestMapping("auth/household/") — trailing slash required
-  // for the base path (GET current / DELETE leave), confirmed live: without
-  // it Spring Boot 3.2 returns 404.
   static const String household = '/auth/household/';
 
   static const String debtSave = '/debt/save';
   static const String debtUpdate = '/debt/update';
   static const String debtPay = '/debt/pay';
-  static const String debtBulkPay = '/debt/pay'; // used as: /$id/bulk
+  static const String debtBulkPay = '/debt/pay';
   static const String debtSkip = '/debt/skip';
-  static const String debtSetPaidInstallments = '/debt'; // used as: /$id/set-paid-installments
+  static const String debtSetPaidInstallments = '/debt';
   static const String debtDelete = '/debt/delete';
   static const String debtGetById = '/debt';
   static const String debtGet = '/debt/get';
@@ -60,7 +53,7 @@ abstract final class ApiConstants {
 
   static const String deviceToken = '/notification/device-token';
   static const String notificationList = '/notification/list';
-  static const String notificationRead = '/notification'; // used as: /$id/read
+  static const String notificationRead = '/notification';
 
   static const String exchangeRates = '/rates';
 }

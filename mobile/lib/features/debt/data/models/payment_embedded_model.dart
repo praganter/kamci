@@ -16,7 +16,6 @@ sealed class PaymentEmbeddedModel with _$PaymentEmbeddedModel {
       _$PaymentEmbeddedModelFromJson(json);
 }
 
-// Backend BigDecimal: sayı ya da string gelebilir.
 double? _amountFromJson(dynamic value) {
   if (value is num) return value.toDouble();
   if (value is String) return double.tryParse(value);

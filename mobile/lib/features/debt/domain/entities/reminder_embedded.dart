@@ -10,5 +10,5 @@ class ReminderEmbedded {
   final bool enabled;
   final List<ReminderChannel>? channels;
   final DateTime? reminderDate;
-  final String? reminderTime; // HH:mm:ss
+  final String? reminderTime;
 }

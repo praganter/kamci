@@ -65,8 +65,6 @@ class _DebtListScreenState extends ConsumerState<DebtListScreen>
     final cs = Theme.of(context).colorScheme;
     final l10n = context.l10n;
     final isPremium = ref.watch(isPremiumProvider);
-    // Keep categoryListProvider alive while this screen is in the stack.
-    // This prevents auto-dispose between FAB pre-fetch and form opening.
     ref.watch(categoryListProvider);
 
     return Scaffold(
@@ -124,10 +122,6 @@ class _DebtListScreenState extends ConsumerState<DebtListScreen>
               child: FloatingActionButton(
                 onPressed: () async {
                   if (!isPremium) {
-                    // Borç sayısını, ekranın zaten resolve ettiği
-                    // debtGroupedProvider(true) üzerinden say. (Önceki hâli
-                    // debtListProvider'ı okuyordu; o provider ekranda hiç
-                    // watch edilmediğinden null dönüp limiti bypass ediyordu.)
                     final grouped = await ref.read(
                       debtGroupedProvider(true).future,
                     );
@@ -184,7 +178,6 @@ class _DebtTabViewState extends ConsumerState<_DebtTabView>
       bottom: false,
       child: Column(
         children: [
-          // ── Month Selector ───────────────────────────────────────
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
             child: Container(
@@ -194,8 +187,6 @@ class _DebtTabViewState extends ConsumerState<_DebtTabView>
               ),
               child: Row(
                 children: [
-                  // container: kendi node'u olmazsa identifier Row'da merge
-                  // olur ve test id'si (Android resource-id) kaybolur.
                   Semantics(
                     container: true,
                     identifier: 'prevMonthBtn',
@@ -229,7 +220,6 @@ class _DebtTabViewState extends ConsumerState<_DebtTabView>
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            // Ay değişince etiket kısa kayma + fade ile değişir
                             AnimatedSwitcher(
                               duration: const Duration(milliseconds: 250),
                               transitionBuilder: (child, anim) =>
@@ -357,8 +347,6 @@ class _DebtTabViewState extends ConsumerState<_DebtTabView>
                           ),
                         );
 
-                        // alt-b: dönem başına tek kart, kategoriler içinde
-                        // alt başlık + düz satırlar (Monarch tarzı)
                         slivers.add(
                           Container(
                             margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
@@ -435,8 +423,6 @@ class _DebtTabViewState extends ConsumerState<_DebtTabView>
   }
 }
 
-/// alt-b: ayın özeti — büyük toplam (Copilot/Monarch "hero number"),
-/// altında ödenen / bekleyen sayıları (YNAB durum renkleri).
 class _MonthSummaryCard extends ConsumerWidget {
   const _MonthSummaryCard({required this.items});
 
@@ -469,7 +455,6 @@ class _MonthSummaryCard extends ConsumerWidget {
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 4, 16, 8),
       padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
-      // Açık temada koyu "çapa" kart (koyu temanın havası); koyu tema aynı.
       decoration: light
           ? BoxDecoration(
               color: cs.inverseSurface,
@@ -489,7 +474,6 @@ class _MonthSummaryCard extends ConsumerWidget {
           ),
           const SizedBox(height: 4),
           for (final e in totals.entries)
-            // Count-up: ilk açılışta 0'dan, sonra eski değerden yeniye sayar
             TweenAnimationBuilder<double>(
               tween: Tween(begin: 0, end: e.value),
               duration: MediaQuery.disableAnimationsOf(context)
@@ -640,8 +624,6 @@ class _CategoryPeriodSection extends ConsumerWidget {
     return GestureDetector(
       onLongPressStart: (details) =>
           _showCategoryMenu(context, ref, details.globalPosition),
-      // alt-b: kart dönem seviyesinde (üst Container) — burada sadece
-      // kategori alt başlığı + düz satırlar
       child: ExpansionTile(
         initiallyExpanded: true,
         tilePadding: const EdgeInsets.fromLTRB(16, 2, 12, 2),
@@ -700,7 +682,6 @@ class _CategoryPeriodSection extends ConsumerWidget {
                 ),
               ),
             ),
-            // Uzun basma menüsünün görünür karşılığı.
             Builder(
               builder: (btnCtx) => IconButton(
                 icon: const Icon(Icons.more_vert),
@@ -987,7 +968,6 @@ class _DebtInstanceTile extends ConsumerWidget {
     return Dismissible(
       key: Key(debt.id),
       direction: DismissDirection.horizontal,
-      // Eşik geçildiğinde hissedilir geri bildirim: bırakınca eylem olacak.
       onUpdate: (d) {
         if (d.reached && !d.previousReached) HapticFeedback.selectionClick();
       },
@@ -1032,7 +1012,6 @@ class _DebtInstanceTile extends ConsumerWidget {
         try {
           await ref.read(debtListProvider.notifier).deleteDebt(debt.id);
         } catch (e) {
-          // Satır listeden düştü; hata olursa geri getirmek için listeyi yenile.
           ref.invalidate(debtGroupedProvider(item.owned));
           if (context.mounted) showErrorSnackBar(context, e);
         }
@@ -1053,7 +1032,6 @@ class _DebtInstanceTile extends ConsumerWidget {
         padding: const EdgeInsets.only(right: 20),
         child: const Icon(Icons.delete_rounded, color: Colors.white, size: 26),
       ),
-      // alt-b: renkli sol şerit yok — düz satır, durum sadece ikon/tutar renginde
       child: Material(
         type: MaterialType.transparency,
         child: ListTile(
@@ -1104,7 +1082,6 @@ class _DebtInstanceTile extends ConsumerWidget {
               debt.installmentCount != null
                   ? '${debt.paidCount} / ${debt.installmentCount}'
                   : '${debt.paidCount}',
-              // Bu dönem ödendiyse sıradaki vade bilgisi gürültü olur.
               if (!isPaid && debt.nextDueDate != null)
                 context.l10n.dueOn(
                   DateFormat(
@@ -1124,7 +1101,6 @@ class _DebtInstanceTile extends ConsumerWidget {
             style: TextStyle(
               fontWeight: FontWeight.w700,
               fontFeatures: const [FontFeature.tabularFigures()],
-              // alt-b: ödenen yeşil, bekleyen nötr (vurgu rengi sadece durum)
               color: isPaid ? successText(cs) : cs.onSurface,
             ),
           ),
@@ -1134,9 +1110,7 @@ class _DebtInstanceTile extends ConsumerWidget {
   }
 }
 
-// ── Payment Options ──────────────────────────────────────────────────────────
 
-/// Ödeme eylemleri sheet'i — listede sağa kaydırma ve detaydaki "Öde" butonu.
 Future<void> showPaymentOptions(
   BuildContext context,
   WidgetRef ref, {
@@ -1176,7 +1150,6 @@ Future<void> showPaymentOptions(
             ),
           ),
           const Divider(height: 1),
-          // ── Ödemeyi Atla ─────────────────────────────────────────────
           ListTile(
             leading: Icon(
               Icons.skip_next_outlined,
@@ -1197,7 +1170,6 @@ Future<void> showPaymentOptions(
               }
             },
           ),
-          // ── Parçalı Ödeme ─────────────────────────────────────────────
           ListTile(
             leading: Icon(
               Icons.payments_outlined,
@@ -1223,7 +1195,6 @@ Future<void> showPaymentOptions(
               }
             },
           ),
-          // ── Tam Ödeme ─────────────────────────────────────────────────
           ListTile(
             leading: Icon(
               Icons.check_circle_outline,
@@ -1244,7 +1215,6 @@ Future<void> showPaymentOptions(
               }
             },
           ),
-          // ── Toplu Ödeme ───────────────────────────────────────────────
           Builder(
             builder: (ctx2) {
               final isPremium = ref.read(isPremiumProvider);
@@ -1298,7 +1268,6 @@ Future<void> showPaymentOptions(
   );
 }
 
-// ── Amount Dialog ─────────────────────────────────────────────────────────────
 
 class _AmountDialog extends StatefulWidget {
   const _AmountDialog({required this.debtName});
@@ -1373,7 +1342,6 @@ class _AmountDialogState extends State<_AmountDialog> {
   }
 }
 
-// ── Month Picker Dialog ──────────────────────────────────────────────────────
 
 class _MonthPickerDialog extends StatefulWidget {
   const _MonthPickerDialog({required this.initialMonth});
@@ -1406,7 +1374,6 @@ class _MonthPickerDialogState extends State<_MonthPickerDialog> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // ── Year navigation ──────────────────────────────────────
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -1427,7 +1394,6 @@ class _MonthPickerDialogState extends State<_MonthPickerDialog> {
               ],
             ),
             const SizedBox(height: 8),
-            // ── Month grid ──────────────────────────────────────────
             GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -1483,7 +1449,6 @@ class _MonthPickerDialogState extends State<_MonthPickerDialog> {
   }
 }
 
-// ── Bulk Pay Dialog ──────────────────────────────────────────────────────────
 
 class _BulkPayDialog extends ConsumerStatefulWidget {
   const _BulkPayDialog({required this.debtId, required this.defaultAmount});

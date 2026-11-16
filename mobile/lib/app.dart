@@ -30,12 +30,9 @@ class _AppState extends ConsumerState<App> {
     super.initState();
     _initDeepLinks();
     NotificationService.pendingTarget.addListener(_openPendingTarget);
-    // Cold start: getInitialMessage listener eklenmeden önce dolmuş olabilir.
     WidgetsBinding.instance.addPostFrameCallback((_) => _openPendingTarget());
   }
 
-  /// Push/deep link ile gelen bildirim hedefini açar. Oturum yoksa bekletir;
-  /// login sonrası `ref.listen(authNotifierProvider)` tekrar dener.
   void _openPendingTarget() {
     final target = NotificationService.pendingTarget.value;
     if (target == null) return;
@@ -53,17 +50,14 @@ class _AppState extends ConsumerState<App> {
   Future<void> _initDeepLinks() async {
     final appLinks = AppLinks();
 
-    // Cold start — app kapalıyken gelen link
     final initial = await appLinks.getInitialLink();
     if (initial != null) {
       _handleLink(initial);
     }
 
-    // Uygulama açıkken gelen linkler
     _linkSub = appLinks.uriLinkStream.listen(_handleLink);
   }
 
-  // Only allow Base64url + padding chars — prevents path/query injection via crafted deep links
   static final _tokenPattern = RegExp(r'^[A-Za-z0-9\-_.~+/=]+$');
 
   void _handleLink(Uri uri) {
@@ -71,7 +65,6 @@ class _AppState extends ConsumerState<App> {
 
     final router = ref.read(appRouterProvider);
 
-    // debttracker://reset-password?token=xxx
     if (uri.host == 'reset-password') {
       final raw = uri.queryParameters['token'];
       final token = (raw != null && _tokenPattern.hasMatch(raw)) ? raw : null;
@@ -81,8 +74,6 @@ class _AppState extends ConsumerState<App> {
       );
     }
 
-    // debttracker://notification?type=DEBT_REMINDER&id=xxx — push tıklamasıyla
-    // aynı yönlendirme (in-app bildirim linkleri + E2E testleri için).
     if (uri.host == 'notification') {
       NotificationService.pendingTarget.value = notificationTarget(
         type: uri.queryParameters['type'],
@@ -103,7 +94,6 @@ class _AppState extends ConsumerState<App> {
     final router = ref.watch(appRouterProvider);
     ref.listen(authNotifierProvider, (_, state) {
       if (state is AuthStateAuthenticated) {
-        // Login'in router redirect'i bitsin, sonra hedefi aç.
         WidgetsBinding.instance.addPostFrameCallback(
           (_) => _openPendingTarget(),
         );

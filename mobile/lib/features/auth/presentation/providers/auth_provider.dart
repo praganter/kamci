@@ -18,10 +18,6 @@ class AuthNotifier extends _$AuthNotifier {
     return const AuthState.initial();
   }
 
-  // Reads a single Keychain key, returning null on timeout OR PlatformException.
-  // After `xcrun simctl keychain reset` the securityd daemon is killed; reads
-  // may hang (handled by timeout) or throw errSecInteractionNotAllowed
-  // (handled by catch).  Either way we treat it as "no token".
   static Future<String?> _safeRead(Future<String?> read) async {
     try {
       return await read.timeout(
@@ -40,8 +36,6 @@ class AuthNotifier extends _$AuthNotifier {
     final accessToken = await _safeRead(storage.getAccessToken());
     final refreshToken = await _safeRead(storage.getRefreshToken());
 
-    // Guard: login() may have completed while we were awaiting Keychain reads.
-    // Don't overwrite an authenticated state with unauthenticated.
     if (state is AuthStateAuthenticated) return;
 
     if (accessToken == null || refreshToken == null) {
@@ -62,7 +56,6 @@ class AuthNotifier extends _$AuthNotifier {
       return;
     }
 
-    // Access token expired — attempt refresh
     try {
       final repository = ref.read(authRepositoryProvider);
       final newTokens = await repository.refreshToken(refreshToken);
@@ -75,7 +68,6 @@ class AuthNotifier extends _$AuthNotifier {
       final email = await storage.getEmail();
       ref.read(notificationServiceProvider).registerToken(email: email);
     } on NetworkException {
-      // Offline — keep the user signed in with stale tokens; API calls handle 401s
       state = AuthState.authenticated(tokens);
     } on UnauthorizedException {
       await storage.clearAll();
@@ -86,10 +78,6 @@ class AuthNotifier extends _$AuthNotifier {
     }
   }
 
-  // Writes a single Keychain key with a 5-second timeout + exception swallow.
-  // After `clearKeychain` (E2E tests) securityd may still be restarting; each
-  // write is best-effort — if it times out the session still works via the
-  // in-memory token, but the next cold start will require re-login.
   static Future<void> _safeWrite(Future<void> write) async {
     try {
       await write.timeout(const Duration(seconds: 5), onTimeout: () {});
@@ -140,9 +128,6 @@ class AuthNotifier extends _$AuthNotifier {
     }
   }
 
-  /// Called by AuthInterceptor after a successful silent refresh so that
-  /// subsequent requests immediately use the new access token from memory.
-  /// Synchronous — no Keychain writes — so it never throws or blocks.
   void updateTokensFromInterceptor(AuthTokens tokens) {
     state = AuthState.authenticated(tokens);
   }
@@ -160,8 +145,8 @@ class AuthNotifier extends _$AuthNotifier {
       );
       await _saveUserIdFromToken(newTokens);
       state = AuthState.authenticated(newTokens);
+    // ignore: empty_catches
     } on NetworkException {
-      // Offline — keep current state; tokens remain valid locally
     } on UnauthorizedException {
       await storage.clearAll();
       state = const AuthState.unauthenticated();
@@ -174,22 +159,11 @@ class AuthNotifier extends _$AuthNotifier {
   bool _loggingOut = false;
 
   Future<void> logout() async {
-    // Re-entrancy guard: unregisterToken() 401 alırsa AuthInterceptor refresh
-    // dener, başarısız olursa tekrar logout() çağırır. Guard olmadan bu
-    // logout → DELETE device-token → 401 → logout döngüsü sonsuza kadar sürer
-    // ve kullanıcının yeni login'ini de siler (Maestro P0, 2026-09-26).
-    // Zaten çıkış yapılmışsa (logout sonrası gecikmiş bir isteğin 401'i
-    // interceptor'dan buraya düşer) token'sız DELETE atmaya gerek yok.
     if (_loggingOut || state is AuthStateUnauthenticated) return;
     _loggingOut = true;
     try {
       final storage = ref.read(secureStorageServiceProvider);
-      // Cihaz token'ı, oturum token'ları hâlâ geçerliyken silinmeli — sunucu
-      // logout'u refresh token'ı blacklist'ledikten sonra 401'de refresh
-      // yapılamaz.
       await ref.read(notificationServiceProvider).unregisterToken();
-      // Best-effort: sunucuda refresh token'ı blacklist'le. Başarısız olsa bile
-      // (offline / token zaten geçersiz) yerel logout devam eder.
       final refreshToken = await storage.getRefreshToken();
       if (refreshToken != null) {
         try {
@@ -203,12 +177,7 @@ class AuthNotifier extends _$AuthNotifier {
     }
   }
 
-  /// Hesabı sunucuda kalıcı olarak siler, sonra yerel oturumu temizler.
-  /// Sunucu silmesi başarısız olursa hata fırlatır ve oturum açık kalır —
-  /// kullanıcı hesabının silindiğini sanıp çıkmamalı.
   Future<void> deleteAccount() async {
-    // Cihaz token kaydı access token geçerliyken silinmeli (logout ile aynı
-    // sıra). Best-effort: hesap zaten silinecek.
     try {
       await ref.read(notificationServiceProvider).unregisterToken();
     } catch (_) {}

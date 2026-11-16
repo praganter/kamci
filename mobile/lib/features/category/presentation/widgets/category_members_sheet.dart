@@ -151,8 +151,6 @@ class CategoryMembersSheet extends ConsumerWidget {
         );
       }
     } on PremiumLimitException catch (e) {
-      // Backend gated this on premium (error.category.premium_required) —
-      // show the upsell sheet instead of a plain error snackbar.
       if (context.mounted) {
         PremiumRequiredSheet.show(
           context,

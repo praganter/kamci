@@ -92,7 +92,6 @@ class _DebtDetailScreenState extends ConsumerState<DebtDetailScreen> {
           appBar: AppBar(
             title: Text(debt.name),
             actions: [
-              // Backend 409 döner: tamamlanmış ya da otomatik ödemeli borç.
               if (debt.status == DebtStatus.active && !debt.autoPayment)
                 IconButton(
                   icon: const Icon(Icons.playlist_add_check),
@@ -128,8 +127,6 @@ class _DebtDetailScreenState extends ConsumerState<DebtDetailScreen> {
               ),
             ],
           ),
-          // Ödeme artık sadece listedeki gizli kaydırma jestiyle değil,
-          // görünür bir butonla da yapılabilir.
           bottomNavigationBar:
               debt.status == DebtStatus.active && !debt.autoPayment
               ? SafeArea(
@@ -381,7 +378,6 @@ class _InfoRow extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Sabit genişlik büyük yazı / uzun İngilizce etiketlerde taşıyordu.
           Expanded(
             flex: 2,
             child: Text(

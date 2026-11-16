@@ -47,8 +47,6 @@ class _AddCategorySheetState extends ConsumerState<AddCategorySheet> {
     ref.listen(categoryFormProvider, (_, state) {
       if (!context.mounted) return;
       if (state.isSuccess) Navigator.of(context).pop(state.createdId);
-      // Sheet'in context'inden gösterilen SnackBar kök Scaffold'a düşüyor ve
-      // modal sheet'in arkasında kalıyordu — hata alanın altında gösterilir.
       if (state.error != null) {
         setState(
           () => _serverError = state.error!.toLocalizedMessage(context.l10n),

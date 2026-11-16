@@ -5,12 +5,6 @@ import 'package:flutter_test/flutter_test.dart';
 import '../helpers/test_credentials.dart';
 import '../helpers/test_http_client.dart';
 
-/// Paylaşım testleri premium bir "owner" (A) + ikinci bir "member" (B)
-/// hesabı gerektirir; ikisi de login-only kalıcı hesaplardır.
-///
-/// Çalıştırma: bkz. `test/integration/run.sh`
-///   --dart-define=TEST_A_EMAIL=… --dart-define=TEST_A_PASSWORD=…
-///   --dart-define=TEST_B_EMAIL=… --dart-define=TEST_B_PASSWORD=…
 void main() {
   if (!TestAccounts.hasAB) {
     group('share (TEST_A_* / TEST_B_* verilmedi, skip)', () {
@@ -21,11 +15,11 @@ void main() {
     return;
   }
 
-  late CategoryRemoteDatasource dsA; // premium sahip (kullanıcı A)
-  late CategoryRemoteDatasource dsB; // üye (kullanıcı B)
+  late CategoryRemoteDatasource dsA;
+  late CategoryRemoteDatasource dsB;
 
   setUpAll(() async {
-    await TestHttpClient.setUp(); // A + B login
+    await TestHttpClient.setUp();
     dsA = CategoryRemoteDatasource(TestHttpClient.authed);
     dsB = CategoryRemoteDatasource(TestHttpClient.authedB);
   });
@@ -118,8 +112,6 @@ void main() {
 
       await dsA.addMember(categoryId, TestHttpClient.emailB, AccessLevel.read);
 
-      // Backend doesn't include userId in member embedded data, so we use
-      // User B's actual ID parsed from their JWT sub claim.
       memberUserId = TestHttpClient.userIdB;
     });
 

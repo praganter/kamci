@@ -135,8 +135,6 @@ class _PlatformSelectFieldState<T> extends State<PlatformSelectField<T>> {
       );
     }
 
-    // Android: native DropdownButtonFormField. container: kendi node'u olmazsa
-    // identifier üst node'a merge olur ve resource-id olarak görünmez (Maestro id:).
     return Semantics(
       container: widget.semanticsId != null,
       identifier: widget.semanticsId ?? '',

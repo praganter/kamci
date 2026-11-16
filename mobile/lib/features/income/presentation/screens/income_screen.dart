@@ -190,7 +190,6 @@ class _AddIncomeSheetState extends ConsumerState<_AddIncomeSheet> {
   }
 
   Future<void> _submit() async {
-    // _effectiveFrom de FormField validator'ında — boşsa alanın altında hata.
     if (!_formKey.currentState!.validate()) return;
 
     try {
@@ -235,7 +234,6 @@ class _AddIncomeSheetState extends ConsumerState<_AddIncomeSheet> {
             ),
             const SizedBox(height: 20),
 
-            // Amount
             TextFormField(
               controller: _amountCtrl,
               decoration: InputDecoration(
@@ -250,7 +248,6 @@ class _AddIncomeSheetState extends ConsumerState<_AddIncomeSheet> {
             ),
             const SizedBox(height: 16),
 
-            // Currency
             currenciesAsync.when(
               loading: () => const LinearProgressIndicator(),
               error: (_, e) => const SizedBox.shrink(),
@@ -275,7 +272,6 @@ class _AddIncomeSheetState extends ConsumerState<_AddIncomeSheet> {
             ),
             const SizedBox(height: 16),
 
-            // Effective From — iOS: CupertinoDatePicker, Android: showDatePicker
             PlatformDateField(
               label: l10n.effectiveFrom,
               prefixIcon: const Icon(Icons.calendar_today),
@@ -294,7 +290,6 @@ class _AddIncomeSheetState extends ConsumerState<_AddIncomeSheet> {
             ),
             const SizedBox(height: 16),
 
-            // Note
             TextFormField(
               controller: _noteCtrl,
               decoration: InputDecoration(

@@ -48,8 +48,6 @@ GoRouter appRouter(Ref ref) {
     debugLogDiagnostics: kDebugMode,
     refreshListenable: notifier,
     redirect: (context, state) {
-      // GoRouter receives the raw debttracker:// URL from the platform before
-      // app_links can intercept it. Map it to the correct path-based route.
       if (state.uri.scheme == 'debttracker') {
         if (state.uri.host == 'reset-password') {
           final token = state.uri.queryParameters['token'];
@@ -153,7 +151,6 @@ GoRouter appRouter(Ref ref) {
               GoRoute(
                 path: 'new',
                 name: RouteNames.debtNew,
-                // Form/detay tam ekran: yüzen nav bar içeriği örtmesin.
                 parentNavigatorKey: _rootNavigatorKey,
                 builder: (context, _) => const DebtFormScreen(),
               ),
@@ -207,8 +204,6 @@ GoRouter appRouter(Ref ref) {
   );
 }
 
-/// Alt nav sekme kökleri arası geçiş: kısa fade (detay sayfalarının push
-/// geçişi platform varsayılanında kalır).
 Page<void> _fadePage(GoRouterState state, Widget child) {
   return CustomTransitionPage<void>(
     key: state.pageKey,

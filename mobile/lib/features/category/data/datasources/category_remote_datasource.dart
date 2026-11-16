@@ -37,10 +37,6 @@ class CategoryRemoteDatasource {
         ApiConstants.categorySave,
         data: {'name': name},
       );
-      // Backend now populates ownerId on the save response (be-agent
-      // confirmed 2026-09-01). CategoryModel.ownerId defaults to '' if it
-      // ever comes back missing again; CategoryRepositoryImpl.create falls
-      // back to the locally stored user id in that case.
       return CategoryModel.fromJson(response.data as Map<String, dynamic>);
     } on DioException catch (e) {
       throw _mapException(e);

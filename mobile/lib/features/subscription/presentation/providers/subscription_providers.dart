@@ -9,9 +9,6 @@ import '../../subscription_constants.dart';
 
 part 'subscription_providers.g.dart';
 
-/// RevenueCat CustomerInfo'su. RevenueCat kullanıcısı oturumdaki backend
-/// kullanıcısıyla eşlenir (appUserID = JWT userId) — webhook premium'u bu
-/// id ile backend'e yazar. RevenueCat yapılandırılmamışsa hep null.
 @Riverpod(keepAlive: true)
 class RevenueCatCustomer extends _$RevenueCatCustomer {
   @override
@@ -29,7 +26,6 @@ class RevenueCatCustomer extends _$RevenueCatCustomer {
     try {
       if (auth case AuthStateAuthenticated(:final tokens)) {
         final userId = tokens.userId;
-        // Aynı id ile logIn SDK'da no-op; token refresh'lerde tekrar çağrılır.
         if (userId != null) {
           state = (await Purchases.logIn(userId)).customerInfo;
         }
@@ -37,26 +33,19 @@ class RevenueCatCustomer extends _$RevenueCatCustomer {
         if (!await Purchases.isAnonymous) state = await Purchases.logOut();
       }
     } catch (_) {
-      // Offline / SDK hatası — premium backend'den de okunuyor.
     }
   }
 }
 
-/// Son bilinen premium durumunu storage'dan okur.
-/// userDetail yüklenirken flicker'ı önler.
 @riverpod
 Future<bool> cachedPremium(Ref ref) =>
     ref.read(secureStorageServiceProvider).getCachedPremiumStatus();
 
-/// RevenueCat entitlement'ı veya backend'in premium bayrağı.
-/// Backend, RevenueCat webhook'u ile birkaç saniye gecikmeli güncellenir;
-/// entitlement satın alma anında aktif olduğundan önce o okunur.
 @riverpod
 bool isPremium(Ref ref) {
   final authState = ref.watch(authNotifierProvider);
   final userDetailAsync = ref.watch(userDetailProvider);
 
-  // userDetail yüklenince storage'a kaydet
   ref.listen<AsyncValue<UserDetail>>(userDetailProvider, (_, next) {
     if (next case AsyncData(:final value)) {
       ref.read(secureStorageServiceProvider).savePremiumStatus(value.premium);
@@ -72,16 +61,13 @@ bool isPremium(Ref ref) {
       false;
   if (entitlementActive) return true;
 
-  // userDetail yanıtı varsa en güncel değer
   if (userDetailAsync.valueOrNull != null) {
     return userDetailAsync.valueOrNull!.premium;
   }
 
-  // userDetail yüklenirken JWT'deki premium claim'ini kullan (anında mevcut)
   if (authState case AuthStateAuthenticated(:final tokens)) {
     return tokens.isPremium;
   }
 
-  // Authenticated değilse son storage cache'i
   return ref.watch(cachedPremiumProvider).valueOrNull ?? false;
 }

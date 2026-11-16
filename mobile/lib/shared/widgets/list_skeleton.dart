@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
-/// Liste yüklenirken spinner yerine gösterilen iskelet: kart içinde
-/// ikon + iki satır metin + tutar biçiminde gri bloklar, üstünden shimmer geçer.
 class ListSkeleton extends StatelessWidget {
   const ListSkeleton({super.key, this.rows = 5});
 

@@ -9,43 +9,25 @@ const _baseUrl = String.fromEnvironment(
   defaultValue: 'http://localhost:8080',
 );
 
-/// `register` probe testinin (auth_test) yeni kullanıcı oluştururken
-/// kullandığı parola. Kalıcı A/B hesaplarının parolaları [TestAccounts]'tan
-/// gelir — bu sabit onlarla ilgisizdir.
 const testPassword = 'TestPass123!';
 
-/// Integration suite'leri için ortak HTTP istemcisi.
-///
-/// **Login-only:** kalıcı A/B hesaplarını ([TestAccounts]) login eder, her
-/// koşuda yeni kullanıcı register ETMEZ (gateway `/auth/register` rate-limit'i).
 abstract final class TestHttpClient {
-  /// Token'sız Dio — login / register / refresh-token endpoint'leri için
   static late Dio plain;
 
-  /// Kullanıcı A'nın Dio'su (premium sahip)
   static late Dio authed;
 
-  /// Kullanıcı B'nin Dio'su (paylaşım üyesi)
   static late Dio authedB;
 
-  /// Kullanıcı A'nın e-postası
   static late String emailA;
 
-  /// Kullanıcı B'nin e-postası
   static late String emailB;
 
-  /// Kullanıcı A'nın ID'si (JWT `sub` claim'inden parse edilir)
   static late String userId;
 
-  /// Kullanıcı B'nin ID'si
   static late String userIdB;
 
-  /// Kullanıcı A'nın refresh token'ı (auth testleri için)
   static late String refreshTokenA;
 
-  /// Her test dosyasının `setUpAll`'ında çağrılır. Kalıcı A + B hesaplarını
-  /// login eder. [TestAccounts.hasAB] false ise çağıran suite zaten
-  /// top-level skip edilmiş olmalı.
   static Future<void> setUp() async {
     plain = _buildDio();
     emailA = TestAccounts.emailA;
@@ -62,7 +44,6 @@ abstract final class TestHttpClient {
     userIdB = _parseUserId(tokenB);
   }
 
-  /// Yalnız A hesabını login eden suite'ler için (auth / category / debt).
   static Future<void> setUpAOnly() async {
     plain = _buildDio();
     emailA = TestAccounts.emailA;
@@ -89,10 +70,6 @@ abstract final class TestHttpClient {
     return (dio, token, refresh);
   }
 
-  /// USER_A hesabında geçmiş (yarıda kalmış) koşulardan birikmiş test
-  /// kategorisi kalıntılarını siler. Yalnız suite'lerin ürettiği BİLİNEN
-  /// sabit isimleri hedefler — gerçek kullanıcı verisine / yabancı
-  /// kategorilere dokunmaz. Best-effort: hata yutulur.
   static Future<void> cleanupResidualCategories() async {
     const knownNames = {
       'Test Kategori',
@@ -118,7 +95,6 @@ abstract final class TestHttpClient {
         }
       }
     } catch (_) {
-      // temizlik best-effort — asıl testleri bloklamasın
     }
   }
 

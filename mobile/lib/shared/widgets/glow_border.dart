@@ -3,14 +3,6 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 
-/// Premium vurgusu: içeriğin etrafında yavaş dönen gradient çerçeve +
-/// hafifçe nefes alan glow. Dikkat çeker ama rahatsız etmez (~4 sn tur).
-///
-/// Statik çizilir (dönmez) eğer:
-/// - sistemde "animasyonları azalt" açıksa (erişilebilirlik),
-/// - MAESTRO test build'iyse — sonsuz animasyon Maestro'nun
-///   `waitForAnimationToEnd` adımını her seferinde zaman aşımına sokar,
-/// - [enabled] false ise (ör. pasif buton).
 class GlowBorder extends StatefulWidget {
   const GlowBorder({
     super.key,
@@ -28,9 +20,9 @@ class GlowBorder extends StatefulWidget {
   static const _isMaestro = bool.fromEnvironment('MAESTRO');
 
   static const _colors = [
-    Color(0xFFF59E0B), // kehribar
-    Color(0xFFF97316), // turuncu
-    AppColors.primary, // zümrüt
+    Color(0xFFF59E0B),
+    Color(0xFFF97316),
+    AppColors.primary,
     Color(0xFFF59E0B),
   ];
 
@@ -82,14 +74,12 @@ class _GlowBorderState extends State<GlowBorder>
 
     return AnimatedBuilder(
       animation: _ctrl,
-      // child dışarıda: her karede sadece çerçeve yeniden çizilir
       child: ClipRRect(
         borderRadius: BorderRadius.circular(widget.radius - widget.width),
         child: widget.child,
       ),
       builder: (context, child) {
         final t = _ctrl.value;
-        // Glow iki tur boyunca bir kez nefes alır (0.18 → 0.38 opaklık)
         final pulse = 0.28 + 0.10 * math.sin(t * 2 * math.pi);
         return Container(
           padding: EdgeInsets.all(widget.width),

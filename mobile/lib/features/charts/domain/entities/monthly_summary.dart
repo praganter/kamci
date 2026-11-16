@@ -21,8 +21,6 @@ class MonthlySummary {
 
   final String month;
 
-  /// Currency the aggregate amounts are converted to (user's income currency).
-  /// Null when the backend predates the field.
   final String? baseCurrency;
   final double totalPaid;
   final int paidCount;

@@ -11,7 +11,6 @@ import 'package:dt_mobile/features/auth/presentation/providers/auth_state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// Scripted backend: [handler] maps a request to (status, json body).
 class _FakeApi implements HttpClientAdapter {
   _FakeApi(this.handler);
 
@@ -132,7 +131,7 @@ void main() {
       '/auth/refresh-token',
       '/debt/get',
     ]);
-    expect(_bearer(t.api.calls[1]), 'Bearer r1'); // refresh uses refresh token
+    expect(_bearer(t.api.calls[1]), 'Bearer r1');
     expect(t.store.savedAccess, 'new');
     expect(t.store.savedRefresh, 'r2');
     final state = t.c.read(authNotifierProvider) as AuthStateAuthenticated;
@@ -176,7 +175,7 @@ void main() {
     final t = _setup((_) => (401, {'code': 'error.auth.bad_credentials'}));
 
     await expectLater(t.dio.post('/auth/change-password'), throwsA(isA<DioException>()));
-    expect(t.api.calls, hasLength(1)); // no refresh round-trip
+    expect(t.api.calls, hasLength(1));
     expect(t.auth.logoutCalls, 0);
   });
 
@@ -185,11 +184,10 @@ void main() {
       if (o.path == '/auth/refresh-token') {
         return (200, {'token': 'new', 'refreshToken': 'r2'});
       }
-      return (401, {}); // server keeps rejecting even the fresh token
+      return (401, {});
     });
 
     await expectLater(t.dio.get('/x'), throwsA(isA<DioException>()));
-    // original + refresh + exactly one retry
     expect(t.api.calls, hasLength(3));
     expect(t.auth.logoutCalls, 0);
   });

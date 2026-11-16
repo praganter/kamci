@@ -16,9 +16,6 @@ extension ApiExceptionL10n on ApiException {
       };
 }
 
-/// Localized copy for the recognized [BusinessException.code] values.
-/// Returns `null` for an unknown/absent code so the caller falls back to the
-/// backend-supplied message.
 String? _businessCodeMessage(String? code, AppLocalizations l10n) =>
     switch (code) {
       'error.debt.already_completed' => l10n.errorDebtAlreadyCompleted,

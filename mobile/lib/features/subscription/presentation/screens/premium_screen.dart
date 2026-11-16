@@ -57,8 +57,6 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
     });
   }
 
-  /// Satın alma / geri yükleme sonrası. Premium'u RevenueCat webhook'u
-  /// backend'e yazar; yeni JWT premium claim'ini taşısın diye token yenilenir.
   Future<void> _onCustomerInfo(CustomerInfo info) async {
     final active = info.entitlements.active.containsKey(
       SubscriptionConstants.entitlementId,
@@ -176,7 +174,6 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
   }
 }
 
-// ── Header ────────────────────────────────────────────────────────────────────
 
 class _Header extends StatelessWidget {
   const _Header({required this.tt, required this.l10n});
@@ -223,7 +220,6 @@ class _Header extends StatelessWidget {
   }
 }
 
-// ── Feature list ──────────────────────────────────────────────────────────────
 
 class _FeatureList extends StatelessWidget {
   const _FeatureList({required this.l10n, required this.tt, required this.cs});
@@ -287,7 +283,6 @@ class _FeatureList extends StatelessWidget {
   }
 }
 
-// ── Plan selector ─────────────────────────────────────────────────────────────
 
 class _PlanSelector extends StatelessWidget {
   const _PlanSelector({
@@ -446,7 +441,6 @@ class _PlanCard extends StatelessWidget {
   }
 }
 
-// ── Footer ────────────────────────────────────────────────────────────────────
 
 class _Footer extends StatelessWidget {
   const _Footer({
@@ -473,7 +467,6 @@ class _Footer extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
       child: Column(
         children: [
-          // Premium vurgusu: aktifken dönen gradient çerçeve + glow
           GlowBorder(
             enabled: canPurchase && !purchasing,
             radius: 16,
@@ -526,7 +519,6 @@ class _Footer extends StatelessWidget {
   }
 }
 
-// ── Store error card ──────────────────────────────────────────────────────────
 
 class _StoreErrorCard extends StatelessWidget {
   const _StoreErrorCard({
@@ -544,7 +536,6 @@ class _StoreErrorCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    // Ürün kimlikleri / ham mağaza hatası kullanıcıya gösterilmez.
     final message = errorCode == 'store_unavailable'
         ? l10n.storeUnavailable
         : l10n.subscriptionPlansLoadFailed;

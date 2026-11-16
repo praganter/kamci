@@ -114,7 +114,6 @@ class DebtRepositoryImpl implements DebtRepository {
     return CreateDebtRequest(
       id: id ?? params.id,
       name: params.name,
-      // Backend'de zorunlu — form validator'ları null'ı zaten engelliyor.
       categoryId: params.categoryId!,
       description: params.description,
       firstPaymentDate: DateFormatter.toApiDateTimeFormat(
@@ -126,10 +125,7 @@ class DebtRepositoryImpl implements DebtRepository {
       ),
       amount: params.amount,
       autoPayment: params.autoPayment,
-      // Backend'de zorunlu.
       currency: params.currency ?? 'TRY',
-      // Hatırlatıcı kapalıyken JSON'dan komple çıkar (backend enabled:false
-      // yerine alanın hiç olmamasını bekliyor).
       reminder: (reminder != null && reminder.enabled)
           ? reminder.toModel()
           : null,

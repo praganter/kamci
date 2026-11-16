@@ -45,7 +45,6 @@ void main() {
       ],
     );
     addTearDown(c.dispose);
-    // Let the initial Keychain probe settle (no stored tokens → unauthenticated).
     c.read(authNotifierProvider);
     await Future<void>.delayed(Duration.zero);
   });

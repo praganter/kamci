@@ -7,7 +7,6 @@ ThemeData buildLightTheme() {
     brightness: Brightness.light,
     primary: AppColors.primary,
     onPrimary: Colors.white,
-    // alt-b açık: koyu temadaki gibi derin zümrüt dolgu + beyaz metin
     primaryContainer: Color(0xFF065F46),
     onPrimaryContainer: Color(0xFFFFFFFF),
     secondary: AppColors.secondary,

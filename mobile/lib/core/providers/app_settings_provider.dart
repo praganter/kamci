@@ -12,7 +12,6 @@ final settingsServiceProvider = Provider<SettingsService>(
   (ref) => SettingsService(ref.watch(sharedPreferencesProvider)),
 );
 
-// ── Theme ──────────────────────────────────────────────────────────────────
 
 class ThemeModeNotifier extends StateNotifier<ThemeMode> {
   ThemeModeNotifier(this._service) : super(_service.themeMode);
@@ -30,7 +29,6 @@ final themeModeProvider = StateNotifierProvider<ThemeModeNotifier, ThemeMode>((
   return ThemeModeNotifier(ref.watch(settingsServiceProvider));
 });
 
-// ── Locale ─────────────────────────────────────────────────────────────────
 
 class LocaleNotifier extends StateNotifier<Locale?> {
   LocaleNotifier(this._service) : super(_service.locale);
@@ -46,7 +44,6 @@ final localeProvider = StateNotifierProvider<LocaleNotifier, Locale?>((ref) {
   return LocaleNotifier(ref.watch(settingsServiceProvider));
 });
 
-// ── Base currency ──────────────────────────────────────────────────────────
 
 class BaseCurrencyNotifier extends StateNotifier<String> {
   BaseCurrencyNotifier(this._service) : super(_service.baseCurrency);
@@ -63,11 +60,9 @@ final baseCurrencyProvider =
   return BaseCurrencyNotifier(ref.watch(settingsServiceProvider));
 });
 
-// ── Debt tab (0 = owned, 1 = shared) ───────────────────────────────────────
 
 final debtTabProvider = StateProvider<int>((ref) => 0);
 
-// ── Debt status filter ─────────────────────────────────────────────────────
 
 class DebtStatusFilterNotifier extends StateNotifier<DebtStatusFilter> {
   DebtStatusFilterNotifier(this._service) : super(_service.debtStatusFilter);

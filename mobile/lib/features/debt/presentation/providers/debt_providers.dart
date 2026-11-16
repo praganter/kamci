@@ -17,7 +17,6 @@ import '../../domain/repositories/debt_repository.dart';
 
 part 'debt_providers.g.dart';
 
-// ── Grouped categories provider (family: isOwner) ────────────────────────────
 
 @riverpod
 Future<List<CategoryWithDebts>> debtGrouped(Ref ref, bool isOwner) async {
@@ -28,7 +27,6 @@ Future<List<CategoryWithDebts>> debtGrouped(Ref ref, bool isOwner) async {
       .watch(debtRepositoryProvider)
       .getGrouped(monthStr, isOwner);
 
-  // Enrich owned tab with empty category groups that have no debts yet
   if (isOwner) {
     final allCategories = await ref.watch(categoryListProvider.future);
     final currentUserId = await ref.watch(currentUserIdProvider.future);
@@ -50,7 +48,6 @@ Future<List<CategoryWithDebts>> debtGrouped(Ref ref, bool isOwner) async {
   return grouped;
 }
 
-// ── DebtList notifier (flat list + mutations) ────────────────────────────────
 
 @riverpod
 class DebtList extends _$DebtList {
@@ -74,10 +71,6 @@ class DebtList extends _$DebtList {
     } else {
       await ref.read(debtRepositoryProvider).create(params);
     }
-    // _invalidateAll() intentionally omitted: the form screen calls
-    // ref.invalidate(debtGroupedProvider) AFTER context.pop() so the
-    // GET requests fire when the list is visible, not during the form
-    // close animation (avoids a 401→logout race causing a login flash).
   }
 
   Future<void> deleteDebt(String id) async {
@@ -110,7 +103,6 @@ class DebtList extends _$DebtList {
   }
 }
 
-// ── DebtDetail notifier ──────────────────────────────────────────────────────
 
 @riverpod
 class DebtDetail extends _$DebtDetail {
@@ -121,7 +113,6 @@ class DebtDetail extends _$DebtDetail {
   }
 }
 
-// ── SelectedMonth notifier ───────────────────────────────────────────────────
 
 @riverpod
 class SelectedMonth extends _$SelectedMonth {
@@ -136,7 +127,6 @@ class SelectedMonth extends _$SelectedMonth {
   void previous() => state = DateTime(state.year, state.month - 1);
 }
 
-// ── DebtListItem (replaces DebtPaymentInstance) ──────────────────────────────
 
 class DebtListItem {
   const DebtListItem({
@@ -152,7 +142,6 @@ class DebtListItem {
   final String? ownerUserId;
 }
 
-// ── GroupedDebtsByPeriod ─────────────────────────────────────────────────────
 
 typedef GroupedDebtsByPeriod =
     Map<
@@ -201,7 +190,6 @@ GroupedDebtsByPeriod _buildGrouped(List<CategoryWithDebts> categories) {
   return grouped;
 }
 
-// ── GroupedDebtInstances (parameterized by owner, for independent tabs) ──────
 
 @riverpod
 Future<GroupedDebtsByPeriod> groupedDebtInstancesByOwner(
@@ -212,11 +200,7 @@ Future<GroupedDebtsByPeriod> groupedDebtInstancesByOwner(
   return _buildGrouped(categories);
 }
 
-// ── Currency list ────────────────────────────────────────────────────────────
 
-// keepAlive: statik asset — bir kez yüklenip tutulur. autoDispose iken ay
-// geçişinde (liste iskelete düşünce) atılıp yeniden yükleniyor, o arada
-// sembol haritası boş kalıp tutarlar bir an "TRY" koduyla görünüyordu.
 @Riverpod(keepAlive: true)
 Future<List<CurrencyModel>> currencyList(Ref ref) async {
   final data = await rootBundle.loadString('assets/currencies.json');
@@ -226,7 +210,6 @@ Future<List<CurrencyModel>> currencyList(Ref ref) async {
       .toList();
 }
 
-// ── Exchange rates ────────────────────────────────────────────────────────────
 
 @riverpod
 Future<Map<String, double>> exchangeRates(Ref ref) async {

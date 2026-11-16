@@ -157,7 +157,7 @@ void main() {
     final list = await c.read(debtListProvider.future);
     expect(list.map((d) => d.id), ['d1', 'd2', 'd3']);
 
-    c.read(debtTabProvider.notifier).state = 1; // "shared with me" tab
+    c.read(debtTabProvider.notifier).state = 1;
     await c.read(debtListProvider.future);
     expect(debts.groupedCalls.last.$2, isFalse);
   });
@@ -171,7 +171,6 @@ void main() {
     await c.read(debtListProvider.notifier).makePayment('d1', amountPaid: 40);
 
     expect(debts.paid, [('d1', 40.0)]);
-    // Providers are auto-dispose; re-reading proves the cache was invalidated.
     await c.read(debtGroupedProvider(true).future);
     expect(debts.groupedCalls.length, greaterThan(before));
   });

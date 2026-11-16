@@ -34,7 +34,6 @@ void main() {
       final result = await ds.create('Test Kategori');
       createdId = result.id;
 
-      // create endpoint ownerId döndürmez; id ve name yeterli
       expect(result.name, equals('Test Kategori'));
       expect(result.id, isNotEmpty);
     });

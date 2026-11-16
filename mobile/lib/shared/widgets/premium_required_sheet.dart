@@ -120,9 +120,6 @@ class PremiumRequiredSheet extends StatelessWidget {
 }
 
 extension PremiumGuardRef on WidgetRef {
-  /// Returns true if the user is premium; otherwise shows [PremiumRequiredSheet]
-  /// and returns false. Use in callbacks to gate premium features:
-  ///   if (!ref.requirePremium(context, featureName: l10n.reminder)) return;
   bool requirePremium(
     BuildContext context, {
     required String featureName,

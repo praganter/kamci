@@ -77,8 +77,8 @@ void main() {
     );
     await tester.enterText(find.byType(TextFormField).at(1), 'correct-horse');
     await tester.tap(find.text(l10n.signIn));
-    await tester.pump(); // submit
-    await tester.pump(); // state listener → snackbar
+    await tester.pump();
+    await tester.pump();
 
     expect(auth.logins, [('me@example.com', 'correct-horse')]);
     expect(find.text('Invalid email or password'), findsOneWidget);

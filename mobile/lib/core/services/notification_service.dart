@@ -17,10 +17,8 @@ const _channelName = 'High Importance Notifications';
 
 final _localNotifications = FlutterLocalNotificationsPlugin();
 
-/// Top-level background message handler — must be outside any class.
 @pragma('vm:entry-point')
 Future<void> firebaseBackgroundHandler(RemoteMessage message) async {
-  // Firebase is already initialized in main.dart before this is called.
   debugPrint('FCM background message received');
 }
 
@@ -34,21 +32,17 @@ class NotificationService {
     }
   }
 
-  /// True only when Firebase initialised successfully (see main.dart).
   static bool enabled = false;
 
   final Ref _ref;
 
-  /// Call once in main() after Firebase.initializeApp().
   static Future<void> initialize() async {
-    // Request permission (iOS + Android 13+)
     await FirebaseMessaging.instance.requestPermission(
       alert: true,
       badge: true,
       sound: true,
     );
 
-    // Create Android notification channel
     const channel = AndroidNotificationChannel(
       _channelId,
       _channelName,
@@ -60,7 +54,6 @@ class NotificationService {
         >()
         ?.createNotificationChannel(channel);
 
-    // Init flutter_local_notifications (Android only — iOS uses setForegroundNotificationPresentationOptions)
     const initSettings = InitializationSettings(
       android: AndroidInitializationSettings('@mipmap/ic_launcher'),
       iOS: DarwinInitializationSettings(
@@ -74,7 +67,6 @@ class NotificationService {
       onDidReceiveNotificationResponse: _handleLocalNotificationTap,
     );
 
-    // iOS: show notification banner even when app is in foreground
     await FirebaseMessaging.instance
         .setForegroundNotificationPresentationOptions(
           alert: true,
@@ -82,13 +74,10 @@ class NotificationService {
           sound: true,
         );
 
-    // Show local notification when app is in foreground (Android)
     FirebaseMessaging.onMessage.listen(_showForegroundNotification);
 
-    // Handle notification clicks when app is in background
     FirebaseMessaging.onMessageOpenedApp.listen(_handleNotificationClick);
 
-    // Handle notification click when app is terminated
     FirebaseMessaging.instance.getInitialMessage().then((message) {
       if (message != null) {
         _handleNotificationClick(message);
@@ -96,8 +85,6 @@ class NotificationService {
     });
   }
 
-  /// Dokunulan push'un hedefi. Servis statik ve router'a erişemez — `App`
-  /// bunu dinleyip oturum açıkken ilgili ekrana gider, sonra null'lar.
   static final pendingTarget = ValueNotifier<NotificationTarget?>(null);
 
   static void _handleNotificationClick(RemoteMessage message) {
@@ -140,17 +127,15 @@ class NotificationService {
     );
   }
 
-  /// Get FCM token and register it with the backend.
   Future<void> registerToken({String? email}) async {
     if (!enabled) return;
     try {
-      // iOS requires APNs token before FCM token is available
       if (defaultTargetPlatform == TargetPlatform.iOS) {
         String? apns;
         for (var i = 0; i < 5; i++) {
           apns = await FirebaseMessaging.instance.getAPNSToken();
           if (apns != null) break;
-          if (i < 4) await Future.delayed(Duration(seconds: 1 << i)); // 1s, 2s, 4s, 8s
+          if (i < 4) await Future.delayed(Duration(seconds: 1 << i));
         }
         if (apns == null) {
           debugPrint('APNs token not ready after retries');
@@ -171,8 +156,6 @@ class NotificationService {
     }
   }
 
-  /// Remove the FCM token from the backend on logout.
-  /// Silently fails — worst case: stale token stays until next login (overwritten via PATCH).
   Future<void> unregisterToken() async {
     try {
       final dio = _ref.read(dioClientProvider);

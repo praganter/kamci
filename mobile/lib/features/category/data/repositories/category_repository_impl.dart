@@ -38,9 +38,6 @@ class CategoryRepositoryImpl implements CategoryRepository {
     return _withOwnerIdFallback(model.toDomain());
   }
 
-  /// Backend populates `ownerId` on save/update as of 2026-09-01 — this is a
-  /// safety net for rollout/legacy responses that still omit it (creator is
-  /// always the owner for save; update never changes ownership).
   Future<Category> _withOwnerIdFallback(Category domain) async {
     if (domain.ownerId.isNotEmpty) return domain;
     final ownerId = await _storage.getUserId() ?? '';

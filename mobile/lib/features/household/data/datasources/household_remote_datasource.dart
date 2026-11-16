@@ -16,7 +16,6 @@ class HouseholdRemoteDatasource {
   const HouseholdRemoteDatasource(this._dio);
   final Dio _dio;
 
-  /// Backend returns 204 No Content when the user has no household.
   Future<HouseholdModel?> getCurrent() async {
     try {
       final response = await _dio.get(ApiConstants.household);

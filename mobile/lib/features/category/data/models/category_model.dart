@@ -9,10 +9,6 @@ part 'category_model.g.dart';
 sealed class CategoryModel with _$CategoryModel {
   const factory CategoryModel({
     required String id,
-    // Backend now always populates this on save/update (be-agent confirmed,
-    // 2026-09-01). Default kept as a rollout/legacy safety net — see
-    // CategoryRepositoryImpl.create/update for the storage-based fallback
-    // used only when this still comes back empty.
     @Default('') String ownerId,
     required String name,
     @Default([]) List<MemberEmbeddedModel> members,

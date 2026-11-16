@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// Ortak boş durum: yumuşak daire içinde ikon + başlık + isteğe bağlı açıklama.
 class EmptyState extends StatelessWidget {
   const EmptyState({
     super.key,

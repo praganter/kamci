@@ -7,9 +7,6 @@ sealed class ApiException implements Exception {
   @override
   String toString() => message;
 
-  /// `ErrorResponse.code` values that mean "this action needs premium /
-  /// hit a free-tier limit" — regardless of whether they arrive as 400
-  /// (limit exceeded) or 403 (premium required for the feature).
   static const _premiumCodes = {
     'error.debt.limit_exceeded',
     'error.category.limit_exceeded',
@@ -17,8 +14,6 @@ sealed class ApiException implements Exception {
     'error.debt.premium_required',
   };
 
-  /// `code` values that mean "you don't own/aren't allowed this row" — a
-  /// 403 that must NOT be routed to the premium-upsell flow.
   static const _permissionDeniedCodes = {
     'error.debt.permission_denied',
     'error.category.permission_denied',
@@ -26,17 +21,12 @@ sealed class ApiException implements Exception {
     'error.household.permission_denied',
   };
 
-  /// `code` values that just need a specific localized message — no special
-  /// UI (no upsell sheet, no session reset). They can arrive as 400, 404 or
-  /// 409; the status alone can't tell them apart from generic validation /
-  /// not-found. Carried on [BusinessException.code] and resolved to copy in
-  /// `exception_l10n.dart` (falls back to the backend `message`).
   static const _businessCodes = {
-    'error.debt.already_completed', // 409 — /debt/pay on a COMPLETED (paid/skipped) debt
-    'error.debt.overpayment', // 400 — pay/bulkPay amount exceeds the debt
-    'error.category.name_conflict', // 409 — same owner, case-insensitive name
-    'error.category.cannot_add_self', // 409 — owner adds themselves as member
-    'error.category.member_not_found', // 404 — removing a non-member
+    'error.debt.already_completed',
+    'error.debt.overpayment',
+    'error.category.name_conflict',
+    'error.category.cannot_add_self',
+    'error.category.member_not_found',
     'error.category.not_found',
     'error.category.member_user_not_found',
     'error.category.member_already_exists',
@@ -75,9 +65,6 @@ sealed class ApiException implements Exception {
       final message = data['message'] as String?;
       final code = data['code'] as String?;
 
-      // Prefer the stable `code` over the HTTP status — the backend reuses
-      // 400/403 for several distinct situations that a status code alone
-      // can't disambiguate (limit vs. validation, premium vs. permission).
       if (code != null) {
         if (_premiumCodes.contains(code)) {
           return PremiumLimitException(message ?? const PremiumLimitException().message);
@@ -103,8 +90,6 @@ sealed class ApiException implements Exception {
         return UnauthorizedException(message ?? const UnauthorizedException().message);
       }
       if (statusCode == 403) {
-        // No recognized `code` — fall back to the pre-C2 behavior (treat as
-        // a premium/limit wall) rather than guessing permission-denied.
         return PremiumLimitException(message ?? const PremiumLimitException().message);
       }
       if (statusCode == 409) {
@@ -171,10 +156,6 @@ class PremiumLimitException extends ApiException {
   ]);
 }
 
-/// The request was understood and authenticated, but the caller doesn't own
-/// or have rights to the target row (e.g. editing a category they only have
-/// READ access to). Distinct from [PremiumLimitException]: this is NOT a
-/// premium-upsell situation — no sheet, just an error message.
 class PermissionDeniedException extends ApiException {
   const PermissionDeniedException([
     super.message = "You don't have permission to perform this action.",
@@ -184,8 +165,6 @@ class PermissionDeniedException extends ApiException {
 class BusinessException extends ApiException {
   const BusinessException(super.message, {this.code});
 
-  /// Optional backend `ErrorResponse.code`. When set and recognized,
-  /// `exception_l10n.dart` renders localized copy instead of [message].
   final String? code;
 }
 

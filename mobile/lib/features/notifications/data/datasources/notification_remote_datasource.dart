@@ -16,8 +16,6 @@ class NotificationRemoteDatasource {
   const NotificationRemoteDatasource(this._dio);
   final Dio _dio;
 
-  /// First page only (backend default page=0/size=20) — sayfalama UI'da
-  /// henüz yok, kapsam dışı bırakıldı (bkz. HANDOFF 2026-09-22).
   Future<List<NotificationItemModel>> getList() async {
     try {
       final response = await _dio.get(ApiConstants.notificationList);

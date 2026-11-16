@@ -22,10 +22,8 @@ AuthRemoteDatasource authRemoteDatasource(Ref ref) {
 class AuthRemoteDatasource {
   const AuthRemoteDatasource(this._dio, this._authDio);
 
-  /// Unauthenticated Dio (no AuthInterceptor — login, register, refresh)
   final Dio _dio;
 
-  /// Authenticated Dio (AuthInterceptor adds Bearer token)
   final Dio _authDio;
 
   Future<AuthResponse> login(LoginRequest request) async {
@@ -64,7 +62,6 @@ class AuthRemoteDatasource {
     }
   }
 
-  /// Hard delete — geri dönüşsüz. JWT korumalı (access token interceptor'dan).
   Future<void> deleteAccount() async {
     try {
       await _dio.delete(ApiConstants.deleteAccount);
@@ -73,9 +70,6 @@ class AuthRemoteDatasource {
     }
   }
 
-  /// Server-side refresh-token blacklist. Gateway'de public endpoint;
-  /// refresh token'ı `Authorization: Bearer` ile gönderiyoruz (refreshToken ile
-  /// aynı sözleşme — hem gateway hem auth-service "Bearer " prefix'i şart koşar).
   Future<void> logout(String refreshToken) async {
     try {
       await _dio.post(

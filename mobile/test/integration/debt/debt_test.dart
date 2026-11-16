@@ -19,7 +19,6 @@ void main() {
   late CategoryRemoteDatasource categoryDs;
   late String testCategoryId;
 
-  // Backend ISO 8601 formatı + currency zorunlu
   CreateDebtRequest baseRequest() => CreateDebtRequest(
     name: 'Test Borcu',
     firstPaymentDate: '2026-04-30T00:00:00',
@@ -40,8 +39,6 @@ void main() {
   });
 
   tearDownAll(() async {
-    // setUpAll yarıda kalırsa `late` alanlar atanmamış olur — ikincil
-    // LateInitializationError gürültüsünü bastır.
     try {
       await categoryDs.delete(testCategoryId).catchError((_) {});
     } catch (_) {}
@@ -137,8 +134,6 @@ void main() {
       }
     });
 
-    // ONE_TIME /debt/pay 500 (periodEnd NPE) → debt-service v0.0.20'de düzeldi
-    // (2026-09-03 E2E doğrulandı, 200 + COMPLETED/PAID).
     test('borcu öder ve paymentStatus değişir', () async {
       final result = await ds.pay(createdDebtId);
       expect(result.id, equals(createdDebtId));
@@ -157,7 +152,6 @@ void main() {
 
     setUp(() async {
       createdDebtId = '';
-      // skip için taksitli borç gerekli
       final debt = await ds.create(
         CreateDebtRequest(
           name: 'Atlama Test Borcu',

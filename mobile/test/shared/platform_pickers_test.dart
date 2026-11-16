@@ -4,8 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  // Regression: seçici kapanınca route odağı son text alanına geri veriyordu;
-  // klavye açılıp formun altta sabit kaydet butonunu örtüyordu.
   testWidgets('seçici kapanınca text alanı yeniden odak almaz', (tester) async {
     final focus = FocusNode();
     addTearDown(focus.dispose);

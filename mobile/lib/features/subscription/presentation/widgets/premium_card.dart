@@ -28,7 +28,6 @@ class PremiumCard extends ConsumerWidget {
   }
 }
 
-// ── Premium active card ───────────────────────────────────────────────────────
 
 class _PremiumActiveCard extends ConsumerWidget {
   const _PremiumActiveCard({required this.cs, required this.tt});
@@ -123,7 +122,6 @@ class _PremiumActiveCard extends ConsumerWidget {
       '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
 }
 
-// ── Premium features sheet ────────────────────────────────────────────────────
 
 class _PremiumFeaturesSheet extends StatelessWidget {
   @override
@@ -230,7 +228,6 @@ class _PremiumFeaturesSheet extends StatelessWidget {
   }
 }
 
-// ── Upgrade CTA card ──────────────────────────────────────────────────────────
 
 class _UpgradeCard extends StatelessWidget {
   const _UpgradeCard({required this.cs, required this.tt, required this.onTap});
@@ -244,7 +241,6 @@ class _UpgradeCard extends StatelessWidget {
     return Semantics(
       container: true,
       identifier: 'upgradeCard',
-      // Premium vurgusu: dönen gradient çerçeve + glow (eski düz çerçeve yerine)
       child: GlowBorder(
         child: Container(
           decoration: BoxDecoration(

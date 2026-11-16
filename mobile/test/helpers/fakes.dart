@@ -4,7 +4,6 @@ import 'package:dt_mobile/core/services/notification_service.dart';
 import 'package:dt_mobile/core/storage/secure_storage_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// Unsigned JWT-shaped token; the app only decodes the payload client-side.
 String fakeJwt({String sub = 'user-1', bool premium = false, int? exp}) {
   String seg(Map<String, Object?> m) =>
       base64Url.encode(utf8.encode(jsonEncode(m))).replaceAll('=', '');
@@ -12,7 +11,6 @@ String fakeJwt({String sub = 'user-1', bool premium = false, int? exp}) {
       '${seg({'sub': sub, 'premium': premium, 'exp': exp ?? 4102444800})}.sig';
 }
 
-/// In-memory stand-in for the Keychain/Keystore wrapper.
 class FakeStorage extends Fake implements SecureStorageService {
   final values = <String, String>{};
 
