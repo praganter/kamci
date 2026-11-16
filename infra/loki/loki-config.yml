@@ -24,10 +24,9 @@ schema_config:
       index:
         prefix: index_
         period: 24h
-    # TSDB index migration (2026-09-25): retention 48h oldugu icin eski
-    # boltdb-shipper index'i birkac gun icinde zaten anlamsizlasiyor, veri
-    # kaybi riski yok. Bu tarihten once yazilan loglar eski index'ten,
-    # sonrasi TSDB'den okunur.
+    # TSDB index migration (2026-09-25): retention is 48h, so the old boltdb-shipper
+    # index becomes irrelevant within days and no data is at risk. Logs written
+    # before this date are read from the old index, later ones from TSDB.
     - from: "2026-09-25"
       store: tsdb
       object_store: filesystem

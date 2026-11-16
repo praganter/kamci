@@ -15,7 +15,7 @@
       }
     ]
   },
-  "description": "Kamci servislerinin endpoint bazlı monitoring — request sayısı, success/fail oranı ve latency",
+  "description": "Per-endpoint monitoring of the Kamci services: request count, success/failure rate and latency",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,

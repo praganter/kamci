@@ -7,34 +7,33 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "{{ $labels.pod }}/{{ $labels.container }} sık restart oluyor"
-          description: "Son 15 dakikada {{ $value }} kez restart oldu."
+          summary: "{{ $labels.pod }}/{{ $labels.container }} is restarting frequently"
+          description: "Restarted {{ $value }} times in the last 15 minutes."
 
-      # DOGRULANMADI: kube-state-metrics cluster'da yok, bu yuzden OOMKill icin
-      # kube_pod_container_status_last_terminated_reason yerine cAdvisor'in
-      # container_oom_events_total metrigi kullanildi. Bu metrigin bu
-      # kubelet/cAdvisor surumunde expose edilip edilmedigi canli dogrulanmadi
-      # (deploy-agent /metrics/cadvisor ciktisinda kontrol etmeli). Yoksa bu
-      # alert hicbir zaman tetiklenmez (expr sonuc vermez, hata da vermez).
+      # UNVERIFIED: kube-state-metrics is not installed, so OOM kills are detected with cAdvisor's
+      # container_oom_events_total instead of kube_pod_container_status_last_terminated_reason.
+      # Whether this kubelet/cAdvisor version exposes the metric was not checked on a live cluster
+      # (look for it in /metrics/cadvisor). If it is missing the alert never fires (the expression
+      # returns no series and raises no error).
       - alert: ContainerOOMKilled
         expr: increase(container_oom_events_total{namespace="kamci"}[10m]) > 0
         for: 0m
         labels:
           severity: critical
         annotations:
-          summary: "{{ $labels.pod }}/{{ $labels.container }} OOMKill aldı"
-          description: "cAdvisor container_oom_events_total metriğinde artış tespit edildi."
+          summary: "{{ $labels.pod }}/{{ $labels.container }} was OOM-killed"
+          description: "The cAdvisor metric container_oom_events_total increased."
 
-      # Kapsam: sadece PVC'li volume'ler (tempo-pvc, loki-pvc). Node root disk
-      # icin node-exporter yok, bu alert onu kapsamaz.
+      # Scope: only PVC-backed volumes (tempo-pvc, loki-pvc). There is no node-exporter,
+      # so the node root disk is not covered.
       - alert: PVCDiskAlmostFull
         expr: (kubelet_volume_stats_used_bytes{namespace="kamci"} / kubelet_volume_stats_capacity_bytes{namespace="kamci"}) > 0.85
         for: 10m
         labels:
           severity: warning
         annotations:
-          summary: "{{ $labels.persistentvolumeclaim }} %85 doluluğu aştı"
-          description: "Kullanım oranı {{ $value | humanizePercentage }}."
+          summary: "{{ $labels.persistentvolumeclaim }} is more than 85% full"
+          description: "Usage is {{ $value | humanizePercentage }}."
 
       - alert: HighHttp5xxRate
         expr: |
@@ -47,5 +46,5 @@ groups:
         labels:
           severity: critical
         annotations:
-          summary: "{{ $labels.job }} 5xx oranı %5'i aştı"
-          description: "Son 5 dakikada 5xx oranı {{ $value | humanizePercentage }}."
+          summary: "{{ $labels.job }} 5xx rate is above 5%"
+          description: "5xx rate over the last 5 minutes: {{ $value | humanizePercentage }}."
