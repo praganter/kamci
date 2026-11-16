@@ -1,5 +1,5 @@
 appId: com.batuhanyetgin.kamci
-tags: [debt, smoke]
+tags: [debt, smoke, midnight]
 ---
 # DEBT-06: Tam ödeme — sağa swipe → "Ödeme İşlemleri" → "Tam Ödeme" — testten sonra siler
 - runFlow: "../../subflows/_login_as_user_a.yaml"

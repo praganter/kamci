@@ -1,5 +1,5 @@
 appId: com.batuhanyetgin.kamci
-tags: [debt]
+tags: [debt, midnight]
 ---
 # DEBT-09: Toplu ödeme
 # ⚠️  User A premium olmalı — değilse "Toplu Ödeme Seç" yerine premium gate görünür
