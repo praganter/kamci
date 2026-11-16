@@ -91,6 +91,7 @@ services:
 
   prometheus:
     build: ./prometheus
+    profiles: [ observability ]
     container_name: prometheus
     ports:
       - "9090:9090"
@@ -106,6 +107,7 @@ services:
 
   alertmanager:
     build: ./alertmanager
+    profiles: [ observability ]
     container_name: alertmanager
     ports:
       - "9093:9093"
@@ -122,6 +124,7 @@ services:
 
   tempo:
     build: ./tempo
+    profiles: [ observability ]
     container_name: tempo
     command: [ "-config.file=/etc/tempo.yaml" ]
     ports:
@@ -140,6 +143,7 @@ services:
 
   loki:
     build: ./loki
+    profiles: [ observability ]
     container_name: loki
     ports:
       - "3100:3100"
@@ -157,6 +161,7 @@ services:
 
   promtail:
     build: ./promtail
+    profiles: [ observability ]
     container_name: promtail
     volumes:
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
@@ -167,6 +172,7 @@ services:
 
   grafana:
     build: ./grafana
+    profiles: [ observability ]
     container_name: grafana
     ports:
       - "3001:3000"

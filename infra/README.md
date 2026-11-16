@@ -66,7 +66,8 @@ docker run --rm --entrypoint promtool -v "$PWD/prometheus:/p:ro" prom/prometheus
 
 ```
 cp .env.example .env        # set JWT_SECRET_KEY (same value as the business services)
-docker compose up -d --build --wait
+docker compose up -d --build --wait                          # core: config-server, eureka, gateway
+docker compose --profile observability up -d --build --wait  # core + Prometheus, Alertmanager, Loki, Promtail, Tempo, Grafana
 ```
 
 Env: `JWT_SECRET_KEY` (required), `GF_SECURITY_ADMIN_PASSWORD`, `JAVA_OPTS`, `CONFIG_DIR`, `CONFIG_SERVER_PROFILE`,

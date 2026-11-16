@@ -44,3 +44,8 @@ scrape_configs:
     metrics_path: '/actuator/prometheus'
     static_configs:
       - targets: [ 'notification-service:8083' ]
+
+  - job_name: 'cache-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: [ 'cache-service:8084' ]
