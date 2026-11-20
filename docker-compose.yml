@@ -28,6 +28,7 @@ x-service: &service
     SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-kamci}
     APP_REDIS_HOST: redis
     JWT_SECRET: ${JWT_SECRET_KEY:-change-me-change-me-change-me-0123456789}
+    INTERNAL_API_TOKEN: ${INTERNAL_API_TOKEN:-dev-internal-token}
   depends_on: &service-deps
     config-server:
       condition: service_healthy

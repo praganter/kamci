@@ -12,7 +12,7 @@ Spring Boot microservices behind the Kamci debt-tracking mobile app. Java 17, Sp
 | `cache-service` | 8084 | Hourly exchange-rate fetch, cached in Redis. |
 | `common-module` | - | Shared event classes, RabbitMQ topology, exception handling, request logging. |
 
-Public routing, JWT validation and rate limiting live in a separate API gateway (not in this module). Paths containing `/internal/` are for service-to-service calls only, and the gateway must reject them.
+Public routing, JWT validation and rate limiting live in a separate API gateway (not in this module). Paths containing `/internal/` are for service-to-service calls only: the gateway must reject them, and each service additionally requires the shared `X-Internal-Token` header (`INTERNAL_API_TOKEN`, checked in `common-module`'s `InternalApiConfig`; Feign clients add it automatically). Without the variable a public dev default is used and a warning is logged.
 
 ## Event flow
 
@@ -56,4 +56,4 @@ Tests are mock-based (Mockito, MockMvc standalone) and need no Docker. Coverage 
 
 ## Configuration
 
-Outside the `local` profile each service reads its settings from a Spring Cloud Config server (`CONFIG_SERVER_URL`) and registers with Eureka (`EUREKA_URI`). Secrets (`JWT_SECRET`, `MONGO_DB_URI`, RabbitMQ and SMTP credentials, `ADMIN_SECRET_KEY`, `REVENUECAT_WEBHOOK_SECRET`, `GOOGLE_APPLICATION_CREDENTIALS`) come from the environment.
+Outside the `local` profile each service reads its settings from a Spring Cloud Config server (`CONFIG_SERVER_URL`) and registers with Eureka (`EUREKA_URI`). Secrets (`JWT_SECRET`, `MONGO_DB_URI`, RabbitMQ and SMTP credentials, `ADMIN_SECRET_KEY`, `REVENUECAT_WEBHOOK_SECRET`, `INTERNAL_API_TOKEN`, `GOOGLE_APPLICATION_CREDENTIALS`) come from the environment.
