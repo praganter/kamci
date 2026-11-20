@@ -60,6 +60,14 @@ Add the observability stack with `docker compose --profile observability up -d -
 | 3001 | Grafana (observability profile) |
 | 3200 / 3100 | Tempo / Loki (observability profile) |
 
+## Screenshots / demo
+
+Kamci was not released commercially: the app is not in any store and there is no hosted instance, so there is no
+live demo to link and this README has no screenshots or GIFs. Everything runs locally instead. `docker compose up -d --wait`
+starts the whole backend, and the Flutter app runs against the local gateway (see
+[`mobile/README.md`](mobile/README.md#running-it)). The tests and CI workflows below are the evidence that it works;
+`scripts/smoke.sh` walks register, login, category, debt, payment and mail through the real compose stack.
+
 ## Repository layout
 
 | Folder | Contents |
