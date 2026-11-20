@@ -48,11 +48,11 @@ export REGISTRY=registry.example.com/myorg API_HOST=api.example.com GRAFANA_HOST
 ./apply-all.sh
 ```
 
-## CI deploy
+## CI
 
-`deploy.yml` runs on push to `master`: diffs changed `*.yaml`, applies them in order
-(namespace, configmaps, secrets, rest) through `envsubst`, and only reports deleted files. Configure
-`secrets.KUBE_CONFIG` (base64 kubeconfig) and `vars.REGISTRY`, `vars.IMAGE_TAG`, `vars.API_HOST`, `vars.GRAFANA_HOST`.
+[`.github/workflows/k8s.yml`](../.github/workflows/k8s.yml) validates the manifests on every push and pull request
+that touches `k8s/`: it renders the four placeholders with dummy values and runs `kubeconform -strict`. It does not
+deploy anything; deploying is the manual `apply-all.sh` flow above.
 
 ## Try it on your own cluster
 
@@ -65,7 +65,7 @@ export REGISTRY=registry.example.com/myorg API_HOST=api.example.com GRAFANA_HOST
 
 - [ ] The backend moved to Spring Boot 4.0.x (Jackson 3). Only deploy images that include the `JacksonConfig`
       fix; use a **new** tag (>= `v0.1.0`), do not overwrite an older one.
-- [ ] `config-server` Ready before any `be/*` rollout (services are fail-fast; `apply-all.sh` enforces it, CI/manual applies must too).
+- [ ] `config-server` Ready before any `be/*` rollout (services are fail-fast; `apply-all.sh` enforces it, manual applies must too).
 - [ ] All pods Ready, `config-server` and `eureka-server` first.
 - [ ] `GET /rates` through the gateway returns data: cache-service takes its Redis/exchange-rate settings only from the central `cache-service.yml`.
 - [ ] Smoke test through the gateway: register -> login -> create a debt.
