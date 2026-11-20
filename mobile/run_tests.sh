@@ -9,8 +9,10 @@
 
 # ── Share testleri için premium hesap (isteğe bağlı) ──────
 # Yoksa share testleri skip edilir, diğerleri çalışır.
-PREMIUM_EMAIL="premium-user@example.com"
-PREMIUM_PASSWORD="REPLACE_ME"
+# Ortam değişkeninden okunur:
+#   PREMIUM_EMAIL=you@example.com PREMIUM_PASSWORD=... ./run_tests.sh
+PREMIUM_EMAIL="${PREMIUM_EMAIL:-}"
+PREMIUM_PASSWORD="${PREMIUM_PASSWORD:-}"
 
 # ── Hangi testler çalışsın? ────────────────────────────────
 # Hepsi için "test/integration/"
@@ -26,7 +28,7 @@ if [ -n "$PREMIUM_EMAIL" ] && [ -n "$PREMIUM_PASSWORD" ]; then
   echo "✓ Premium hesap bulundu — share testleri dahil çalışacak"
 else
   echo "⚠  Premium hesap yok — share testleri skip edilecek"
-  echo "   (PREMIUM_EMAIL ve PREMIUM_PASSWORD'ü script içinde doldur)"
+  echo "   (PREMIUM_EMAIL ve PREMIUM_PASSWORD ortam değişkenlerini ver)"
 fi
 
 echo ""

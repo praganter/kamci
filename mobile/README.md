@@ -131,7 +131,9 @@ model parsing against **responses captured from the real backend**
 (`test/fixtures/`, Spring Boot 4 / Jackson 3 date and number formats); API
 error mapping; notification routing; date/time pickers.
 
-Integration tests are skipped unless credentials are provided.
+Integration tests are skipped unless credentials are provided. `run_tests.sh` reads an optional premium
+account (for the sharing tests) from the environment, nothing is stored in the repo:
+`PREMIUM_EMAIL=… PREMIUM_PASSWORD=… ./run_tests.sh`.
 
 ### End-to-end (Maestro)
 
