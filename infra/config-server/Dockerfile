@@ -8,7 +8,7 @@ RUN mvn dependency:go-offline -pl config-server -am
 COPY config-server/src config-server/src
 RUN mvn clean package -pl config-server -am -DskipTests
 
-FROM eclipse-temurin:17-jre-jammy
+FROM eclipse-temurin:22-jre-jammy
 WORKDIR /app
 RUN groupadd -r spring && useradd -r -g spring spring
 USER spring:spring
