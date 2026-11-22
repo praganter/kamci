@@ -16,7 +16,7 @@ backend (Spring Boot microservices behind an API gateway) over REST.
 | Charts | monthly summary, trend, category breakdown, debt-to-income ratio |
 | Household | invite / accept / leave, shared view |
 | Notifications | in-app list with deep-link routing (push optional, see below) |
-| Settings | language (tr/en), theme, premium paywall (RevenueCat, optional), feedback |
+| Settings | language (tr/en), theme, premium paywall (native in-app purchase), feedback |
 
 ## Architecture
 
@@ -95,17 +95,27 @@ place (both are git-ignored). The Gradle Google-services plugin is applied only
 when the Android file exists. The backend side (FCM service account) is likewise
 optional — in its `local` profile pushes are logged and skipped.
 
-### Premium / RevenueCat (optional)
+### Premium / in-app purchase
 
-Purchases go through RevenueCat. Without keys the paywall shows "store
-unavailable" and everything else works:
+Subscriptions use the platform stores directly through `in_app_purchase`
+(App Store / Google Play); no API key is needed in the app. A purchase arrives
+on the purchase stream, the app sends its receipt to the backend
+(`POST /subscription/verify` with `platform`, `plan`, `receiptData`,
+`productId` and, on Android, `packageName`) and adopts the tokens in the
+response. The backend is the source of truth for premium: the JWT `premium`
+claim, `GET /auth/user-detail` and `GET /subscription/status`. Purchases that
+the backend rejects for a transient reason stay unfinished and are retried the
+next time the app starts; "Restore Purchases" replays the store's purchases the
+same way.
 
-```bash
-flutter run --dart-define=RC_API_KEY_ANDROID=goog_xxx --dart-define=RC_API_KEY_IOS=appl_xxx
-```
+Product ids: iOS `com.batuhanyetgin.kamci.premium.monthly` / `.yearly`,
+Android `premium_monthly` / `premium_yearly`. The backend must list them in
+its `IAP_MONTHLY_PRODUCT_IDS` / `IAP_YEARLY_PRODUCT_IDS` settings.
 
-For local testing, grant premium to an account through the backend's admin
-endpoint (`POST /subscription/premium/{userId}` with `X-Admin-Key`, see
+Without a store (simulator, desktop, no sandbox account) the paywall shows
+"store unavailable" and everything else works. For local testing, grant
+premium to an account through the backend's admin endpoint
+(`POST /subscription/premium/{userId}` with `X-Admin-Key`, see
 `maestro/scripts/setup_test_accounts.sh`).
 
 ## Tests

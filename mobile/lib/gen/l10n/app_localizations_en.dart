@@ -879,6 +879,17 @@ class AppLocalizationsEn extends AppLocalizations {
       'Reminder date or time is missing.';
 
   @override
+  String get errorSubscriptionVerificationFailed =>
+      'Subscription verification failed.';
+
+  @override
+  String get errorSubscriptionNotFound => 'Subscription not found.';
+
+  @override
+  String get errorSubscriptionAlreadyUsed =>
+      'This subscription is already linked to another account.';
+
+  @override
   String get errorAuthEmailInUse => 'This email address is already in use.';
 
   @override
@@ -1054,6 +1065,13 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get storeUnavailable =>
       'Couldn\'t connect to the store. Check your internet connection.';
+
+  @override
+  String get purchasePending =>
+      'Your purchase is waiting for approval. Premium activates once it is confirmed.';
+
+  @override
+  String get nothingToRestore => 'No previous purchases were found to restore.';
 
   @override
   String get subscriptionPlansLoadFailed =>
