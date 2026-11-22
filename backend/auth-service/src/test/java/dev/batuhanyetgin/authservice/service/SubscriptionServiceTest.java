@@ -45,6 +45,7 @@ class SubscriptionServiceTest {
     @Mock private AppleJwsVerifier appleJwsVerifier;
     @Mock private GooglePlayVerifier googlePlayVerifier;
     @Mock private AppleReceiptVerifier appleReceiptVerifier;
+    @Mock private PubSubTokenVerifier pubSubTokenVerifier;
 
     private final JsonMapper mapper = new JsonMapper();
 
@@ -53,16 +54,18 @@ class SubscriptionServiceTest {
 
     private static final String USER_ID = "user123";
     private static final String BUNDLE = "com.example.kamci";
+    private static final String PACKAGE = "com.example.app";
 
     @BeforeEach
     void setUp() {
-        settings = new IapSettings(BUNDLE, false, "monthly_ios,monthly_android", "yearly_ios,yearly_android");
+        settings = new IapSettings(BUNDLE, false, "monthly_ios,monthly_android", "yearly_ios,yearly_android",
+                PACKAGE, "pubsub-audience", "push@example.iam.test");
         subscriptionService = newService(settings);
     }
 
     private SubscriptionService newService(final IapSettings iapSettings) {
         return new SubscriptionService(authRS, subscriptionRS, jwtService, mapper, appleJwsVerifier,
-                googlePlayVerifier, appleReceiptVerifier, iapSettings);
+                googlePlayVerifier, appleReceiptVerifier, pubSubTokenVerifier, iapSettings);
     }
 
     private AuthDocument buildAuthDoc() {
@@ -104,7 +107,7 @@ class SubscriptionServiceTest {
             return VerifyReceiptRequest.builder()
                     .platform("ANDROID").plan("MONTHLY")
                     .receiptData("goog-token").productId("monthly_android")
-                    .packageName("com.example.app")
+                    .packageName(PACKAGE)
                     .build();
         }
 
@@ -162,7 +165,7 @@ class SubscriptionServiceTest {
         @Test
         @DisplayName("no product ids configured → 503 for both platforms")
         void productsNotConfigured_serviceUnavailable() {
-            final SubscriptionService unconfigured = newService(new IapSettings(BUNDLE, false, "", ""));
+            final SubscriptionService unconfigured = newService(new IapSettings(BUNDLE, false, "", "", "", "", ""));
 
             assertFails(HttpStatus.SERVICE_UNAVAILABLE, "error.subscription.apple_not_configured",
                     () -> unconfigured.verifyReceipt(USER_ID, iosRequest()));
@@ -274,7 +277,8 @@ class SubscriptionServiceTest {
             final var purchaseInfo = mapper.createObjectNode();
             purchaseInfo.put("orderId", "GPA.1234");
             purchaseInfo.put("expiryTimeMillis", System.currentTimeMillis() + 86_400_000L);
-            when(googlePlayVerifier.verifySubscription("com.example.app", "monthly_android", "goog-token"))
+            when(googlePlayVerifier.isConfigured()).thenReturn(true);
+            when(googlePlayVerifier.verifySubscription(PACKAGE, "monthly_android", "goog-token"))
                     .thenReturn(purchaseInfo);
             when(subscriptionRS.findOptionalByPurchaseToken("goog-token")).thenReturn(Optional.empty());
             when(subscriptionRS.findByUserId(USER_ID)).thenReturn(Optional.empty());
@@ -292,11 +296,92 @@ class SubscriptionServiceTest {
         @Test
         @DisplayName("ANDROID purchase invalid → throws BAD_REQUEST, subscription not saved")
         void android_invalidPurchase_throwsBadRequest() throws Exception {
+            when(googlePlayVerifier.isConfigured()).thenReturn(true);
             when(googlePlayVerifier.verifySubscription(any(), any(), any()))
                     .thenThrow(new RuntimeException("API error"));
 
             assertFails(HttpStatus.BAD_REQUEST, "error.subscription.verification_failed",
                     () -> subscriptionService.verifyReceipt(USER_ID, androidRequest()));
+
+            verify(subscriptionRS, never()).save(any());
+        }
+    }
+
+    @Nested
+    @DisplayName("verifyReceipt for ANDROID: package and configuration")
+    class VerifyAndroidPackage {
+
+        private VerifyReceiptRequest request(final String packageName) {
+            return VerifyReceiptRequest.builder()
+                    .platform("ANDROID").plan("MONTHLY")
+                    .receiptData("goog-token").productId("monthly_android")
+                    .packageName(packageName)
+                    .build();
+        }
+
+        @Test
+        @DisplayName("package name outside the allowlist → 400 package_not_allowed, Google never called")
+        void foreignPackage_badRequest() throws Exception {
+            when(googlePlayVerifier.isConfigured()).thenReturn(true);
+
+            assertFails(HttpStatus.BAD_REQUEST, "error.subscription.package_not_allowed",
+                    () -> subscriptionService.verifyReceipt(USER_ID, request("com.attacker.app")));
+
+            verify(googlePlayVerifier, never()).verifySubscription(any(), any(), any());
+            verify(subscriptionRS, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("package name omitted → the configured package is used")
+        void missingPackage_usesConfigured() throws Exception {
+            final var purchaseInfo = mapper.createObjectNode();
+            purchaseInfo.put("orderId", "GPA.1");
+            purchaseInfo.put("expiryTimeMillis", System.currentTimeMillis() + 86_400_000L);
+            when(googlePlayVerifier.isConfigured()).thenReturn(true);
+            when(googlePlayVerifier.verifySubscription(PACKAGE, "monthly_android", "goog-token")).thenReturn(purchaseInfo);
+            when(subscriptionRS.findOptionalByPurchaseToken("goog-token")).thenReturn(Optional.empty());
+            when(subscriptionRS.findByUserId(USER_ID)).thenReturn(Optional.empty());
+            when(subscriptionRS.save(any())).thenAnswer(inv -> inv.getArgument(0));
+            when(authRS.findById(USER_ID)).thenReturn(buildAuthDoc());
+            when(authRS.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+            subscriptionService.verifyReceipt(USER_ID, request(null));
+
+            verify(googlePlayVerifier).verifySubscription(PACKAGE, "monthly_android", "goog-token");
+        }
+
+        @Test
+        @DisplayName("no Play credentials → 503 google_not_configured")
+        void noCredentials_serviceUnavailable() {
+            when(googlePlayVerifier.isConfigured()).thenReturn(false);
+
+            assertFails(HttpStatus.SERVICE_UNAVAILABLE, "error.subscription.google_not_configured",
+                    () -> subscriptionService.verifyReceipt(USER_ID, request(PACKAGE)));
+        }
+
+        @Test
+        @DisplayName("no GOOGLE_PLAY_PACKAGE_NAME → 503 google_not_configured")
+        void noPackageConfigured_serviceUnavailable() {
+            final SubscriptionService noPackage = newService(
+                    new IapSettings(BUNDLE, false, "monthly_android", "", "", "aud", "push@example.iam.test"));
+
+            assertFails(HttpStatus.SERVICE_UNAVAILABLE, "error.subscription.google_not_configured",
+                    () -> noPackage.verifyReceipt(USER_ID, request(PACKAGE)));
+        }
+
+        @Test
+        @DisplayName("purchase token already bound to another account → 409 already_used")
+        void tokenOfAnotherUser_conflict() throws Exception {
+            final var purchaseInfo = mapper.createObjectNode();
+            purchaseInfo.put("orderId", "GPA.1");
+            purchaseInfo.put("expiryTimeMillis", System.currentTimeMillis() + 86_400_000L);
+            when(googlePlayVerifier.isConfigured()).thenReturn(true);
+            when(googlePlayVerifier.verifySubscription(PACKAGE, "monthly_android", "goog-token")).thenReturn(purchaseInfo);
+            when(subscriptionRS.findOptionalByPurchaseToken("goog-token"))
+                    .thenReturn(Optional.of(SubscriptionDocument.builder().userId("someone-else").build()));
+
+            assertFails(HttpStatus.CONFLICT, "error.subscription.already_used",
+                    () -> subscriptionService.verifyReceipt(USER_ID, request(PACKAGE)));
 
             verify(subscriptionRS, never()).save(any());
         }
@@ -640,7 +725,7 @@ class SubscriptionServiceTest {
         @Test
         @DisplayName("sandbox notification with APPLE_ALLOW_SANDBOX → processed")
         void sandboxAllowed_processed() {
-            final SubscriptionService sandboxOk = newService(new IapSettings(BUNDLE, true, "m", "y"));
+            final SubscriptionService sandboxOk = newService(new IapSettings(BUNDLE, true, "m", "y", "", "", ""));
             when(appleJwsVerifier.verifyAndDecode("signed.payload")).thenReturn(payload("EXPIRED", "Sandbox", BUNDLE, SIGNED_AT));
             when(appleJwsVerifier.verifyAndDecode("signed.tx")).thenReturn(tx("Sandbox", BUNDLE, 0L));
             final SubscriptionDocument sub = existingSub(SubscriptionStatus.ACTIVE);
@@ -688,7 +773,7 @@ class SubscriptionServiceTest {
         @Test
         @DisplayName("no bundle id configured → 503 apple_not_configured, nothing verified")
         void notConfigured_serviceUnavailable() {
-            final SubscriptionService unconfigured = newService(new IapSettings("", false, "", ""));
+            final SubscriptionService unconfigured = newService(new IapSettings("", false, "", "", "", "", ""));
 
             assertFails(HttpStatus.SERVICE_UNAVAILABLE, "error.subscription.apple_not_configured",
                     () -> unconfigured.handleAppleWebhook("signed.payload"));
@@ -703,62 +788,176 @@ class SubscriptionServiceTest {
     @DisplayName("handleGoogleWebhook")
     class HandleGoogleWebhook {
 
-        private String base64(final String json) {
-            return Base64.getEncoder().encodeToString(json.getBytes());
+        private static final String AUTH = "Bearer push-token";
+        private static final long EVENT_AT = 1_800_000_000_000L;
+
+        private String message(final int type, final String token, final String packageName, final Long eventTime) {
+            final String time = eventTime == null ? "" : ",\"eventTimeMillis\":\"" + eventTime + "\"";
+            return Base64.getEncoder().encodeToString(("{\"version\":\"1.0\",\"packageName\":\"" + packageName + "\"" + time
+                    + ",\"subscriptionNotification\":{\"notificationType\":" + type
+                    + ",\"purchaseToken\":\"" + token + "\"}}").getBytes());
         }
 
-        private String notification(final int type, final String token) {
-            return base64("{\"subscriptionNotification\":{\"notificationType\":" + type
-                    + ",\"purchaseToken\":\"" + token + "\"}}");
+        private SubscriptionDocument existingSub(final SubscriptionStatus status) {
+            final SubscriptionDocument sub = SubscriptionDocument.builder().userId(USER_ID).status(status).build();
+            when(subscriptionRS.findOptionalByPurchaseToken("tok")).thenReturn(Optional.of(sub));
+            return sub;
+        }
+
+        private AuthDocument stubAuth(final boolean premium) {
+            final AuthDocument auth = buildAuthDoc();
+            auth.setPremium(premium);
+            when(authRS.findById(USER_ID)).thenReturn(auth);
+            when(authRS.save(auth)).thenReturn(auth);
+            when(subscriptionRS.save(any())).thenAnswer(inv -> inv.getArgument(0));
+            return auth;
         }
 
         @Test
-        @DisplayName("RENEWED notification → subscription set to ACTIVE and premium enabled")
+        @DisplayName("RENEWED → ACTIVE, premium on, event time recorded")
         void renewed_setsActiveAndPremium() {
-            final SubscriptionDocument sub = SubscriptionDocument.builder()
-                    .userId(USER_ID).status(SubscriptionStatus.EXPIRED).build();
-            when(subscriptionRS.findByPurchaseToken("tok")).thenReturn(sub);
-            when(subscriptionRS.save(any())).thenAnswer(inv -> inv.getArgument(0));
-            final AuthDocument auth = buildAuthDoc();
-            when(authRS.findById(USER_ID)).thenReturn(auth);
-            when(authRS.save(auth)).thenReturn(auth);
+            final SubscriptionDocument sub = existingSub(SubscriptionStatus.EXPIRED);
+            final AuthDocument auth = stubAuth(false);
 
-            subscriptionService.handleGoogleWebhook(notification(4, "tok"));
+            subscriptionService.handleGoogleWebhook(AUTH, message(4, "tok", PACKAGE, EVENT_AT));
 
+            verify(pubSubTokenVerifier).verify(AUTH);
             assertThat(sub.getStatus()).isEqualTo(SubscriptionStatus.ACTIVE);
+            assertThat(sub.getLastNotificationMs()).isEqualTo(EVENT_AT);
             assertThat(auth.isPremium()).isTrue();
         }
 
         @Test
-        @DisplayName("EXPIRED notification → subscription set to EXPIRED and premium disabled")
+        @DisplayName("EXPIRED → EXPIRED and premium off")
         void expired_setsExpired() {
-            final SubscriptionDocument sub = SubscriptionDocument.builder()
-                    .userId(USER_ID).status(SubscriptionStatus.ACTIVE).build();
-            when(subscriptionRS.findByPurchaseToken("tok")).thenReturn(sub);
-            when(subscriptionRS.save(any())).thenAnswer(inv -> inv.getArgument(0));
-            final AuthDocument auth = buildAuthDoc();
-            auth.setPremium(true);
-            when(authRS.findById(USER_ID)).thenReturn(auth);
-            when(authRS.save(auth)).thenReturn(auth);
+            final SubscriptionDocument sub = existingSub(SubscriptionStatus.ACTIVE);
+            final AuthDocument auth = stubAuth(true);
 
-            subscriptionService.handleGoogleWebhook(notification(13, "tok"));
+            subscriptionService.handleGoogleWebhook(AUTH, message(13, "tok", PACKAGE, EVENT_AT));
 
             assertThat(sub.getStatus()).isEqualTo(SubscriptionStatus.EXPIRED);
             assertThat(auth.isPremium()).isFalse();
         }
 
         @Test
-        @DisplayName("non-subscription notification → no DB call")
-        void nonSubscription_ignored() {
-            subscriptionService.handleGoogleWebhook(base64("{\"oneTimeProductNotification\":{}}"));
+        @DisplayName("CANCELED → CANCELLED and premium off")
+        void canceled_setsCancelled() {
+            final SubscriptionDocument sub = existingSub(SubscriptionStatus.ACTIVE);
+            final AuthDocument auth = stubAuth(true);
+
+            subscriptionService.handleGoogleWebhook(AUTH, message(3, "tok", PACKAGE, EVENT_AT));
+
+            assertThat(sub.getStatus()).isEqualTo(SubscriptionStatus.CANCELLED);
+            assertThat(auth.isPremium()).isFalse();
+        }
+
+        @Test
+        @DisplayName("ON_HOLD → ON_HOLD and premium off")
+        void onHold_setsOnHold() {
+            final SubscriptionDocument sub = existingSub(SubscriptionStatus.ACTIVE);
+            final AuthDocument auth = stubAuth(true);
+
+            subscriptionService.handleGoogleWebhook(AUTH, message(5, "tok", PACKAGE, EVENT_AT));
+
+            assertThat(sub.getStatus()).isEqualTo(SubscriptionStatus.ON_HOLD);
+            assertThat(auth.isPremium()).isFalse();
+        }
+
+        @Test
+        @DisplayName("unhandled notification type → nothing saved")
+        void unhandledType_ignored() {
+            existingSub(SubscriptionStatus.ACTIVE);
+
+            subscriptionService.handleGoogleWebhook(AUTH, message(8, "tok", PACKAGE, EVENT_AT));
+
+            verify(subscriptionRS, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("replay: event time not newer than the last applied one → ignored")
+        void staleNotification_ignored() {
+            final SubscriptionDocument sub = existingSub(SubscriptionStatus.ACTIVE);
+            sub.setLastNotificationMs(EVENT_AT);
+
+            subscriptionService.handleGoogleWebhook(AUTH, message(13, "tok", PACKAGE, EVENT_AT));
+
+            assertThat(sub.getStatus()).isEqualTo(SubscriptionStatus.ACTIVE);
+            verify(subscriptionRS, never()).save(any());
+            verifyNoInteractions(authRS);
+        }
+
+        @Test
+        @DisplayName("invalid push token → 403 and nothing is read or written")
+        void invalidToken_forbidden() {
+            org.mockito.Mockito.doThrow(BaseException.forbidden("error.subscription.webhook_unauthorized"))
+                    .when(pubSubTokenVerifier).verify("Bearer forged");
+
+            assertFails(HttpStatus.FORBIDDEN, "error.subscription.webhook_unauthorized",
+                    () -> subscriptionService.handleGoogleWebhook("Bearer forged", message(13, "tok", PACKAGE, EVENT_AT)));
 
             verifyNoInteractions(subscriptionRS, authRS);
         }
 
         @Test
-        @DisplayName("invalid base64 → exception swallowed, no DB call")
-        void invalidBase64_swallowed() {
-            subscriptionService.handleGoogleWebhook("***not-base64***");
+        @DisplayName("notification for another package → acknowledged and ignored")
+        void otherPackage_ignored() {
+            subscriptionService.handleGoogleWebhook(AUTH, message(13, "tok", "com.other.app", EVENT_AT));
+
+            verifyNoInteractions(subscriptionRS, authRS);
+        }
+
+        @Test
+        @DisplayName("no event time → 400, cannot be ordered or deduplicated")
+        void missingEventTime_badRequest() {
+            assertFails(HttpStatus.BAD_REQUEST, "error.subscription.verification_failed",
+                    () -> subscriptionService.handleGoogleWebhook(AUTH, message(13, "tok", PACKAGE, null)));
+        }
+
+        @Test
+        @DisplayName("unknown purchase token → acknowledged without changes")
+        void unknownToken_ignored() {
+            when(subscriptionRS.findOptionalByPurchaseToken("tok")).thenReturn(Optional.empty());
+
+            subscriptionService.handleGoogleWebhook(AUTH, message(13, "tok", PACKAGE, EVENT_AT));
+
+            verify(subscriptionRS, never()).save(any());
+            verifyNoInteractions(authRS);
+        }
+
+        @Test
+        @DisplayName("non-subscription notification → no DB call")
+        void nonSubscription_ignored() {
+            final String data = Base64.getEncoder().encodeToString(
+                    ("{\"packageName\":\"" + PACKAGE + "\",\"oneTimeProductNotification\":{}}").getBytes());
+
+            subscriptionService.handleGoogleWebhook(AUTH, data);
+
+            verifyNoInteractions(subscriptionRS, authRS);
+        }
+
+        @Test
+        @DisplayName("push without message data → acknowledged")
+        void noData_ignored() {
+            subscriptionService.handleGoogleWebhook(AUTH, null);
+
+            verify(pubSubTokenVerifier).verify(AUTH);
+            verifyNoInteractions(subscriptionRS, authRS);
+        }
+
+        @Test
+        @DisplayName("invalid base64 → 400")
+        void invalidBase64_badRequest() {
+            assertFails(HttpStatus.BAD_REQUEST, "error.subscription.verification_failed",
+                    () -> subscriptionService.handleGoogleWebhook(AUTH, "***not-base64***"));
+        }
+
+        @Test
+        @DisplayName("no GOOGLE_PLAY_PACKAGE_NAME → 503 google_not_configured")
+        void notConfigured_serviceUnavailable() {
+            final SubscriptionService noPackage = newService(new IapSettings(BUNDLE, false, "m", "y", "", "aud", "push@example.iam.test"));
+
+            assertFails(HttpStatus.SERVICE_UNAVAILABLE, "error.subscription.google_not_configured",
+                    () -> noPackage.handleGoogleWebhook(AUTH, message(13, "tok", PACKAGE, EVENT_AT)));
 
             verifyNoInteractions(subscriptionRS, authRS);
         }

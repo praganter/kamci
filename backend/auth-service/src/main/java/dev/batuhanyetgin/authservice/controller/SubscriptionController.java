@@ -69,21 +69,22 @@ public class SubscriptionController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "Google Play Real-time Developer Notification webhook (public)")
-    @ApiResponse(responseCode = "200", description = "Notification processed")
+    @Operation(summary = "Google Play real-time developer notification (public, authenticated by the Pub/Sub OIDC token)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Notification processed or ignored"),
+            @ApiResponse(responseCode = "400", description = "Malformed notification"),
+            @ApiResponse(responseCode = "403", description = "Missing or invalid Pub/Sub token, or not configured"),
+            @ApiResponse(responseCode = "503", description = "Google verification is not configured")
+    })
     @PostMapping("google/webhook")
-    ResponseEntity<Void> googleWebhook(@RequestBody final Map<String, Object> payload) {
-        try {
-            @SuppressWarnings("unchecked") final Map<String, String> message = (Map<String, String>) payload.get("message");
-            if (message != null) {
-                final String data = message.get("data");
-                if (data != null) {
-                    subscriptionService.handleGoogleWebhook(data);
-                }
-            }
-        } catch (ClassCastException e) {
-            // Malformed payload — ignore
+    ResponseEntity<Void> googleWebhook(
+            @RequestHeader(value = "Authorization", required = false) final String authorization,
+            @RequestBody final Map<String, Object> payload) {
+        String data = null;
+        if (payload.get("message") instanceof Map<?, ?> message && message.get("data") instanceof String encoded) {
+            data = encoded;
         }
+        subscriptionService.handleGoogleWebhook(authorization, data);
         return ResponseEntity.ok().build();
     }
 

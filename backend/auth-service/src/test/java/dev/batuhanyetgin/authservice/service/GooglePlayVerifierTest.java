@@ -1,119 +1,115 @@
 package dev.batuhanyetgin.authservice.service;
 
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.json.JsonMapper;
-import tools.jackson.databind.node.ObjectNode;
+import com.google.auth.oauth2.AccessToken;
+import com.google.auth.oauth2.GoogleCredentials;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.MediaType;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.test.web.client.MockRestServiceServer;
+import tools.jackson.databind.JsonNode;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.when;
+import java.net.URI;
 
-@ExtendWith(MockitoExtension.class)
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatException;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
+
+/** Real RestTemplate with Jackson 3 conversion against a mock HTTP server. */
 class GooglePlayVerifierTest {
 
-    @Mock private RestTemplate restTemplate;
+    private static final String BASE =
+            "https://androidpublisher.googleapis.com/androidpublisher/v3/applications/";
 
     private GooglePlayVerifier verifier;
-
-    private final JsonMapper mapper = new JsonMapper();
+    private MockRestServiceServer server;
 
     @BeforeEach
     void setUp() {
         verifier = new GooglePlayVerifier();
-        verifier.restTemplate = restTemplate;
+        server = MockRestServiceServer.bindTo(verifier.restTemplate).build();
     }
 
-    private ObjectNode buildPurchaseResponse(final String orderId, final long expiryTimeMillis) {
-        final ObjectNode node = mapper.createObjectNode();
-        node.put("orderId", orderId);
-        node.put("expiryTimeMillis", expiryTimeMillis);
-        node.put("paymentState", 1);
-        return node;
+    private void withCredentials() {
+        ReflectionTestUtils.setField(verifier, "credentials",
+                GoogleCredentials.create(new AccessToken("test-token", null)));
     }
 
-    @Nested
-    @DisplayName("verifySubscription")
-    class VerifySubscription {
+    @Test
+    @DisplayName("no credentials → not configured, verification throws IllegalStateException")
+    void noCredentials_notConfigured() {
+        assertThat(verifier.isConfigured()).isFalse();
 
-        @Test
-        @DisplayName("credentials not loaded → throws IllegalStateException")
-        void noCredentials_throwsIllegalState() {
-            ReflectionTestUtils.setField(verifier, "credentials", null);
+        assertThatExceptionOfType(IllegalStateException.class)
+                .isThrownBy(() -> verifier.verifySubscription("com.example.app", "monthly", "token"));
+    }
 
-            assertThatExceptionOfType(IllegalStateException.class)
-                    .isThrownBy(() -> verifier.verifySubscription("com.example.app", "monthly", "token"));
-        }
+    @Test
+    @DisplayName("GOOGLE_PLAY_CREDENTIALS unset → credentials stay null, no fallback to application default")
+    void unsetPath_noFallback() {
+        ReflectionTestUtils.setField(verifier, "credentialsPath", "");
 
-        @Test
-        @DisplayName("API returns valid purchase → orderId and expiryTimeMillis returned")
-        void validPurchase_returnsPurchaseInfo() throws Exception {
-            final long expiryMs = System.currentTimeMillis() + 86_400_000L;
-            final ObjectNode purchaseResponse = buildPurchaseResponse("GPA.ORDER-1", expiryMs);
+        ReflectionTestUtils.invokeMethod(verifier, "loadCredentials");
 
-            final com.google.auth.oauth2.AccessToken accessToken =
-                    new com.google.auth.oauth2.AccessToken("test-token", null);
-            final com.google.auth.oauth2.GoogleCredentials mockCreds =
-                    com.google.auth.oauth2.GoogleCredentials.create(accessToken);
+        assertThat(verifier.isConfigured()).isFalse();
+    }
 
-            ReflectionTestUtils.setField(verifier, "credentials", mockCreds);
+    @Test
+    @DisplayName("unreadable credentials file → stays not configured instead of failing startup")
+    void unreadableFile_notConfigured() {
+        ReflectionTestUtils.setField(verifier, "credentialsPath", "does-not-exist.json");
 
-            when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(), eq(JsonNode.class)))
-                    .thenReturn(ResponseEntity.ok(purchaseResponse));
+        ReflectionTestUtils.invokeMethod(verifier, "loadCredentials");
 
-            final JsonNode result = verifier.verifySubscription("com.example.app", "monthly", "purchase-token");
+        assertThat(verifier.isConfigured()).isFalse();
+    }
 
-            assertThat(result.path("orderId").asString()).isEqualTo("GPA.ORDER-1");
-            assertThat(result.path("expiryTimeMillis").asLong()).isEqualTo(expiryMs);
-        }
+    @Test
+    @DisplayName("valid purchase → orderId and expiryTimeMillis returned, bearer token sent")
+    void validPurchase_returnsPurchaseInfo() throws Exception {
+        withCredentials();
+        server.expect(requestTo(BASE + "com.example.app/purchases/subscriptions/monthly/tokens/purchase-token"))
+                .andExpect(method(HttpMethod.GET))
+                .andExpect(header(HttpHeaders.AUTHORIZATION, "Bearer test-token"))
+                .andRespond(withSuccess("{\"orderId\":\"GPA.ORDER-1\",\"expiryTimeMillis\":\"1234\",\"paymentState\":1}",
+                        MediaType.APPLICATION_JSON));
 
-        @Test
-        @DisplayName("API returns 404 (invalid token) → throws exception")
-        void invalidToken_apiReturns404_throwsException() throws Exception {
-            final com.google.auth.oauth2.AccessToken accessToken =
-                    new com.google.auth.oauth2.AccessToken("test-token", null);
-            final com.google.auth.oauth2.GoogleCredentials mockCreds =
-                    com.google.auth.oauth2.GoogleCredentials.create(accessToken);
+        final JsonNode result = verifier.verifySubscription("com.example.app", "monthly", "purchase-token");
 
-            ReflectionTestUtils.setField(verifier, "credentials", mockCreds);
+        assertThat(result.path("orderId").asString()).isEqualTo("GPA.ORDER-1");
+        assertThat(result.path("expiryTimeMillis").asLong()).isEqualTo(1234L);
+        server.verify();
+    }
 
-            when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(), eq(JsonNode.class)))
-                    .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "Not Found", null, null, null));
+    @Test
+    @DisplayName("every client-supplied value is encoded as a single path segment")
+    void clientValuesAreEncoded() throws Exception {
+        withCredentials();
+        server.expect(requestTo(URI.create(BASE + "com.example.app/purchases/subscriptions/a%2Fb/tokens/..%2F..%2Fx%3Fy=1")))
+                .andRespond(withSuccess("{}", MediaType.APPLICATION_JSON));
 
-            assertThatException()
-                    .isThrownBy(() -> verifier.verifySubscription("com.example.app", "monthly", "bad-token"));
-        }
+        verifier.verifySubscription("com.example.app", "a/b", "../../x?y=1");
 
-        @Test
-        @DisplayName("URL built correctly from packageName, subscriptionId, purchaseToken")
-        void urlBuiltCorrectly() throws Exception {
-            final com.google.auth.oauth2.AccessToken accessToken =
-                    new com.google.auth.oauth2.AccessToken("test-token", null);
-            final com.google.auth.oauth2.GoogleCredentials mockCreds =
-                    com.google.auth.oauth2.GoogleCredentials.create(accessToken);
+        server.verify();
+    }
 
-            ReflectionTestUtils.setField(verifier, "credentials", mockCreds);
+    @Test
+    @DisplayName("API answers 404 for an invalid token → exception")
+    void invalidToken_throwsException() {
+        withCredentials();
+        server.expect(requestTo(BASE + "com.example.app/purchases/subscriptions/monthly/tokens/bad-token"))
+                .andRespond(withStatus(HttpStatus.NOT_FOUND));
 
-            final String expectedUrl =
-                    "https://androidpublisher.googleapis.com/androidpublisher/v3/applications/com.example.app/purchases/subscriptions/yearly/tokens/tok123";
-
-            when(restTemplate.exchange(eq(expectedUrl), eq(HttpMethod.GET), any(), eq(JsonNode.class)))
-                    .thenReturn(ResponseEntity.ok(buildPurchaseResponse("order1", 0L)));
-
-            assertThatNoException()
-                    .isThrownBy(() -> verifier.verifySubscription("com.example.app", "yearly", "tok123"));
-        }
+        assertThatException()
+                .isThrownBy(() -> verifier.verifySubscription("com.example.app", "monthly", "bad-token"));
     }
 }

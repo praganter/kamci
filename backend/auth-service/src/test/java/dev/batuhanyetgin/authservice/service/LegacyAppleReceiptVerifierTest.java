@@ -33,7 +33,7 @@ class LegacyAppleReceiptVerifierTest {
 
     @BeforeEach
     void setUp() {
-        verifier = verifierFor(new IapSettings(BUNDLE, false, "m", "y"), "test-secret");
+        verifier = verifierFor(new IapSettings(BUNDLE, false, "m", "y", "", "", ""), "test-secret");
     }
 
     private LegacyAppleReceiptVerifier verifierFor(final IapSettings settings, final String secret) {
@@ -133,7 +133,7 @@ class LegacyAppleReceiptVerifierTest {
     @Test
     @DisplayName("status 21007 with sandbox allowed → retried against the sandbox endpoint")
     void sandboxReceipt_allowed_fallsBack() {
-        verifier = verifierFor(new IapSettings(BUNDLE, true, "m", "y"), "test-secret");
+        verifier = verifierFor(new IapSettings(BUNDLE, true, "m", "y", "", "", ""), "test-secret");
         server.expect(requestTo(VERIFY_URL)).andRespond(withSuccess("{\"status\":21007}", MediaType.APPLICATION_JSON));
         server.expect(requestTo(SANDBOX_URL)).andRespond(withSuccess(receiptBody(0, BUNDLE,
                 "[{\"original_transaction_id\":\"SBX\",\"expires_date_ms\":\"9\"}]"), MediaType.APPLICATION_JSON));
@@ -155,7 +155,7 @@ class LegacyAppleReceiptVerifierTest {
     @Test
     @DisplayName("no shared secret → not configured, 503 and no request sent")
     void noSecret_notConfigured() {
-        verifier = verifierFor(new IapSettings(BUNDLE, false, "m", "y"), "");
+        verifier = verifierFor(new IapSettings(BUNDLE, false, "m", "y", "", "", ""), "");
         server.expect(never(), content().string(""));
 
         assertThat(verifier.isConfigured()).isFalse();
@@ -168,6 +168,6 @@ class LegacyAppleReceiptVerifierTest {
     @Test
     @DisplayName("no bundle id → not configured")
     void noBundle_notConfigured() {
-        assertThat(verifierFor(new IapSettings("", false, "m", "y"), "test-secret").isConfigured()).isFalse();
+        assertThat(verifierFor(new IapSettings("", false, "m", "y", "", "", ""), "test-secret").isConfigured()).isFalse();
     }
 }

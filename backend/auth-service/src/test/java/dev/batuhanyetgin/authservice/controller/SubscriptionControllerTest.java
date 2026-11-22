@@ -133,36 +133,41 @@ class SubscriptionControllerTest {
     class GoogleWebhook {
 
         @Test
-        @DisplayName("valid message with data → delegates to service and returns 200")
+        @DisplayName("passes the Authorization header and message data to the service, returns 200")
         void validMessage_delegatesAndReturns200() {
-            final Map<String, Object> payload = Map.of(
-                    "message", Map.of("data", "base64encodedData")
-            );
+            final Map<String, Object> payload = Map.of("message", Map.of("data", "base64encodedData"));
 
-            final ResponseEntity<Void> response = controller.googleWebhook(payload);
+            final ResponseEntity<Void> response = controller.googleWebhook("Bearer push-token", payload);
 
             assertThat(response.getStatusCode().value()).isEqualTo(200);
-            verify(subscriptionService).handleGoogleWebhook("base64encodedData");
+            verify(subscriptionService).handleGoogleWebhook("Bearer push-token", "base64encodedData");
         }
 
         @Test
-        @DisplayName("no message key → no service call, returns 200")
-        void noMessage_noServiceCallAndReturns200() {
-            final ResponseEntity<Void> response = controller.googleWebhook(Map.of());
+        @DisplayName("no message key → the service is still called (it authenticates first), with null data")
+        void noMessage_stillAuthenticated() {
+            controller.googleWebhook("Bearer push-token", Map.of());
 
-            assertThat(response.getStatusCode().value()).isEqualTo(200);
-            verifyNoInteractions(subscriptionService);
+            verify(subscriptionService).handleGoogleWebhook("Bearer push-token", null);
         }
 
         @Test
-        @DisplayName("malformed payload (ClassCastException) → caught silently, returns 200")
-        void malformedPayload_caughtSilentlyReturns200() {
-            final Map<String, Object> payload = Map.of("message", "not-a-map");
+        @DisplayName("malformed message (not a map) → null data, never a ClassCastException")
+        void malformedMessage_nullData() {
+            controller.googleWebhook(null, Map.of("message", "not-a-map"));
 
-            final ResponseEntity<Void> response = controller.googleWebhook(payload);
+            verify(subscriptionService).handleGoogleWebhook(null, null);
+        }
 
-            assertThat(response.getStatusCode().value()).isEqualTo(200);
-            verifyNoInteractions(subscriptionService);
+        @Test
+        @DisplayName("service rejects the push token → 403 propagates")
+        void forbidden_propagates() {
+            doThrow(BaseException.forbidden("error.subscription.webhook_unauthorized"))
+                    .when(subscriptionService).handleGoogleWebhook(null, null);
+
+            assertThatExceptionOfType(BaseException.class)
+                    .isThrownBy(() -> controller.googleWebhook(null, Map.of()))
+                    .matches(e -> e.getStatus() == HttpStatus.FORBIDDEN);
         }
     }
 

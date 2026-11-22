@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -42,6 +43,7 @@ public class SubscriptionService {
     private final AppleJwsVerifier appleJwsVerifier;
     private final GooglePlayVerifier googlePlayVerifier;
     private final AppleReceiptVerifier appleReceiptVerifier;
+    private final PubSubTokenVerifier pubSubTokenVerifier;
     private final IapSettings settings;
 
     public SubscriptionResponse verifyReceipt(final String userId, final VerifyReceiptRequest request) {
@@ -65,8 +67,12 @@ public class SubscriptionService {
             expiryDate = toUtc(receiptInfo.path("expires_date_ms").asLong());
             requireNotAlreadyUsedByAnotherUser(userId, subscriptionRS.findOptionalByOriginalTransactionId(transactionId));
         } else {
+            if (!settings.isGoogleConfigured() || !googlePlayVerifier.isConfigured()) {
+                throw BaseException.serviceUnavailable("error.subscription.google_not_configured");
+            }
+            final String packageName = resolvePackageName(request.getPackageName());
             final JsonNode purchaseInfo = verifyGooglePurchase(
-                    request.getPackageName(),
+                    packageName,
                     request.getProductId(),
                     request.getReceiptData()
             );
@@ -198,53 +204,78 @@ public class SubscriptionService {
         }
     }
 
-    public void handleGoogleWebhook(final String encodedData) {
+    /**
+     * Google Play real-time developer notification, delivered by a Pub/Sub push subscription. The
+     * push token (a Google-signed OIDC JWT) is the authentication; it is checked before anything in
+     * the body is read.
+     */
+    public void handleGoogleWebhook(final String authorizationHeader, final String encodedData) {
+        pubSubTokenVerifier.verify(authorizationHeader);
+        if (!settings.isGoogleConfigured()) {
+            throw BaseException.serviceUnavailable("error.subscription.google_not_configured");
+        }
+        if (encodedData == null) {
+            log.debug("Google push without message data, skipping");
+            return;
+        }
+
+        final JsonNode notification;
         try {
-            final String json = new String(Base64.getDecoder().decode(encodedData));
-            final JsonNode notification = jsonMapper.readTree(json);
-            final JsonNode subscriptionNotification = notification.path("subscriptionNotification");
+            notification = jsonMapper.readTree(new String(Base64.getDecoder().decode(encodedData), StandardCharsets.UTF_8));
+        } catch (RuntimeException e) {
+            throw BaseException.badRequest("error.subscription.verification_failed");
+        }
 
-            if (subscriptionNotification.isMissingNode()) {
-                log.debug("Google notification is not a subscription notification, skipping");
-                return;
+        if (!settings.getGooglePackageName().equals(notification.path("packageName").asString(null))) {
+            log.warn("Ignoring Google notification for another package");
+            return;
+        }
+        final JsonNode subscriptionNotification = notification.path("subscriptionNotification");
+        if (subscriptionNotification.isMissingNode()) {
+            log.debug("Google notification is not a subscription notification, skipping");
+            return;
+        }
+
+        final int notificationType = subscriptionNotification.path("notificationType").asInt();
+        final String purchaseToken = subscriptionNotification.path("purchaseToken").asString("");
+        final long eventTimeMs = notification.path("eventTimeMillis").asLong(0);
+        if (eventTimeMs <= 0) {
+            throw BaseException.badRequest("error.subscription.verification_failed");
+        }
+
+        final Optional<SubscriptionDocument> found = subscriptionRS.findOptionalByPurchaseToken(purchaseToken);
+        if (found.isEmpty()) {
+            log.warn("Google notification type {} for an unknown purchase token", notificationType);
+            return;
+        }
+        final SubscriptionDocument sub = found.get();
+        if (isStale(sub, eventTimeMs)) {
+            log.info("Ignoring stale or replayed Google notification type {}", notificationType);
+            return;
+        }
+
+        switch (notificationType) {
+            case GOOGLE_SUBSCRIPTION_RENEWED, GOOGLE_SUBSCRIPTION_RECOVERED, GOOGLE_SUBSCRIPTION_PURCHASED -> {
+                sub.setStatus(SubscriptionStatus.ACTIVE);
+                applyNotification(sub, eventTimeMs, true);
+                log.info("Google subscription renewed/activated for userId: {}", sub.getUserId());
             }
-
-            final int notificationType = subscriptionNotification.path("notificationType").asInt();
-            final String purchaseToken = subscriptionNotification.path("purchaseToken").asString();
-
-            switch (notificationType) {
-                case GOOGLE_SUBSCRIPTION_RENEWED, GOOGLE_SUBSCRIPTION_RECOVERED, GOOGLE_SUBSCRIPTION_PURCHASED -> {
-                    final SubscriptionDocument sub = subscriptionRS.findByPurchaseToken(purchaseToken);
-                    sub.setStatus(SubscriptionStatus.ACTIVE);
-                    subscriptionRS.save(sub);
-                    updatePremiumStatus(sub.getUserId(), true);
-                    log.info("Google subscription renewed/activated for purchaseToken: {}", purchaseToken);
-                }
-                case GOOGLE_SUBSCRIPTION_EXPIRED -> {
-                    final SubscriptionDocument sub = subscriptionRS.findByPurchaseToken(purchaseToken);
-                    sub.setStatus(SubscriptionStatus.EXPIRED);
-                    subscriptionRS.save(sub);
-                    updatePremiumStatus(sub.getUserId(), false);
-                    log.info("Google subscription expired for purchaseToken: {}", purchaseToken);
-                }
-                case GOOGLE_SUBSCRIPTION_CANCELED, GOOGLE_SUBSCRIPTION_REVOKED -> {
-                    final SubscriptionDocument sub = subscriptionRS.findByPurchaseToken(purchaseToken);
-                    sub.setStatus(SubscriptionStatus.CANCELLED);
-                    subscriptionRS.save(sub);
-                    updatePremiumStatus(sub.getUserId(), false);
-                    log.info("Google subscription cancelled/revoked for purchaseToken: {}", purchaseToken);
-                }
-                case GOOGLE_SUBSCRIPTION_ON_HOLD -> {
-                    final SubscriptionDocument sub = subscriptionRS.findByPurchaseToken(purchaseToken);
-                    sub.setStatus(SubscriptionStatus.ON_HOLD);
-                    subscriptionRS.save(sub);
-                    updatePremiumStatus(sub.getUserId(), false);
-                    log.warn("Google subscription ON_HOLD (payment withheld) for purchaseToken: {}", purchaseToken);
-                }
-                default -> log.debug("Unhandled Google notification type: {}", notificationType);
+            case GOOGLE_SUBSCRIPTION_EXPIRED -> {
+                sub.setStatus(SubscriptionStatus.EXPIRED);
+                applyNotification(sub, eventTimeMs, false);
+                log.info("Google subscription expired for userId: {}", sub.getUserId());
             }
-        } catch (Exception e) {
-            log.error("Failed to process Google webhook: {}", e.getMessage(), e);
+            case GOOGLE_SUBSCRIPTION_CANCELED, GOOGLE_SUBSCRIPTION_REVOKED -> {
+                sub.setStatus(SubscriptionStatus.CANCELLED);
+                applyNotification(sub, eventTimeMs, false);
+                log.info("Google subscription cancelled/revoked for userId: {}", sub.getUserId());
+            }
+            case GOOGLE_SUBSCRIPTION_ON_HOLD -> {
+                sub.setStatus(SubscriptionStatus.ON_HOLD);
+                applyNotification(sub, eventTimeMs, false);
+                log.warn("Google subscription ON_HOLD (payment withheld) for userId: {}", sub.getUserId());
+            }
+            default -> log.debug("Unhandled Google notification type: {}", notificationType);
         }
     }
 
@@ -298,6 +329,17 @@ public class SubscriptionService {
             log.warn("Receipt of userId {} presented by another user {}", sub.getUserId(), userId);
             throw BaseException.conflict("error.subscription.already_used");
         });
+    }
+
+    /** Only the configured application may be verified; a client that omits the package gets it filled in. */
+    private String resolvePackageName(final String requested) {
+        if (requested == null || requested.isBlank()) {
+            return settings.getGooglePackageName();
+        }
+        if (!settings.getGooglePackageName().equals(requested)) {
+            throw BaseException.badRequest("error.subscription.package_not_allowed");
+        }
+        return requested;
     }
 
     private JsonNode verifyApple(final String signedJws) {
