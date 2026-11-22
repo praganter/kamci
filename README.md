@@ -5,6 +5,11 @@ reminders, shared categories, multi-currency support and monthly charts. The bac
 microservices behind a Spring Cloud Gateway, and the client is a Flutter app. This monorepo holds the services,
 the platform layer (gateway, discovery, central config, observability), Kubernetes manifests and the mobile app.
 
+Kamci was developed in separate private repositories (backend, infrastructure, configuration, Kubernetes manifests
+and the mobile app). They were merged into this monorepo, with their commit histories preserved, only when the project
+was prepared for publication. During that merge the history was rewritten to remove internal hostnames, credentials and
+tooling traces, so commit hashes differ from the originals and some commit messages were normalised.
+
 ## Architecture
 
 ```mermaid
