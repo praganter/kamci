@@ -198,7 +198,18 @@ services:
     environment:
       <<: *service-env
       ADMIN_SECRET_KEY: ${ADMIN_SECRET_KEY:-dev-admin-key}
-      REVENUECAT_WEBHOOK_SECRET: ${REVENUECAT_WEBHOOK_SECRET:-dev-revenuecat-secret}
+      # In-app purchase verification, all optional (empty = the purchase endpoints answer with an explicit error).
+      # GOOGLE_PLAY_CREDENTIALS is a path inside the container; mount a Play service-account JSON there with a
+      # compose override. It is a different key from the Firebase one.
+      APPLE_BUNDLE_ID: ${APPLE_BUNDLE_ID:-}
+      APPLE_SHARED_SECRET: ${APPLE_SHARED_SECRET:-}
+      GOOGLE_PLAY_PACKAGE_NAME: ${GOOGLE_PLAY_PACKAGE_NAME:-}
+      GOOGLE_PLAY_CREDENTIALS: ${GOOGLE_PLAY_CREDENTIALS:-}
+      GOOGLE_PUBSUB_AUDIENCE: ${GOOGLE_PUBSUB_AUDIENCE:-}
+      GOOGLE_PUBSUB_SERVICE_ACCOUNT_EMAIL: ${GOOGLE_PUBSUB_SERVICE_ACCOUNT_EMAIL:-}
+      APPLE_ALLOW_SANDBOX: ${APPLE_ALLOW_SANDBOX:-false}
+      IAP_MONTHLY_PRODUCT_IDS: ${IAP_MONTHLY_PRODUCT_IDS:-}
+      IAP_YEARLY_PRODUCT_IDS: ${IAP_YEARLY_PRODUCT_IDS:-}
     healthcheck:
       test: [ "CMD", "wget", "-q", "--spider", "http://localhost:8082/actuator/health" ]
       interval: 15s
