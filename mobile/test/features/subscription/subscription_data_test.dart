@@ -41,10 +41,55 @@ void main() {
         'accessToken': 'a',
         'refreshToken': 'r',
       }).toDomain();
-      expect(sub.expiresDate, DateTime(2027));
+      expect(sub.expiresDate, DateTime.utc(2027).toLocal());
       expect(sub.accessToken, 'a');
       expect(sub.refreshToken, 'r');
       expect(sub.isPremium, isTrue);
+    });
+
+    group('expiryDate is read as UTC and shown in local time', () {
+      DateTime? expiry(Object? value) => SubscriptionModel.fromJson({
+        'plan': 'MONTHLY',
+        'status': 'ACTIVE',
+        'expiryDate': value,
+      }).toDomain().expiresDate;
+
+      test('a timestamp without a zone is taken as UTC', () {
+        final parsed = expiry('2027-03-04T21:30:00')!;
+        expect(parsed, DateTime.utc(2027, 3, 4, 21, 30).toLocal());
+        expect(parsed.isUtc, isFalse);
+        expect(
+          parsed.isAtSameMomentAs(DateTime.utc(2027, 3, 4, 21, 30)),
+          isTrue,
+        );
+      });
+
+      test('fractional seconds are kept', () {
+        expect(
+          expiry(
+            '2027-03-04T21:30:00.250',
+          )!.isAtSameMomentAs(DateTime.utc(2027, 3, 4, 21, 30, 0, 250)),
+          isTrue,
+        );
+      });
+
+      test('a timestamp that already carries a zone keeps its instant', () {
+        final instant = DateTime.utc(2027, 3, 4, 21, 30);
+        expect(
+          expiry('2027-03-04T21:30:00Z')!.isAtSameMomentAs(instant),
+          isTrue,
+        );
+        expect(
+          expiry('2027-03-05T00:30:00+03:00')!.isAtSameMomentAs(instant),
+          isTrue,
+        );
+      });
+
+      test('a missing or malformed value is null', () {
+        expect(expiry(null), isNull);
+        expect(expiry('not a date'), isNull);
+        expect(expiry(12345), isNull);
+      });
     });
 
     test('only an ACTIVE monthly or yearly plan counts as premium', () {
