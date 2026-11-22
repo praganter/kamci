@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:purchases_flutter/purchases_flutter.dart';
+import 'package:in_app_purchase/in_app_purchase.dart';
 
 import '../../../../shared/widgets/glow_border.dart';
 import '../../../../core/l10n/l10n.dart';
+import '../../../../core/network/api_exception.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/snackbar_utils.dart';
-import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../data/store/purchase_store.dart';
 import '../../subscription_constants.dart';
+import '../providers/purchase_flow.dart';
 
 class PremiumScreen extends ConsumerStatefulWidget {
   const PremiumScreen({super.key});
@@ -18,10 +19,9 @@ class PremiumScreen extends ConsumerStatefulWidget {
 }
 
 class _PremiumScreenState extends ConsumerState<PremiumScreen> {
-  Offering? _offering;
+  List<ProductDetails> _products = [];
   String? _selectedProductId;
   bool _loading = true;
-  bool _purchasing = false;
   String? _storeError;
 
   @override
@@ -31,74 +31,76 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
   }
 
   Future<void> _loadProducts() async {
-    if (SubscriptionConstants.revenueCatApiKey.isEmpty) {
-      setState(() {
-        _loading = false;
-        _storeError = 'store_unavailable';
-      });
-      return;
-    }
-    Offering? offering;
+    final store = ref.read(purchaseStoreProvider);
+    var products = <ProductDetails>[];
     String? error;
     try {
-      offering = (await Purchases.getOfferings()).current;
-      if (offering == null || offering.availablePackages.isEmpty) {
-        error = 'no_products';
+      if (await store.isAvailable()) {
+        final response = await store.queryProducts(
+          SubscriptionConstants.productIds,
+        );
+        products = response.productDetails;
+        if (products.isEmpty) error = 'no_products';
+      } else {
+        error = 'store_unavailable';
       }
-    } on PlatformException catch (e) {
-      error = e.message ?? 'store_error';
+    } catch (_) {
+      error = 'store_unavailable';
     }
     if (!mounted) return;
     setState(() {
-      _offering = offering;
+      _products = products;
       _storeError = error;
-      _selectedProductId = (offering?.annual ?? offering?.monthly)?.identifier;
+      _selectedProductId =
+          products
+              .where((p) => p.id == SubscriptionConstants.yearlyProductId)
+              .map((p) => p.id)
+              .firstOrNull ??
+          products.firstOrNull?.id;
       _loading = false;
     });
   }
 
-  Future<void> _onCustomerInfo(CustomerInfo info) async {
-    final active = info.entitlements.active.containsKey(
-      SubscriptionConstants.entitlementId,
-    );
-    if (!active) return;
-    await ref.read(authNotifierProvider.notifier).refreshTokens();
-    ref.invalidate(userDetailProvider);
-    if (mounted) Navigator.of(context).pop();
-  }
-
-  Future<void> _run(Future<CustomerInfo> Function() action) async {
-    setState(() => _purchasing = true);
-    try {
-      await _onCustomerInfo(await action());
-    } on PlatformException catch (e) {
-      final code = PurchasesErrorHelper.getErrorCode(e);
-      if (code != PurchasesErrorCode.purchaseCancelledError && mounted) {
-        showErrorSnackBar(context, context.l10n.purchaseFailed);
-      }
+  void _onPurchaseState(PurchaseState next) {
+    switch (next.phase) {
+      case PurchasePhase.success:
+        Navigator.of(context).pop();
+      case PurchasePhase.failed:
+        final error = next.error;
+        showErrorSnackBar(
+          context,
+          error is ApiException ? error : context.l10n.purchaseFailed,
+        );
+      case PurchasePhase.pending:
+        showSuccessSnackBar(context, context.l10n.purchasePending);
+      case PurchasePhase.nothingToRestore:
+        showSuccessSnackBar(context, context.l10n.nothingToRestore);
+      case PurchasePhase.idle:
+      case PurchasePhase.purchasing:
+      case PurchasePhase.restoring:
+      case PurchasePhase.verifying:
+      case PurchasePhase.canceled:
+        break;
     }
-    if (mounted) setState(() => _purchasing = false);
   }
 
   Future<void> _purchase() async {
-    final package = _offering?.availablePackages
-        .where((p) => p.identifier == _selectedProductId)
+    final product = _products
+        .where((p) => p.id == _selectedProductId)
         .firstOrNull;
-    if (package == null) return;
-    await _run(
-      () async =>
-          (await Purchases.purchase(PurchaseParams.package(package)))
-              .customerInfo,
-    );
+    if (product == null) return;
+    await ref.read(purchaseFlowProvider.notifier).buy(product);
   }
 
-  Future<void> _restore() => _run(Purchases.restorePurchases);
+  Future<void> _restore() => ref.read(purchaseFlowProvider.notifier).restore();
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
     final l10n = context.l10n;
+    ref.listen(purchaseFlowProvider, (_, next) => _onPurchaseState(next));
+    final purchasing = ref.watch(purchaseFlowProvider).busy;
 
     return Scaffold(
       backgroundColor: cs.surface,
@@ -145,7 +147,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
                             )
                           else
                             _PlanSelector(
-                              offering: _offering,
+                              products: _products,
                               selectedId: _selectedProductId,
                               onSelect: (id) =>
                                   setState(() => _selectedProductId = id),
@@ -159,7 +161,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
                     ),
                   ),
                   _Footer(
-                    purchasing: _purchasing,
+                    purchasing: purchasing,
                     canPurchase: _selectedProductId != null,
                     onPurchase: _purchase,
                     onRestore: _restore,
@@ -173,7 +175,6 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
     );
   }
 }
-
 
 class _Header extends StatelessWidget {
   const _Header({required this.tt, required this.l10n});
@@ -219,7 +220,6 @@ class _Header extends StatelessWidget {
     );
   }
 }
-
 
 class _FeatureList extends StatelessWidget {
   const _FeatureList({required this.l10n, required this.tt, required this.cs});
@@ -283,10 +283,9 @@ class _FeatureList extends StatelessWidget {
   }
 }
 
-
 class _PlanSelector extends StatelessWidget {
   const _PlanSelector({
-    required this.offering,
+    required this.products,
     required this.selectedId,
     required this.onSelect,
     required this.tt,
@@ -294,27 +293,30 @@ class _PlanSelector extends StatelessWidget {
     required this.l10n,
   });
 
-  final Offering? offering;
+  final List<ProductDetails> products;
   final String? selectedId;
   final ValueChanged<String> onSelect;
   final TextTheme tt;
   final ColorScheme cs;
   final dynamic l10n;
 
+  ProductDetails? _find(String id) =>
+      products.where((p) => p.id == id).firstOrNull;
+
   @override
   Widget build(BuildContext context) {
-    final monthly = offering?.monthly;
-    final yearly = offering?.annual;
+    final monthly = _find(SubscriptionConstants.monthlyProductId);
+    final yearly = _find(SubscriptionConstants.yearlyProductId);
 
     return Column(
       children: [
         if (yearly != null)
           _PlanCard(
             period: l10n.periodYearly,
-            priceLabel: '${yearly.storeProduct.priceString} ${l10n.perYear}',
+            priceLabel: '${yearly.price} ${l10n.perYear}',
             badge: l10n.bestValue,
-            selected: selectedId == yearly.identifier,
-            onTap: () => onSelect(yearly.identifier),
+            selected: selectedId == yearly.id,
+            onTap: () => onSelect(yearly.id),
             tt: tt,
             cs: cs,
           ),
@@ -322,10 +324,10 @@ class _PlanSelector extends StatelessWidget {
         if (monthly != null)
           _PlanCard(
             period: l10n.periodMonthly,
-            priceLabel: '${monthly.storeProduct.priceString} ${l10n.perMonth}',
+            priceLabel: '${monthly.price} ${l10n.perMonth}',
             badge: null,
-            selected: selectedId == monthly.identifier,
-            onTap: () => onSelect(monthly.identifier),
+            selected: selectedId == monthly.id,
+            onTap: () => onSelect(monthly.id),
             tt: tt,
             cs: cs,
           ),
@@ -441,7 +443,6 @@ class _PlanCard extends StatelessWidget {
   }
 }
 
-
 class _Footer extends StatelessWidget {
   const _Footer({
     required this.purchasing,
@@ -518,7 +519,6 @@ class _Footer extends StatelessWidget {
     );
   }
 }
-
 
 class _StoreErrorCard extends StatelessWidget {
   const _StoreErrorCard({

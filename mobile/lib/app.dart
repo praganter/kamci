@@ -14,6 +14,7 @@ import 'core/services/notification_routing.dart';
 import 'core/services/notification_service.dart';
 import 'features/auth/presentation/providers/auth_provider.dart';
 import 'features/auth/presentation/providers/auth_state.dart';
+import 'features/subscription/presentation/providers/purchase_flow.dart';
 
 class App extends ConsumerStatefulWidget {
   const App({super.key});
@@ -28,6 +29,7 @@ class _AppState extends ConsumerState<App> {
   @override
   void initState() {
     super.initState();
+    ref.read(purchaseFlowProvider);
     _initDeepLinks();
     NotificationService.pendingTarget.addListener(_openPendingTarget);
     WidgetsBinding.instance.addPostFrameCallback((_) => _openPendingTarget());
