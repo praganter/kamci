@@ -21,7 +21,7 @@ COPY debt-service/src ./debt-service/src
 RUN mvn clean install -DskipTests -pl common-module -am
 RUN mvn clean package -DskipTests -pl debt-service
 
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:24-jre-alpine
 WORKDIR /app
 RUN addgroup -S kamci && adduser -S -G kamci kamci
 
