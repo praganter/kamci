@@ -1,6 +1,9 @@
 package dev.batuhanyetgin.authservice.service;
 
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
 import dev.batuhanyetgin.authservice.document.SubscriptionDocument;
+import dev.batuhanyetgin.authservice.dto.request.VerifyReceiptRequest;
 import dev.batuhanyetgin.authservice.dto.response.SubscriptionResponse;
 import dev.batuhanyetgin.authservice.enums.SubscriptionPlan;
 import dev.batuhanyetgin.authservice.enums.SubscriptionPlatform;
@@ -11,19 +14,84 @@ import dev.batuhanyetgin.commonmodule.exception.BaseException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import tools.jackson.databind.JsonNode;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Base64;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class SubscriptionService {
 
+    // Google Play subscription notification types
+    private static final int GOOGLE_SUBSCRIPTION_RECOVERED = 1;
+    private static final int GOOGLE_SUBSCRIPTION_RENEWED = 4;
+    private static final int GOOGLE_SUBSCRIPTION_PURCHASED = 7;
+    private static final int GOOGLE_SUBSCRIPTION_CANCELED = 3;
+    private static final int GOOGLE_SUBSCRIPTION_ON_HOLD = 5;
+    private static final int GOOGLE_SUBSCRIPTION_EXPIRED = 13;
+    private static final int GOOGLE_SUBSCRIPTION_REVOKED = 12;
     private final AuthRepositoryService authRS;
     private final SubscriptionRepositoryService subscriptionRS;
+    private final JwtService jwtService;
+    private final JsonMapper objectMapper;
+    private final AppleJwsVerifier appleJwsVerifier;
+    private final GooglePlayVerifier googlePlayVerifier;
+    private final AppleReceiptVerifier appleReceiptVerifier;
+
+    public SubscriptionResponse verifyReceipt(final String userId, final VerifyReceiptRequest request) {
+        final SubscriptionPlatform platform = SubscriptionPlatform.valueOf(request.getPlatform());
+        final SubscriptionPlan plan = SubscriptionPlan.valueOf(request.getPlan());
+
+        final LocalDateTime expiryDate;
+        final String transactionId;
+
+        if (platform == SubscriptionPlatform.IOS) {
+            final JsonNode receiptInfo = appleReceiptVerifier.verify(request.getReceiptData());
+            transactionId = receiptInfo.path("original_transaction_id").asString();
+            final long expiresMs = receiptInfo.path("expires_date_ms").asLong();
+            expiryDate = LocalDateTime.ofInstant(Instant.ofEpochMilli(expiresMs), ZoneOffset.UTC);
+        } else {
+            final JsonNode purchaseInfo = verifyGooglePurchase(
+                    request.getPackageName(),
+                    request.getProductId(),
+                    request.getReceiptData()
+            );
+            transactionId = purchaseInfo.path("orderId").asString();
+            final long expiresMs = purchaseInfo.path("expiryTimeMillis").asLong();
+            expiryDate = LocalDateTime.ofInstant(Instant.ofEpochMilli(expiresMs), ZoneOffset.UTC);
+        }
+
+        final SubscriptionDocument subscription = subscriptionRS.findByUserId(userId)
+                .orElse(SubscriptionDocument.builder().userId(userId).build());
+
+        final boolean isNew = subscription.getId() == null;
+
+        subscription.setPlan(plan);
+        subscription.setPlatform(platform);
+        subscription.setStatus(SubscriptionStatus.ACTIVE);
+        subscription.setProductId(request.getProductId());
+        if (isNew) {
+            subscription.setStartDate(LocalDateTime.now(ZoneOffset.UTC));
+        }
+        subscription.setExpiryDate(expiryDate);
+
+        if (platform == SubscriptionPlatform.IOS) {
+            subscription.setOriginalTransactionId(transactionId);
+        } else {
+            subscription.setPurchaseToken(request.getReceiptData());
+            subscription.setOriginalTransactionId(transactionId);
+        }
+
+        subscriptionRS.save(subscription);
+        updatePremiumStatus(userId, true);
+
+        log.info("Subscription activated for userId: {}, plan: {}, platform: {}", userId, plan, platform);
+
+        return buildSubscriptionResponse(subscription, userId);
+    }
 
     public SubscriptionResponse getStatus(final String userId) {
         return subscriptionRS.findByUserId(userId)
@@ -35,64 +103,110 @@ public class SubscriptionService {
                 .orElseThrow(() -> BaseException.notFound("error.subscription.not_found"));
     }
 
-    public void handleRevenueCatWebhook(final JsonNode payload) {
+    public void handleAppleWebhook(final String signedPayload) {
         try {
-            final JsonNode event = payload.path("event");
-            final String type = event.path("type").asString();
-            final String userId = event.path("app_user_id").asString();
-            if (userId.isBlank()) {
-                log.warn("RevenueCat webhook event {} missing app_user_id", type);
+            // Apple SSNS V2: verify JWS signature, then decode payload
+            final JsonNode payload = appleJwsVerifier.verifyAndDecode(signedPayload);
+
+            final String notificationType = payload.path("notificationType").asString();
+            final JsonNode data = payload.path("data");
+            final String signedTransactionInfo = data.path("signedTransactionInfo").asString();
+            final String signedRenewalInfo = data.path("signedRenewalInfo").asString();
+
+            final JsonNode txInfo = appleJwsVerifier.verifyAndDecode(signedTransactionInfo);
+
+            final String originalTransactionId = txInfo.path("originalTransactionId").asString();
+            final long expiresMs = txInfo.path("expiresDate").asLong();
+            final LocalDateTime expiryDate = expiresMs > 0
+                    ? LocalDateTime.ofInstant(Instant.ofEpochMilli(expiresMs), ZoneOffset.UTC)
+                    : null;
+
+            switch (notificationType) {
+                case "SUBSCRIBED", "DID_RENEW" -> {
+                    final SubscriptionDocument sub = subscriptionRS.findByOriginalTransactionId(originalTransactionId);
+                    sub.setStatus(SubscriptionStatus.ACTIVE);
+                    if (expiryDate != null) sub.setExpiryDate(expiryDate);
+                    subscriptionRS.save(sub);
+                    updatePremiumStatus(sub.getUserId(), true);
+                    log.info("Apple subscription renewed/activated for transactionId: {}", originalTransactionId);
+                }
+                case "EXPIRED", "DID_FAIL_TO_RENEW", "REFUND" -> {
+                    final SubscriptionDocument sub = subscriptionRS.findByOriginalTransactionId(originalTransactionId);
+                    sub.setStatus("REFUND".equals(notificationType)
+                            ? SubscriptionStatus.CANCELLED : SubscriptionStatus.EXPIRED);
+                    subscriptionRS.save(sub);
+                    updatePremiumStatus(sub.getUserId(), false);
+                    log.info("Apple subscription expired/cancelled for transactionId: {}", originalTransactionId);
+                }
+                case "GRACE_PERIOD_EXPIRED" -> {
+                    final SubscriptionDocument sub = subscriptionRS.findByOriginalTransactionId(originalTransactionId);
+                    sub.setStatus(SubscriptionStatus.EXPIRED);
+                    subscriptionRS.save(sub);
+                    updatePremiumStatus(sub.getUserId(), false);
+                    log.info("Apple grace period expired for transactionId: {}", originalTransactionId);
+                }
+                case "DID_CHANGE_RENEWAL_STATUS" -> {
+                    final JsonNode rnInfo = appleJwsVerifier.verifyAndDecode(signedRenewalInfo);
+                    final int autoRenewStatus = rnInfo.path("autoRenewStatus").asInt(-1);
+                    log.info("Apple DID_CHANGE_RENEWAL_STATUS for transactionId: {}, autoRenewStatus: {}",
+                            originalTransactionId, autoRenewStatus);
+                    // autoRenewStatus=0 means auto-renew disabled; premium not revoked until period ends.
+                    // Scheduler will handle expiry when expiryDate passes.
+                }
+                default -> log.debug("Unhandled Apple notification type: {}", notificationType);
+            }
+        } catch (Exception e) {
+            log.error("Failed to process Apple webhook: {}", e.getMessage(), e);
+        }
+    }
+
+    public void handleGoogleWebhook(final String encodedData) {
+        try {
+            final String json = new String(Base64.getDecoder().decode(encodedData));
+            final JsonNode notification = objectMapper.readTree(json);
+            final JsonNode subscriptionNotification = notification.path("subscriptionNotification");
+
+            if (subscriptionNotification.isMissingNode()) {
+                log.debug("Google notification is not a subscription notification, skipping");
                 return;
             }
 
-            final SubscriptionDocument sub = subscriptionRS.findByUserId(userId)
-                    .orElseGet(() -> SubscriptionDocument.builder().userId(userId).build());
-            final boolean isNew = sub.getId() == null;
-            if (isNew) {
-                sub.setStartDate(LocalDateTime.now(ZoneOffset.UTC));
-            }
+            final int notificationType = subscriptionNotification.path("notificationType").asInt();
+            final String purchaseToken = subscriptionNotification.path("purchaseToken").asString();
 
-            final String productId = event.path("product_id").asString(null);
-            if (productId != null) {
-                sub.setProductId(productId);
-            }
-            final String store = event.path("store").asString(null);
-            if (store != null) {
-                sub.setPlatform(mapStore(store));
-            }
-            final long expiresMs = event.path("expiration_at_ms").asLong(-1);
-            if (expiresMs > 0) {
-                sub.setExpiryDate(LocalDateTime.ofInstant(Instant.ofEpochMilli(expiresMs), ZoneOffset.UTC));
-            }
-
-            switch (type) {
-                case "INITIAL_PURCHASE", "RENEWAL", "UNCANCELLATION", "PRODUCT_CHANGE" -> {
+            switch (notificationType) {
+                case GOOGLE_SUBSCRIPTION_RENEWED, GOOGLE_SUBSCRIPTION_RECOVERED, GOOGLE_SUBSCRIPTION_PURCHASED -> {
+                    final SubscriptionDocument sub = subscriptionRS.findByPurchaseToken(purchaseToken);
                     sub.setStatus(SubscriptionStatus.ACTIVE);
                     subscriptionRS.save(sub);
-                    updatePremiumStatus(userId, true);
-                    log.info("RevenueCat {} → subscription ACTIVE for userId: {}", type, userId);
+                    updatePremiumStatus(sub.getUserId(), true);
+                    log.info("Google subscription renewed/activated for purchaseToken: {}", purchaseToken);
                 }
-                case "EXPIRATION" -> {
+                case GOOGLE_SUBSCRIPTION_EXPIRED -> {
+                    final SubscriptionDocument sub = subscriptionRS.findByPurchaseToken(purchaseToken);
                     sub.setStatus(SubscriptionStatus.EXPIRED);
                     subscriptionRS.save(sub);
-                    updatePremiumStatus(userId, false);
-                    log.info("RevenueCat EXPIRATION → subscription EXPIRED for userId: {}", userId);
+                    updatePremiumStatus(sub.getUserId(), false);
+                    log.info("Google subscription expired for purchaseToken: {}", purchaseToken);
                 }
-                case "BILLING_ISSUE" -> {
+                case GOOGLE_SUBSCRIPTION_CANCELED, GOOGLE_SUBSCRIPTION_REVOKED -> {
+                    final SubscriptionDocument sub = subscriptionRS.findByPurchaseToken(purchaseToken);
+                    sub.setStatus(SubscriptionStatus.CANCELLED);
+                    subscriptionRS.save(sub);
+                    updatePremiumStatus(sub.getUserId(), false);
+                    log.info("Google subscription cancelled/revoked for purchaseToken: {}", purchaseToken);
+                }
+                case GOOGLE_SUBSCRIPTION_ON_HOLD -> {
+                    final SubscriptionDocument sub = subscriptionRS.findByPurchaseToken(purchaseToken);
                     sub.setStatus(SubscriptionStatus.ON_HOLD);
                     subscriptionRS.save(sub);
-                    log.warn("RevenueCat BILLING_ISSUE for userId: {}", userId);
+                    updatePremiumStatus(sub.getUserId(), false);
+                    log.warn("Google subscription ON_HOLD (payment withheld) for purchaseToken: {}", purchaseToken);
                 }
-                case "CANCELLATION" -> {
-                    // Auto-renew turned off; premium stays active until expiryDate.
-                    // SubscriptionExpiryScheduler revokes premium once it passes.
-                    subscriptionRS.save(sub);
-                    log.info("RevenueCat CANCELLATION (auto-renew off) for userId: {}", userId);
-                }
-                default -> log.debug("Unhandled RevenueCat event type: {}", type);
+                default -> log.debug("Unhandled Google notification type: {}", notificationType);
             }
         } catch (Exception e) {
-            log.error("Failed to process RevenueCat webhook: {}", e.getMessage(), e);
+            log.error("Failed to process Google webhook: {}", e.getMessage(), e);
         }
     }
 
@@ -128,17 +242,34 @@ public class SubscriptionService {
         });
     }
 
-    private SubscriptionPlatform mapStore(final String store) {
-        return switch (store) {
-            case "APP_STORE" -> SubscriptionPlatform.IOS;
-            case "PLAY_STORE" -> SubscriptionPlatform.ANDROID;
-            default -> SubscriptionPlatform.ADMIN;
-        };
+    private JsonNode verifyGooglePurchase(final String packageName, final String productId, final String purchaseToken) {
+        try {
+            final JsonNode result = googlePlayVerifier.verifySubscription(packageName, productId, purchaseToken);
+            if (result == null) {
+                throw BaseException.badRequest("error.subscription.verification_failed");
+            }
+            return result;
+        } catch (BaseException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Google Play purchase verification failed: {}", e.getMessage());
+            throw BaseException.badRequest("error.subscription.verification_failed");
+        }
     }
 
     private void updatePremiumStatus(final String userId, final boolean premium) {
         final var authDocument = authRS.findById(userId);
         authDocument.setPremium(premium);
         authRS.save(authDocument);
+    }
+
+    private SubscriptionResponse buildSubscriptionResponse(final SubscriptionDocument sub, final String userId) {
+        return SubscriptionResponse.builder()
+                .plan(sub.getPlan())
+                .status(sub.getStatus())
+                .expiryDate(sub.getExpiryDate())
+                .accessToken(jwtService.generateToken(userId, false, true))
+                .refreshToken(jwtService.generateToken(userId, true, false))
+                .build();
     }
 }

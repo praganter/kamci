@@ -16,4 +16,6 @@ public class SubscriptionResponse extends BaseResponse {
     private SubscriptionPlan plan;
     private SubscriptionStatus status;
     private LocalDateTime expiryDate;
+    private String accessToken;
+    private String refreshToken;
 }

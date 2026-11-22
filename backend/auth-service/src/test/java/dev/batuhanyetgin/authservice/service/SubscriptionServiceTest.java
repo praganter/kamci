@@ -1,10 +1,10 @@
 package dev.batuhanyetgin.authservice.service;
 
-import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.node.ObjectNode;
 import dev.batuhanyetgin.authservice.document.AuthDocument;
 import dev.batuhanyetgin.authservice.document.SubscriptionDocument;
+import dev.batuhanyetgin.authservice.dto.request.VerifyReceiptRequest;
 import dev.batuhanyetgin.authservice.dto.response.SubscriptionResponse;
 import dev.batuhanyetgin.authservice.enums.SubscriptionPlan;
 import dev.batuhanyetgin.authservice.enums.SubscriptionPlatform;
@@ -24,10 +24,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -35,7 +37,11 @@ class SubscriptionServiceTest {
 
     @Mock private AuthRepositoryService authRS;
     @Mock private SubscriptionRepositoryService subscriptionRS;
-    private final ObjectMapper objectMapper = JsonMapper.builder().build();
+    @Mock private JwtService jwtService;
+    private final tools.jackson.databind.json.JsonMapper objectMapper = new tools.jackson.databind.json.JsonMapper();
+    @Mock private AppleJwsVerifier appleJwsVerifier;
+    @Mock private GooglePlayVerifier googlePlayVerifier;
+    @Mock private AppleReceiptVerifier appleReceiptVerifier;
 
     private SubscriptionService subscriptionService;
 
@@ -43,7 +49,7 @@ class SubscriptionServiceTest {
 
     @BeforeEach
     void setUp() {
-        subscriptionService = new SubscriptionService(authRS, subscriptionRS);
+        subscriptionService = new SubscriptionService(authRS, subscriptionRS, jwtService, objectMapper, appleJwsVerifier, googlePlayVerifier, appleReceiptVerifier);
     }
 
     private AuthDocument buildAuthDoc() {
@@ -59,6 +65,134 @@ class SubscriptionServiceTest {
                 .status(SubscriptionStatus.ACTIVE)
                 .expiryDate(LocalDateTime.now().plusYears(1))
                 .build();
+    }
+
+    // ─── verifyReceipt ────────────────────────────────────────────────────────
+
+    @Nested
+    @DisplayName("verifyReceipt")
+    class VerifyReceipt {
+
+        private final JsonMapper mapper = new JsonMapper();
+
+        private VerifyReceiptRequest iosRequest() {
+            return VerifyReceiptRequest.builder()
+                    .platform("IOS").plan("YEARLY")
+                    .receiptData("ios-receipt").productId("yearly_ios")
+                    .build();
+        }
+
+        private VerifyReceiptRequest androidRequest() {
+            return VerifyReceiptRequest.builder()
+                    .platform("ANDROID").plan("MONTHLY")
+                    .receiptData("goog-token").productId("monthly_android")
+                    .packageName("com.example.app")
+                    .build();
+        }
+
+        @Test
+        @DisplayName("IOS receipt valid → subscription saved as ACTIVE, tokens returned")
+        void ios_validReceipt_subscriptionActivated() {
+            final long expiresMs = System.currentTimeMillis() + 86_400_000L;
+            final var receiptInfo = mapper.createObjectNode();
+            receiptInfo.put("original_transaction_id", "TX_IOS_1");
+            receiptInfo.put("expires_date_ms", expiresMs);
+
+            when(appleReceiptVerifier.verify("ios-receipt")).thenReturn(receiptInfo);
+            when(subscriptionRS.findByUserId(USER_ID)).thenReturn(Optional.empty());
+            when(subscriptionRS.save(any())).thenAnswer(inv -> inv.getArgument(0));
+            when(authRS.findById(USER_ID)).thenReturn(buildAuthDoc());
+            when(authRS.save(any())).thenAnswer(inv -> inv.getArgument(0));
+            when(jwtService.generateToken(USER_ID, false, true)).thenReturn("access-token");
+            when(jwtService.generateToken(USER_ID, true, false)).thenReturn("refresh-token");
+
+            final SubscriptionResponse response = subscriptionService.verifyReceipt(USER_ID, iosRequest());
+
+            final ArgumentCaptor<SubscriptionDocument> captor = ArgumentCaptor.forClass(SubscriptionDocument.class);
+            verify(subscriptionRS).save(captor.capture());
+            assertThat(captor.getValue().getStatus()).isEqualTo(SubscriptionStatus.ACTIVE);
+            assertThat(captor.getValue().getPlatform()).isEqualTo(SubscriptionPlatform.IOS);
+            assertThat(captor.getValue().getOriginalTransactionId()).isEqualTo("TX_IOS_1");
+            assertThat(response.getAccessToken()).isEqualTo("access-token");
+        }
+
+        @Test
+        @DisplayName("ANDROID purchase valid → subscription saved as ACTIVE, tokens returned")
+        void android_validPurchase_subscriptionActivated() throws Exception {
+            final long expiresMs = System.currentTimeMillis() + 86_400_000L;
+            final var purchaseInfo = mapper.createObjectNode();
+            purchaseInfo.put("orderId", "GPA.ORDER-1");
+            purchaseInfo.put("expiryTimeMillis", expiresMs);
+
+            when(googlePlayVerifier.verifySubscription("com.example.app", "monthly_android", "goog-token"))
+                    .thenReturn(purchaseInfo);
+            when(subscriptionRS.findByUserId(USER_ID)).thenReturn(Optional.empty());
+            when(subscriptionRS.save(any())).thenAnswer(inv -> inv.getArgument(0));
+            when(authRS.findById(USER_ID)).thenReturn(buildAuthDoc());
+            when(authRS.save(any())).thenAnswer(inv -> inv.getArgument(0));
+            when(jwtService.generateToken(USER_ID, false, true)).thenReturn("access-token");
+            when(jwtService.generateToken(USER_ID, true, false)).thenReturn("refresh-token");
+
+            final SubscriptionResponse response = subscriptionService.verifyReceipt(USER_ID, androidRequest());
+
+            final ArgumentCaptor<SubscriptionDocument> captor = ArgumentCaptor.forClass(SubscriptionDocument.class);
+            verify(subscriptionRS).save(captor.capture());
+            assertThat(captor.getValue().getStatus()).isEqualTo(SubscriptionStatus.ACTIVE);
+            assertThat(captor.getValue().getPlatform()).isEqualTo(SubscriptionPlatform.ANDROID);
+            assertThat(captor.getValue().getPurchaseToken()).isEqualTo("goog-token");
+            assertThat(response.getAccessToken()).isEqualTo("access-token");
+        }
+
+        @Test
+        @DisplayName("IOS receipt invalid → throws BAD_REQUEST, subscription not saved")
+        void ios_invalidReceipt_throwsBadRequest() {
+            when(appleReceiptVerifier.verify("ios-receipt"))
+                    .thenThrow(BaseException.badRequest("error.subscription.verification_failed"));
+
+            assertThatExceptionOfType(BaseException.class)
+                    .isThrownBy(() -> subscriptionService.verifyReceipt(USER_ID, iosRequest()))
+                    .matches(e -> e.getStatus() == HttpStatus.BAD_REQUEST);
+
+            verify(subscriptionRS, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("ANDROID purchase invalid → throws BAD_REQUEST, subscription not saved")
+        void android_invalidPurchase_throwsBadRequest() throws Exception {
+            when(googlePlayVerifier.verifySubscription(any(), any(), any()))
+                    .thenThrow(new RuntimeException("API error"));
+
+            assertThatExceptionOfType(BaseException.class)
+                    .isThrownBy(() -> subscriptionService.verifyReceipt(USER_ID, androidRequest()))
+                    .matches(e -> e.getStatus() == HttpStatus.BAD_REQUEST);
+
+            verify(subscriptionRS, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("existing subscription updated rather than created")
+        void existingSubscription_updatedNotCreated() {
+            final long expiresMs = System.currentTimeMillis() + 86_400_000L;
+            final var receiptInfo = mapper.createObjectNode();
+            receiptInfo.put("original_transaction_id", "TX_IOS_2");
+            receiptInfo.put("expires_date_ms", expiresMs);
+
+            final SubscriptionDocument existing = buildActiveSubscription();
+            ReflectionTestUtils.setField(existing, "id", "existing-id");
+            when(appleReceiptVerifier.verify("ios-receipt")).thenReturn(receiptInfo);
+            when(subscriptionRS.findByUserId(USER_ID)).thenReturn(Optional.of(existing));
+            when(subscriptionRS.save(any())).thenAnswer(inv -> inv.getArgument(0));
+            when(authRS.findById(USER_ID)).thenReturn(buildAuthDoc());
+            when(authRS.save(any())).thenAnswer(inv -> inv.getArgument(0));
+            when(jwtService.generateToken(any(), anyBoolean(), anyBoolean())).thenReturn("token");
+
+            subscriptionService.verifyReceipt(USER_ID, iosRequest());
+
+            final ArgumentCaptor<SubscriptionDocument> captor = ArgumentCaptor.forClass(SubscriptionDocument.class);
+            verify(subscriptionRS).save(captor.capture());
+            assertThat(captor.getValue()).isSameAs(existing);
+            assertThat(captor.getValue().getStartDate()).isNull();
+        }
     }
 
     // ─── getStatus ────────────────────────────────────────────────────────────
@@ -131,76 +265,76 @@ class SubscriptionServiceTest {
         }
     }
 
-    // ─── handleRevenueCatWebhook ──────────────────────────────────────────────
+    // ─── handleAppleWebhook ───────────────────────────────────────────────────
 
     @Nested
-    @DisplayName("handleRevenueCatWebhook")
-    class HandleRevenueCatWebhook {
+    @DisplayName("handleAppleWebhook")
+    class HandleAppleWebhook {
 
-        private final ObjectMapper mapper = JsonMapper.builder().build();
+        private final JsonMapper mapper = new JsonMapper();
 
-        private ObjectNode buildEvent(final String type, final String appUserId,
-                                       final String productId, final String store, final long expiresMs) {
-            final ObjectNode event = mapper.createObjectNode();
-            event.put("type", type);
-            event.put("app_user_id", appUserId);
-            if (productId != null) event.put("product_id", productId);
-            if (store != null) event.put("store", store);
-            if (expiresMs > 0) event.put("expiration_at_ms", expiresMs);
+        private String buildGoogleBase64(final String json) {
+            return Base64.getEncoder().encodeToString(json.getBytes());
+        }
+
+        private ObjectNode buildTxInfoNode(final String originalTransactionId, final long expiresDate) {
+            final ObjectNode txInfo = mapper.createObjectNode();
+            txInfo.put("originalTransactionId", originalTransactionId);
+            txInfo.put("expiresDate", expiresDate);
+            return txInfo;
+        }
+
+        private ObjectNode buildOuterPayload(final String notificationType,
+                                             final String signedTransactionInfo,
+                                             final String signedRenewalInfo) {
+            final ObjectNode data = mapper.createObjectNode();
+            data.put("signedTransactionInfo", signedTransactionInfo);
+            data.put("signedRenewalInfo", signedRenewalInfo != null ? signedRenewalInfo : "");
             final ObjectNode payload = mapper.createObjectNode();
-            payload.set("event", event);
+            payload.put("notificationType", notificationType);
+            payload.set("data", data);
             return payload;
         }
 
         @Test
-        @DisplayName("INITIAL_PURCHASE → subscription created ACTIVE, premium enabled")
-        void initialPurchase_createsActiveSubscription() {
+        @DisplayName("SUBSCRIBED → subscription set to ACTIVE and premium enabled")
+        void subscribed_setsActiveAndPremium() throws Exception {
+            final String txId = "TX123";
             final long expiresMs = System.currentTimeMillis() + 86_400_000L;
-            final ObjectNode payload = buildEvent("INITIAL_PURCHASE", USER_ID, "yearly_product", "APP_STORE", expiresMs);
+            final ObjectNode txInfo = buildTxInfoNode(txId, expiresMs);
+            final ObjectNode outerPayload = buildOuterPayload("SUBSCRIBED", "signed.tx.token", null);
 
-            when(subscriptionRS.findByUserId(USER_ID)).thenReturn(Optional.empty());
-            when(subscriptionRS.save(any())).thenAnswer(inv -> inv.getArgument(0));
-            when(authRS.findById(USER_ID)).thenReturn(buildAuthDoc());
-            when(authRS.save(any())).thenAnswer(inv -> inv.getArgument(0));
+            when(appleJwsVerifier.verifyAndDecode("signed.payload")).thenReturn(outerPayload);
+            when(appleJwsVerifier.verifyAndDecode("signed.tx.token")).thenReturn(txInfo);
 
-            subscriptionService.handleRevenueCatWebhook(payload);
-
-            final ArgumentCaptor<SubscriptionDocument> captor = ArgumentCaptor.forClass(SubscriptionDocument.class);
-            verify(subscriptionRS).save(captor.capture());
-            assertThat(captor.getValue().getStatus()).isEqualTo(SubscriptionStatus.ACTIVE);
-            assertThat(captor.getValue().getPlatform()).isEqualTo(SubscriptionPlatform.IOS);
-            assertThat(captor.getValue().getProductId()).isEqualTo("yearly_product");
-        }
-
-        @Test
-        @DisplayName("RENEWAL → existing subscription set to ACTIVE and premium enabled")
-        void renewal_setsActiveAndPremium() {
-            final long expiresMs = System.currentTimeMillis() + 86_400_000L;
-            final ObjectNode payload = buildEvent("RENEWAL", USER_ID, "monthly_product", "PLAY_STORE", expiresMs);
-
-            final SubscriptionDocument existing = SubscriptionDocument.builder()
+            final SubscriptionDocument sub = SubscriptionDocument.builder()
                     .userId(USER_ID).status(SubscriptionStatus.EXPIRED).build();
-            when(subscriptionRS.findByUserId(USER_ID)).thenReturn(Optional.of(existing));
+            when(subscriptionRS.findByOriginalTransactionId(txId)).thenReturn(sub);
             when(subscriptionRS.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
             final AuthDocument auth = buildAuthDoc();
             when(authRS.findById(USER_ID)).thenReturn(auth);
             when(authRS.save(auth)).thenReturn(auth);
 
-            subscriptionService.handleRevenueCatWebhook(payload);
+            subscriptionService.handleAppleWebhook("signed.payload");
 
-            assertThat(existing.getStatus()).isEqualTo(SubscriptionStatus.ACTIVE);
+            assertThat(sub.getStatus()).isEqualTo(SubscriptionStatus.ACTIVE);
             assertThat(auth.isPremium()).isTrue();
         }
 
         @Test
-        @DisplayName("EXPIRATION → subscription set to EXPIRED and premium disabled")
-        void expiration_setsExpiredAndRemovesPremium() {
-            final ObjectNode payload = buildEvent("EXPIRATION", USER_ID, null, null, 0);
+        @DisplayName("EXPIRED → subscription set to EXPIRED and premium disabled")
+        void expired_setsExpiredAndRemovesPremium() throws Exception {
+            final String txId = "TX456";
+            final ObjectNode txInfo = buildTxInfoNode(txId, 0L);
+            final ObjectNode outerPayload = buildOuterPayload("EXPIRED", "signed.tx.token", null);
 
-            final SubscriptionDocument existing = SubscriptionDocument.builder()
+            when(appleJwsVerifier.verifyAndDecode("signed.payload")).thenReturn(outerPayload);
+            when(appleJwsVerifier.verifyAndDecode("signed.tx.token")).thenReturn(txInfo);
+
+            final SubscriptionDocument sub = SubscriptionDocument.builder()
                     .userId(USER_ID).status(SubscriptionStatus.ACTIVE).build();
-            when(subscriptionRS.findByUserId(USER_ID)).thenReturn(Optional.of(existing));
+            when(subscriptionRS.findByOriginalTransactionId(txId)).thenReturn(sub);
             when(subscriptionRS.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
             final AuthDocument auth = buildAuthDoc();
@@ -208,34 +342,138 @@ class SubscriptionServiceTest {
             when(authRS.findById(USER_ID)).thenReturn(auth);
             when(authRS.save(auth)).thenReturn(auth);
 
-            subscriptionService.handleRevenueCatWebhook(payload);
+            subscriptionService.handleAppleWebhook("signed.payload");
 
-            assertThat(existing.getStatus()).isEqualTo(SubscriptionStatus.EXPIRED);
+            assertThat(sub.getStatus()).isEqualTo(SubscriptionStatus.EXPIRED);
             assertThat(auth.isPremium()).isFalse();
         }
 
         @Test
-        @DisplayName("CANCELLATION → subscription saved but premium left untouched")
-        void cancellation_doesNotRevokePremiumImmediately() {
-            final ObjectNode payload = buildEvent("CANCELLATION", USER_ID, null, null, 0);
+        @DisplayName("REFUND → subscription set to CANCELLED and premium disabled")
+        void refund_setsCancelledAndRemovesPremium() throws Exception {
+            final String txId = "TX789";
+            final ObjectNode txInfo = buildTxInfoNode(txId, 0L);
+            final ObjectNode outerPayload = buildOuterPayload("REFUND", "signed.tx.token", null);
 
-            final SubscriptionDocument existing = SubscriptionDocument.builder()
+            when(appleJwsVerifier.verifyAndDecode("signed.payload")).thenReturn(outerPayload);
+            when(appleJwsVerifier.verifyAndDecode("signed.tx.token")).thenReturn(txInfo);
+
+            final SubscriptionDocument sub = SubscriptionDocument.builder()
                     .userId(USER_ID).status(SubscriptionStatus.ACTIVE).build();
-            when(subscriptionRS.findByUserId(USER_ID)).thenReturn(Optional.of(existing));
+            when(subscriptionRS.findByOriginalTransactionId(txId)).thenReturn(sub);
             when(subscriptionRS.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-            subscriptionService.handleRevenueCatWebhook(payload);
+            final AuthDocument auth = buildAuthDoc();
+            auth.setPremium(true);
+            when(authRS.findById(USER_ID)).thenReturn(auth);
+            when(authRS.save(auth)).thenReturn(auth);
 
-            verify(subscriptionRS).save(existing);
-            verifyNoInteractions(authRS);
+            subscriptionService.handleAppleWebhook("signed.payload");
+
+            assertThat(sub.getStatus()).isEqualTo(SubscriptionStatus.CANCELLED);
+            assertThat(auth.isPremium()).isFalse();
         }
 
         @Test
-        @DisplayName("missing app_user_id → no DB call")
-        void missingAppUserId_noDbCall() {
-            final ObjectNode payload = buildEvent("INITIAL_PURCHASE", "", null, null, 0);
+        @DisplayName("JWS verification fails → exception swallowed, no DB call")
+        void jwsVerificationFails_exceptionSwallowed() throws Exception {
+            when(appleJwsVerifier.verifyAndDecode("bad.payload"))
+                    .thenThrow(new SecurityException("bad signature"));
 
-            subscriptionService.handleRevenueCatWebhook(payload);
+            subscriptionService.handleAppleWebhook("bad.payload");
+
+            verifyNoInteractions(subscriptionRS, authRS);
+        }
+    }
+
+    // ─── handleGoogleWebhook ──────────────────────────────────────────────────
+
+    @Nested
+    @DisplayName("handleGoogleWebhook")
+    class HandleGoogleWebhook {
+
+        private String base64Json(final String json) {
+            return Base64.getEncoder().encodeToString(json.getBytes());
+        }
+
+        @Test
+        @DisplayName("RENEWED notification → subscription set to ACTIVE and premium enabled")
+        void renewed_setsActiveAndPremium() {
+            final String purchaseToken = "goog-token-123";
+            final String json = "{\"subscriptionNotification\":{\"notificationType\":4,\"purchaseToken\":\"" + purchaseToken + "\"}}";
+
+            final SubscriptionDocument sub = SubscriptionDocument.builder()
+                    .userId(USER_ID).status(SubscriptionStatus.EXPIRED).build();
+            when(subscriptionRS.findByPurchaseToken(purchaseToken)).thenReturn(sub);
+            when(subscriptionRS.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+            final AuthDocument auth = buildAuthDoc();
+            when(authRS.findById(USER_ID)).thenReturn(auth);
+            when(authRS.save(auth)).thenReturn(auth);
+
+            subscriptionService.handleGoogleWebhook(base64Json(json));
+
+            assertThat(sub.getStatus()).isEqualTo(SubscriptionStatus.ACTIVE);
+            assertThat(auth.isPremium()).isTrue();
+        }
+
+        @Test
+        @DisplayName("EXPIRED notification → subscription set to EXPIRED and premium disabled")
+        void expired_setsExpiredAndRemovesPremium() {
+            final String purchaseToken = "goog-token-456";
+            final String json = "{\"subscriptionNotification\":{\"notificationType\":13,\"purchaseToken\":\"" + purchaseToken + "\"}}";
+
+            final SubscriptionDocument sub = SubscriptionDocument.builder()
+                    .userId(USER_ID).status(SubscriptionStatus.ACTIVE).build();
+            when(subscriptionRS.findByPurchaseToken(purchaseToken)).thenReturn(sub);
+            when(subscriptionRS.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+            final AuthDocument auth = buildAuthDoc();
+            auth.setPremium(true);
+            when(authRS.findById(USER_ID)).thenReturn(auth);
+            when(authRS.save(auth)).thenReturn(auth);
+
+            subscriptionService.handleGoogleWebhook(base64Json(json));
+
+            assertThat(sub.getStatus()).isEqualTo(SubscriptionStatus.EXPIRED);
+            assertThat(auth.isPremium()).isFalse();
+        }
+
+        @Test
+        @DisplayName("CANCELED notification → subscription set to CANCELLED")
+        void canceled_setsCancelled() {
+            final String purchaseToken = "goog-token-789";
+            final String json = "{\"subscriptionNotification\":{\"notificationType\":3,\"purchaseToken\":\"" + purchaseToken + "\"}}";
+
+            final SubscriptionDocument sub = SubscriptionDocument.builder()
+                    .userId(USER_ID).status(SubscriptionStatus.ACTIVE).build();
+            when(subscriptionRS.findByPurchaseToken(purchaseToken)).thenReturn(sub);
+            when(subscriptionRS.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+            final AuthDocument auth = buildAuthDoc();
+            auth.setPremium(true);
+            when(authRS.findById(USER_ID)).thenReturn(auth);
+            when(authRS.save(auth)).thenReturn(auth);
+
+            subscriptionService.handleGoogleWebhook(base64Json(json));
+
+            assertThat(sub.getStatus()).isEqualTo(SubscriptionStatus.CANCELLED);
+        }
+
+        @Test
+        @DisplayName("non-subscription notification (e.g. ONE_TIME_PRODUCT) → no DB call")
+        void nonSubscriptionNotification_noDbCall() {
+            final String json = "{\"oneTimeProductNotification\":{\"notificationType\":1}}";
+
+            subscriptionService.handleGoogleWebhook(base64Json(json));
+
+            verifyNoInteractions(subscriptionRS, authRS);
+        }
+
+        @Test
+        @DisplayName("invalid base64 → exception swallowed, no DB call")
+        void invalidBase64_exceptionSwallowed() {
+            subscriptionService.handleGoogleWebhook("not-valid-base64!!!");
 
             verifyNoInteractions(subscriptionRS, authRS);
         }
