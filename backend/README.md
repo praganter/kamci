@@ -81,3 +81,23 @@ Every setting is optional so the service starts without them. A path whose setti
 | `GOOGLE_PUBSUB_AUDIENCE`, `GOOGLE_PUBSUB_SERVICE_ACCOUNT_EMAIL` | Google webhook | audience and service account configured on the Pub/Sub push subscription |
 
 `verify` still uses Apple's legacy `verifyReceipt`, which Apple has deprecated; it sits behind the `AppleReceiptVerifier` interface so the App Store Server API / StoreKit 2 signed transactions (already verifiable with `AppleJwsVerifier`) can replace it.
+
+#### Contract with the mobile app
+
+What the Flutter app (`mobile/`) sends and expects. The settings above have no defaults for these values; they are documented here so the two sides stay aligned.
+
+| Item | Value the app uses | Backend setting that must match |
+|---|---|---|
+| iOS product ids | `com.batuhanyetgin.kamci.premium.monthly`, `com.batuhanyetgin.kamci.premium.yearly` | `IAP_MONTHLY_PRODUCT_IDS` / `IAP_YEARLY_PRODUCT_IDS`, one id each per store, exactly equal |
+| Android product ids | `premium_monthly`, `premium_yearly` | the same two variables (comma-separated, so both stores' ids go in the same list) |
+| iOS bundle id | `com.batuhanyetgin.kamci` | `APPLE_BUNDLE_ID` |
+| Android package name | `com.batuhanyetgin.kamci` | `GOOGLE_PLAY_PACKAGE_NAME` (the app sends it as `packageName`; omitting it is accepted) |
+
+`POST /subscription/verify` body: `platform` (`IOS` or `ANDROID`), `plan` (`MONTHLY` or `YEARLY`), `productId`, `receiptData`, optional `packageName`.
+- iOS `receiptData` is the StoreKit 1 app receipt, base64 encoded.
+- Android `receiptData` is the Play purchase token.
+- The response carries `plan`, `status`, `expiryDate` (an ISO local date-time that is UTC, with no zone suffix) and fresh `accessToken` / `refreshToken`.
+
+Errors: `400` `error.subscription.verification_failed`, `product_not_allowed` or `package_not_allowed`; `409` `error.subscription.already_used`; `503` `error.subscription.apple_not_configured` or `google_not_configured`.
+
+Routing: `verify` and `status` need the user's JWT. `apple/webhook` and `google/webhook` are public at the gateway because the stores call them; they authenticate themselves (see the table above).
