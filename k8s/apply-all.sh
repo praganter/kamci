@@ -15,6 +15,8 @@ apply namespace.yaml
 echo "==> Secrets"
 # sealed-*.yaml are generated with kubeseal and git-ignored (templates: secrets/*.example.yaml)
 apply sealed-secret.yaml sealed-firebase-secret.yaml sealed-registry-credentials.yaml
+# Optional: Google Play service account for Android purchase verification (auth-service starts without it).
+if [ -f sealed-google-play-secret.yaml ]; then apply sealed-google-play-secret.yaml; else echo "    (no sealed-google-play-secret.yaml, Android purchase verification stays off)"; fi
 
 echo "==> PriorityClasses (must exist before any pod references them)"
 apply infra/priorityclass.yaml
