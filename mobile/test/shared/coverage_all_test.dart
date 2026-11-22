@@ -118,6 +118,14 @@ import 'package:kamci/features/notifications/domain/repositories/notification_re
 import 'package:kamci/features/notifications/presentation/providers/notification_providers.dart';
 import 'package:kamci/features/notifications/presentation/screens/notification_list_screen.dart';
 import 'package:kamci/features/settings/presentation/screens/settings_screen.dart';
+import 'package:kamci/features/subscription/data/datasources/subscription_remote_datasource.dart';
+import 'package:kamci/features/subscription/data/models/subscription_model.dart';
+import 'package:kamci/features/subscription/data/models/verify_receipt_request.dart';
+import 'package:kamci/features/subscription/data/repositories/subscription_repository_impl.dart';
+import 'package:kamci/features/subscription/data/store/purchase_store.dart';
+import 'package:kamci/features/subscription/domain/entities/subscription.dart';
+import 'package:kamci/features/subscription/domain/repositories/subscription_repository.dart';
+import 'package:kamci/features/subscription/presentation/providers/purchase_flow.dart';
 import 'package:kamci/features/subscription/presentation/providers/subscription_providers.dart';
 import 'package:kamci/features/subscription/presentation/screens/premium_screen.dart';
 import 'package:kamci/features/subscription/presentation/widgets/premium_card.dart';

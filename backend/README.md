@@ -6,7 +6,7 @@ Spring Boot microservices behind the Kamci debt-tracking mobile app. Java 17, Sp
 
 | Module | Port | Role |
 |---|---|---|
-| `auth-service` | 8082 | Registration, login, JWT access/refresh tokens, password reset, households, account deletion, RevenueCat subscription webhook. Redis backs rate limiting and the token blacklist. |
+| `auth-service` | 8082 | Registration, login, JWT access/refresh tokens, password reset, households, account deletion, in-app purchase verification (App Store and Google Play). Redis backs rate limiting and the token blacklist. |
 | `debt-service` | 8081 | Debts, categories, payments, income, reminder and weekly-digest schedulers (ShedLock). |
 | `notification-service` | 8083 | RabbitMQ consumers that send FCM push and e-mail; device token registry. |
 | `cache-service` | 8084 | Hourly exchange-rate fetch, cached in Redis. |
@@ -35,7 +35,7 @@ Needs Docker only. No config server, Eureka or Firebase key.
 docker compose -f docker-compose.local.yml up --build
 ```
 
-Services start with the `local` profile: push notifications are logged and skipped, e-mail goes to [Mailpit](http://localhost:8025) (SMTP `localhost:1025`), and the RevenueCat webhook and admin endpoints use throw-away secrets defined in `auth-service/src/main/resources/application-local.yml`. Swagger UI is at `http://localhost:<port>/swagger-ui.html` on each service. Never use the `local` profile in production.
+Services start with the `local` profile: push notifications are logged and skipped, e-mail goes to [Mailpit](http://localhost:8025) (SMTP `localhost:1025`), and the admin endpoints use a throw-away secret defined in `auth-service/src/main/resources/application-local.yml`. Swagger UI is at `http://localhost:<port>/swagger-ui.html` on each service. Never use the `local` profile in production.
 
 ### Running `backend/docker-compose.yml` on its own
 
@@ -56,4 +56,48 @@ Tests are mock-based (Mockito, MockMvc standalone) and need no Docker. Coverage 
 
 ## Configuration
 
-Outside the `local` profile each service reads its settings from a Spring Cloud Config server (`CONFIG_SERVER_URL`) and registers with Eureka (`EUREKA_URI`). Secrets (`JWT_SECRET`, `MONGO_DB_URI`, RabbitMQ and SMTP credentials, `ADMIN_SECRET_KEY`, `REVENUECAT_WEBHOOK_SECRET`, `INTERNAL_API_TOKEN`, `GOOGLE_APPLICATION_CREDENTIALS`) come from the environment.
+Outside the `local` profile each service reads its settings from a Spring Cloud Config server (`CONFIG_SERVER_URL`) and registers with Eureka (`EUREKA_URI`). Secrets (`JWT_SECRET`, `MONGO_DB_URI`, RabbitMQ and SMTP credentials, `ADMIN_SECRET_KEY`, `INTERNAL_API_TOKEN`, `GOOGLE_APPLICATION_CREDENTIALS` for push, and the in-app purchase settings below) come from the environment.
+
+### In-app purchases (auth-service)
+
+`auth-service` verifies purchases itself, with no third-party purchase service:
+
+| Endpoint | Caller | Authenticated by |
+|---|---|---|
+| `POST /subscription/verify` | the mobile app, after a purchase | the user's JWT (checked at the gateway) |
+| `POST /subscription/apple/webhook` | Apple App Store Server Notifications V2 | the JWS signature, chain pinned to Apple Root CA G3 |
+| `POST /subscription/google/webhook` | Google Play real-time developer notifications via a Pub/Sub push subscription | the Pub/Sub OIDC token (`Authorization: Bearer`) |
+
+Every setting is optional so the service starts without them. A path whose settings are missing answers with an explicit error instead: `503 error.subscription.apple_not_configured` / `google_not_configured` for `verify` and the Apple webhook, and `403` for the Google webhook (it never accepts an unauthenticated notification).
+
+| Variable | Needed for | Meaning |
+|---|---|---|
+| `APPLE_BUNDLE_ID` | Apple verify and webhook | bundle id of the iOS app; other apps' receipts and notifications are rejected |
+| `APPLE_SHARED_SECRET` (or `apple.store.shared-secret`) | Apple verify | app-specific shared secret for the legacy `verifyReceipt` API |
+| `APPLE_ALLOW_SANDBOX` | Apple, optional | `true` accepts sandbox receipts and notifications (App Review, TestFlight). Off by default because sandbox purchases are free to create |
+| `IAP_MONTHLY_PRODUCT_IDS`, `IAP_YEARLY_PRODUCT_IDS` | verify (both stores) | comma-separated store product ids; a product must belong to the plan the client claims |
+| `GOOGLE_PLAY_PACKAGE_NAME` | Google verify and webhook | the only Android package accepted |
+| `GOOGLE_PLAY_CREDENTIALS` | Google verify | path to a service-account key with access to the Play Developer API. Not `GOOGLE_APPLICATION_CREDENTIALS`, which is the Firebase account |
+| `GOOGLE_PUBSUB_AUDIENCE`, `GOOGLE_PUBSUB_SERVICE_ACCOUNT_EMAIL` | Google webhook | audience and service account configured on the Pub/Sub push subscription |
+
+`verify` still uses Apple's legacy `verifyReceipt`, which Apple has deprecated; it sits behind the `AppleReceiptVerifier` interface so the App Store Server API / StoreKit 2 signed transactions (already verifiable with `AppleJwsVerifier`) can replace it.
+
+#### Contract with the mobile app
+
+What the Flutter app (`mobile/`) sends and expects. The settings above have no defaults for these values; they are documented here so the two sides stay aligned.
+
+| Item | Value the app uses | Backend setting that must match |
+|---|---|---|
+| iOS product ids | `com.batuhanyetgin.kamci.premium.monthly`, `com.batuhanyetgin.kamci.premium.yearly` | `IAP_MONTHLY_PRODUCT_IDS` / `IAP_YEARLY_PRODUCT_IDS`, one id each per store, exactly equal |
+| Android product ids | `premium_monthly`, `premium_yearly` | the same two variables (comma-separated, so both stores' ids go in the same list) |
+| iOS bundle id | `com.batuhanyetgin.kamci` | `APPLE_BUNDLE_ID` |
+| Android package name | `com.batuhanyetgin.kamci` | `GOOGLE_PLAY_PACKAGE_NAME` (the app sends it as `packageName`; omitting it is accepted) |
+
+`POST /subscription/verify` body: `platform` (`IOS` or `ANDROID`), `plan` (`MONTHLY` or `YEARLY`), `productId`, `receiptData`, optional `packageName`.
+- iOS `receiptData` is the StoreKit 1 app receipt, base64 encoded.
+- Android `receiptData` is the Play purchase token.
+- The response carries `plan`, `status`, `expiryDate` (an ISO local date-time that is UTC, with no zone suffix) and fresh `accessToken` / `refreshToken`.
+
+Errors: `400` `error.subscription.verification_failed`, `product_not_allowed` or `package_not_allowed`; `409` `error.subscription.already_used`; `503` `error.subscription.apple_not_configured` or `google_not_configured`.
+
+Routing: `verify` and `status` need the user's JWT. `apple/webhook` and `google/webhook` are public at the gateway because the stores call them; they authenticate themselves (see the table above).

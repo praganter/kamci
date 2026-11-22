@@ -1670,6 +1670,24 @@ abstract class AppLocalizations {
   /// **'Hatırlatma tarihi veya saati eksik.'**
   String get errorReminderDateOrTimeMissing;
 
+  /// No description provided for @errorSubscriptionVerificationFailed.
+  ///
+  /// In tr, this message translates to:
+  /// **'Abonelik doğrulaması başarısız oldu.'**
+  String get errorSubscriptionVerificationFailed;
+
+  /// No description provided for @errorSubscriptionNotFound.
+  ///
+  /// In tr, this message translates to:
+  /// **'Abonelik bulunamadı.'**
+  String get errorSubscriptionNotFound;
+
+  /// No description provided for @errorSubscriptionAlreadyUsed.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu abonelik başka bir hesaba bağlı.'**
+  String get errorSubscriptionAlreadyUsed;
+
   /// No description provided for @errorAuthEmailInUse.
   ///
   /// In tr, this message translates to:
@@ -1975,6 +1993,18 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Mağazaya bağlanılamadı. İnternet bağlantını kontrol et.'**
   String get storeUnavailable;
+
+  /// No description provided for @purchasePending.
+  ///
+  /// In tr, this message translates to:
+  /// **'Satın alma onay bekliyor. Onaylandığında premium etkinleşir.'**
+  String get purchasePending;
+
+  /// No description provided for @nothingToRestore.
+  ///
+  /// In tr, this message translates to:
+  /// **'Geri yüklenecek önceki bir satın alma bulunamadı.'**
+  String get nothingToRestore;
 
   /// No description provided for @subscriptionPlansLoadFailed.
   ///

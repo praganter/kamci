@@ -878,6 +878,17 @@ class AppLocalizationsTr extends AppLocalizations {
       'Hatırlatma tarihi veya saati eksik.';
 
   @override
+  String get errorSubscriptionVerificationFailed =>
+      'Abonelik doğrulaması başarısız oldu.';
+
+  @override
+  String get errorSubscriptionNotFound => 'Abonelik bulunamadı.';
+
+  @override
+  String get errorSubscriptionAlreadyUsed =>
+      'Bu abonelik başka bir hesaba bağlı.';
+
+  @override
   String get errorAuthEmailInUse => 'Bu e-posta adresi zaten kullanımda.';
 
   @override
@@ -1054,6 +1065,14 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get storeUnavailable =>
       'Mağazaya bağlanılamadı. İnternet bağlantını kontrol et.';
+
+  @override
+  String get purchasePending =>
+      'Satın alma onay bekliyor. Onaylandığında premium etkinleşir.';
+
+  @override
+  String get nothingToRestore =>
+      'Geri yüklenecek önceki bir satın alma bulunamadı.';
 
   @override
   String get subscriptionPlansLoadFailed =>

@@ -172,7 +172,7 @@ class GatewayEdgeIntegrationTest {
     @Test
     void publicEndpoints_needNoToken() {
         for (String path : new String[]{"/auth/logout", "/auth/register",
-                "/subscription/revenuecat/webhook"}) {
+                "/subscription/apple/webhook", "/subscription/google/webhook"}) {
             get(path).expectStatus().isOk();
         }
     }

@@ -35,6 +35,14 @@ public class SubscriptionRepositoryService extends BaseRepositoryService<Subscri
                 .orElseThrow(() -> BaseException.notFound("error.subscription.not_found"));
     }
 
+    public Optional<SubscriptionDocument> findOptionalByOriginalTransactionId(final String originalTransactionId) {
+        return subscriptionRepository.findByOriginalTransactionId(originalTransactionId);
+    }
+
+    public Optional<SubscriptionDocument> findOptionalByPurchaseToken(final String purchaseToken) {
+        return subscriptionRepository.findByPurchaseToken(purchaseToken);
+    }
+
     public List<SubscriptionDocument> findActiveExpired(final LocalDateTime now) {
         return subscriptionRepository.findByStatusAndExpiryDateBefore(SubscriptionStatus.ACTIVE, now);
     }

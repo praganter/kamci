@@ -27,16 +27,22 @@ Own images are pinned to a version tag (`IMAGE_TAG`, default `v0.1.0`), never `:
 ## Secrets
 
 Real secrets are not in the repo. Templates: `secrets/*.example.yaml` (`app-secrets`, `firebase-secret`,
-`registry-credentials`). Seal them against your cluster's sealed-secrets controller:
+`registry-credentials`, and the optional `google-play-secret`). Seal them against your cluster's sealed-secrets controller:
 
 ```sh
 cp secrets/app-secrets.example.yaml secrets/app-secrets.yaml   # edit: replace every CHANGE_ME
 kubeseal --format yaml < secrets/app-secrets.yaml > sealed-secret.yaml
 # same for firebase-secret -> sealed-firebase-secret.yaml, registry-credentials -> sealed-registry-credentials.yaml
+# optional: google-play-secret -> sealed-google-play-secret.yaml (Play service account, not the Firebase key)
 ```
 
 `sealed-*.yaml` and `secrets/*.yaml` (except `*.example.yaml`) are git-ignored. Without sealed-secrets,
 `kubectl apply -f secrets/<name>.yaml` the plain Secrets directly. `JWT_SECRET_KEY` must match the value in `config/`.
+
+In-app purchase verification in `auth-service` is optional. Its settings (`APPLE_BUNDLE_ID`, `APPLE_SHARED_SECRET`,
+`GOOGLE_PLAY_PACKAGE_NAME`, `GOOGLE_PUBSUB_AUDIENCE`, `GOOGLE_PUBSUB_SERVICE_ACCOUNT_EMAIL`, ...) are optional keys in
+`app-secrets`, and the Play service-account file comes from the optional `google-play-secret`. With none of them set the
+pod starts normally and the purchase endpoints answer with an explicit error.
 
 ## Apply order
 

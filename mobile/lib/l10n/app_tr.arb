@@ -428,6 +428,9 @@
   "errorDebtMissingPeriodConfig": "Ödeme periyodu bilgisi eksik.",
   "errorIncomeNotFound": "Gelir kaydı bulunamadı.",
   "errorReminderDateOrTimeMissing": "Hatırlatma tarihi veya saati eksik.",
+  "errorSubscriptionVerificationFailed": "Abonelik doğrulaması başarısız oldu.",
+  "errorSubscriptionNotFound": "Abonelik bulunamadı.",
+  "errorSubscriptionAlreadyUsed": "Bu abonelik başka bir hesaba bağlı.",
   "errorAuthEmailInUse": "Bu e-posta adresi zaten kullanımda.",
   "errorAuthTooManyLoginAttempts": "Çok fazla giriş denemesi yapıldı. Lütfen bir süre bekleyin.",
   "errorAuthNotValid": "E-posta veya şifre hatalı.",
@@ -512,6 +515,8 @@
   },
   "purchaseFailed": "Satın alma sırasında bir hata oluştu.",
   "storeUnavailable": "Mağazaya bağlanılamadı. İnternet bağlantını kontrol et.",
+  "purchasePending": "Satın alma onay bekliyor. Onaylandığında premium etkinleşir.",
+  "nothingToRestore": "Geri yüklenecek önceki bir satın alma bulunamadı.",
   "subscriptionPlansLoadFailed": "Abonelik planları şu an yüklenemedi.",
   "debtCountLabel": "{count} borç",
   "@debtCountLabel": {

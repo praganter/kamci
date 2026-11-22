@@ -27,3 +27,21 @@ Limitations: the token is one shared secret, not a per-service identity, and it 
 If `INTERNAL_API_TOKEN` is not set, a public dev default (`dev-internal-token`) is used and a warning is logged.
 Set a long random value everywhere except a local demo; with the default, the second layer is only as strong
 as the network boundary.
+
+## Store purchase notifications
+
+`auth-service` receives server-to-server notifications from the stores on two public gateway paths,
+`/subscription/apple/webhook` and `/subscription/google/webhook`. They carry no user JWT, so each request has to prove
+where it came from:
+
+- **Apple** (App Store Server Notifications): the body is a signed JWS. The signature and certificate chain are
+  verified against a pinned Apple root CA, and the bundle ID (`APPLE_BUNDLE_ID`) and environment must match. Sandbox
+  notifications are accepted only when `APPLE_ALLOW_SANDBOX=true`.
+- **Google** (Play real-time developer notifications): delivered by a Pub/Sub push subscription that signs an OIDC
+  token. The token's audience (`GOOGLE_PUBSUB_AUDIENCE`) and service-account e-mail
+  (`GOOGLE_PUBSUB_SERVICE_ACCOUNT_EMAIL`) must match, and only purchases for `GOOGLE_PLAY_PACKAGE_NAME` are accepted.
+- A notification that fails these checks is answered with 403 and nothing unsigned is trusted. The settings are
+  optional so the service still starts without them; while a store is not configured, its endpoint answers with an explicit error (403 or 503).
+
+Receipts sent by the app to `/subscription/verify` are checked with the store (Apple, or the Google Play Developer API
+with a Play service account that is separate from the Firebase key) and require a normal user JWT.

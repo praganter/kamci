@@ -6,7 +6,6 @@ import '../../../../shared/widgets/glow_border.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/router/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../subscription_constants.dart';
 import '../providers/subscription_providers.dart';
 
 class PremiumCard extends ConsumerWidget {
@@ -28,7 +27,6 @@ class PremiumCard extends ConsumerWidget {
   }
 }
 
-
 class _PremiumActiveCard extends ConsumerWidget {
   const _PremiumActiveCard({required this.cs, required this.tt});
 
@@ -48,14 +46,7 @@ class _PremiumActiveCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final expiresDate = DateTime.tryParse(
-      ref
-              .watch(revenueCatCustomerProvider)
-              ?.entitlements
-              .active[SubscriptionConstants.entitlementId]
-              ?.expirationDate ??
-          '',
-    );
+    final statusAsync = ref.watch(subscriptionStatusProvider);
 
     return GestureDetector(
       onTap: () => _showFeatures(context),
@@ -88,13 +79,17 @@ class _PremiumActiveCard extends ConsumerWidget {
                       fontWeight: FontWeight.w800,
                     ),
                   ),
-                  if (expiresDate != null)
-                    Text(
-                      context.l10n.renewsOn(_fmt(expiresDate.toLocal())),
-                      style: tt.bodySmall?.copyWith(
-                        color: Colors.white.withValues(alpha: 0.85),
-                      ),
-                    ),
+                  statusAsync.whenOrNull(
+                        data: (sub) => sub.expiresDate != null
+                            ? Text(
+                                context.l10n.renewsOn(_fmt(sub.expiresDate!)),
+                                style: tt.bodySmall?.copyWith(
+                                  color: Colors.white.withValues(alpha: 0.85),
+                                ),
+                              )
+                            : null,
+                      ) ??
+                      const SizedBox.shrink(),
                 ],
               ),
             ),
@@ -121,7 +116,6 @@ class _PremiumActiveCard extends ConsumerWidget {
   String _fmt(DateTime d) =>
       '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
 }
-
 
 class _PremiumFeaturesSheet extends StatelessWidget {
   @override
@@ -227,7 +221,6 @@ class _PremiumFeaturesSheet extends StatelessWidget {
     );
   }
 }
-
 
 class _UpgradeCard extends StatelessWidget {
   const _UpgradeCard({required this.cs, required this.tt, required this.onTap});

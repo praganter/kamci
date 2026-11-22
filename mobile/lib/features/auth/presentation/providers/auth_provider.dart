@@ -186,6 +186,17 @@ class AuthNotifier extends _$AuthNotifier {
     state = const AuthState.unauthenticated();
   }
 
+  Future<void> adoptTokens(AuthTokens tokens) async {
+    await ref
+        .read(secureStorageServiceProvider)
+        .saveTokens(
+          accessToken: tokens.accessToken,
+          refreshToken: tokens.refreshToken,
+        );
+    await _saveUserIdFromToken(tokens);
+    state = AuthState.authenticated(tokens);
+  }
+
   Future<void> _saveUserIdFromToken(AuthTokens tokens) async {
     final userId = tokens.userId;
     if (userId != null) {

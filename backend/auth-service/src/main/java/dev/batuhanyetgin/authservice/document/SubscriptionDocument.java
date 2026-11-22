@@ -52,4 +52,8 @@ public class SubscriptionDocument extends BaseDocument {
 
     @Field("expiry_date")
     private LocalDateTime expiryDate;
+
+    /** Store timestamp (epoch ms) of the newest webhook already applied; older or equal ones are ignored. */
+    @Field("last_notification_ms")
+    private Long lastNotificationMs;
 }

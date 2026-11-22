@@ -70,7 +70,8 @@ endpoints:
     - /auth/logout
     - /auth/forget-password
     - /auth/reset-password
-    - /subscription/revenuecat/webhook
+    - /subscription/apple/webhook
+    - /subscription/google/webhook
     - /actuator/health
     - /actuator/prometheus
     - /actuator/info

@@ -51,6 +51,9 @@ abstract final class ApiConstants {
   static const String incomeCurrent = '/income/current';
   static const String incomeDelete = '/income/delete';
 
+  static const String subscriptionVerify = '/subscription/verify';
+  static const String subscriptionStatus = '/subscription/status';
+
   static const String deviceToken = '/notification/device-token';
   static const String notificationList = '/notification/list';
   static const String notificationRead = '/notification';

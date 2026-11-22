@@ -27,7 +27,7 @@ register() { # $1 = email → prints access token
 echo "Creating test accounts on $BASE_URL ..."
 
 # User A — premium. Locally premium is granted through the admin endpoint
-# (RevenueCat is not involved).
+# (no store purchase involved).
 USER_A_EMAIL="kamci_a_${TIMESTAMP}@example.com"
 TOKEN_A=$(register "$USER_A_EMAIL")
 [ -z "$TOKEN_A" ] && { echo "User A could not be created"; exit 1; }

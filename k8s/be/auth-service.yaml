@@ -94,15 +94,74 @@ spec:
                   key: REDIS_PASSWORD
             - name: GOOGLE_APPLICATION_CREDENTIALS
               value: /app/firebase-adminsdk.json
+            - name: APPLE_BUNDLE_ID
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: APPLE_BUNDLE_ID
+                  optional: true
+            - name: APPLE_SHARED_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: APPLE_SHARED_SECRET
+                  optional: true
+            - name: APPLE_ALLOW_SANDBOX
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: APPLE_ALLOW_SANDBOX
+                  optional: true
+            - name: GOOGLE_PLAY_PACKAGE_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: GOOGLE_PLAY_PACKAGE_NAME
+                  optional: true
+            - name: GOOGLE_PUBSUB_AUDIENCE
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: GOOGLE_PUBSUB_AUDIENCE
+                  optional: true
+            - name: GOOGLE_PUBSUB_SERVICE_ACCOUNT_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: GOOGLE_PUBSUB_SERVICE_ACCOUNT_EMAIL
+                  optional: true
+            - name: IAP_MONTHLY_PRODUCT_IDS
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: IAP_MONTHLY_PRODUCT_IDS
+                  optional: true
+            - name: IAP_YEARLY_PRODUCT_IDS
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: IAP_YEARLY_PRODUCT_IDS
+                  optional: true
+            # Play Console service account (purchase verification), not the Firebase key above. The file comes from the
+            # optional google-play-secret; if it is missing the service starts and Android verification stays off.
+            - name: GOOGLE_PLAY_CREDENTIALS
+              value: /etc/play-credentials/play-service-account.json
           volumeMounts:
             - name: firebase-secret
               mountPath: /app/firebase-adminsdk.json
               subPath: firebase-adminsdk.json
               readOnly: true
+            - name: google-play-secret
+              mountPath: /etc/play-credentials
+              readOnly: true
       volumes:
         - name: firebase-secret
           secret:
             secretName: firebase-secret
+        - name: google-play-secret
+          secret:
+            secretName: google-play-secret
+            optional: true
 ---
 apiVersion: v1
 kind: Service
