@@ -33,10 +33,13 @@ for _ in $(seq 1 60); do curl -sf "$GATEWAY/actuator/health" >/dev/null && break
 req GET /actuator/health; grep -q '"UP"' <<<"$BODY" || fail "gateway not UP: $BODY"
 
 step "wait until the gateway can route to auth-service (Eureka cache lag: 503 = no instance yet)"
-# Probe an unthrottled auth-service route; /auth/register is rate limited and 503s still burn its tokens.
+# Probe an unthrottled, public auth-service route; /auth/register is rate limited and 503s still burn its tokens.
+# An unsigned notification is rejected by the service itself (400/403); 401 (gateway JWT filter, path not public), 404,
+# 502 and 503 mean the request never reached it.
 for _ in $(seq 1 36); do
-  [[ $(curl -s -o /dev/null -w '%{http_code}' -X POST "$GATEWAY/subscription/revenuecat/webhook" \
-    -H 'Content-Type: application/json' -d '{}') != 503 ]] && break
+  code=$(curl -s -o /dev/null -w '%{http_code}' -X POST "$GATEWAY/subscription/apple/webhook" \
+    -H 'Content-Type: application/json' -d '{}')
+  [[ $code == 4* && $code != 401 && $code != 404 ]] && break
   sleep 5
 done
 
