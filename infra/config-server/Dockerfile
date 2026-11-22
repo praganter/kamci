@@ -1,4 +1,4 @@
-FROM maven:3.9.13-eclipse-temurin-17 AS build
+FROM maven:3.9-eclipse-temurin-26 AS build
 WORKDIR /build
 COPY pom.xml .
 COPY config-server/pom.xml config-server/pom.xml
