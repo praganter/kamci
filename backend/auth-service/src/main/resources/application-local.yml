@@ -10,7 +10,7 @@ jwt:
   expirationRefresh: 2678400000
   secret: ${JWT_SECRET:local-dev-only-jwt-secret-change-me-0123456789abcdef}
 
-# Local-only credentials for the admin and RevenueCat webhook endpoints.
-# The webhook is inbound only (RevenueCat calls us), so there is nothing to mock outbound.
+# Local-only credential for the admin endpoints.
+# The in-app purchase settings (APPLE_*, GOOGLE_*, IAP_*) are deliberately not set: the purchase
+# endpoints then answer "not configured" instead of calling Apple or Google. See README.md.
 ADMIN_SECRET_KEY: local-admin-key
-REVENUECAT_WEBHOOK_SECRET: local-revenuecat-secret
