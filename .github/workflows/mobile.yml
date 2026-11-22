@@ -20,7 +20,7 @@ jobs:
       run:
         working-directory: mobile
     steps:
-      - uses: actions/checkout@v4.4.0
+      - uses: actions/checkout@v7.0.1
       - uses: subosito/flutter-action@v2.23.0
         with:
           # pinned: build_runner crashes with Flutter 3.47.7
