@@ -117,11 +117,11 @@ class SubscriptionControllerTest {
         }
 
         @Test
-        @DisplayName("payload without signedPayload → no service call, returns 200")
-        void noSignedPayload_noServiceCallAndReturns200() {
-            final ResponseEntity<Void> response = controller.appleWebhook(Map.of());
-
-            assertThat(response.getStatusCode().value()).isEqualTo(200);
+        @DisplayName("payload without signedPayload → 400, no service call")
+        void noSignedPayload_badRequest() {
+            assertThatExceptionOfType(BaseException.class)
+                    .isThrownBy(() -> controller.appleWebhook(Map.of()))
+                    .matches(e -> e.getStatus() == HttpStatus.BAD_REQUEST);
             verifyNoInteractions(subscriptionService);
         }
     }

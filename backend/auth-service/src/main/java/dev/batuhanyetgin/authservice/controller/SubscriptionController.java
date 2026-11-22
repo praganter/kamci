@@ -52,14 +52,20 @@ public class SubscriptionController {
         return ResponseEntity.ok(subscriptionService.getStatus(userId));
     }
 
-    @Operation(summary = "Apple App Store Server Notification webhook (public)")
-    @ApiResponse(responseCode = "200", description = "Notification processed")
+    @Operation(summary = "Apple App Store Server Notification webhook (public, authenticated by its JWS signature)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Notification processed or ignored"),
+            @ApiResponse(responseCode = "400", description = "No signedPayload"),
+            @ApiResponse(responseCode = "403", description = "Invalid signature, other app or unknown environment"),
+            @ApiResponse(responseCode = "503", description = "Apple verification is not configured")
+    })
     @PostMapping("apple/webhook")
     ResponseEntity<Void> appleWebhook(@RequestBody final Map<String, String> payload) {
         final String signedPayload = payload.get("signedPayload");
-        if (signedPayload != null) {
-            subscriptionService.handleAppleWebhook(signedPayload);
+        if (signedPayload == null) {
+            throw BaseException.badRequest("error.subscription.verification_failed");
         }
+        subscriptionService.handleAppleWebhook(signedPayload);
         return ResponseEntity.ok().build();
     }
 
