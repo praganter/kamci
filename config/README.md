@@ -40,7 +40,14 @@ The `local` profile of the services normally runs with the config server disable
 | `PASSWORD_RESET_DEEP_LINK` | notification | `kamci://reset-password` | |
 | `APP_REDIS_HOST` / `_PORT` / `_PASSWORD` | auth, cache | `redis` / `6379` / empty | |
 | `EXCHANGE_BASE_CURRENCIES` | cache | `USD,EUR,TRY,GBP` | |
-| `REVENUECAT_WEBHOOK_SECRET`, `ADMIN_SECRET_KEY` | auth | empty | read directly by the service |
+| `ADMIN_SECRET_KEY` | auth | empty | read directly by the service |
+| `INTERNAL_API_TOKEN` | all | public dev default | Shared `X-Internal-Token` for service-to-service calls; always set it outside local development |
+| `APPLE_BUNDLE_ID` | auth | empty | Bundle ID the Apple receipts must belong to; read directly by the service (not served by the config server). If empty, Apple purchase verification returns an explicit error |
+| `APPLE_SHARED_SECRET` (`apple.store.shared-secret`) | auth | empty | App Store shared secret used to verify auto-renewable subscription receipts; read directly by the service. If empty, Apple purchase verification returns an explicit error |
+| `GOOGLE_PLAY_PACKAGE_NAME` | auth | empty | Android package name Play purchases must belong to; read directly by the service. If empty, Google purchase verification returns an explicit error |
+| `GOOGLE_PLAY_CREDENTIALS` | auth | empty | Path to the Play service-account key file used to call the Play Developer API; read directly by the service. If empty, Google purchase verification returns an explicit error |
+| `GOOGLE_PUBSUB_AUDIENCE` | auth | empty | Expected audience of the Google Pub/Sub push token; read directly by the service. If empty, the Google webhook answers 403 |
+| `GOOGLE_PUBSUB_SERVICE_ACCOUNT_EMAIL` | auth | empty | Service account that signs the Pub/Sub push token; read directly by the service. If empty, the Google webhook answers 403 |
 
 ## Native mode
 
