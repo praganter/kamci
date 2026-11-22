@@ -103,6 +103,8 @@ starts the whole backend, and the Flutter app runs against the local gateway (se
   verified token.
 - Paths with an `internal` segment are answered with 404 at the gateway, so service-to-service endpoints are not
   reachable from outside.
+- App Store and Google Play purchase notifications reach `auth-service` on public paths and are accepted only with the
+  store's own proof (Apple JWS signature, Google Pub/Sub OIDC token); see [`SECURITY.md`](SECURITY.md).
 - Secrets come from environment variables or sealed secrets; the repository only has placeholders and templates.
   Every push is scanned with gitleaks, see [`.gitleaks.toml`](.gitleaks.toml) and [`SECURITY.md`](SECURITY.md).
 
